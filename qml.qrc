@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>src/view/main.qml</file>
+        <file>src/view/TreeViewButton.qml</file>
+        <file>src/view/SyncView.qml</file>
+        <file>src/view/Settings.qml</file>
+        <file>src/view/MainView.qml</file>
+        <file>src/view/afisync_header.png</file>
+        <file>src/view/BandwidthRow.qml</file>
+        <file>src/view/PathSetting.qml</file>
+        <file>src/view/SettingsTitle.qml</file>
+    </qresource>
+</RCC>
