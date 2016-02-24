@@ -183,10 +183,8 @@ void Mod::addRepository(Repository* repository)
     repositories_.push_back(repository);
     if (repositories().size() == 1)
     {
-        //init();
-        //Separate thread
+        //Separate thread and delay for faster startup
         QTimer::singleShot(75, this, SLOT(init()));
-        //QtConcurrent::run(this, &Mod::init);
     }
 }
 
@@ -263,43 +261,3 @@ Repository* Mod::parentItem()
 {
     return static_cast<Repository*>(TreeItem::parentItem());
 }
-
-/*
-namespace BtsFolderError {
-    static const unsigned DIR_NOT_FOUND = 100;
-}
-
-void Mod::handleDirError(BtsFolderActivity folder)
-{
-    unsigned errorCode = folder.error;
-    if (errorCode == 0)
-    {
-        return;
-    }
-    if (errorCode == BtsFolderError::DIR_NOT_FOUND)
-    {
-        DBG << "Info: BTSync directory not found error detected. "
-                    "Re-creating sync dir: " << folder.path;
-        //Re-create folder
-        btsync_->removeFolder(key_);
-        dirHelper_ = folder.path;
-        connect(btsync_, SIGNAL(removeFolderResult(QString)),
-                this, SLOT(recreateBtsFolder(QString)));
-        return;
-    }
-    qDebug() << "Error: unknown BTSync folder error code (" << errorCode << ").";
-}
-
-void Mod::recreateBtsFolder(const QString& key)
-{
-    if (key != key_)
-    {
-        return;
-    }
-
-    disconnect(btsync_, SIGNAL(removeFolderResult(QString)),
-            this, SLOT(recreateBtsFolder(QString)));
-    DBG;
-    btsync_->addFolder(dirHelper_, key_, true);
-}
-*/
