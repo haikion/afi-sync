@@ -82,7 +82,8 @@ ApplicationWindow {
             anchors.fill: parent
             mainView: mainView
             onApply: {
-                mainView.syncViewObj.updateCheckBoxes()
+                console.log("Apply event")
+                mainView.syncViewObj.updateCBs()
             }
         }
         Text {

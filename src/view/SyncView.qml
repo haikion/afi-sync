@@ -15,6 +15,9 @@ TreeView {
     model: TreeModel
     horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
     signal updateCheckboxes
+    function updateCBs() {
+        updateCheckboxes()
+    }
 
     style: TreeViewStyle {
         backgroundColor: defaultColor

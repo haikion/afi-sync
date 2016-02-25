@@ -446,7 +446,7 @@ QNetworkRequest BtsApi2::createUnauthenticatedRequest(const QString& url)
 QString BtsApi2::token()
 {
     QVariantMap variantMap = getVariantMap(API_PREFIX + "/token");
-    DBG << "variantMap" << variantMap;
+    DBG << "variantMap =" << variantMap;
     QVariantMap data = qvariant_cast<QVariantMap>(variantMap.value("data"));
     QString token = qvariant_cast<QString>(data.value("token"));
     return token;

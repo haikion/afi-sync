@@ -83,10 +83,12 @@ void RootItem::removeOrphans()
 
 void RootItem::processCompletion()
 {
+    DBG << "Started";
     for (Repository* repo : childItems())
     {
         repo->processCompletion();
     }
+    DBG << "Finished";
 }
 
 void RootItem::resetSyncSettings()

@@ -266,13 +266,28 @@ Column {
 
             Button {
                 text: "Manual Installation and Extra File Deletion"
-                onClicked: TreeModel.processCompletion()
+                onClicked: {
+                    var cache = text;
+                    text = "Loading..."
+                    enabled = false
+                    TreeModel.processCompletion()
+                    enabled = true
+                    text = cache
+                }
                 height: defaultHeight
                 width: parent.width
             }
             Button {
                 text: "Reset Sync"
-                onClicked: TreeModel.resetSync()
+                onClicked: {
+                    var cache = text;
+                    text = "Loading..."
+                    enabled = false
+                    TreeModel.resetSync()
+                    apply()
+                    enabled = true
+                    text = cache
+                }
                 height: defaultHeight
                 width: parent.width
             }
