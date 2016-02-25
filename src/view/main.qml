@@ -12,6 +12,7 @@ ApplicationWindow {
     width: 1100
     height: 700
     color: "lightslategray"
+    title: "AFISync v0.25"
 
     Component.onDestruction:
     {

@@ -4,7 +4,7 @@ QT += qml quick
 CONFIG += c++11
 
 INCLUDEPATH += /usr/local/include/libbtsync-qt
-RC_ICONS = armafin-logo-64px2.ico
+RC_ICONS = src/view/armafin-logo-64px2.ico
 #LIBS += -L/usr/local/lib -lbtsync-qt
 #DEFINES += QT_NO_DEBUG_OUTPUT
 

@@ -137,17 +137,17 @@ QVariantMap BtsApi2::setForce(const QString& key, bool value)
 }
 
 
-void BtsApi2::setFolderPaused(const QString& key, bool value)
+QVariantMap BtsApi2::setFolderPaused(const QString& key, bool value)
 {
     if (!exists(key) || paused(key) == value)
     {
         DBG << "returning";
-        return;
+        return QVariantMap();
     }
     QString fid = keyToFid(key);
     QVariantMap obj;
     obj.insert("paused", value);
-    patchVariantMap(obj, API_PREFIX + "/folders/" + fid);
+    return patchVariantMap(obj, API_PREFIX + "/folders/" + fid);
 }
 
 void BtsApi2::removeFolder2(const QString& key)
@@ -415,9 +415,9 @@ QNetworkRequest BtsApi2::createSecureRequest(QString path)
     {
         token_ = token();
         ++a;
-        if (a > 10)
+        if (a > 20)
         {
-            DBG << "Failure";
+            DBG << "Error: Failure fetching security token.";
             return QNetworkRequest();
         }
     }
@@ -445,8 +445,8 @@ QNetworkRequest BtsApi2::createUnauthenticatedRequest(const QString& url)
 
 QString BtsApi2::token()
 {
-    DBG;
     QVariantMap variantMap = getVariantMap(API_PREFIX + "/token");
+    DBG << "variantMap" << variantMap;
     QVariantMap data = qvariant_cast<QVariantMap>(variantMap.value("data"));
     QString token = qvariant_cast<QString>(data.value("token"));
     return token;

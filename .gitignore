@@ -1,3 +1,5 @@
+#api key
+apikey.h
 # C++ objects and libs
 
 *.slo
@@ -32,3 +34,4 @@ Makefile*
 #QtCtreator Qml
 *.qmlproject.user
 *.qmlproject.user.*
+

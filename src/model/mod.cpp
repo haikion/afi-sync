@@ -55,8 +55,8 @@ void Mod::start()
         DBG << "Does not exist. key_ =" << key_;
         btsync_->addFolder(dir, key_, true); //Add if doesn't exist already
     }
-    btsync_->setFolderPaused(key_, false);
-    DBG << "end";
+    QVariantMap response = btsync_->setFolderPaused(key_, false);
+    DBG << "response =" << response;
 }
 
 void Mod::deleteExtraFiles()
@@ -79,7 +79,6 @@ void Mod::deleteExtraFiles()
         DBG << "Warning: Not deleting extra files because mod is not fully synced. =" << name();
         return; //Would delete everything otherwise
     }
-    //disconnect(&updateTimer_, SIGNAL(timeout()), this, SLOT(deleteExtraFiles()));
 
     DBG << " name =" << name()
              << "\n\n remoteFiles =" << remoteFiles
@@ -89,7 +88,7 @@ void Mod::deleteExtraFiles()
     for (QString file : extraFiles)
     {
         DBG << "Deleting extra file: " << file << " from mod =" << name();
-        //QFile(file).remove();
+        QFile(file).remove();
     }
 }
 

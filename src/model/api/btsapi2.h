@@ -42,7 +42,7 @@ public:
     SyncLevel getSyncLevel(const QString& key);
     bool noPeers(const QString& key);
     bool isIndexing(const QString& key);
-    void setFolderPaused(const QString& key, bool value);
+    QVariantMap setFolderPaused(const QString& key, bool value);
     int getFolderEta(const QString& key);
     void removeFolder2(const QString& key);
     QSet<QString> getFilesUpper(const QString& key, const QString& path = "");
