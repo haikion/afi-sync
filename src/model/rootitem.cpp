@@ -8,12 +8,10 @@
 #include <QSet>
 #include <QTimer>
 #include "global.h"
-#include "api/libbtsync-qt/bts_global.h"
 #include "rootitem.h"
 #include "repository.h"
 #include "jsonreader.h"
 #include "settingsmodel.h"
-#include "apikey.h"
 
 RootItem::RootItem(TreeModel* parentModel):
     RootItem(Constants::DEFAULT_USERNAME, Constants::DEFAULT_PASSWORD,
@@ -30,8 +28,8 @@ RootItem::RootItem(const QString& username, const QString& password, unsigned po
     password_(password),
     port_(port)
 {
-    initBtsync();
-    Global::btsync = btsync_;
+    initSync();
+    Global::btsync = sync_;
     DBG << "initBtsync completed";
     JsonReader::fillEverything(this);
     //JsonReader::fillRepositories(this);
@@ -49,9 +47,9 @@ RootItem::~RootItem()
         delete repo;
     }
     DBG << "Shutdown2";
-    btsync_->shutdown2();
+    sync_->shutdown2();
     DBG << "Btsync destruction";
-    delete btsync_;
+    delete sync_;
 }
 
 //Removes btsync dirs which
@@ -70,13 +68,13 @@ void RootItem::removeOrphans()
             keys.insert(mod->key());
         }
     }
-    for (const QString& key : btsync_->getFolderKeys())
+    for (const QString& key : sync_->getFolderKeys())
     {
         if (!keys.contains(key))
         {
             //Not found
             DBG << "Deleting folder with key:" << key;
-            btsync_->removeFolder(key);
+            sync_->removeFolder(key);
         }
     }
 }
@@ -94,7 +92,7 @@ void RootItem::processCompletion()
 void RootItem::resetSyncSettings()
 {
     DBG;
-    btsync_->shutdown2();
+    sync_->shutdown2();
     for (Repository* repo : childItems())
     {
         if (repo->checked())
@@ -116,7 +114,7 @@ void RootItem::resetSyncSettings()
         ++attempts;
     }
     dir.mkpath(".");
-    btsync_->restart2();
+    sync_->restart2();
 }
 
 QList<Repository*> RootItem::childItems()
@@ -142,28 +140,7 @@ void RootItem::updateView(TreeItem* item, int row)
 
 BtsApi2* RootItem::btsync() const
 {
-    return btsync_;
-}
-
-
-void RootItem::initBtsync()
-{
-    DBG;
-    #ifdef Q_OS_WIN
-        BtsGlobal::setBtsyncExecutablePath("bin/btsync.exe");
-    #elif defined(Q_PROCESSOR_X86_32)
-        BtsGlobal::setBtsyncExecutablePath("bin/btsync32");
-    #else
-        BtsGlobal::setBtsyncExecutablePath("bin/btsync");
-    #endif
-    BtsGlobal::setApiKey(BTS_API_KEY);
-    btsync_ = new BtsApi2(createBtsClient());
-
-    updateTimer_.setInterval(1000);
-    DBG << "Setting up speed updates";
-    QObject::connect(&updateTimer_, SIGNAL(timeout()), btsync_, SLOT(getSpeed()));
-    QObject::connect(btsync_, SIGNAL(getSpeedResult(qint64,qint64)), parent_, SLOT(updateSpeed(qint64,qint64)));
-    updateTimer_.start();
+    return sync_;
 }
 
 void RootItem::enableRepositories()
@@ -188,27 +165,12 @@ QString RootItem::defaultter(const QString& value, const QString& defaultValue)
     return value;
 }
 
-BtsClient* RootItem::createBtsClient()
+void RootItem::initSync()
 {
-    DBG;
-    //BtsSpawnClient* btsclient = new BtsSpawnClient(this);
-    BtsSpawnClient* btsclient = new BtsSpawnClient();
-    btsclient->setUsername(username_); //TODO: comment
-    btsclient->setPassword(password_); //TODO: comment
-    btsclient->setPort(port_);
-    QString host = "127.0.0.1";
-    if (Global::guiless)
-    {
-        host = "0.0.0.0";
-    }
-    btsclient->setHost(host);
-    btsclient->setAutorestart(false);
-    QString dataPath = Constants::BTSYNC_SETTINGS_PATH;
-    DBG << "Creating BtSync data path.";
-    QDir().mkpath(dataPath);
-    btsclient->setDataPath(dataPath);
-    DBG << "Starting BtSync";
-    btsclient->startClient();
-
-    return btsclient;
+    sync_ = new BtsApi2(username_, password_, port_);
+    updateTimer_.setInterval(1000);
+    DBG << "Setting up speed updates";
+    QObject::connect(&updateTimer_, SIGNAL(timeout()), sync_, SLOT(getSpeed()));
+    QObject::connect(sync_, SIGNAL(getSpeedResult(qint64,qint64)), parent_, SLOT(updateSpeed(qint64,qint64)));
+    updateTimer_.start();
 }

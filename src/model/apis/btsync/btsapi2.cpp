@@ -12,21 +12,30 @@
 #include <QDateTime>
 #include <QTimer>
 #include <QThread>
+#include "../../debug.h"
+#include "../../settingsmodel.h"
+#include "libbtsync-qt/bts_global.h"
 #include "libbtsync-qt/bts_client.h"
 #include "btsapi2.h"
-#include "../debug.h"
-#include "../settingsmodel.h"
+#include "apikey.h"
 
 //Cache update interval in ms
 const unsigned BtsApi2::UPDATE_INTERVAL = 1000;
 const unsigned BtsApi2::TIMEOUT = 200;
 const QString BtsApi2::API_PREFIX = "/api/v2";
 
+BtsApi2::BtsApi2(const QString& username, const QString& password,
+                 unsigned port, QObject* parent):
+    BtsApi2(createBtsClient(username, password, port), parent)
+{
+    DBG;
+    foldersCache_.second = 0;
+}
+
 BtsApi2::BtsApi2(BtsClient* client, QObject* parent):
     BtsApi(client, parent),
     cacheFilled_(false)
 {
-    foldersCache_.second = 0;
     QTimer::singleShot(75, this, SLOT(postInit()));
 }
 
@@ -36,6 +45,38 @@ void BtsApi2::postInit()
     setShowNotifications(false);
     setMaxDownload(SettingsModel::maxDownload().toUInt());
     setMaxUpload(SettingsModel::maxUpload().toUInt());
+}
+
+BtsClient* BtsApi2::createBtsClient(const QString& username, const QString& password, unsigned port)
+{
+    DBG;
+    #ifdef Q_OS_WIN
+        BtsGlobal::setBtsyncExecutablePath("bin/btsync.exe");
+    #elif defined(Q_PROCESSOR_X86_32)
+        BtsGlobal::setBtsyncExecutablePath("bin/btsync32");
+    #else
+        BtsGlobal::setBtsyncExecutablePath("bin/btsync");
+    #endif
+    BtsGlobal::setApiKey(BTS_API_KEY);
+    BtsSpawnClient* btsclient = new BtsSpawnClient();
+    btsclient->setUsername(username);
+    btsclient->setPassword(password);
+    btsclient->setPort(port);
+    QString host = "127.0.0.1";
+    if (Global::guiless)
+    {
+        host = "0.0.0.0";
+    }
+    btsclient->setHost(host);
+    btsclient->setAutorestart(false);
+    QString dataPath = Constants::BTSYNC_SETTINGS_PATH;
+    DBG << "Creating BtSync data path.";
+    QDir().mkpath(dataPath);
+    btsclient->setDataPath(dataPath);
+    DBG << "Starting BtSync";
+    btsclient->startClient();
+
+    return btsclient;
 }
 
 bool BtsApi2::paused(const QString& key)
@@ -270,13 +311,13 @@ QList<QString> BtsApi2::getFolderKeys()
     return rVal;
 }
 
-QVariantMap BtsApi2::getVariantMap(const QString& path)
+QVariantMap BtsApi2::getVariantMap(const QString& path, unsigned timeout)
 {
     QNetworkRequest req = createUnauthenticatedRequest(path);
     QEventLoop loop;
     QNetworkReply* reply = nam_.get(req);
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-    QTimer::singleShot(TIMEOUT, &loop, SLOT(quit())); //Timeout
+    QTimer::singleShot(timeout, &loop, SLOT(quit())); //Timeout
     loop.exec();
     QByteArray jsonBytes = reply->readAll();
     QVariantMap rVal = bytesToVariantMap(jsonBytes);
@@ -445,7 +486,7 @@ QNetworkRequest BtsApi2::createUnauthenticatedRequest(const QString& url)
 
 QString BtsApi2::token()
 {
-    QVariantMap variantMap = getVariantMap(API_PREFIX + "/token");
+    QVariantMap variantMap = getVariantMap(API_PREFIX + "/token", 3000);
     DBG << "variantMap =" << variantMap;
     QVariantMap data = qvariant_cast<QVariantMap>(variantMap.value("data"));
     QString token = qvariant_cast<QString>(data.value("token"));

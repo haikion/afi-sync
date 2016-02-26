@@ -2,7 +2,7 @@
 #define GLOBAL_H
 #include <QString>
 #include "treemodel.h"
-#include "api/btsapi2.h"
+#include "apis/btsync/btsapi2.h"
 
 namespace Constants {
     const QString SETTINGS_PATH = "settings";

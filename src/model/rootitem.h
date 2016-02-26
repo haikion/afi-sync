@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QTimer>
-#include "api/btsapi2.h"
+#include "apis/btsync/btsapi2.h"
 #include "treemodel.h"
 #include "treeitem.h"
 
@@ -28,14 +28,13 @@ public:
 private:
     bool initializing_;
     TreeModel* parent_;
-    BtsApi2* btsync_;
+    BtsApi2* sync_;
     QTimer updateTimer_;
     QString username_;
     QString password_;
     unsigned port_;
 
-    void initBtsync();
-    BtsClient* createBtsClient();
+    void initSync();
     void removeOrphans();
     QString defaultter(const QString& value, const QString& defaultValue);
 };

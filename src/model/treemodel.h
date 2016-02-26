@@ -5,8 +5,8 @@
 #include <QModelIndex>
 #include <QVariant>
 #include <QVariant>
-#include "api/libbtsync-qt/bts_spawnclient.h"
-#include "api/btsapi2.h"
+#include "apis/btsync/libbtsync-qt/bts_spawnclient.h"
+#include "apis/btsync/btsapi2.h"
 
 class RootItem;
 class TreeItem;

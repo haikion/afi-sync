@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <QObject>
-#include "api/btsapi2.h"
+#include "apis/btsync/btsapi2.h"
 #include "syncitem.h"
 
 class Repository;

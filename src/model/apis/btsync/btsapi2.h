@@ -32,7 +32,8 @@ class BtsApi2: public BtsApi
     Q_OBJECT
 
 public:
-    BtsApi2(BtsClient* client, QObject* parent = 0);
+    BtsApi2(const QString& username, const QString& password, unsigned port, QObject* parent = nullptr);
+    BtsApi2(BtsClient* client, QObject* parent = nullptr);
     ~BtsApi2() = default;
 
     QList<BtsFolderActivity>  getFoldersActivityResult();
@@ -79,9 +80,10 @@ private:
     QNetworkRequest createSecureRequest(QString path);
     QVariantMap bytesToVariantMap(const QByteArray& jsonBytes) const;
     QVariantMap postVariantMap(const QVariantMap& map, const QString& path);
-    QVariantMap getVariantMap(const QString& path);
+    QVariantMap getVariantMap(const QString& path, unsigned timeout = TIMEOUT);
     QString keyToFid(const QString& key);
     QVariantMap patchVariantMap(const QVariantMap& map, const QString& path);
+    BtsClient*createBtsClient(const QString& username, const QString& password, unsigned port);
 };
 
 #endif // BTSAPI2_H
