@@ -14,7 +14,7 @@
 #include "bts_spawnclient.h"
 #include "bts_global.h"
 #include "bts_api.h"
-#include "../../debug.h"
+#include "../../../debug.h"
 
 struct BtsSpawnClient_private
 {

@@ -24,8 +24,7 @@ SOURCES += src/model/main.cpp \
     src/model/apis/btsync/libbtsync-qt/bts_spawnclient.cpp \
     src/model/pathfinder.cpp \
     src/model/settingsmodel.cpp \
-    src/model/global.cpp \
-    src/model/debug.cpp
+    src/model/global.cpp
 
 RESOURCES += qml.qrc
 

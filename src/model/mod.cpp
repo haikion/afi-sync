@@ -56,7 +56,7 @@ void Mod::start()
         btsync_->addFolder(dir, key_, true); //Add if doesn't exist already
     }
     QVariantMap response = btsync_->setFolderPaused(key_, false);
-    DBG << "response =" << response;
+    DBG << "response =" << response << "name =" << name();
 }
 
 void Mod::deleteExtraFiles()
@@ -242,7 +242,7 @@ void Mod::updateView()
 {
     for (Repository* repo : repositories())
     {
-        repo->update(this, repo->childItems().indexOf(this));
+        repo->updateView(this, repo->childItems().indexOf(this));
     }
 }
 

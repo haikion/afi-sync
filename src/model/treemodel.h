@@ -35,8 +35,6 @@ public:
 
     QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
     Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
-    //QVariant headerData(int section, Qt::Orientation orientation,
-    //                    int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     QModelIndex index(int row, int column,
                       const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     QModelIndex parent(const QModelIndex &index) const Q_DECL_OVERRIDE;
@@ -60,11 +58,6 @@ public slots:
     void join(const QModelIndex& repoIdx) const;
     void resetSync();
     void processCompletion();
-    //Hack to kill zombie. If signal is received on time
-    //program won't kill itself. Signal is not produced by zombie.
-    void setDieFalse();
-    void die();
-    void killItWithFire(); //Force kill just in case...
 
 private slots:
     void updateSpeed(qint64 download, qint64 upload);
@@ -75,7 +68,7 @@ private:
     unsigned upload_;
     bool die_;
 
-    void setupModelData(const QStringList &lines, TreeItem *parent);
+    void setupModelData(const QStringList& lines, TreeItem* parent);
     void setClient(BtsClient* newclient);
     void initBtsync();
     BtsClient*createBtsClient();

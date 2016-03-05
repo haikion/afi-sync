@@ -6,34 +6,21 @@ import org.AFISync 0.1
 Item {
     id: afiSyncWindow
     visible: true
-    property variant syncViewObj
-
-    function destroySync() {
-        syncViewObj.destroy()
-    }
-
-    function createSync() {
-        syncViewObj = syncViewComponent.createObject(afiSyncWindow)
-    }
+    property bool initializing: true
+    property variant syncViewObj: syncView
 
     Component.onCompleted: {
         //syncViewObj = syncViewComponent.createObject(afiSyncWindow);
-        createSync()
+        //createSync()
         console.log("loaded " + parent.enabled + " " + parent.visible + " " + parent.width + " " + parent.height)
         parent.visible = false;
         parent.visible = true;
     }
-    Component.onDestruction: {
-        console.log("Destruction")
-        syncViewObj.destroy()
-    }
 
-    Component {
-        id: syncViewComponent
-        SyncView {
-            anchors.top: titleRectangle.bottom
-            anchors.bottom: footerRectangle.top
-        }
+    SyncView {
+        id: syncView
+        anchors.top: titleRectangle.bottom
+        anchors.bottom: footerRectangle.top
     }
 
     Rectangle {

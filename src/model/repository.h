@@ -21,7 +21,7 @@ public:
 
     virtual void appendMod(Mod* item);
     //void appendChild2(Mod* item);
-    void update(TreeItem *item, int row = -1);
+    void updateView(TreeItem *item, int row = -1);
     //void updateProgress();
     virtual void checkboxClicked();
     void checkboxClicked(bool offline);

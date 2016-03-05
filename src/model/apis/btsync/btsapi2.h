@@ -82,7 +82,7 @@ private:
     QVariantMap postVariantMap(const QVariantMap& map, const QString& path);
     QVariantMap getVariantMap(const QString& path, unsigned timeout = TIMEOUT);
     QString keyToFid(const QString& key);
-    QVariantMap patchVariantMap(const QVariantMap& map, const QString& path);
+    QVariantMap patchVariantMap(const QVariantMap& map, const QString& path, unsigned timeout = TIMEOUT);
     BtsClient*createBtsClient(const QString& username, const QString& password, unsigned port);
 };
 

@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file alias="main.qml">src/view/main.qml</file>
         <file alias="TreeViewButton.qml">src/view/TreeViewButton.qml</file>
         <file alias="SyncView.qml">src/view/SyncView.qml</file>
         <file alias="Settings.qml">src/view/Settings.qml</file>
@@ -9,5 +8,7 @@
         <file alias="BandwidthRow.qml">src/view/BandwidthRow.qml</file>
         <file alias="PathSetting.qml">src/view/PathSetting.qml</file>
         <file alias="SettingsTitle.qml">src/view/SettingsTitle.qml</file>
+        <file alias="SplashScreen.qml">src/view/SplashScreen.qml</file>
+        <file alias="MainWindow.qml">src/view/MainWindow.qml</file>
     </qresource>
 </RCC>

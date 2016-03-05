@@ -20,20 +20,6 @@ Rectangle {
             //TODO: return bool through model
             enabled: value === "Join" || value === "Start"
             onClicked: parent.clicked()
-            /*
-            style: ButtonStyle {
-              label: Text {
-                renderType: Text.NativeRendering
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                //font.family: "Arial"
-                font.pixelSize: 11
-                //font.bold: true
-                text: control.text
-              }
-
-           }
-           */
         }
     }
 

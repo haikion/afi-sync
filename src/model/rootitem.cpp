@@ -13,6 +13,7 @@
 #include "jsonreader.h"
 #include "settingsmodel.h"
 
+//TODO: Should it be faster?
 RootItem::RootItem(TreeModel* parentModel):
     RootItem(Constants::DEFAULT_USERNAME, Constants::DEFAULT_PASSWORD,
              Constants::DEFAULT_PORT, parentModel)
@@ -32,7 +33,6 @@ RootItem::RootItem(const QString& username, const QString& password, unsigned po
     Global::btsync = sync_;
     DBG << "initBtsync completed";
     JsonReader::fillEverything(this);
-    //JsonReader::fillRepositories(this);
     DBG << "readJson completed";
     removeOrphans();
     DBG << "remove orhpans completed";
@@ -74,7 +74,7 @@ void RootItem::removeOrphans()
         {
             //Not found
             DBG << "Deleting folder with key:" << key;
-            sync_->removeFolder(key);
+            sync_->removeFolder2(key);
         }
     }
 }
@@ -98,7 +98,7 @@ void RootItem::resetSyncSettings()
         if (repo->checked())
         {
             repo->checkboxClicked(true);
-            repo->update(this);
+            repo->updateView(this);
         }
     }
     //Brute way to avoid "file in use" while btsync is shutting down.

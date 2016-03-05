@@ -27,7 +27,7 @@ TreeModel::TreeModel(const QString& username, const QString& password,
     rootItem_(new RootItem(username, password, port, this)),
     die_(false)
 {
-
+    DBG;
 }
 
 TreeModel::TreeModel(QObject* parent) :
@@ -36,12 +36,11 @@ TreeModel::TreeModel(QObject* parent) :
     die_(true)
 {
     DBG << "done";
-    //Hack to kill zombie.
-    QTimer::singleShot(1000, this, SLOT(die()));
 }
 
 TreeModel::~TreeModel()
 {
+    DBG;
     delete rootItem_;
 }
 
@@ -104,30 +103,6 @@ void TreeModel::processCompletion()
     rootItem_->processCompletion();
 }
 
-void TreeModel::setDieFalse()
-{
-    die_ = false;
-}
-
-void TreeModel::die()
-{
-    if (die_)
-    {
-        DBG << "Death is emminent";
-        QCoreApplication::quit();
-    }
-}
-
-void TreeModel::killItWithFire()
-{
-    DBG;
-    QCoreApplication::quit();
-    //usleep(2*1000000); //2s time to shutdown normally.
-    QThread::sleep(2);
-    DBG << "BUUURN";
-    QCoreApplication::exit(0);
-}
-
 void TreeModel::updateSpeed(qint64 download, qint64 upload)
 {
     if (die_)
@@ -168,17 +143,11 @@ int TreeModel::columnCount(const QModelIndex& parent) const
 
 void TreeModel::updateView(TreeItem* item, int row)
 {
-    if (die_)
-    {
-        return;
-    }
     if (row == -1)
     {
         row = item->row();
     }
-    //DBG << item->row() << item;
     QModelIndex idx = createIndex(row, 0, item);
-
     emit dataChanged(idx, idx);
 }
 
@@ -230,7 +199,7 @@ QHash<int,QByteArray> TreeModel::roleNames() const
 QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent)
             const
 {
-    //DBG << "row =" << row << "column =" << column;
+    DBG << "row =" << row << "column =" << column;
 
     if (!hasIndex(row, column, parent))
         return QModelIndex();

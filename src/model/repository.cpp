@@ -28,12 +28,12 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
 void Repository::update()
 {
     updateEtaAndStatus();
-    update(this);
+    updateView(this);
 }
 
 Repository::~Repository()
 {
-    qDebug() << "Q_FUNC_INFO" << "name =" << name();
+    DBG << "name =" << name();
     for (Mod* mod : childItems())
     {
         mod->removeRepository(this);
@@ -67,7 +67,7 @@ int Repository::lastModified()
     return lastModified;
 }
 
-void Repository::update(TreeItem* item, int row)
+void Repository::updateView(TreeItem* item, int row)
 {
     parentItem()->updateView(item, row);
 }
@@ -77,7 +77,7 @@ void Repository::checkboxClicked(bool offline)
     SyncItem::checkboxClicked();
     updateTimer_.stop();
     setStatus("Processing new mods...");
-    update(this);
+    updateView(this);
     for (Mod* mod : childItems())
     {
         mod->repositoryEnableChanged(offline);

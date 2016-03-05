@@ -1,4 +1,3 @@
-//TODO: Consider using more pointers or references for performance reasons...
 #include <QtDebug>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -21,7 +20,7 @@
 
 //Cache update interval in ms
 const unsigned BtsApi2::UPDATE_INTERVAL = 1000;
-const unsigned BtsApi2::TIMEOUT = 200;
+const unsigned BtsApi2::TIMEOUT = 500;
 const QString BtsApi2::API_PREFIX = "/api/v2";
 
 BtsApi2::BtsApi2(const QString& username, const QString& password,
@@ -97,16 +96,9 @@ QString BtsApi2::error(const QString& key)
 
 void BtsApi2::shutdown2()
 {
-    QEventLoop loop;
-    BtsApiNotifier* n = BtsApi::shutdown();
-    QTimer::singleShot(TIMEOUT, &loop, SLOT(quit()));
-    connect(n, SIGNAL(shutdownResult()), &loop, SLOT(quit()));
-    BtsSpawnClient* client = static_cast<BtsSpawnClient*>(getClient());
-    client->exitClient();
+    postVariantMap(QVariantMap(), API_PREFIX + "/client/shutdown");
     token_ = "";
-    connect(client, SIGNAL(clientExited()), &loop, SLOT(quit()));
-    QTimer::singleShot(TIMEOUT, &loop, SLOT(quit()));
-    loop.exec();
+    DBG << "Finished";
 }
 
 void BtsApi2::restart2()
@@ -182,7 +174,7 @@ QVariantMap BtsApi2::setFolderPaused(const QString& key, bool value)
 {
     if (!exists(key) || paused(key) == value)
     {
-        DBG << "returning";
+        DBG << "No changes made, returning empty value.";
         return QVariantMap();
     }
     QString fid = keyToFid(key);
@@ -196,13 +188,18 @@ void BtsApi2::removeFolder2(const QString& key)
     DBG;
     if (!exists(key))
     {
+        DBG << "Folder does not exist, returning. key =" << key;
         return;
     }
+    DBG << "Folder found, deleting. key=" << key;
+    QString fid = keyToFid(key);
     QEventLoop loop;
-    BtsApiNotifier* notifier = BtsApi::removeFolder(key);
-    connect(notifier, SIGNAL(removeFolderResult(QString)), &loop, SLOT(quit()));
+    QNetworkRequest req = createSecureRequest(API_PREFIX + "/folders/" + fid);
+    QNetworkReply* reply = nam_.deleteResource(req);
+    connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(TIMEOUT, &loop, SLOT(quit()));
     loop.exec();
+    reply->deleteLater();
     foldersCache_.second = 0; //Force cache refresh
 }
 
@@ -212,7 +209,6 @@ QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
     QString fid = keyToFid(key);
     QString pathEncoded = path;
     pathEncoded = pathEncoded.replace("\\", "/"); //WTF bts...
-    //QString pathEncoded = QUrl::toPercentEncoding(path);
     QVariantMap reply  = getVariantMap(API_PREFIX + "/folders/" + fid + "/files?path=" + pathEncoded);
     QVariantMap data = qvariant_cast<QVariantMap>(reply.value("data"));
     QList<QVariant> filesList = qvariant_cast<QList<QVariant>>(data.value("members"));
@@ -337,7 +333,6 @@ BtsFolderActivity BtsApi2::getFolderActivity(const QString& key)
     FolderHash::const_iterator folderIterator =  folders.find(key);
     if (folderIterator == folders.end())
     {
-        //DBG << "unable to find folder with key=" << key;
         return BtsFolderActivity();
     }
     return folderIterator.value();
@@ -371,8 +366,6 @@ QString BtsApi2::keyToFid(const QString& key)
 bool BtsApi2::exists(const QString& key)
 {
     FolderHash folders = getFoldersActivity();
-    //FolderHash::const_iterator folderIterator =  folders.find(key);
-    //if (folderIterator == folders.end())
     if (folders.contains(key))
     {
         return true;
@@ -389,10 +382,9 @@ QVariantMap BtsApi2::setShowNotifications(bool value)
 
 QVariantMap BtsApi2::setDefaultSyncLevel(SyncLevel level)
 {
-    //FIXME: Response = QMap()
     QVariantMap map;
     map.insert("synclevel", level);
-    QVariantMap response = patchVariantMap(map, API_PREFIX + "/client/defaultsynclevel");
+    QVariantMap response = patchVariantMap(map, API_PREFIX + "/client/defaultsynclevel", 5000);
     DBG << "response =" << response;
     return response;
 }
@@ -403,12 +395,10 @@ int BtsApi2::getLastModified(const QString &key)
     return map.last_modfied;
 }
 
-
 QVariantMap BtsApi2::postVariantMap(const QVariantMap& map, const QString& path)
 {
     QJsonDocument jsonDoc = QJsonDocument(QJsonObject::fromVariantMap(map));
     QByteArray jsonBytes = jsonDoc.toJson();
-    //qDebug() << "[BtsApi2] postVariantMap() jsonDoc=" << jsonBytes;
     QNetworkRequest request = createSecureRequest(path);
     QEventLoop loop;
     QNetworkReply* reply = nam_.post(request, jsonBytes);
@@ -416,11 +406,10 @@ QVariantMap BtsApi2::postVariantMap(const QVariantMap& map, const QString& path)
     QTimer::singleShot(TIMEOUT, &loop, SLOT(quit())); //timeout
     loop.exec();
     QByteArray response = reply->readAll();
-    //qDebug() << "[BtsApi2] postVariantMap() response=" << response;
     return bytesToVariantMap(response);
 }
 
-QVariantMap BtsApi2::patchVariantMap(const QVariantMap& map, const QString& path)
+QVariantMap BtsApi2::patchVariantMap(const QVariantMap& map, const QString& path, unsigned timeout)
 {
     QJsonDocument jsonDoc = QJsonDocument(QJsonObject::fromVariantMap(map));
     QByteArray jsonBytes = jsonDoc.toJson();
@@ -434,7 +423,7 @@ QVariantMap BtsApi2::patchVariantMap(const QVariantMap& map, const QString& path
     QEventLoop loop;
     QNetworkReply* reply = nam_.sendCustomRequest(request, "PATCH", buffer);
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-    QTimer::singleShot(TIMEOUT, &loop, SLOT(quit()));
+    QTimer::singleShot(timeout, &loop, SLOT(quit()));
     loop.exec();
     QByteArray response = reply->readAll();
     return bytesToVariantMap(response);
@@ -486,7 +475,7 @@ QNetworkRequest BtsApi2::createUnauthenticatedRequest(const QString& url)
 
 QString BtsApi2::token()
 {
-    QVariantMap variantMap = getVariantMap(API_PREFIX + "/token", 3000);
+    QVariantMap variantMap = getVariantMap(API_PREFIX + "/token", 10000);
     DBG << "variantMap =" << variantMap;
     QVariantMap data = qvariant_cast<QVariantMap>(variantMap.value("data"));
     QString token = qvariant_cast<QString>(data.value("token"));

@@ -17,6 +17,7 @@ static const QString LOG_FILE = "afisync.log";
 
 static QObject* getTreeModel(QQmlEngine* engine, QJSEngine* scriptEngine)
 {
+    DBG;
     Q_UNUSED(scriptEngine)
     Global::model = new TreeModel(engine);
 
@@ -47,7 +48,7 @@ int gui(int argc, char *argv[])
     DBG << "QGuiApplication created";
     QQmlApplicationEngine engine;
     //DBG << 3.2;
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    engine.load(QUrl(QStringLiteral("qrc:/SplashScreen.qml")));
     DBG << "QML Engine loaded";
 
     //Hack to kill Zombie
