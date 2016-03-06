@@ -71,7 +71,6 @@ private:
     static const QString API_PREFIX;
     static const unsigned TIMEOUT;
 
-    bool cacheFilled_;
     QString token_;
     QNetworkAccessManager nam_;
     FoldersActivityCache foldersCache_;

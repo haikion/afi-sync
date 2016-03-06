@@ -32,8 +32,7 @@ BtsApi2::BtsApi2(const QString& username, const QString& password,
 }
 
 BtsApi2::BtsApi2(BtsClient* client, QObject* parent):
-    BtsApi(client, parent),
-    cacheFilled_(false)
+    BtsApi(client, parent)
 {
     QTimer::singleShot(75, this, SLOT(postInit()));
 }
@@ -233,18 +232,14 @@ QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
 
 FolderHash BtsApi2::getFoldersActivity()
 {
+    static QMutex mutex;
+    mutex.lock();
     unsigned timePassed = QDateTime::currentMSecsSinceEpoch() - foldersCache_.second;
     if (timePassed < UPDATE_INTERVAL)
     {
-        while (!cacheFilled_)
-        {
-            //Being updated for the first time
-            QThread::sleep(200);
-        }
-        //DBG << "using cached data";
+        mutex.unlock();
         return foldersCache_.first;
     }
-    foldersCache_.second = QDateTime::currentMSecsSinceEpoch();
     QVariantMap reply;
     while (reply.size() == 0)
     {
@@ -293,7 +288,9 @@ FolderHash BtsApi2::getFoldersActivity()
         newHash.insert(folder.readonlysecret, folder);
     }
     foldersCache_.first = newHash;
-    cacheFilled_ = true;
+    foldersCache_.second = QDateTime::currentMSecsSinceEpoch();
+
+    mutex.unlock();
     return foldersCache_.first;
 }
 
@@ -314,6 +311,7 @@ QVariantMap BtsApi2::getVariantMap(const QString& path, unsigned timeout)
     QNetworkReply* reply = nam_.get(req);
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(timeout, &loop, SLOT(quit())); //Timeout
+    QThread::msleep(50); //Without this delay, loop.exec might deadlock (WTF...)
     loop.exec();
     QByteArray jsonBytes = reply->readAll();
     QVariantMap rVal = bytesToVariantMap(jsonBytes);
