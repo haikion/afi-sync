@@ -311,7 +311,7 @@ QVariantMap BtsApi2::getVariantMap(const QString& path, unsigned timeout)
     QNetworkReply* reply = nam_.get(req);
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(timeout, &loop, SLOT(quit())); //Timeout
-    QThread::msleep(50); //Without this delay, loop.exec might deadlock (WTF...)
+    QThread::msleep(80); //Without this delay, loop.exec might deadlock (WTF...)
     loop.exec();
     QByteArray jsonBytes = reply->readAll();
     QVariantMap rVal = bytesToVariantMap(jsonBytes);
