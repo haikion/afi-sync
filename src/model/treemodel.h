@@ -66,7 +66,6 @@ private:
     RootItem* rootItem_;
     unsigned download_;
     unsigned upload_;
-    bool die_;
 
     void setupModelData(const QStringList& lines, TreeItem* parent);
     void setClient(BtsClient* newclient);

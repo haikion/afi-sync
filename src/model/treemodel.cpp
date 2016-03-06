@@ -25,7 +25,8 @@ TreeModel::TreeModel(const QString& username, const QString& password,
                      unsigned port, QObject* parent) :
     QAbstractItemModel(parent),
     rootItem_(new RootItem(username, password, port, this)),
-    die_(false)
+    download_(0),
+    upload_(0)
 {
     DBG;
 }
@@ -33,7 +34,8 @@ TreeModel::TreeModel(const QString& username, const QString& password,
 TreeModel::TreeModel(QObject* parent) :
     QAbstractItemModel(parent),
     rootItem_(new RootItem(this)),
-    die_(true)
+    download_(0),
+    upload_(0)
 {
     DBG << "done";
 }
@@ -105,10 +107,6 @@ void TreeModel::processCompletion()
 
 void TreeModel::updateSpeed(qint64 download, qint64 upload)
 {
-    if (die_)
-    {
-        return;
-    }
     //DBG << "download= " << download << " upload =" << upload;
     if (download != download_)
     {

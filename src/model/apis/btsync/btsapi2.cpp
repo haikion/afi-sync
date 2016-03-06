@@ -199,7 +199,7 @@ void BtsApi2::removeFolder2(const QString& key)
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(TIMEOUT, &loop, SLOT(quit()));
     loop.exec();
-    reply->deleteLater();
+    delete reply;
     foldersCache_.second = 0; //Force cache refresh
 }
 
@@ -317,7 +317,7 @@ QVariantMap BtsApi2::getVariantMap(const QString& path, unsigned timeout)
     loop.exec();
     QByteArray jsonBytes = reply->readAll();
     QVariantMap rVal = bytesToVariantMap(jsonBytes);
-    reply->deleteLater();
+    delete reply;
     return rVal;
 }
 
