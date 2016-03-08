@@ -9,7 +9,6 @@
 #include "repository.h"
 #include "installer.h"
 
-
 Mod::Mod(const QString& name, const QString& key, bool isOptional):
     SyncItem(name, 0),
     isOptional_(isOptional),
@@ -45,15 +44,22 @@ void Mod::init()
     DBG << "Completed name =" << name();
 }
 
-//Start Sync directory
+//Starts sync directory. If directory does not exist
+//directory will be created. If path is incorrect
+//directory will be re-created correctly.
 void Mod::start()
 {
     DBG << "beginning";
-    QString dir = SettingsModel::modDownloadPath() + "/" + name();
-    if (!btsync_->exists(key_))
+    static const QString modPath = QDir(SettingsModel::modDownloadPath()).absolutePath();
+    QString dir = modPath + "/" + name();
+    QString syncPath = btsync_->getFolderPath(key_);
+    QString error = btsync_->error(key_);
+
+    if (syncPath.toUpper() != dir.toUpper() || error != "")
     {
-        DBG << "Does not exist. key_ =" << key_;
-        btsync_->addFolder(dir, key_, true); //Add if doesn't exist already
+        //Disagreement between Sync and AfiSync
+        btsync_->removeFolder2(key_);
+        btsync_->addFolder(dir, key_, true);
     }
     QVariantMap response = btsync_->setFolderPaused(key_, false);
     DBG << "response =" << response << "name =" << name();
@@ -182,8 +188,8 @@ void Mod::addRepository(Repository* repository)
     repositories_.push_back(repository);
     if (repositories().size() == 1)
     {
-        //Separate thread and delay for faster startup
-        QTimer::singleShot(75, this, SLOT(init()));
+        //Delay to give room for more important things during startup.
+        QTimer::singleShot(3000, this, SLOT(init()));
     }
 }
 

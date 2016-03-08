@@ -11,6 +11,7 @@
 #include <QDateTime>
 #include <QTimer>
 #include <QThread>
+#include <QtConcurrent/QtConcurrent>
 #include "../../debug.h"
 #include "../../settingsmodel.h"
 #include "libbtsync-qt/bts_global.h"
@@ -33,13 +34,16 @@ BtsApi2::BtsApi2(const QString& username, const QString& password,
 
 BtsApi2::BtsApi2(BtsClient* client, QObject* parent):
     BtsApi(client, parent),
-    cacheFilled_(false)
+    cacheEmpty_(true)
 {
-    QTimer::singleShot(75, this, SLOT(postInit()));
+    DBG;
+    QtConcurrent::run(this, &BtsApi2::fillCache);
+    QTimer::singleShot(3000, this, SLOT(postInit()));
 }
 
 void BtsApi2::postInit()
 {
+    DBG;
     setDefaultSyncLevel(SyncLevel::DISCONNECTED);
     setShowNotifications(false);
     setMaxDownload(SettingsModel::maxDownload().toUInt());
@@ -92,6 +96,13 @@ QString BtsApi2::error(const QString& key)
         return "";
     }
     return folder.status;
+}
+
+QString BtsApi2::getFolderPath(const QString& key)
+{
+    BtsFolderActivity folder = getFolderActivity(key);
+    QString path = QDir(folder.path).absolutePath(); //Cross platform
+    return path;
 }
 
 void BtsApi2::shutdown2()
@@ -180,7 +191,9 @@ QVariantMap BtsApi2::setFolderPaused(const QString& key, bool value)
     QString fid = keyToFid(key);
     QVariantMap obj;
     obj.insert("paused", value);
-    return patchVariantMap(obj, API_PREFIX + "/folders/" + fid);
+    QVariantMap response = patchVariantMap(obj, API_PREFIX + "/folders/" + fid, 10000);
+    DBG << "Response =" << response;
+    return response;
 }
 
 void BtsApi2::removeFolder2(const QString& key)
@@ -218,7 +231,7 @@ QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
         QString btsPath = map.value("path").toString();
         QDir dir(btsPath.replace(0,4,""));
         QString dirStr = dir.absolutePath();
-        if (QFileInfo(dirStr).isFile())
+        if (!QFileInfo(dirStr).isDir())
         {
             rVal.insert(dirStr.toUpper());
         }
@@ -231,26 +244,19 @@ QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
     return rVal;
 }
 
-FolderHash BtsApi2::getFoldersActivity()
+void BtsApi2::fillCache()
 {
-    unsigned timePassed = QDateTime::currentMSecsSinceEpoch() - foldersCache_.second;
-    if (timePassed < UPDATE_INTERVAL)
-    {
-        while (!cacheFilled_)
-        {
-            //Being updated for the first time
-            QThread::sleep(200);
-        }
-        //DBG << "using cached data";
-        return foldersCache_.first;
-    }
     foldersCache_.second = QDateTime::currentMSecsSinceEpoch();
     QVariantMap reply;
-    while (reply.size() == 0)
+    int attempts = 0;
+    while (reply.size() == 0 && attempts < 50)
     {
         //In early boot btsync might not be ready yet.
         reply = getVariantMap(API_PREFIX + "/folders/activity");
+        DBG << "Checking reply...";
+        ++attempts;
     }
+    DBG << "Reply received";
     QVariantMap data = qvariant_cast<QVariantMap>(reply.value("data"));
     QList<QVariant> variants = qvariant_cast<QList<QVariant>>(data.value("folders"));
 
@@ -293,7 +299,29 @@ FolderHash BtsApi2::getFoldersActivity()
         newHash.insert(folder.readonlysecret, folder);
     }
     foldersCache_.first = newHash;
-    cacheFilled_ = true;
+    cacheEmpty_ = false;
+    emit cacheFilled();
+}
+
+FolderHash BtsApi2::getFoldersActivity()
+{
+    unsigned timePassed = QDateTime::currentMSecsSinceEpoch() - foldersCache_.second;
+    if (timePassed < UPDATE_INTERVAL)
+    {
+        if (cacheEmpty_)
+        {
+            //First time update in progress
+            QEventLoop loop;
+            connect(this, SIGNAL(cacheFilled()), &loop, SLOT(quit()));
+            DBG << "Waiting cacheFilled signal";
+            loop.exec(); //Returns to main event loop for time being.
+            DBG << "Received cacheFilled signal";
+        }
+        //DBG << "using cached data";
+        return foldersCache_.first;
+    }
+    DBG << "Running fillCache";
+    fillCache();
     return foldersCache_.first;
 }
 
@@ -309,15 +337,28 @@ QList<QString> BtsApi2::getFolderKeys()
 
 QVariantMap BtsApi2::getVariantMap(const QString& path, unsigned timeout)
 {
+    QNetworkAccessManager* nam = &nam_;
     QNetworkRequest req = createUnauthenticatedRequest(path);
     QEventLoop loop;
-    QNetworkReply* reply = nam_.get(req);
+
+    //Attempt to fix dead lock using separate thread.
+    if (nam->thread() != QThread::currentThread())
+    {
+        nam = new QNetworkAccessManager();
+    }
+    QNetworkReply* reply = nam->get(req);
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(timeout, &loop, SLOT(quit())); //Timeout
-    loop.exec();
+    DBG << "Loop begin. path =" << path;
+    loop.exec(); //Will dead lock if main thread dead locks
+    DBG << "Loop end";
     QByteArray jsonBytes = reply->readAll();
     QVariantMap rVal = bytesToVariantMap(jsonBytes);
     delete reply;
+    if (nam->thread() != QThread::currentThread())
+    {
+        delete nam;
+    }
     return rVal;
 }
 

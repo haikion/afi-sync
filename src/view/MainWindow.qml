@@ -22,8 +22,6 @@ ApplicationWindow {
     {
         console.log("onClosing event");
         Qt.quit()
-        //Wait for TreeModel to be constructed, so it won't remain as a zombie.
-        TreeModel.download()
     }
 
     MainView {

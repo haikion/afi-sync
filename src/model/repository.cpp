@@ -17,8 +17,6 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
     password_(password),
     ready_(true)
 {
-    //QtConcurrent::run(JsonReader::fillMods, this);
-    //JsonReader::fillMods(this); Failed attempt to load mods
     DBG << "Created repo name =" << name;
     updateTimer_.setInterval(1000);
     updateTimer_.start();
@@ -231,54 +229,10 @@ QStringList Repository::joinParameters() const
     return rVal;
 }
 
-void Repository::buildPathHash()
-{
-    DBG;
-    FolderHash folders = btsync_->getFoldersActivity();
-    DBG << "Folders size =" << folders.size();
-    for (BtsFolderActivity folder : folders)
-    {
-        QString path = QDir(folder.path).absolutePath(); //Cross platform
-        pathHash_.insert(path.toUpper(), QPair<QString, int>(folder.readonlysecret, folder.error));
-    }
-}
-
 void Repository::appendMod(Mod* item)
 {
-    if (pathHash_.size() == 0)
-    {
-        buildPathHash();
-    }
-    const QString& key = item->key();
-    DBG << "Key and name set";
-    static const QString modPath = QDir(SettingsModel::modDownloadPath()).absolutePath();
-    QString dir = modPath + "/" + item->name();
-
-    DBG << "Appending new child."
-        << "item dir =" << dir << " item key ="
-        << key << " pathHash_.size() =" << pathHash_.size();
-
-    //Check if sync folder already exists and act accordingly
-    PathHash::const_iterator it = pathHash_.find(dir.toUpper());
-    if (it != pathHash_.end())
-    {
-        DBG << dir << "found in pathHash_";
-        if (it.value().first == key && it.value().second == 0)
-        {
-            //key is identical and no errors
-            //Already in BTSync just update AfiSync
-            item->addRepository(this);
-            TreeItem::appendChild(item);
-            return;
-        }
-        DBG << "Removing folder key =" << it.value().first;
-        btsync_->removeFolder2(it.value().first);
-        pathHash_.remove(dir.toUpper());
-    }
-    btsync_->removeFolder2(key); //Remove duplicate if exists
     item->addRepository(this);
     TreeItem::appendChild(item);
-    pathHash_.insert(dir.toUpper(), QPair<QString, int>(key, 0));
 }
 
 QString Repository::startText()

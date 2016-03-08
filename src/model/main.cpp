@@ -51,9 +51,6 @@ int gui(int argc, char *argv[])
     engine.load(QUrl(QStringLiteral("qrc:/SplashScreen.qml")));
     DBG << "QML Engine loaded";
 
-    //Hack to kill Zombie
-    QQuickWindow* window = static_cast<QQuickWindow*>(engine.rootObjects().at(0));
-    QObject::connect(window, SIGNAL(beforeRendering()), Global::model, SLOT(setDieFalse()));
     return app.exec();
 }
 

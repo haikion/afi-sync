@@ -207,7 +207,8 @@ void BtsSpawnClient::startClient()
 	p->clientProc->setArguments(QStringList()
 	                            << ARG_PREFIX "nodaemon"
                                 << ARG_PREFIX "MINIMIZED"
-                                << ARG_PREFIX "config" << p->configFile.fileName());
+                                << ARG_PREFIX "config" << p->configFile.fileName()
+                                << ARG_PREFIX "log" << "btsync.log");
 
 	p->clientProc->setProcessChannelMode(QProcess::ForwardedChannels);
     DBG << "Starting process";

@@ -9,7 +9,7 @@
 
 class Repository;
 
-class RootItem : public TreeItem
+class RootItem : public QObject, public TreeItem
 {
 
 public:
@@ -25,6 +25,10 @@ public:
 
     void enableRepositories();
     void processCompletion();
+
+private slots:
+    void removeOrphans();
+
 private:
     bool initializing_;
     TreeModel* parent_;
@@ -35,7 +39,6 @@ private:
     unsigned port_;
 
     void initSync();
-    void removeOrphans();
     QString defaultter(const QString& value, const QString& defaultValue);
 };
 

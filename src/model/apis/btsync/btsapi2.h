@@ -54,6 +54,7 @@ public:
     int getLastModified(const QString& key);
     bool paused(const QString& key);
     QString error(const QString& key);
+    QString getFolderPath(const QString& key);
     void shutdown2();
     void restart2();
     void setMaxUpload(unsigned limit);
@@ -64,17 +65,23 @@ public slots:
     QString token();
     QVariantMap setDefaultSyncLevel(SyncLevel level);
 
+signals:
+    void cacheFilled();
+
 private slots:
     void postInit();
+    void fillCache();
+
 private:
     static const unsigned UPDATE_INTERVAL; //Cache update interval in seconds
     static const QString API_PREFIX;
     static const unsigned TIMEOUT;
 
-    bool cacheFilled_;
+    bool cacheEmpty_;
     QString token_;
     QNetworkAccessManager nam_;
     FoldersActivityCache foldersCache_;
+    QEventLoop loop_;
 
     QNetworkRequest createUnauthenticatedRequest(const QString& url);
     QNetworkRequest createSecureRequest(QString path);

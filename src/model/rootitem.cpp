@@ -34,8 +34,7 @@ RootItem::RootItem(const QString& username, const QString& password, unsigned po
     DBG << "initBtsync completed";
     JsonReader::fillEverything(this);
     DBG << "readJson completed";
-    removeOrphans();
-    DBG << "remove orhpans completed";
+    QTimer::singleShot(15000, this, SLOT(removeOrphans()));
     initializing_ = false;
 }
 
@@ -77,6 +76,7 @@ void RootItem::removeOrphans()
             sync_->removeFolder2(key);
         }
     }
+    DBG << "remove orhpans completed";
 }
 
 void RootItem::processCompletion()

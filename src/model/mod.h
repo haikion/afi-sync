@@ -39,9 +39,9 @@ private:
     QString key_;
     BtsApi2* btsync_;
     QTimer updateTimer_;
-    //QList<Repository*> repositories_;
     std::vector<Repository*> repositories_;
 
+    void buildPathHash();
 private slots:
     void fetchEta();
     void updateStatus();
