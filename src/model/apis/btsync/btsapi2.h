@@ -81,7 +81,6 @@ private:
     QString token_;
     QNetworkAccessManager nam_;
     FoldersActivityCache foldersCache_;
-    QEventLoop loop_;
 
     QNetworkRequest createUnauthenticatedRequest(const QString& url);
     QNetworkRequest createSecureRequest(QString path);
