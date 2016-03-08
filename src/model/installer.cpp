@@ -10,6 +10,7 @@ void Installer::install(const Mod* mod)
     QDir tsDir(modPath + "/teamspeak 3 client");
     install(tsDir, SettingsModel::teamSpeak3Path());
 
+    QDir(SettingsModel::arma3Path()).mkdir("userconfig");
     //User config
     QDir modUserConfig(modPath + "/userconfig");
     install(modUserConfig, QDir(SettingsModel::arma3Path() + "/userconfig"));
