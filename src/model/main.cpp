@@ -87,7 +87,6 @@ void createLogFile()
 
 int main(int argc, char* argv[])
 {
-    DBG << "Program started";
     Global::runningTime->start();
     QCoreApplication::setOrganizationName("AFISync");
     QCoreApplication::setOrganizationDomain("armafinland.fi");
@@ -107,7 +106,7 @@ int main(int argc, char* argv[])
         createLogFile();
         qInstallMessageHandler(messageHandler);
     #endif
-    DBG << "Defaults set";
+    DBG << "AFISync" << Constants::VERSION_STRING << "started";
     QStringList args;
     for (int i = 0; i < argc; ++i)
     {

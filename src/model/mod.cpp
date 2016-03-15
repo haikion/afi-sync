@@ -16,7 +16,7 @@ Mod::Mod(const QString& name, const QString& key, bool isOptional):
     btsync_(0)
 {
     DBG;
-    setStatus(SyncStatus::INACTIVE);
+    setStatus(SyncStatus::NO_BTSYNC_CONNECTION);
 }
 
 Mod::~Mod()
@@ -57,6 +57,7 @@ void Mod::start()
 
     if (syncPath.toUpper() != dir.toUpper() || error != "")
     {
+        DBG << "Re-adding directory. syncPath =" << syncPath << "dir =" << dir << "error =" << error;
         //Disagreement between Sync and AfiSync
         btsync_->removeFolder2(key_);
         btsync_->addFolder(dir, key_, true);
@@ -211,10 +212,6 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::NOT_IN_BTSYNC);
     }
-    //else if (btsync_->error(key_) != "")
-    //{
-    //    setStatus(btsync_->error(key_));
-    //}
     else if (eta() > 0)
     {
         setStatus(SyncStatus::DOWNLOADING);

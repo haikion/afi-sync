@@ -12,7 +12,7 @@ ApplicationWindow {
     width: 1100
     height: 700
     color: "lightslategray"
-    title: "AFISync v0.26"
+    title: "AFISync " + TreeModel.versionString();
 
     Component.onDestruction:
     {

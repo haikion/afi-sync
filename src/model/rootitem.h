@@ -11,6 +11,7 @@ class Repository;
 
 class RootItem : public QObject, public TreeItem
 {
+    Q_OBJECT
 
 public:
     explicit RootItem(TreeModel* parentModel);

@@ -160,10 +160,10 @@ void BtsSpawnClient::exitClient(bool force)
 	}
 }
 
-void BtsSpawnClient::startClient()
+void BtsSpawnClient::startClient(bool force)
 {
     DBG;
-	if(isClientReady() || (p->clientProc && p->clientProc->state() == QProcess::Starting))
+    if( (isClientReady() || (p->clientProc && p->clientProc->state() == QProcess::Starting)) && !force)
 		return;
     DBG << "Passed";
 	QJsonObject configObject;

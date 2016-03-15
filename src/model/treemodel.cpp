@@ -105,6 +105,11 @@ void TreeModel::processCompletion()
     rootItem_->processCompletion();
 }
 
+QString TreeModel::versionString() const
+{
+    return Constants::VERSION_STRING;
+}
+
 void TreeModel::updateSpeed(qint64 download, qint64 upload)
 {
     //DBG << "download= " << download << " upload =" << upload;

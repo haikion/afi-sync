@@ -10,8 +10,6 @@
 #include <QDir>
 #include <QDateTime>
 #include <QTimer>
-#include <QThread>
-#include <QtConcurrent/QtConcurrent>
 #include "../../debug.h"
 #include "../../settingsmodel.h"
 #include "libbtsync-qt/bts_global.h"
@@ -36,14 +34,17 @@ BtsApi2::BtsApi2(BtsClient* client, QObject* parent):
     BtsApi(client, parent),
     cacheEmpty_(true)
 {
-    DBG;
-    QtConcurrent::run(this, &BtsApi2::fillCache);
-    QTimer::singleShot(3000, this, SLOT(postInit()));
+    DBG << "current thread =" << QThread::currentThread();
+    moveToThread(&thread_);
+    nam_.moveToThread(&thread_);
+    DBG << "Starting thread:" << &thread_;
+    thread_.start();
+    QMetaObject::invokeMethod(this, "postInit", Qt::QueuedConnection);
 }
 
 void BtsApi2::postInit()
 {
-    DBG;
+    DBG << "Thread =" << QThread::currentThread();
     setDefaultSyncLevel(SyncLevel::DISCONNECTED);
     setShowNotifications(false);
     setMaxDownload(SettingsModel::maxDownload().toUInt());
@@ -115,14 +116,14 @@ void BtsApi2::shutdown2()
 void BtsApi2::restart2()
 {
     BtsSpawnClient* client = static_cast<BtsSpawnClient*>(getClient());
-    if ( client->isClientReady() )
+    while ( token_ != "" ) //TODO: Figure out better way to check if btsync is running...
     {
-        DBG << "Restart";
-        client->restartClient();
-        return;
+        DBG << "Waiting for shutdown.";
+        shutdown2();
+        QThread::msleep(500);
     }
     DBG << "Not running. Starting";
-    client->startClient();
+    client->startClient(true);
 }
 
 void BtsApi2::setMaxUpload(unsigned limit)
@@ -145,6 +146,7 @@ QVariantMap BtsApi2::addFolder(const QString& path, const QString& key, bool for
     DBG << " path=" << path << " key=" << key;
     if (exists(key))
     {
+        DBG << "Folder already exists!";
         return QVariantMap();
     }
     QVariantMap obj;
@@ -156,7 +158,7 @@ QVariantMap BtsApi2::addFolder(const QString& path, const QString& key, bool for
     //Be racist
     setOverwrite(key, true);
     setForce(key, true);
-    DBG << response;
+    DBG << "response =" << response << "path =" << path;
     return response;
 }
 
@@ -192,7 +194,7 @@ QVariantMap BtsApi2::setFolderPaused(const QString& key, bool value)
     QVariantMap obj;
     obj.insert("paused", value);
     QVariantMap response = patchVariantMap(obj, API_PREFIX + "/folders/" + fid, 10000);
-    DBG << "Response =" << response;
+    DBG << "response =" << response;
     return response;
 }
 
@@ -206,14 +208,29 @@ void BtsApi2::removeFolder2(const QString& key)
     }
     DBG << "Folder found, deleting. key=" << key;
     QString fid = keyToFid(key);
+    QMetaObject::invokeMethod(this, "httpDeleteSlot", connectionType(),
+                              Q_ARG(QString, API_PREFIX + "/folders/" + fid),
+                              Q_ARG(unsigned, 10000));
+    //Wait for folder to get actually deleted.
+    int attempts = 0;
+    while (exists(key) && attempts < 20)
+    {
+        DBG << "Checking if folder removed. attempts =" << attempts;
+        fillCache();
+        ++attempts;
+    }
+}
+
+void BtsApi2::httpDeleteSlot(const QString& path, unsigned timeout)
+{
     QEventLoop loop;
-    QNetworkRequest req = createSecureRequest(API_PREFIX + "/folders/" + fid);
+    QNetworkRequest req = createSecureRequest(path);
     QNetworkReply* reply = nam_.deleteResource(req);
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-    QTimer::singleShot(TIMEOUT, &loop, SLOT(quit()));
+    QTimer::singleShot(timeout, &loop, SLOT(quit()));
     loop.exec();
+    DBG << "Status code (204=success) =" << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     delete reply;
-    foldersCache_.second = 0; //Force cache refresh
 }
 
 QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
@@ -335,17 +352,12 @@ QList<QString> BtsApi2::getFolderKeys()
     return rVal;
 }
 
-QVariantMap BtsApi2::getVariantMap(const QString& path, unsigned timeout)
+void BtsApi2::getVariantMapSlot(const QString& path, unsigned timeout, QVariantMap& result)
 {
     QNetworkAccessManager* nam = &nam_;
     QNetworkRequest req = createUnauthenticatedRequest(path);
     QEventLoop loop;
 
-    //Attempt to fix dead lock using separate thread.
-    if (nam->thread() != QThread::currentThread())
-    {
-        nam = new QNetworkAccessManager();
-    }
     QNetworkReply* reply = nam->get(req);
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(timeout, &loop, SLOT(quit())); //Timeout
@@ -354,12 +366,9 @@ QVariantMap BtsApi2::getVariantMap(const QString& path, unsigned timeout)
     DBG << "Loop end";
     QByteArray jsonBytes = reply->readAll();
     QVariantMap rVal = bytesToVariantMap(jsonBytes);
+
     delete reply;
-    if (nam->thread() != QThread::currentThread())
-    {
-        delete nam;
-    }
-    return rVal;
+    result = rVal;
 }
 
 int BtsApi2::getFolderEta(const QString& key)
@@ -404,6 +413,19 @@ QString BtsApi2::keyToFid(const QString& key)
     return folders.id;
 }
 
+QVariantMap BtsApi2::patchVariantMap(const QVariantMap& map, const QString& path, unsigned timeout)
+{
+    QVariantMap result;
+
+    DBG << "invoke, current thread =" << QThread::currentThread();
+    QMetaObject::invokeMethod(this, "patchVariantMapSlot", connectionType(),
+                              Q_ARG(const QVariantMap, map),
+                              Q_ARG(const QString, path), Q_ARG(unsigned, timeout),
+                              Q_RETURN_ARG(QVariantMap&, result));
+    DBG << "Done";
+    return result;
+}
+
 bool BtsApi2::exists(const QString& key)
 {
     FolderHash folders = getFoldersActivity();
@@ -436,8 +458,9 @@ int BtsApi2::getLastModified(const QString &key)
     return map.last_modfied;
 }
 
-QVariantMap BtsApi2::postVariantMap(const QVariantMap& map, const QString& path)
+void BtsApi2::postVariantMapSlot(const QVariantMap& map, const QString& path, QVariantMap& result)
 {
+    DBG << "current thread =" << QThread::currentThread();
     QJsonDocument jsonDoc = QJsonDocument(QJsonObject::fromVariantMap(map));
     QByteArray jsonBytes = jsonDoc.toJson();
     QNetworkRequest request = createSecureRequest(path);
@@ -447,11 +470,13 @@ QVariantMap BtsApi2::postVariantMap(const QVariantMap& map, const QString& path)
     QTimer::singleShot(TIMEOUT, &loop, SLOT(quit())); //timeout
     loop.exec();
     QByteArray response = reply->readAll();
-    return bytesToVariantMap(response);
+    result = bytesToVariantMap(response);
 }
 
-QVariantMap BtsApi2::patchVariantMap(const QVariantMap& map, const QString& path, unsigned timeout)
+void BtsApi2::patchVariantMapSlot(const QVariantMap& map, const QString& path,
+                                     unsigned timeout, QVariantMap& result)
 {
+    DBG;
     QJsonDocument jsonDoc = QJsonDocument(QJsonObject::fromVariantMap(map));
     QByteArray jsonBytes = jsonDoc.toJson();
     DBG << "jsonDoc=" << jsonBytes;
@@ -467,16 +492,46 @@ QVariantMap BtsApi2::patchVariantMap(const QVariantMap& map, const QString& path
     QTimer::singleShot(timeout, &loop, SLOT(quit()));
     loop.exec();
     QByteArray response = reply->readAll();
-    return bytesToVariantMap(response);
+    result = bytesToVariantMap(response);
+    DBG << "result =" << result;
 }
-
-
 
 QVariantMap BtsApi2::bytesToVariantMap(const QByteArray& jsonBytes) const
 {
     QJsonDocument doc = QJsonDocument::fromJson(jsonBytes);
     QVariantMap rVal = qvariant_cast<QVariantMap>(doc.toVariant());
     return rVal;
+}
+
+Qt::ConnectionType BtsApi2::connectionType()
+{
+    Qt::ConnectionType type = Qt::BlockingQueuedConnection;
+    if (QThread::currentThread() == &thread_)
+        type = Qt::DirectConnection;
+
+    return type;
+}
+
+QVariantMap BtsApi2::postVariantMap(const QVariantMap& map, const QString& path)
+{
+    QVariantMap result;
+    DBG << "invoke, current thread =" << QThread::currentThread();
+
+    QMetaObject::invokeMethod(this, "postVariantMapSlot", connectionType(),
+                              Q_ARG(const QVariantMap, map), Q_ARG(const QString, path),
+                              Q_RETURN_ARG(QVariantMap&, result));
+    return result;
+}
+
+QVariantMap BtsApi2::getVariantMap(const QString& path, unsigned timeout)
+{
+    QVariantMap result;
+    DBG << "Invoke thread =" << QThread::currentThread();
+
+    QMetaObject::invokeMethod(this, "getVariantMapSlot", connectionType(),
+                              Q_ARG(QString, path), Q_ARG(unsigned, timeout),
+                              Q_RETURN_ARG(QVariantMap&, result));
+    return result;
 }
 
 QNetworkRequest BtsApi2::createSecureRequest(QString path)

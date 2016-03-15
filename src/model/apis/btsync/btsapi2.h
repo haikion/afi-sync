@@ -13,6 +13,7 @@
 #include <QString>
 #include <QSet>
 #include <QTimer>
+#include <QThread>
 #include "libbtsync-qt/bts_api.h"
 #include "btsfolderactivity.h"
 
@@ -71,6 +72,13 @@ signals:
 private slots:
     void postInit();
     void fillCache();
+    //These slots are called in thread_
+    void getVariantMapSlot(const QString& path, unsigned timeout,
+                                  QVariantMap& result);
+    void postVariantMapSlot(const QVariantMap& map, const QString& path, QVariantMap& result);
+    void patchVariantMapSlot(const QVariantMap& map, const QString& path,
+                         unsigned timeout, QVariantMap& result);
+    void httpDeleteSlot(const QString& path, unsigned timeout = TIMEOUT);
 
 private:
     static const unsigned UPDATE_INTERVAL; //Cache update interval in seconds
@@ -81,6 +89,7 @@ private:
     QString token_;
     QNetworkAccessManager nam_;
     FoldersActivityCache foldersCache_;
+    QThread thread_;
 
     QNetworkRequest createUnauthenticatedRequest(const QString& url);
     QNetworkRequest createSecureRequest(QString path);
@@ -90,6 +99,7 @@ private:
     QString keyToFid(const QString& key);
     QVariantMap patchVariantMap(const QVariantMap& map, const QString& path, unsigned timeout = TIMEOUT);
     BtsClient*createBtsClient(const QString& username, const QString& password, unsigned port);
+    Qt::ConnectionType connectionType();
 };
 
 #endif // BTSAPI2_H

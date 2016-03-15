@@ -29,7 +29,7 @@ class  BtsSpawnClient : public BtsClient
 	void exitClient();
 	void killClient();
 	void exitClient(bool force);
-	void startClient();
+    void startClient(bool force = false);
 	void restartClient();
 
 	void setAutorestart(bool autorestart);

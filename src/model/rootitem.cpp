@@ -22,6 +22,7 @@ RootItem::RootItem(TreeModel* parentModel):
 
 RootItem::RootItem(const QString& username, const QString& password, unsigned port,
                    TreeModel* parentModel):
+    QObject(),
     TreeItem("[DBG] Root Item"),
     initializing_(true),
     parent_(parentModel),
