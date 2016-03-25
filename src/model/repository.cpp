@@ -78,7 +78,8 @@ void Repository::checkboxClicked(bool offline)
     updateView(this);
     for (Mod* mod : childItems())
     {
-        mod->repositoryEnableChanged(offline);
+        QMetaObject::invokeMethod(mod, "repositoryEnableChanged",
+                                  Qt::QueuedConnection, Q_ARG(bool, offline));
     }
     updateTimer_.start();
     DBG << "checked()=" << checked();

@@ -4,6 +4,7 @@
 #include <QTime> //performance testing
 #include <QEventLoop>
 #include <QDirIterator>
+#include "global.h"
 #include "settingsmodel.h"
 #include "mod.h"
 #include "repository.h"
@@ -17,15 +18,27 @@ Mod::Mod(const QString& name, const QString& key, bool isOptional):
 {
     DBG;
     setStatus(SyncStatus::NO_BTSYNC_CONNECTION);
+    moveToThread(Global::workerThread);
+    updateTimer_.moveToThread(Global::workerThread);
+    qRegisterMetaType<QVector<int>>("QVector<int>");
 }
 
 Mod::~Mod()
 {
+    DBG;
+    QMetaObject::invokeMethod(this, "threadDestructor", Qt::BlockingQueuedConnection);
+}
+
+
+void Mod::threadDestructor()
+{
+    DBG;
     updateTimer_.stop();
 }
 
 void Mod::init()
 {
+    DBG << " current thread: " << QThread::currentThread() << " Worker thread: " << Global::workerThread;
     Repository* repo = repositories_.at(0);
     btsync_ = repo->btsync();
 
@@ -50,7 +63,7 @@ void Mod::init()
 void Mod::start()
 {
     DBG << "beginning";
-    static const QString modPath = QDir(SettingsModel::modDownloadPath()).absolutePath();
+    QString modPath = QDir::toNativeSeparators(SettingsModel::modDownloadPath());
     QString dir = modPath + "/" + name();
     QString syncPath = btsync_->getFolderPath(key_);
     QString error = btsync_->error(key_);
@@ -131,7 +144,7 @@ QString Mod::joinText()
 //download.
 void Mod::repositoryEnableChanged(bool offline)
 {
-    DBG;
+    DBG << " current thread: " << QThread::currentThread() << " Worker thread: " << Global::workerThread;
     //just in case
     if (!btsync_)
     {
@@ -190,7 +203,8 @@ void Mod::addRepository(Repository* repository)
     if (repositories().size() == 1)
     {
         //Delay to give room for more important things during startup.
-        QTimer::singleShot(3000, this, SLOT(init()));
+        DBG << "Invoke";
+        QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
     }
 }
 
@@ -238,7 +252,7 @@ void Mod::checkboxClicked()
 {
     SyncItem::checkboxClicked();
     DBG << "checked()=" << checked();
-    repositoryEnableChanged();
+    QMetaObject::invokeMethod(this, "repositoryEnableChanged", Qt::QueuedConnection);
 }
 
 void Mod::updateView()

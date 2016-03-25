@@ -40,7 +40,6 @@ TreeView {
             enabled: styleData.value !== "disabled"
             onClicked:  {
                 var idx = styleData.index;
-                repositoryList.enabled = false
                 TreeModel.checkboxClicked(idx)
                 repositoryList.enabled = true
                 console.log("Checked=" + checked + " styleData.value=" + styleData.value)

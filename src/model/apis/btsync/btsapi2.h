@@ -35,7 +35,7 @@ class BtsApi2: public BtsApi
 public:
     BtsApi2(const QString& username, const QString& password, unsigned port, QObject* parent = nullptr);
     BtsApi2(BtsClient* client, QObject* parent = nullptr);
-    ~BtsApi2() = default;
+    ~BtsApi2();
 
     QList<BtsFolderActivity>  getFoldersActivityResult();
     FolderHash getFoldersActivity(); //Caching

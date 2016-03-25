@@ -37,6 +37,7 @@ RootItem::RootItem(const QString& username, const QString& password, unsigned po
     DBG << "readJson completed";
     QTimer::singleShot(15000, this, SLOT(removeOrphans()));
     initializing_ = false;
+    Global::workerThread->start();
 }
 
 RootItem::~RootItem()
@@ -46,6 +47,8 @@ RootItem::~RootItem()
     {
         delete repo;
     }
+    Global::workerThread->quit();
+    Global::workerThread->wait(3000);
     DBG << "Shutdown2";
     sync_->shutdown2();
     DBG << "Btsync destruction";

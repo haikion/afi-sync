@@ -42,6 +42,12 @@ BtsApi2::BtsApi2(BtsClient* client, QObject* parent):
     QMetaObject::invokeMethod(this, "postInit", Qt::QueuedConnection);
 }
 
+BtsApi2::~BtsApi2()
+{
+    thread_.quit();
+    thread_.wait(3000);
+}
+
 void BtsApi2::postInit()
 {
     DBG << "Thread =" << QThread::currentThread();

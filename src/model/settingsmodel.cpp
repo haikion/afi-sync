@@ -29,6 +29,7 @@ QSettings*SettingsModel::settings()
 {
     if (settings_ == nullptr)
     {
+        DBG << "Creating settings object.";
         settings_ = new QSettings();
     }
     return settings_;

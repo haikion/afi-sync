@@ -2,6 +2,7 @@
 #define MODITEM_H
 
 #include <vector>
+#include <QThread>
 #include <QObject>
 #include "apis/btsync/btsapi2.h"
 #include "syncitem.h"
@@ -33,6 +34,7 @@ public:
 public slots:
     void repositoryEnableChanged(bool offline = false);
     void init();
+    void threadDestructor();
 
 private:
     bool isOptional_;
