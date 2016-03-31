@@ -62,10 +62,10 @@ void Mod::init()
 //directory will be re-created correctly.
 void Mod::start()
 {
-    DBG << "beginning";
-    QString modPath = QDir::toNativeSeparators(SettingsModel::modDownloadPath());
-    QString dir = modPath + "/" + name();
-    QString syncPath = btsync_->getFolderPath(key_);
+    DBG << "name =" << name();
+    QString modPath = SettingsModel::modDownloadPath();
+    QString dir = QDir::toNativeSeparators(modPath + "/" + name());
+    QString syncPath = QDir::toNativeSeparators(btsync_->getFolderPath(key_));
     QString error = btsync_->error(key_);
 
     if (syncPath.toUpper() != dir.toUpper() || error != "")

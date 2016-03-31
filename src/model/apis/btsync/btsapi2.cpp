@@ -328,23 +328,18 @@ void BtsApi2::fillCache()
 
 FolderHash BtsApi2::getFoldersActivity()
 {
+    static QMutex mutex;
+    mutex.lock();
     unsigned timePassed = QDateTime::currentMSecsSinceEpoch() - foldersCache_.second;
     if (timePassed < UPDATE_INTERVAL)
     {
-        if (cacheEmpty_)
-        {
-            //First time update in progress
-            QEventLoop loop;
-            connect(this, SIGNAL(cacheFilled()), &loop, SLOT(quit()));
-            DBG << "Waiting cacheFilled signal";
-            loop.exec(); //Returns to main event loop for time being.
-            DBG << "Received cacheFilled signal";
-        }
         //DBG << "using cached data";
+        mutex.unlock();
         return foldersCache_.first;
     }
     DBG << "Running fillCache";
     fillCache();
+    mutex.unlock();
     return foldersCache_.first;
 }
 
