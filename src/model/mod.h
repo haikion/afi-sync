@@ -44,10 +44,10 @@ private:
     std::vector<Repository*> repositories_;
 
     void buildPathHash();
+
 private slots:
     void fetchEta();
     void updateStatus();
-    void updateView();
     void start();
 
 };

@@ -31,11 +31,11 @@ public:
     virtual QString statusText();
     virtual QString startText() = 0;
     virtual QString joinText() = 0;
+    virtual int eta() const;
     virtual void setEta(const int& eta);
 
-    QString status() const;
+    virtual QString status() const;
     void setStatus(const QString& status);
-    int eta() const;
     QString name() const;
     void setName(const QString& name);
     virtual bool checked() const;

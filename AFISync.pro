@@ -24,7 +24,8 @@ SOURCES += src/model/main.cpp \
     src/model/apis/btsync/libbtsync-qt/bts_spawnclient.cpp \
     src/model/pathfinder.cpp \
     src/model/settingsmodel.cpp \
-    src/model/global.cpp
+    src/model/global.cpp \
+    src/model/modviewadapter.cpp
 
 RESOURCES += qml.qrc
 
@@ -56,6 +57,7 @@ HEADERS += \
     src/model/pathfinder.h \
     src/model/settingsmodel.h \
     src/model/global.h \
-    src/model/debug.h
+    src/model/debug.h \
+    src/model/modviewadapter.h
 
 DISTFILES +=

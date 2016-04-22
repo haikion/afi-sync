@@ -47,12 +47,10 @@ void Mod::init()
         setChecked(true);
     }
     repositoryEnableChanged();
-    setParentItem(repo);
     //Periodically check mod progress
     updateTimer_.setInterval(1000);
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(fetchEta()));
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(updateStatus()));
-    connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(updateView()));
     updateTimer_.start();
     DBG << "Completed name =" << name();
 }
@@ -213,7 +211,13 @@ void Mod::removeRepository(Repository* repository)
     DBG;
 
     //disconnect(repository, SIGNAL(enableChanged()), this, SLOT(repositoryEnableChanged()));
-    repositories_.erase(std::find(repositories_.begin(), repositories_.end(), repository));
+    auto it = std::find(repositories_.begin(), repositories_.end(), repository);
+    if (it == repositories_.end())
+    {
+        DBG << "ERROR: Mod" << name() << "not found in repository:" << repository->name();
+        return;
+    }
+    repositories_.erase(it);
 }
 
 void Mod::updateStatus()
@@ -253,17 +257,6 @@ void Mod::checkboxClicked()
     SyncItem::checkboxClicked();
     DBG << "checked()=" << checked();
     QMetaObject::invokeMethod(this, "repositoryEnableChanged", Qt::QueuedConnection);
-}
-
-void Mod::updateView()
-{
-    for (Repository* repo : repositories())
-    {
-        //TODO: Problem due architectural error. Use composition instead of
-        //ineritanced from SyncItem (or TreeItem).
-        setParentItem(repo); //temporary sets parent to this repo.
-        repo->updateView(this, repo->childItems().indexOf(this));
-    }
 }
 
 void Mod::fetchEta()

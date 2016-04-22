@@ -7,6 +7,7 @@
 #include "settingsmodel.h"
 #include "repository.h"
 #include "installer.h"
+#include "modviewadapter.h"
 
 Repository::Repository(const QString& name, const QString& serverAddress, unsigned port,
                       QString password, RootItem* parent):
@@ -32,7 +33,7 @@ void Repository::update()
 Repository::~Repository()
 {
     DBG << "name =" << name();
-    for (Mod* mod : childItems())
+    for (Mod* mod : mods())
     {
         mod->removeRepository(this);
         if (mod->repositories().size() == 0)
@@ -42,13 +43,17 @@ Repository::~Repository()
             delete mod;
         }
     }
+    for (TreeItem* modAdapter : childItems())
+    {
+        delete modAdapter;
+    }
 }
 
 void Repository::processCompletion()
 {
     ready_ = true;
     DBG << "LastModified: " << lastModified();
-    for (Mod* mod : childItems())
+    for (Mod* mod : mods())
     {
         mod->deleteExtraFiles();
         Installer::install(mod);
@@ -58,7 +63,7 @@ void Repository::processCompletion()
 int Repository::lastModified()
 {
     int lastModified = 0;
-    for (Mod* mod : childItems())
+    for (Mod* mod : mods())
     {
         lastModified = std::max(lastModified, mod->lastModified());
     }
@@ -76,7 +81,7 @@ void Repository::checkboxClicked(bool offline)
     updateTimer_.stop();
     setStatus("Processing new mods...");
     updateView(this);
-    for (Mod* mod : childItems())
+    for (Mod* mod : mods())
     {
         QMetaObject::invokeMethod(mod, "repositoryEnableChanged",
                                   Qt::QueuedConnection, Q_ARG(bool, offline));
@@ -161,7 +166,7 @@ void Repository::updateEtaAndStatus()
     //Eta
     int eta = 0;
     QSet<QString> modStatuses;
-    for (Mod* item : childItems())
+    for (Mod* item : mods())
     {
         eta = std::max(item->eta(), eta);
         modStatuses.insert(item->status());
@@ -206,7 +211,7 @@ QString Repository::modsParameter() const
         return "";
     }
     QString rVal = "-mod=";
-    for (const Mod* mod : childItems())
+    for (const Mod* mod : mods())
     {
         if (mod->checked())
         {
@@ -233,7 +238,7 @@ QStringList Repository::joinParameters() const
 void Repository::appendMod(Mod* item)
 {
     item->addRepository(this);
-    TreeItem::appendChild(item);
+    TreeItem::appendChild(new ModViewAdapter(item, this));
 }
 
 QString Repository::startText()
@@ -271,7 +276,7 @@ BtsApi2* Repository::btsync() const
 void Repository::enableMods()
 {
     DBG << "name =" << name();
-    for (Mod* mod : childItems())
+    for (Mod* mod : mods())
     {
         if (!mod->checked())
         {
@@ -280,12 +285,12 @@ void Repository::enableMods()
     }
 }
 
-QList<Mod*> Repository::childItems() const
+QList<Mod*> Repository::mods() const
 {
     QList<Mod*> rVal;
     for (TreeItem* item : TreeItem::childItems())
     {
-        rVal.append(static_cast<Mod*>(item));
+        rVal.append(static_cast<ModViewAdapter*>(item)->mod());
     }
     return rVal;
 }

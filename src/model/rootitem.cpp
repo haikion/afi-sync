@@ -63,7 +63,7 @@ void RootItem::removeOrphans()
 
     for (const Repository* repository : childItems())
     {
-        for (const Mod* mod : repository->childItems())
+        for (const Mod* mod : repository->mods())
         {
             DBG << "Processing mod =" << mod->name()
                      << " key =" << mod->key()

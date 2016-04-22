@@ -26,7 +26,7 @@ public:
     virtual QString joinText();
     void join();
     void launch();
-    QList<Mod*> childItems() const;
+    QList<Mod*> mods() const;
     void processCompletion();
     void enableMods();
 

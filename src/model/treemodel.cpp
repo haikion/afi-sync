@@ -202,8 +202,6 @@ QHash<int,QByteArray> TreeModel::roleNames() const
 QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent)
             const
 {
-    DBG << "row =" << row << "column =" << column;
-
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 

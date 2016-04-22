@@ -11,7 +11,7 @@ class TreeItem
 public:
     //explicit TreeItem(const QList<QVariant> &data, TreeItem *parentItem = 0);
     explicit TreeItem(const QString& name, TreeItem* parentItem = 0);
-    ~TreeItem() = default;
+    virtual ~TreeItem() = default;
 
     virtual void appendChild(TreeItem* child);
     TreeItem* child(int row);
@@ -20,8 +20,6 @@ public:
     int row() const;
     TreeItem *parentItem();
     void setParentItem(TreeItem *parentItem);
-
-protected:
     QList<TreeItem*> childItems() const;
 
 private:
