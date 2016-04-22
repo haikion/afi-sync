@@ -14,6 +14,7 @@
 #include <QSet>
 #include <QTimer>
 #include <QThread>
+#include "../heart.h"
 #include "libbtsync-qt/bts_api.h"
 #include "btsfolderactivity.h"
 
@@ -57,7 +58,6 @@ public:
     QString error(const QString& key);
     QString getFolderPath(const QString& key);
     void shutdown2();
-    void restart2();
     void setMaxUpload(unsigned limit);
     void setMaxDownload(unsigned limit);
 
@@ -65,6 +65,7 @@ public slots:
     QVariantMap addFolder(const QString &path, const QString& key, bool force = false);
     QString token();
     QVariantMap setDefaultSyncLevel(SyncLevel level);
+    void restart2();
 
 signals:
     void cacheFilled();
@@ -90,6 +91,7 @@ private:
     QNetworkAccessManager nam_;
     FoldersActivityCache foldersCache_;
     QThread thread_;
+    Heart* heart_;
 
     QNetworkRequest createUnauthenticatedRequest(const QString& url);
     QNetworkRequest createSecureRequest(QString path);

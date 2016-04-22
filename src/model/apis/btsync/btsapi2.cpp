@@ -51,10 +51,13 @@ BtsApi2::~BtsApi2()
 void BtsApi2::postInit()
 {
     DBG << "Thread =" << QThread::currentThread();
+    heart_ = new Heart(this);
+    connect(heart_,  SIGNAL(death()), this, SLOT(restart2()));
     setDefaultSyncLevel(SyncLevel::DISCONNECTED);
     setShowNotifications(false);
     setMaxDownload(SettingsModel::maxDownload().toUInt());
     setMaxUpload(SettingsModel::maxUpload().toUInt());
+    heart_->reset(7); //Decrease delay after initial setup.
 }
 
 BtsClient* BtsApi2::createBtsClient(const QString& username, const QString& password, unsigned port)
@@ -235,6 +238,7 @@ void BtsApi2::httpDeleteSlot(const QString& path, unsigned timeout)
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(timeout, &loop, SLOT(quit()));
     loop.exec();
+    heart_->beat(reply);
     DBG << "Status code (204=success) =" << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     delete reply;
 }
@@ -277,6 +281,7 @@ void BtsApi2::fillCache()
         //In early boot btsync might not be ready yet.
         reply = getVariantMap(API_PREFIX + "/folders/activity");
         ++attempts;
+
     }
     QVariantMap data = qvariant_cast<QVariantMap>(reply.value("data"));
     QList<QVariant> variants = qvariant_cast<QList<QVariant>>(data.value("folders"));
@@ -360,6 +365,11 @@ void BtsApi2::getVariantMapSlot(const QString& path, unsigned timeout, QVariantM
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(timeout, &loop, SLOT(quit())); //Timeout
     loop.exec(); //Will dead lock if main thread dead locks
+    heart_->beat(reply);
+    if (reply->isRunning())
+    {
+        DBG << "ERROR: no message from BtSync";
+    }
     QByteArray jsonBytes = reply->readAll();
     result = bytesToVariantMap(jsonBytes);
     delete reply;
@@ -463,6 +473,7 @@ void BtsApi2::postVariantMapSlot(const QVariantMap& map, const QString& path, QV
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(TIMEOUT, &loop, SLOT(quit())); //timeout
     loop.exec();
+    heart_->beat(reply);
     QByteArray response = reply->readAll();
     result = bytesToVariantMap(response);
 }
@@ -485,6 +496,7 @@ void BtsApi2::patchVariantMapSlot(const QVariantMap& map, const QString& path,
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(timeout, &loop, SLOT(quit()));
     loop.exec();
+    heart_->beat(reply);
     QByteArray response = reply->readAll();
     result = bytesToVariantMap(response);
     DBG << "result =" << result;

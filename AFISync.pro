@@ -25,7 +25,8 @@ SOURCES += src/model/main.cpp \
     src/model/pathfinder.cpp \
     src/model/settingsmodel.cpp \
     src/model/global.cpp \
-    src/model/modviewadapter.cpp
+    src/model/modviewadapter.cpp \
+    src/model/apis/heart.cpp
 
 RESOURCES += qml.qrc
 
@@ -58,6 +59,7 @@ HEADERS += \
     src/model/settingsmodel.h \
     src/model/global.h \
     src/model/debug.h \
-    src/model/modviewadapter.h
+    src/model/modviewadapter.h \
+    src/model/apis/heart.h
 
 DISTFILES +=
