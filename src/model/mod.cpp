@@ -47,7 +47,7 @@ void Mod::init()
         setChecked(true);
     }
     repositoryEnableChanged();
-    TreeItem::setParentItem(repo);
+    setParentItem(repo);
     //Periodically check mod progress
     updateTimer_.setInterval(1000);
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(fetchEta()));
@@ -259,6 +259,9 @@ void Mod::updateView()
 {
     for (Repository* repo : repositories())
     {
+        //TODO: Problem due architectural error. Use composition instead of
+        //ineritanced from SyncItem (or TreeItem).
+        setParentItem(repo); //temporary sets parent to this repo.
         repo->updateView(this, repo->childItems().indexOf(this));
     }
 }
