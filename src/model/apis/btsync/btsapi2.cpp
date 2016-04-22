@@ -276,10 +276,8 @@ void BtsApi2::fillCache()
     {
         //In early boot btsync might not be ready yet.
         reply = getVariantMap(API_PREFIX + "/folders/activity");
-        DBG << "Checking reply...";
         ++attempts;
     }
-    DBG << "Reply received";
     QVariantMap data = qvariant_cast<QVariantMap>(reply.value("data"));
     QList<QVariant> variants = qvariant_cast<QList<QVariant>>(data.value("folders"));
 
@@ -337,7 +335,6 @@ FolderHash BtsApi2::getFoldersActivity()
         mutex.unlock();
         return foldersCache_.first;
     }
-    DBG << "Running fillCache";
     fillCache();
     mutex.unlock();
     return foldersCache_.first;
@@ -362,14 +359,10 @@ void BtsApi2::getVariantMapSlot(const QString& path, unsigned timeout, QVariantM
     QNetworkReply* reply = nam->get(req);
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(timeout, &loop, SLOT(quit())); //Timeout
-    DBG << "Loop begin. path =" << path;
     loop.exec(); //Will dead lock if main thread dead locks
-    DBG << "Loop end";
     QByteArray jsonBytes = reply->readAll();
-    QVariantMap rVal = bytesToVariantMap(jsonBytes);
-
+    result = bytesToVariantMap(jsonBytes);
     delete reply;
-    result = rVal;
 }
 
 int BtsApi2::getFolderEta(const QString& key)
@@ -527,7 +520,6 @@ QVariantMap BtsApi2::postVariantMap(const QVariantMap& map, const QString& path)
 QVariantMap BtsApi2::getVariantMap(const QString& path, unsigned timeout)
 {
     QVariantMap result;
-    DBG << "Invoke thread =" << QThread::currentThread();
 
     QMetaObject::invokeMethod(this, "getVariantMapSlot", connectionType(),
                               Q_ARG(QString, path), Q_ARG(unsigned, timeout),

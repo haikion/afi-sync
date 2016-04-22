@@ -34,21 +34,25 @@ TreeView {
         role: "check"
         resizable: false
         width: 55
-        delegate: CheckBox {
-            id: cb
-            checked: styleData.value !== "false"
-            enabled: styleData.value !== "disabled"
-            onClicked:  {
-                var idx = styleData.index;
-                TreeModel.checkboxClicked(idx)
-                repositoryList.enabled = true
-                console.log("Checked=" + checked + " styleData.value=" + styleData.value)
-            }
-            //Does not update otherwise.. qml kiddings me /__\
-            Connections {
-                target: repositoryList
-                onUpdateCheckboxes: {
-                    cb.checked = styleData.value !== "false"
+        delegate: Rectangle {
+            color: "transparent"
+            CheckBox {
+                id: cb
+                checked: styleData.value !== "false"
+                enabled: styleData.value !== "disabled"
+                anchors.verticalCenter: parent.verticalCenter
+                onClicked:  {
+                    var idx = styleData.index;
+                    TreeModel.checkboxClicked(idx)
+                    repositoryList.enabled = true
+                    console.log("Checked=" + checked + " styleData.value=" + styleData.value)
+                }
+                //Does not update otherwise.. qml kiddings me /__\
+                Connections {
+                    target: repositoryList
+                    onUpdateCheckboxes: {
+                        cb.checked = styleData.value !== "false"
+                    }
                 }
             }
         }
