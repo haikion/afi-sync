@@ -39,7 +39,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext& context, const QSt
     *Global::logStream << msg << "\n";
 }
 
-int gui(int argc, char *argv[])
+int gui(int argc, char* argv[])
 {
     qmlRegisterSingletonType<TreeModel>("org.AFISync", 0, 1, "TreeModel", getTreeModel);
     qmlRegisterSingletonType<SettingsModel>("org.AFISync", 0, 1, "SettingsModel", getSettingsModel);

@@ -18,7 +18,7 @@ TreeItem::TreeItem(const QString& name, TreeItem* parentItem)//:
     DBG << "name set perf.gap BEGIN name=" << name;
 }
 
-void TreeItem::appendChild(TreeItem *item)
+void TreeItem::appendChild(TreeItem* item)
 {
     m_childItems.append(item);
 }
@@ -49,7 +49,7 @@ QList<TreeItem*> TreeItem::childItems() const
     return m_childItems;
 }
 
-void TreeItem::setParentItem(TreeItem *parentItem)
+void TreeItem::setParentItem(TreeItem* parentItem)
 {
     m_parentItem = parentItem;
 }

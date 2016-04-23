@@ -154,7 +154,7 @@ void TreeModel::updateView(TreeItem* item, int row)
     emit dataChanged(idx, idx);
 }
 
-QVariant TreeModel::data(const QModelIndex &index, int role = Qt::DisplayRole) const
+QVariant TreeModel::data(const QModelIndex& index, int role = Qt::DisplayRole) const
 {
    //DBG << "role = " << role;
    SyncItem* item = static_cast<SyncItem*>(index.internalPointer());
@@ -175,7 +175,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role = Qt::DisplayRole) c
 }
 
 
-Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
+Qt::ItemFlags TreeModel::flags(const QModelIndex& index) const
 {
     //DBG;
 
@@ -205,7 +205,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent)
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    TreeItem *parentItem;
+    TreeItem* parentItem;
 
     if (!parent.isValid())
         parentItem = rootItem_;
@@ -218,7 +218,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent)
                  << "column =" << column << "parent: " << parent;
         return QModelIndex();
     }
-    TreeItem *childItem = parentItem->child(row);
+    TreeItem* childItem = parentItem->child(row);
     if (childItem)
         return createIndex(row, column, childItem);
     else
@@ -230,8 +230,8 @@ QModelIndex TreeModel::parent(const QModelIndex& index) const
     if (!index.isValid())
         return QModelIndex();
 
-    TreeItem *childItem = static_cast<TreeItem*>(index.internalPointer());
-    TreeItem *parentItem = childItem->parentItem();
+    TreeItem* childItem = static_cast<TreeItem*>(index.internalPointer());
+    TreeItem* parentItem = childItem->parentItem();
 
     if (parentItem == rootItem_ || parentItem == 0)
         return QModelIndex();

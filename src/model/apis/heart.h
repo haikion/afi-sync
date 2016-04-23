@@ -10,7 +10,7 @@ class Heart : public QObject
 {
     Q_OBJECT
 public:
-    explicit Heart(QObject *parent = 0, int maxDelay = 30);
+    explicit Heart(QObject* parent = 0, int maxDelay = 30);
 
     void beat(const QNetworkReply* reply = nullptr);
     void reset(int maxDelay = 30);

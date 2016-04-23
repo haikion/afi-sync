@@ -49,8 +49,8 @@ public:
     int getFolderEta(const QString& key);
     void removeFolder2(const QString& key);
     QSet<QString> getFilesUpper(const QString& key, const QString& path = "");
-    QVariantMap setOverwrite(const QString &key, bool value);
-    QVariantMap setForce(const QString &key, bool value);
+    QVariantMap setOverwrite(const QString& key, bool value);
+    QVariantMap setForce(const QString& key, bool value);
     bool exists(const QString& key);
     QVariantMap setShowNotifications(bool value);
     int getLastModified(const QString& key);
@@ -62,7 +62,7 @@ public:
     void setMaxDownload(unsigned limit);
 
 public slots:
-    QVariantMap addFolder(const QString &path, const QString& key, bool force = false);
+    QVariantMap addFolder(const QString& path, const QString& key, bool force = false);
     QString token();
     QVariantMap setDefaultSyncLevel(SyncLevel level);
     void restart2();

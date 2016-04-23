@@ -1,7 +1,7 @@
 #include "../debug.h"
 #include "heart.h"
 
-Heart::Heart(QObject *parent, int maxDelay) :
+Heart::Heart(QObject* parent, int maxDelay) :
     QObject(parent),
     maxDelay_(maxDelay)
 {

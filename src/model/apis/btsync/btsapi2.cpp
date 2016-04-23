@@ -402,7 +402,7 @@ SyncLevel BtsApi2::getSyncLevel(const QString& key)
     return static_cast<SyncLevel>(folder.synclevel);
 }
 
-bool BtsApi2::noPeers(const QString &key)
+bool BtsApi2::noPeers(const QString& key)
 {
     BtsFolderActivity folder = getFolderActivity(key);
     return folder.peers.size() == 0;
@@ -460,7 +460,7 @@ QVariantMap BtsApi2::setDefaultSyncLevel(SyncLevel level)
     return response;
 }
 
-int BtsApi2::getLastModified(const QString &key)
+int BtsApi2::getLastModified(const QString& key)
 {
     BtsFolderActivity map = getFolderActivity(key);
     return map.last_modfied;

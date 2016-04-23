@@ -18,7 +18,7 @@ public:
     ~Repository();
 
     virtual void appendMod(Mod* item);
-    void updateView(TreeItem *item, int row = -1);
+    void updateView(TreeItem* item, int row = -1);
     virtual void checkboxClicked();
     void checkboxClicked(bool offline);
     BtsApi2* btsync() const;
@@ -47,7 +47,7 @@ private:
     void handleDirError(unsigned errorCode, BtsGetFoldersResult folder);
     QString modsParameter() const;
     QStringList joinParameters() const;
-    void generalLaunch(const QStringList &extraParams = QStringList());
+    void generalLaunch(const QStringList& extraParams = QStringList());
     int lastModified();
     RootItem* parentItem();
     QString createParFile(const QString& parameters);

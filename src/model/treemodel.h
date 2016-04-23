@@ -28,19 +28,19 @@ public:
         Join = Qt::UserRole + 6
     };
 
-    explicit TreeModel(const QString &data, QObject *parent = 0);
+    explicit TreeModel(const QString& data, QObject* parent = 0);
     explicit TreeModel(const QString& username, const QString& password, unsigned port, QObject* parent = 0);
     TreeModel(QObject* parent = 0);
     ~TreeModel();
 
-    QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
-    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    QVariant data(const QModelIndex& index, int role) const Q_DECL_OVERRIDE;
+    Qt::ItemFlags flags(const QModelIndex& index) const Q_DECL_OVERRIDE;
     QModelIndex index(int row, int column,
-                      const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    QModelIndex parent(const QModelIndex &index) const Q_DECL_OVERRIDE;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    void updateView(TreeItem *item, int row = -1);
+                      const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    QModelIndex parent(const QModelIndex& index) const Q_DECL_OVERRIDE;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    void updateView(TreeItem* item, int row = -1);
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
     void reset();
 
