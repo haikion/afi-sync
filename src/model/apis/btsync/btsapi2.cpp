@@ -332,7 +332,11 @@ void BtsApi2::fillCache()
 FolderHash BtsApi2::getFoldersActivity()
 {
     static QMutex mutex;
-    mutex.lock();
+    if (!mutex.tryLock(5000))
+    {
+        DBG << "ERROR: locking mutex.";
+        return foldersCache_.first;
+    }
     unsigned timePassed = QDateTime::currentMSecsSinceEpoch() - foldersCache_.second;
     if (timePassed < UPDATE_INTERVAL)
     {
