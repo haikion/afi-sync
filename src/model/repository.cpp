@@ -150,7 +150,7 @@ void Repository::generalLaunch(const QStringList& extraParams)
 
 QString Repository::createParFile(const QString& parameters)
 {
-    QString path = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/afiSyncParameters.txt";
+    QString path = "\"" + QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/afiSyncParameters.txt\"";
     DBG << path;
     QFile file(path);
     file.remove();

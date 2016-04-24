@@ -37,6 +37,7 @@ BtsApi2::BtsApi2(BtsClient* client, QObject* parent):
     DBG << "current thread =" << QThread::currentThread();
     moveToThread(&thread_);
     nam_.moveToThread(&thread_);
+    getClient()->moveToThread(&thread_);
     DBG << "Starting thread:" << &thread_;
     thread_.start();
     QMetaObject::invokeMethod(this, "postInit", Qt::QueuedConnection);
