@@ -80,6 +80,7 @@ private slots:
     void patchVariantMapSlot(const QVariantMap& map, const QString& path,
                          unsigned timeout, QVariantMap& result);
     void httpDeleteSlot(const QString& path, unsigned timeout = TIMEOUT);
+    void restartSlot();
 
 private:
     static const unsigned UPDATE_INTERVAL; //Cache update interval in seconds

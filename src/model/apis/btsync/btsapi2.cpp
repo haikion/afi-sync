@@ -125,15 +125,7 @@ void BtsApi2::shutdown2()
 
 void BtsApi2::restart2()
 {
-    BtsSpawnClient* client = static_cast<BtsSpawnClient*>(getClient());
-    while ( token_ != "" ) //TODO: Figure out better way to check if btsync is running...
-    {
-        DBG << "Waiting for shutdown.";
-        shutdown2();
-        QThread::msleep(500);
-    }
-    DBG << "Not running. Starting";
-    client->startClient(true);
+    QMetaObject::invokeMethod(this, "restartSlot", connectionType());
 }
 
 void BtsApi2::setMaxUpload(unsigned limit)
@@ -242,6 +234,19 @@ void BtsApi2::httpDeleteSlot(const QString& path, unsigned timeout)
     heart_->beat(reply);
     DBG << "Status code (204=success) =" << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     delete reply;
+}
+
+void BtsApi2::restartSlot()
+{
+    BtsSpawnClient* client = static_cast<BtsSpawnClient*>(getClient());
+    while ( token_ != "" ) //TODO: Figure out better way to check if btsync is running...
+    {
+        DBG << "Waiting for shutdown.";
+        shutdown2();
+        QThread::msleep(500);
+    }
+    DBG << "Not running. Starting";
+    client->startClient(true);
 }
 
 QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)

@@ -11,7 +11,7 @@ namespace Constants {
     const QString DEFAULT_USERNAME = "user";
     const QString DEFAULT_PASSWORD = "password";
     const unsigned DEFAULT_PORT = 8887;
-    const QString VERSION_STRING = "v0.31experimental";
+    const QString VERSION_STRING = "v0.33";
 }
 
 namespace Global
