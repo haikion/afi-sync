@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QStandardPaths>
+#include <QRegExp>
 #include "debug.h"
 #include "settingsmodel.h"
 #include "settingsmodel.h"
@@ -111,18 +112,21 @@ void Repository::generalLaunch(const QStringList& extraParams)
     QString steamExecutable = SettingsModel::steamPath() + "\\Steam.exe";
     QStringList arguments;
 
-    if (QFileInfo(steamExecutable).exists())
+    //arma3launcher wont start the game with correct parameters
+    //if steam isn't running.
+    //Create tmp file containing parameters because steam.exe can only pass
+    //~1000 characters in parameters
+    QString paramsFile = createParFile(modsParameter());
+    QRegExp validator("[ -~]+"); //Excludes ö,ä which are not allowed in a path.
+    if (QFileInfo(steamExecutable).exists() && validator.exactMatch(paramsFile))
     {
-        //arma3launcher wont start the game with correct parameters
-        //if steam isn't running.
-        //Create tmp file containing parameters because steam.exe can only pass
-        //~1000 characters in parameters
-        QString paramsFile = createParFile(modsParameter());
+        DBG << "Using params file";
         arguments << "-applaunch" << "107410" << "-par=" + paramsFile;
         executable = steamExecutable;
     }
     else if (modsParameter().size() > 0)
     {
+        DBG << "Failsafe activated because parameter file path is incorrect. paramsFile =" << paramsFile;
         arguments << modsParameter();
     }
     arguments << "-noLauncher";
