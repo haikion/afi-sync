@@ -66,7 +66,7 @@ void BtsApi2::postInit()
     setMaxDownload(SettingsModel::maxDownload().toUInt());
     setMaxUpload(SettingsModel::maxUpload().toUInt());
     heart_->reset(7); //Decrease delay after initial setup.
-    DBG << "emiting initCompleted()";
+    DBG << "emiting initCompleted() token =" << token_;
     emit initCompleted();
 }
 
@@ -139,7 +139,6 @@ void BtsApi2::shutdown2()
         DBG << "API Connection established. Using api call for shutdown.";
         postVariantMap(QVariantMap(), API_PREFIX + "/client/shutdown");
     }
-    token_ = "";
     DBG << "Finished";
 }
 

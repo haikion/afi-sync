@@ -176,5 +176,5 @@ void RootItem::initSync()
     DBG << "Setting up speed updates";
     QObject::connect(&updateTimer_, SIGNAL(timeout()), sync_, SLOT(getSpeed()));
     QObject::connect(sync_, SIGNAL(getSpeedResult(qint64,qint64)), parent_, SLOT(updateSpeed(qint64,qint64)));
-    updateTimer_.start();
+    QObject::connect(sync_, SIGNAL(initCompleted()), &updateTimer_, SLOT(start()));
 }
