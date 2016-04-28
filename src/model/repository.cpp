@@ -2,7 +2,6 @@
 #include <QDir>
 #include <QProcess>
 #include <QStandardPaths>
-#include <QRegExp>
 #include "debug.h"
 #include "settingsmodel.h"
 #include "settingsmodel.h"
@@ -117,8 +116,7 @@ void Repository::generalLaunch(const QStringList& extraParams)
     //Create tmp file containing parameters because steam.exe can only pass
     //~1000 characters in parameters
     QString paramsFile = createParFile(modsParameter());
-    QRegExp validator("[ -~]+"); //Excludes ö,ä which are not allowed in a path.
-    if (QFileInfo(steamExecutable).exists() && validator.exactMatch(paramsFile))
+    if (QFileInfo(steamExecutable).exists())
     {
         DBG << "Using params file";
         arguments << "-applaunch" << "107410" << "-par=" + paramsFile;
@@ -154,7 +152,9 @@ void Repository::generalLaunch(const QStringList& extraParams)
 
 QString Repository::createParFile(const QString& parameters)
 {
-    QString path = QFileInfo("afiSyncParameters.txt").absoluteFilePath();
+    //QString path = QFileInfo("afiSyncParameters.txt").absoluteFilePath();
+    QString fileName = "afiSyncParameters.txt";
+    QString path = SettingsModel::arma3Path() + "/" + fileName;
     DBG << path;
     QFile file(path);
     file.remove();
@@ -162,7 +162,7 @@ QString Repository::createParFile(const QString& parameters)
     QTextStream fileStream(&file);
     fileStream << parameters;
     file.close();
-    return QDir::toNativeSeparators(path);
+    return fileName;
 }
 
 void Repository::updateEtaAndStatus()
