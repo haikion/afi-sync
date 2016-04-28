@@ -1,3 +1,4 @@
+#include "debug.h"
 #include "modviewadapter.h"
 
 ModViewAdapter::ModViewAdapter(Mod* mod, Repository* repo):
@@ -29,6 +30,11 @@ QString ModViewAdapter::joinText()
 QString ModViewAdapter::status() const
 {
     return mod_->status();
+}
+
+void ModViewAdapter::checkboxClicked()
+{
+    mod_->checkboxClicked();
 }
 
 Mod* ModViewAdapter::mod() const

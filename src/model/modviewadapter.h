@@ -23,6 +23,7 @@ public:
     virtual QString startText();
     virtual QString joinText();
     virtual QString status() const;
+    virtual void checkboxClicked();
 
     Mod* mod() const;
 
