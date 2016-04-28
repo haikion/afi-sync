@@ -35,7 +35,7 @@ RootItem::RootItem(const QString& username, const QString& password, unsigned po
     DBG << "initBtsync completed";
     JsonReader::fillEverything(this);
     DBG << "readJson completed";
-    QTimer::singleShot(15000, this, SLOT(removeOrphans()));
+    connect(sync_, SIGNAL(initCompleted()), this, SLOT(removeOrphans()));
     initializing_ = false;
     Global::workerThread->start();
 }

@@ -39,7 +39,7 @@ public slots:
 private:
     bool isOptional_;
     QString key_;
-    BtsApi2* btsync_;
+    BtsApi2* sync_;
     QTimer updateTimer_;
     std::vector<Repository*> repositories_;
 

@@ -14,7 +14,7 @@ Mod::Mod(const QString& name, const QString& key, bool isOptional):
     SyncItem(name, 0),
     isOptional_(isOptional),
     key_(key),
-    btsync_(0)
+    sync_(0)
 {
     DBG;
     setStatus(SyncStatus::NO_BTSYNC_CONNECTION);
@@ -39,8 +39,6 @@ void Mod::threadDestructor()
 void Mod::init()
 {
     DBG << " current thread: " << QThread::currentThread() << " Worker thread: " << Global::workerThread;
-    Repository* repo = repositories_.at(0);
-    btsync_ = repo->btsync();
 
     if (!isOptional_)
     {
@@ -63,17 +61,17 @@ void Mod::start()
     DBG << "name =" << name();
     QString modPath = SettingsModel::modDownloadPath();
     QString dir = QDir::toNativeSeparators(modPath + "/" + name());
-    QString syncPath = QDir::toNativeSeparators(btsync_->getFolderPath(key_));
-    QString error = btsync_->error(key_);
+    QString syncPath = QDir::toNativeSeparators(sync_->getFolderPath(key_));
+    QString error = sync_->error(key_);
 
     if (syncPath.toUpper() != dir.toUpper() || error != "")
     {
         DBG << "Re-adding directory. syncPath =" << syncPath << "dir =" << dir << "error =" << error;
         //Disagreement between Sync and AfiSync
-        btsync_->removeFolder2(key_);
-        btsync_->addFolder(dir, key_, true);
+        sync_->removeFolder2(key_);
+        sync_->addFolder(dir, key_, true);
     }
-    QVariantMap response = btsync_->setFolderPaused(key_, false);
+    QVariantMap response = sync_->setFolderPaused(key_, false);
     DBG << "response =" << response << "name =" << name();
 }
 
@@ -82,7 +80,7 @@ void Mod::deleteExtraFiles()
     DBG;
 
     QSet<QString> localFiles;
-    QSet<QString> remoteFiles = btsync_->getFilesUpper(key_);
+    QSet<QString> remoteFiles = sync_->getFilesUpper(key_);
 
     QDir dir(SettingsModel::modDownloadPath() + "/" + name());
     QDirIterator it(dir.absolutePath(), QDir::Files, QDirIterator::Subdirectories);
@@ -144,7 +142,7 @@ void Mod::repositoryEnableChanged(bool offline)
 {
     DBG << " current thread: " << QThread::currentThread() << " Worker thread: " << Global::workerThread;
     //just in case
-    if (!btsync_)
+    if (!sync_)
     {
         return;
     }
@@ -168,15 +166,13 @@ void Mod::repositoryEnableChanged(bool offline)
     {
         //All repositories unchecked
         DBG << "Stopping mod sync dir name =" << name();
-        btsync_->setFolderPaused(key_, true);
+        sync_->setFolderPaused(key_, true);
         return;
     }
     //At least one repo active and mod checked
     DBG << "Starting mod: " << name();
     start();
 }
-
-
 
 std::vector<Repository*> Mod::repositories() const
 {
@@ -185,7 +181,7 @@ std::vector<Repository*> Mod::repositories() const
 
 int Mod::lastModified()
 {
-    return btsync_->getLastModified(key_);
+    return sync_->getLastModified(key_);
 }
 
 QString Mod::key() const
@@ -200,9 +196,10 @@ void Mod::addRepository(Repository* repository)
     repositories_.push_back(repository);
     if (repositories().size() == 1)
     {
-        //Delay to give room for more important things during startup.
-        DBG << "Invoke";
-        QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
+        Repository* repo = repositories_.at(0);
+        sync_ = repo->btsync();
+        connect(sync_, SIGNAL(initCompleted()), this, SLOT(init()));
+        DBG << "initCompleted connection created";
     }
 }
 
@@ -226,7 +223,7 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::INACTIVE);
     }
-    else if (!btsync_->exists(key_))
+    else if (!sync_->exists(key_))
     {
         setStatus(SyncStatus::NOT_IN_BTSYNC);
     }
@@ -234,19 +231,19 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::DOWNLOADING);
     }
-    else if (btsync_->isIndexing(key_))
+    else if (sync_->isIndexing(key_))
     {
         setStatus(SyncStatus::INDEXING);
     }
-    else if (btsync_->noPeers(key_))
+    else if (sync_->noPeers(key_))
     {
         setStatus(SyncStatus::NO_PEERS);
     }
-    else if (btsync_->paused(key_))
+    else if (sync_->paused(key_))
     {
         setStatus(SyncStatus::PAUSED);
     }
-    else if (btsync_->getSyncLevel(key_) == SyncLevel::SYNCED)
+    else if (sync_->getSyncLevel(key_) == SyncLevel::SYNCED)
     {
         setStatus(SyncStatus::READY);
     }
@@ -261,7 +258,7 @@ void Mod::checkboxClicked()
 
 void Mod::fetchEta()
 {
-    int eta = btsync_->getFolderEta(key_);
+    int eta = sync_->getFolderEta(key_);
     if (eta == -404)
     {
         return;

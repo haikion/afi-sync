@@ -45,8 +45,15 @@ BtsApi2::BtsApi2(BtsClient* client, QObject* parent):
 
 BtsApi2::~BtsApi2()
 {
+    DBG;
+    QMetaObject::invokeMethod(this, "threadDestructor", connectionType());
     thread_.quit();
     thread_.wait(3000);
+}
+
+void BtsApi2::threadDestructor()
+{
+    delete heart_;
 }
 
 void BtsApi2::postInit()
@@ -59,6 +66,8 @@ void BtsApi2::postInit()
     setMaxDownload(SettingsModel::maxDownload().toUInt());
     setMaxUpload(SettingsModel::maxUpload().toUInt());
     heart_->reset(7); //Decrease delay after initial setup.
+    DBG << "emiting initCompleted()";
+    emit initCompleted();
 }
 
 BtsClient* BtsApi2::createBtsClient(const QString& username, const QString& password, unsigned port)
@@ -118,7 +127,18 @@ QString BtsApi2::getFolderPath(const QString& key)
 
 void BtsApi2::shutdown2()
 {
-    postVariantMap(QVariantMap(), API_PREFIX + "/client/shutdown");
+    if (token_ == "")
+    {
+        //No api connection
+        DBG << "No API connection. Killing process directly";
+        BtsSpawnClient* client = static_cast<BtsSpawnClient*>(getClient());
+        client->killClient();
+    }
+    else
+    {
+        DBG << "API Connection established. Using api call for shutdown.";
+        postVariantMap(QVariantMap(), API_PREFIX + "/client/shutdown");
+    }
     token_ = "";
     DBG << "Finished";
 }
@@ -140,6 +160,11 @@ void BtsApi2::setMaxDownload(unsigned limit)
     QVariantMap obj;
     obj.insert("dlrate", limit);
     patchVariantMap(obj, API_PREFIX + "/client/settings");
+}
+
+bool BtsApi2::ready()
+{
+    return !cacheEmpty_;
 }
 
 
@@ -214,12 +239,10 @@ void BtsApi2::removeFolder2(const QString& key)
                               Q_ARG(QString, API_PREFIX + "/folders/" + fid),
                               Q_ARG(unsigned, 10000));
     //Wait for folder to get actually deleted.
-    int attempts = 0;
-    while (exists(key) && attempts < 20)
+    for (int attempts = 0; exists(key) && attempts < 20; ++attempts)
     {
         DBG << "Checking if folder removed. attempts =" << attempts;
         fillCache();
-        ++attempts;
     }
 }
 
@@ -231,6 +254,7 @@ void BtsApi2::httpDeleteSlot(const QString& path, unsigned timeout)
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(timeout, &loop, SLOT(quit()));
     loop.exec();
+    DBG;
     heart_->beat(reply);
     DBG << "Status code (204=success) =" << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     delete reply;
@@ -239,9 +263,9 @@ void BtsApi2::httpDeleteSlot(const QString& path, unsigned timeout)
 void BtsApi2::restartSlot()
 {
     BtsSpawnClient* client = static_cast<BtsSpawnClient*>(getClient());
-    while ( token_ != "" ) //TODO: Figure out better way to check if btsync is running...
+    for ( int attempts = 0; token_ != "" && attempts < 10; ++attempts)
     {
-        DBG << "Waiting for shutdown.";
+        DBG << "Waiting for shutdown. attempts =" << attempts;
         shutdown2();
         QThread::msleep(500);
     }
@@ -281,13 +305,10 @@ void BtsApi2::fillCache()
 {
     foldersCache_.second = QDateTime::currentMSecsSinceEpoch();
     QVariantMap reply;
-    int attempts = 0;
-    while (reply.size() == 0 && attempts < 50)
+    for (int attempts = 0; reply.size() == 0 && attempts < 50; ++attempts)
     {
         //In early boot btsync might not be ready yet.
         reply = getVariantMap(API_PREFIX + "/folders/activity");
-        ++attempts;
-
     }
     QVariantMap data = qvariant_cast<QVariantMap>(reply.value("data"));
     QList<QVariant> variants = qvariant_cast<QList<QVariant>>(data.value("folders"));
@@ -332,7 +353,6 @@ void BtsApi2::fillCache()
     }
     foldersCache_.first = newHash;
     cacheEmpty_ = false;
-    emit cacheFilled();
 }
 
 FolderHash BtsApi2::getFoldersActivity()
@@ -506,6 +526,7 @@ void BtsApi2::patchVariantMapSlot(const QVariantMap& map, const QString& path,
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QTimer::singleShot(timeout, &loop, SLOT(quit()));
     loop.exec();
+    DBG;
     heart_->beat(reply);
     QByteArray response = reply->readAll();
     result = bytesToVariantMap(response);

@@ -60,6 +60,7 @@ public:
     void shutdown2();
     void setMaxUpload(unsigned limit);
     void setMaxDownload(unsigned limit);
+    bool ready();
 
 public slots:
     QVariantMap addFolder(const QString& path, const QString& key, bool force = false);
@@ -68,7 +69,7 @@ public slots:
     void restart2();
 
 signals:
-    void cacheFilled();
+    void initCompleted();
 
 private slots:
     void postInit();
@@ -81,6 +82,7 @@ private slots:
                          unsigned timeout, QVariantMap& result);
     void httpDeleteSlot(const QString& path, unsigned timeout = TIMEOUT);
     void restartSlot();
+    void threadDestructor();
 
 private:
     static const unsigned UPDATE_INTERVAL; //Cache update interval in seconds
