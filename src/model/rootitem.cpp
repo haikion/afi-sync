@@ -51,8 +51,8 @@ RootItem::~RootItem()
     Global::workerThread->wait(3000);
     DBG << "Shutdown2";
     sync_->shutdown2();
-    DBG << "Btsync destruction";
-    delete sync_;
+    //Causes chrashes if BtSync connection is unestablished.
+    //delete sync_;
 }
 
 //Removes btsync dirs which
