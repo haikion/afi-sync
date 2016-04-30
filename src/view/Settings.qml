@@ -4,7 +4,7 @@ import QtQuick.Controls 1.4
 import QtQuick 2.2
 import QtQuick.Dialogs 1.0
 import org.AFISync 0.1
-
+import "."
 
 Column {
     property MainView mainView;
@@ -263,6 +263,17 @@ Column {
             width: parent.width - 10
             anchors.horizontalCenter: parent.horizontalCenter
             id: troublesColumn
+
+            Button {
+                text: "Force activate join and start buttons"
+                onClicked: {
+                    Global.buttonsEnabled = true
+                    console.log("Force activate join and start buttons " + Global.buttonsEnabled);
+                }
+
+                height: defaultHeight
+                width: parent.width
+            }
 
             Button {
                 text: "Manual Installation and Extra File Deletion"

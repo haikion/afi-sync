@@ -10,5 +10,7 @@
         <file alias="SettingsTitle.qml">src/view/SettingsTitle.qml</file>
         <file alias="SplashScreen.qml">src/view/SplashScreen.qml</file>
         <file alias="MainWindow.qml">src/view/MainWindow.qml</file>
+        <file>qmldir</file>
+        <file>Global.qml</file>
     </qresource>
 </RCC>

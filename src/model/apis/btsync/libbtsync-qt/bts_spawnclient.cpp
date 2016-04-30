@@ -15,6 +15,7 @@
 #include "bts_global.h"
 #include "bts_api.h"
 #include "../../../debug.h"
+#include "../../../settingsmodel.h"
 
 struct BtsSpawnClient_private
 {
@@ -176,8 +177,10 @@ void BtsSpawnClient::startClient(bool force)
     DBG << "Passed";
 	QJsonObject configObject;
 	configObject.insert("storage_path", getDataPath());
+    configObject.insert("download_limit", SettingsModel::maxDownload().toInt());
+    configObject.insert("upload_limit", SettingsModel::maxUpload().toInt());
     configObject.insert("use_gui", true);
-    configObject.insert("folder_rescan_interval", 10*60*60);
+    configObject.insert("folder_rescan_interval", 0);
     configObject.insert("check_for_updates", false);
     configObject.insert("lan_encrypt_data", false);
     configObject.insert("agree_to_EULA", "yes");

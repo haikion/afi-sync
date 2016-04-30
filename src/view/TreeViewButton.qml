@@ -2,6 +2,7 @@ import QtQuick 2.0
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 import org.AFISync 0.1
+import "."
 
 Rectangle {
     property string text
@@ -18,7 +19,7 @@ Rectangle {
             width: parent.width - 10
             height: parent.height - 5
             //TODO: return bool through model
-            enabled: value === "Join" || value === "Start"
+            enabled: value === "Join" || value === "Start"  || Global.buttonsEnabled
             onClicked: parent.clicked()
         }
     }
