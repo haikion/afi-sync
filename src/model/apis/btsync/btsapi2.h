@@ -108,6 +108,7 @@ private:
     Qt::ConnectionType connectionType();
     BtsSpawnClient* client();
     QVariantMap setOwner(const QString& username);
+    void activateSettings();
 };
 
 #endif // BTSAPI2_H

@@ -62,13 +62,18 @@ void BtsApi2::postInit()
     DBG << "Thread =" << QThread::currentThread();
     heart_ = new Heart(this);
     connect(heart_,  SIGNAL(death()), this, SLOT(restart2()));
+    activateSettings();
+    DBG << "emiting initCompleted() token =" << token_;
+    emit initCompleted();
+}
+
+void BtsApi2::activateSettings()
+{
     setDefaultSyncLevel(SyncLevel::DISCONNECTED);
     setShowNotifications(false);
     setMaxDownload(SettingsModel::maxDownload().toUInt());
     setMaxUpload(SettingsModel::maxUpload().toUInt());
     heart_->reset(7); //Decrease delay after initial setup.
-    DBG << "emiting initCompleted() token =" << token_;
-    emit initCompleted();
 }
 
 BtsClient* BtsApi2::createBtsClient(const QString& username, const QString& password, unsigned port)
@@ -265,6 +270,7 @@ void BtsApi2::restartSlot()
     shutdown2();
     client()->startClient(true);
     heart_->reset();
+    activateSettings();
 }
 
 QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
