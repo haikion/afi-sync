@@ -177,17 +177,23 @@ void BtsSpawnClient::startClient(bool force)
 	QJsonObject configObject;
 	configObject.insert("storage_path", getDataPath());
     configObject.insert("use_gui", true);
-    //configObject.insert("use_upnp", true);
+    configObject.insert("folder_rescan_interval", 10*60*60);
+    configObject.insert("check_for_updates", false);
+    configObject.insert("lan_encrypt_data", false);
     configObject.insert("agree_to_EULA", "yes");
+    configObject.insert("peer_expiration_days", 1);
+
+    configObject.insert("folder_defaults.delete_to_trash", false);
+    configObject.insert("folder_defaults.use_lan_broadcast", false);
+    configObject.insert("folder_defaults.use_dht", false);
 
 	QJsonObject webuiObject;
 	webuiObject.insert("listen", QString("%1:%2").arg(p->host).arg(p->port));
-
     webuiObject.insert("login", p->username);
     webuiObject.insert("password", p->password);
 	webuiObject.insert("api_key", BtsGlobal::getApiKey().toString());
-
 	configObject.insert("webui", webuiObject);
+
     DBG << "Opening config file";
 	p->configFile.open();
 	QJsonDocument saveDoc(configObject);

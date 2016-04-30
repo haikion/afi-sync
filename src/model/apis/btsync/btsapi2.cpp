@@ -73,7 +73,7 @@ void BtsApi2::activateSettings()
     setShowNotifications(false);
     setMaxDownload(SettingsModel::maxDownload().toUInt());
     setMaxUpload(SettingsModel::maxUpload().toUInt());
-    heart_->reset(7); //Decrease delay after initial setup.
+    heart_->reset(20); //Decrease delay after initial setup.
 }
 
 BtsClient* BtsApi2::createBtsClient(const QString& username, const QString& password, unsigned port)
