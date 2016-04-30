@@ -19,6 +19,11 @@ void Heart::reset(int maxDelay)
     timer_.start();
 }
 
+void Heart::stop()
+{
+    timer_.stop();
+}
+
 void Heart::beat(const QNetworkReply* reply)
 {
     if (reply == nullptr || (reply->isFinished() && reply->error() == QNetworkReply::NoError))

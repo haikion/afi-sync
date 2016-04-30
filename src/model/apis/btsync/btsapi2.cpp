@@ -10,6 +10,7 @@
 #include <QDir>
 #include <QDateTime>
 #include <QTimer>
+#include <QProcess>
 #include "../../debug.h"
 #include "../../settingsmodel.h"
 #include "libbtsync-qt/bts_global.h"
@@ -127,18 +128,17 @@ QString BtsApi2::getFolderPath(const QString& key)
 
 void BtsApi2::shutdown2()
 {
-    if (token_ == "")
+    heart_->stop();
+    client()->killClient(); //Exit never succeeds...
+    for ( int attempts = 0; client()->running() && attempts < 10; ++attempts)
     {
-        //No api connection
-        DBG << "No API connection. Killing process directly";
-        BtsSpawnClient* client = static_cast<BtsSpawnClient*>(getClient());
-        client->killClient();
+        DBG << "Waiting for shutdown. attempts =" << attempts;
+        QThread::msleep(500);
     }
-    else
-    {
-        DBG << "API Connection established. Using api call for shutdown.";
-        postVariantMap(QVariantMap(), API_PREFIX + "/client/shutdown");
-    }
+    //In case BTSync was not spawned by AFISync
+    QProcess p;
+    p.start("taskkill /F /IM btsync.exe");
+    p.waitForFinished(1000);
     DBG << "Finished";
 }
 
@@ -261,15 +261,9 @@ void BtsApi2::httpDeleteSlot(const QString& path, unsigned timeout)
 
 void BtsApi2::restartSlot()
 {
-    BtsSpawnClient* client = static_cast<BtsSpawnClient*>(getClient());
-    for ( int attempts = 0; token_ != "" && attempts < 10; ++attempts)
-    {
-        DBG << "Waiting for shutdown. attempts =" << attempts;
-        shutdown2();
-        QThread::msleep(500);
-    }
-    DBG << "Not running. Starting";
-    client->startClient(true);
+    shutdown2();
+    client()->startClient(true);
+    heart_->reset();
 }
 
 QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
@@ -546,6 +540,24 @@ Qt::ConnectionType BtsApi2::connectionType()
         type = Qt::DirectConnection;
 
     return type;
+}
+
+BtsSpawnClient* BtsApi2::client()
+{
+    BtsSpawnClient* client = static_cast<BtsSpawnClient*>(getClient());
+    return client;
+}
+
+//Results in:
+//Error: 101
+//"Don't have permissions to write to the selected folder."
+QVariantMap BtsApi2::setOwner(const QString& username)
+{
+    QVariantMap map;
+    map.insert("username", username);
+    QVariantMap rVal = postVariantMap(map, API_PREFIX + "/owner");
+    DBG << "rVal =" << rVal;
+    return rVal;
 }
 
 QVariantMap BtsApi2::postVariantMap(const QVariantMap& map, const QString& path)

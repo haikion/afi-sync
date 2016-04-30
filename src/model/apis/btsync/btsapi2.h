@@ -16,6 +16,7 @@
 #include <QThread>
 #include "../heart.h"
 #include "libbtsync-qt/bts_api.h"
+#include "libbtsync-qt/bts_spawnclient.h"
 #include "btsfolderactivity.h"
 
 //Folder activity holder for optimized search by readonlysecret a.k.a key
@@ -103,8 +104,10 @@ private:
     QVariantMap getVariantMap(const QString& path, unsigned timeout = TIMEOUT);
     QString keyToFid(const QString& key);
     QVariantMap patchVariantMap(const QVariantMap& map, const QString& path, unsigned timeout = TIMEOUT);
-    BtsClient*createBtsClient(const QString& username, const QString& password, unsigned port);
+    BtsClient* createBtsClient(const QString& username, const QString& password, unsigned port);
     Qt::ConnectionType connectionType();
+    BtsSpawnClient* client();
+    QVariantMap setOwner(const QString& username);
 };
 
 #endif // BTSAPI2_H

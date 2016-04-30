@@ -130,7 +130,15 @@ bool BtsSpawnClient::isClientReady()
 	if(!p->clientProc)
 		return false;
 
-	return p->clientProc->state() == QProcess::Running;
+    return p->clientProc->state() == QProcess::Running;
+}
+
+bool BtsSpawnClient::running()
+{
+    if(!p->clientProc)
+        return false;
+
+    return p->clientProc->state() != QProcess::NotRunning;
 }
 
 void BtsSpawnClient::exitClient()
@@ -191,6 +199,11 @@ void BtsSpawnClient::startClient(bool force)
 	p->cur_port = p->port;
 	p->cur_password = p->password;
 	p->cur_username = p->username;
+    if (p->clientProc)
+    {
+        DBG << "Deleting old process";
+        delete p->clientProc;
+    }
     DBG << "Creating QProcess";
 	p->clientProc = new QProcess(this);
 	connect(p->clientProc, SIGNAL(finished(int)), this, SLOT(procFinished(int)));

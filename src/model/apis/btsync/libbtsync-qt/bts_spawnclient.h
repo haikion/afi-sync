@@ -24,6 +24,7 @@ class  BtsSpawnClient : public BtsClient
 
 	bool isAutorestart();
 	bool isClientReady();
+    bool running();
 
 	public slots:
 	void exitClient();
