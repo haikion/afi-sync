@@ -139,6 +139,7 @@ void BtsApi2::shutdown2()
     QProcess p;
     p.start("taskkill /F /IM btsync.exe");
     p.waitForFinished(1000);
+    token_ = "";
     DBG << "Finished";
 }
 
