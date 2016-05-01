@@ -180,7 +180,7 @@ void BtsSpawnClient::startClient(bool force)
     configObject.insert("download_limit", SettingsModel::maxDownload().toInt());
     configObject.insert("upload_limit", SettingsModel::maxUpload().toInt());
     configObject.insert("use_gui", true);
-    configObject.insert("folder_rescan_interval", 0);
+    configObject.insert("folder_rescan_interval", 10*60*60);
     configObject.insert("check_for_updates", false);
     configObject.insert("lan_encrypt_data", false);
     configObject.insert("agree_to_EULA", "yes");

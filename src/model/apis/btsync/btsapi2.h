@@ -89,6 +89,10 @@ private:
     static const unsigned UPDATE_INTERVAL; //Cache update interval in seconds
     static const QString API_PREFIX;
     static const unsigned TIMEOUT;
+    //Minimum time in ms that AFISync considers indexing actually happening.
+    //This is suppose to rule out periodic indexing from actual indexing in order
+    //to prevent constant indexing bug.
+    static const int MIN_INDEXING_TIME;
 
     bool cacheEmpty_;
     QString token_;
@@ -96,6 +100,7 @@ private:
     FoldersActivityCache foldersCache_;
     QThread thread_;
     Heart* heart_;
+    QMap<QString,int> indexingStartTime_;
 
     QNetworkRequest createUnauthenticatedRequest(const QString& url);
     QNetworkRequest createSecureRequest(QString path);

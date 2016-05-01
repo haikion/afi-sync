@@ -1,3 +1,4 @@
+#include <limits>
 #include <QtDebug>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -22,6 +23,7 @@
 const unsigned BtsApi2::UPDATE_INTERVAL = 1000;
 const unsigned BtsApi2::TIMEOUT = 500;
 const QString BtsApi2::API_PREFIX = "/api/v2";
+const int BtsApi2::MIN_INDEXING_TIME = 2000;
 
 BtsApi2::BtsApi2(const QString& username, const QString& password,
                  unsigned port, QObject* parent):
@@ -435,7 +437,22 @@ bool BtsApi2::noPeers(const QString& key)
 bool BtsApi2::isIndexing(const QString& key)
 {
     BtsFolderActivity folder = getFolderActivity(key);
-    return folder.indexing;
+    Global::runningTime->elapsed();
+    if (!folder.indexing)
+    {
+        indexingStartTime_[key] = std::numeric_limits<int>::max();
+        return false; //is not indexing at all.
+    }
+    //Indexing, let's see if has indexed long enough...
+    int deltaTime = Global::runningTime->elapsed() - indexingStartTime_[key];
+    if (deltaTime > MIN_INDEXING_TIME)
+    {
+        return true; //Has indexed long enough
+
+    }
+    DBG << "DeltaTime =" << deltaTime;
+    indexingStartTime_[key] = Global::runningTime->elapsed();
+    return false; //Has not indexed long enough.
 }
 
 
