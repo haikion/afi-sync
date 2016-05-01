@@ -276,7 +276,7 @@ Column {
             }
 
             Button {
-                text: "Manual Installation and Extra File Deletion"
+                text: "Manual installation and extra file deletion"
                 onClicked: {
                     var cache = text;
                     text = "Loading..."
@@ -289,7 +289,7 @@ Column {
                 width: parent.width
             }
             Button {
-                text: "Reset Sync"
+                text: "Reset sync"
                 onClicked: {
                     var cache = text;
                     text = "Loading..."
