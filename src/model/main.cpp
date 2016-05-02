@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
         createLogFile();
         qInstallMessageHandler(messageHandler);
     #endif
-    DBG << "AFISync" << Constants::VERSION_STRING << "started";
+    DBG << "\nAFISync" << Constants::VERSION_STRING << "started";
     QStringList args;
     for (int i = 0; i < argc; ++i)
     {

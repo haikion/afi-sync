@@ -66,7 +66,9 @@ void Mod::start()
 
     if (syncPath.toUpper() != dir.toUpper() || error != "")
     {
-        DBG << "Re-adding directory. syncPath =" << syncPath << "dir =" << dir << "error =" << error;
+        DBG << "Re-adding directory. syncPath ="
+            << syncPath << "dir =" << dir
+            << "error =" << error;
         //Disagreement between Sync and AfiSync
         sync_->removeFolder2(key_);
         sync_->addFolder(dir, key_, true);

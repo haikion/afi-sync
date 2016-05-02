@@ -4,7 +4,7 @@ import QtQuick.Controls 1.4
 import QtQuick 2.2
 import QtQuick.Dialogs 1.0
 import org.AFISync 0.1
-import "."
+import "." //Enables Global.qml
 
 Column {
     property MainView mainView;
@@ -32,10 +32,14 @@ Column {
             var cleanPath = decodeURIComponent(path);
             console.log("You chose: " + path)
             caller.text = cleanPath
+            SettingsModel.setModDownloadPath(cleanPath);
+            apply();
         }
+
         onRejected: {
             console.log("Canceled")
         }
+
         onVisibilityChanged: {
             folder = "file:///" + caller.text
             console.log("Folder: " + Qt.resolvedUrl(caller.text))
@@ -117,7 +121,7 @@ Column {
             anchors.leftMargin: 5
 
             Text {
-                text: qsTr("Mod Download (Apply Required)")
+                text: qsTr("Mod Download")
                 font.pixelSize: labelFont
             }
 
@@ -128,10 +132,12 @@ Column {
                 //onTextChanged: SettingsModel.setModDownloadPath(text);
                 width: parent.width
                 height: defaultHeight
+                enabled: false
             }
             Row {
                 spacing: buttonSpacing
                 height: defaultHeight
+
                 Button {
                     text: "Browse"
                     height: parent.height
@@ -147,19 +153,6 @@ Column {
                     onClicked: {
                         SettingsModel.resetModDownloadPath();
                         pathField1.text = SettingsModel.modDownloadPath();
-                    }
-                }
-                Button {
-                    text: "Apply"
-                    height: parent.height
-                    onClicked: {
-                        var oldText = text
-                        text = "Loading..."
-                        enabled = false
-                        SettingsModel.setModDownloadPath(pathField1.text)
-                        apply()
-                        enabled = true
-                        text = oldText
                     }
                 }
             }
@@ -182,7 +175,6 @@ Column {
             onSetter: SettingsModel.setTeamSpeak3Path(newValue)
             getter: function() { return SettingsModel.teamSpeak3Path() }
             onResetter: SettingsModel.resetTeamSpeak3Path()
-            //labelFont: labelFont
             id: ts3Path
         }
 
@@ -298,6 +290,14 @@ Column {
                     apply()
                     enabled = true
                     text = cache
+                }
+                height: defaultHeight
+                width: parent.width
+            }
+            Button {
+                text: "Report a bug"
+                onClicked: {
+                    Qt.openUrlExternally("https://form.jotformeu.com/61187638191361");
                 }
                 height: defaultHeight
                 width: parent.width

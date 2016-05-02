@@ -112,11 +112,13 @@ void RootItem::resetSyncSettings()
     {
         dir.removeRecursively();
         //It's rape time.
-        DBG << "Failure to delete BtSync Storage... retrying path=" << dir.currentPath()
+        DBG << "Warning: Failure to delete BtSync Storage... retrying path ="
+            << dir.currentPath()
             << " attempts =" << attempts;
         QThread::sleep(1);
         ++attempts;
     }
+    DBG << "Sync storage deleted. path =" << dir.currentPath();
     dir.mkpath(".");
     sync_->restart2();
 }

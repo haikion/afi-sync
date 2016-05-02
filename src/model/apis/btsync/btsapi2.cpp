@@ -616,6 +616,7 @@ QNetworkRequest BtsApi2::createSecureRequest(QString path)
             return QNetworkRequest();
         }
     }
+    DBG << "Security token succesfully received. token =" << token_;
     path = path + "?token=" + token_;
     QNetworkRequest request = createUnauthenticatedRequest(path);
     return request;
