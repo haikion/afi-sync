@@ -17,7 +17,8 @@ SettingsModel::SettingsModel(QObject* parent):
 bool SettingsModel::saveDir(const QString& key, const QString& path)
 {
     QFileInfo dir(path);
-    if (!dir.isDir() || !dir.isWritable())
+    QString originalPath = settings()->value(key).toString();
+    if (originalPath == path || !dir.isDir() || !dir.isWritable())
     {
         return false;
     }
@@ -132,6 +133,8 @@ void SettingsModel::setModDownloadPath(const QString& path)
     DBG << "path =" << path;
     if (!saveDir("modDownloadPath", path))
     {
+        DBG << "Warning: failed to set mod download path. modDownloadPath() ="
+            << modDownloadPath() << " path =" << path;
         return;
     }
     settings()->setValue("modDownloadPath", path);
@@ -148,7 +151,7 @@ bool SettingsModel::resetBtsync()
 
 void SettingsModel::resetModDownloadPath()
 {
-    settings()->setValue("modDownloadPath", PathFinder::arma3MyDocuments());
+    setModDownloadPath(PathFinder::arma3MyDocuments());
 }
 
 QString SettingsModel::launchParameters()

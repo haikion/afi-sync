@@ -153,6 +153,7 @@ Column {
                     onClicked: {
                         SettingsModel.resetModDownloadPath();
                         pathField1.text = SettingsModel.modDownloadPath();
+                        apply();
                     }
                 }
             }
