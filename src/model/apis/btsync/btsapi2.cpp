@@ -450,7 +450,6 @@ bool BtsApi2::isIndexing(const QString& key)
         return true; //Has indexed long enough
 
     }
-    DBG << "DeltaTime =" << deltaTime;
     indexingStartTime_[key] = Global::runningTime->elapsed();
     return false; //Has not indexed long enough.
 }
