@@ -35,7 +35,7 @@ BtsApi2::BtsApi2(const QString& username, const QString& password,
 
 BtsApi2::BtsApi2(BtsClient* client, QObject* parent):
     BtsApi(client, parent),
-    cacheEmpty_(true)
+    ready_(false)
 {
     DBG << "current thread =" << QThread::currentThread();
     moveToThread(&thread_);
@@ -65,6 +65,7 @@ void BtsApi2::postInit()
     heart_ = new Heart(this);
     connect(heart_,  SIGNAL(death()), this, SLOT(restart2()));
     activateSettings();
+    ready_ = true;
     DBG << "emiting initCompleted() token =" << token_;
     emit initCompleted();
 }
@@ -169,7 +170,7 @@ void BtsApi2::setMaxDownload(unsigned limit)
 
 bool BtsApi2::ready()
 {
-    return !cacheEmpty_;
+    return ready_;
 }
 
 
@@ -219,7 +220,6 @@ QVariantMap BtsApi2::setFolderPaused(const QString& key, bool value)
 {
     if (!exists(key) || paused(key) == value)
     {
-        DBG << "No changes made, returning empty value.";
         return QVariantMap();
     }
     QString fid = keyToFid(key);
@@ -352,7 +352,6 @@ void BtsApi2::fillCache()
         newHash.insert(folder.readonlysecret, folder);
     }
     foldersCache_.first = newHash;
-    cacheEmpty_ = false;
 }
 
 FolderHash BtsApi2::getFoldersActivity()

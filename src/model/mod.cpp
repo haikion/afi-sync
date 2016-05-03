@@ -200,8 +200,16 @@ void Mod::addRepository(Repository* repository)
     {
         Repository* repo = repositories_.at(0);
         sync_ = repo->btsync();
-        connect(sync_, SIGNAL(initCompleted()), this, SLOT(init()));
-        DBG << "initCompleted connection created";
+        if (sync_->ready())
+        {
+            DBG << "Calling init directly";
+            QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
+        }
+        else
+        {
+            connect(sync_, SIGNAL(initCompleted()), this, SLOT(init()));
+            DBG << "initCompleted connection created";
+        }
     }
 }
 

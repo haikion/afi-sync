@@ -35,7 +35,14 @@ RootItem::RootItem(const QString& username, const QString& password, unsigned po
     DBG << "initBtsync completed";
     JsonReader::fillEverything(this);
     DBG << "readJson completed";
-    connect(sync_, SIGNAL(initCompleted()), this, SLOT(removeOrphans()));
+    if (sync_->ready())
+    {
+        removeOrphans();
+    }
+    else
+    {
+        connect(sync_, SIGNAL(initCompleted()), this, SLOT(removeOrphans()));
+    }
     initializing_ = false;
     Global::workerThread->start();
 }
@@ -176,7 +183,16 @@ void RootItem::initSync()
     sync_ = new BtsApi2(username_, password_, port_);
     updateTimer_.setInterval(1000);
     DBG << "Setting up speed updates";
-    QObject::connect(&updateTimer_, SIGNAL(timeout()), sync_, SLOT(getSpeed()));
-    QObject::connect(sync_, SIGNAL(getSpeedResult(qint64,qint64)), parent_, SLOT(updateSpeed(qint64,qint64)));
-    QObject::connect(sync_, SIGNAL(initCompleted()), &updateTimer_, SLOT(start()));
+    connect(&updateTimer_, SIGNAL(timeout()), sync_, SLOT(getSpeed()));
+    connect(sync_, SIGNAL(getSpeedResult(qint64,qint64)), parent_, SLOT(updateSpeed(qint64,qint64)));
+    if (sync_->ready())
+    {
+        DBG << "Starting updateTimer directly";
+        updateTimer_.start();
+    }
+    else
+    {
+        DBG << "Connecting updateTimer start to initCompleted()";
+        connect(sync_, SIGNAL(initCompleted()), &updateTimer_, SLOT(start()));
+    }
 }

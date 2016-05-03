@@ -94,7 +94,7 @@ private:
     //to prevent constant indexing bug.
     static const int MIN_INDEXING_TIME;
 
-    bool cacheEmpty_;
+    bool ready_;
     QString token_;
     QNetworkAccessManager nam_;
     FoldersActivityCache foldersCache_;
