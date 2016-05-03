@@ -436,7 +436,6 @@ bool BtsApi2::noPeers(const QString& key)
 bool BtsApi2::isIndexing(const QString& key)
 {
     BtsFolderActivity folder = getFolderActivity(key);
-    Global::runningTime->elapsed();
     if (!folder.indexing)
     {
         indexingStartTime_[key] = std::numeric_limits<int>::max();
