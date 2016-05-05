@@ -269,7 +269,7 @@ Column {
             }
 
             Button {
-                text: "Manual installation and extra file deletion"
+                text: "Fix wrong signature error on join."
                 onClicked: {
                     var cache = text;
                     text = "Loading..."
