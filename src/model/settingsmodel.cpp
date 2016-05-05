@@ -102,6 +102,16 @@ QString SettingsModel::maxDownload()
     return settings()->value("maxDownload", "0").toString();
 }
 
+void SettingsModel::setInstallDate(const QString& repoName, const unsigned& value)
+{
+    settings()->setValue("installDate" + repoName, value);
+}
+
+unsigned SettingsModel::installDate(const QString& repoName)
+{
+    return settings()->value("installDate" + repoName).toInt();
+}
+
 void SettingsModel::setMaxUpload(const QString& value)
 {
     DBG;

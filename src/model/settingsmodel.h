@@ -35,6 +35,8 @@ public slots:
     static QString maxUpload();
     static void setMaxDownload(const QString& value);
     static QString maxDownload();
+    static void setInstallDate(const QString& repoName, const unsigned& value);
+    static unsigned installDate(const QString& repoName);
 
 private:
     static QSettings* settings_;

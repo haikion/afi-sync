@@ -210,7 +210,7 @@ QVariantMap BtsApi2::setForce(const QString& key, bool value)
     QString fid = keyToFid(key);
     QVariantMap obj;
     obj.insert("force", value);
-    QVariantMap response = patchVariantMap(obj, API_PREFIX + "/folders/" + fid);
+    QVariantMap response = patchVariantMap(obj, API_PREFIX + "/folders/" + fid, 3000);
     DBG << "response =" << response;
     return response;
 }
@@ -337,7 +337,6 @@ void BtsApi2::fillCache()
         folder.id = qvariant_cast<QString>(folderMap.value("id"));
         folder.indexing = qvariant_cast<bool>(folderMap.value("indexing"));
         folder.ismanaged = qvariant_cast<bool>(folderMap.value("ismanaged"));
-        //FIXME: last_modified receives nothing
         folder.last_modfied = qvariant_cast<int>(folderMap.value("last_modified", -404));
         folder.name = qvariant_cast<QString>(folderMap.value("name"));
         folder.path = qvariant_cast<QString>(folderMap.value("path"));
