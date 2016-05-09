@@ -258,7 +258,7 @@ Column {
             id: troublesColumn
 
             Button {
-                text: "Force activate join and start buttons"
+                text: "Force Activate Join and Start Buttons"
                 onClicked: {
                     Global.buttonsEnabled = true
                     console.log("Force activate join and start buttons " + Global.buttonsEnabled);
@@ -269,7 +269,7 @@ Column {
             }
 
             Button {
-                text: "Fix wrong signature error on join."
+                text: "Fix Wrong Signature Error on Join"
                 onClicked: {
                     var cache = text;
                     text = "Loading..."
@@ -282,7 +282,7 @@ Column {
                 width: parent.width
             }
             Button {
-                text: "Reset sync"
+                text: "Reset Sync"
                 onClicked: {
                     var cache = text;
                     text = "Loading..."
@@ -296,7 +296,7 @@ Column {
                 width: parent.width
             }
             Button {
-                text: "Report a bug"
+                text: "Report Bug..."
                 onClicked: {
                     Qt.openUrlExternally("https://form.jotformeu.com/61187638191361");
                 }

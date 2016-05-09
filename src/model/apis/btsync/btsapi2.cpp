@@ -275,6 +275,12 @@ void BtsApi2::restartSlot()
 
 QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
 {
+    //Sometimes BtSync reports incorrect file listing. This is an attempt to fix it...
+    for (int i = 0; i < 10 && ( isIndexing(key) || noPeers(key) || getSyncLevel(key) != SyncLevel::SYNCED); ++i )
+    {
+        DBG << "Waiting for folder to be ready... i =" << i;
+        QThread::sleep(1);
+    }
     QSet<QString> rVal;
     QString fid = keyToFid(key);
     QString pathEncoded = path;

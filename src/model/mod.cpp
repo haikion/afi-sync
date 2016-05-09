@@ -79,7 +79,12 @@ void Mod::start()
 
 void Mod::deleteExtraFiles()
 {
-    DBG;
+    DBG << " name =" << name();
+    if (!checked())
+    {
+        DBG << "Mod is inactive, doing nothing. name =" << name();
+        return;
+    }
 
     QSet<QString> localFiles;
     QSet<QString> remoteFiles = sync_->getFilesUpper(key_);

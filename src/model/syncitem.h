@@ -10,7 +10,7 @@
 namespace SyncStatus {
     static const QString DOWNLOADING = "Downloading...";
     static const QString READY = "Ready";
-    static const QString NO_BTSYNC_CONNECTION = "Error: No BTSync connection.";
+    static const QString NO_BTSYNC_CONNECTION = "No Sync Connection.";
     static const QString INDEXING = "Indexing...";
     static const QString WAITING = "Waiting...";
     static const QString NO_PEERS = "No peers";

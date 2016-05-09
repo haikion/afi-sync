@@ -188,7 +188,8 @@ void BtsSpawnClient::startClient(bool force)
 
     configObject.insert("folder_defaults.delete_to_trash", false);
     configObject.insert("folder_defaults.use_lan_broadcast", false);
-    configObject.insert("folder_defaults.use_dht", false);
+    //Warning: config option 'folder_defaults.use_dht' is deprecat
+    //configObject.insert("folder_defaults.use_dht", false);
 
 	QJsonObject webuiObject;
 	webuiObject.insert("listen", QString("%1:%2").arg(p->host).arg(p->port));
