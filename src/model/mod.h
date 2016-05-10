@@ -33,7 +33,6 @@ public:
 
 public slots:
     void repositoryEnableChanged(bool offline = false);
-    void init();
     void threadDestructor();
 
 private:
@@ -49,6 +48,7 @@ private slots:
     void fetchEta();
     void updateStatus();
     void start();
+    void init();
 
 };
 

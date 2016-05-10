@@ -87,7 +87,6 @@ void createLogFile()
 
 int main(int argc, char* argv[])
 {
-    Global::runningTime->start();
     QCoreApplication::setOrganizationName("AFISync");
     QCoreApplication::setOrganizationDomain("armafinland.fi");
     QCoreApplication::setApplicationName("AFISync");

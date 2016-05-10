@@ -94,7 +94,7 @@ QString SettingsModel::maxUpload()
 void SettingsModel::setMaxDownload(const QString& value)
 {
     settings()->setValue("maxDownload", value);
-    Global::btsync->setMaxDownload(value.toInt());
+    Global::sync->setMaxDownload(value.toInt());
 }
 
 QString SettingsModel::maxDownload()
@@ -115,11 +115,11 @@ unsigned SettingsModel::installDate(const QString& repoName)
 void SettingsModel::setMaxUpload(const QString& value)
 {
     DBG;
-    if (Global::btsync == nullptr)
+    if (Global::sync == nullptr)
     {
         return;
     }
-    Global::btsync->setMaxUpload(value.toInt());
+    Global::sync->setMaxUpload(value.toInt());
     settings()->setValue("maxUpload", value);
 }
 

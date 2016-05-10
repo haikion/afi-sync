@@ -31,7 +31,7 @@ RootItem::RootItem(const QString& username, const QString& password, unsigned po
     port_(port)
 {
     initSync();
-    Global::btsync = sync_;
+    Global::sync = sync_;
     DBG << "initBtsync completed";
     JsonReader::fillEverything(this);
     DBG << "readJson completed";

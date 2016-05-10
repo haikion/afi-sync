@@ -30,6 +30,11 @@ enum SyncLevel {
     SYNCED = 2
 };
 
+enum FileState {
+    CREATED = 1,
+    DELETED = 2
+};
+
 class BtsApi2: public BtsApi
 {
     Q_OBJECT

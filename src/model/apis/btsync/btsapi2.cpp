@@ -220,12 +220,13 @@ QVariantMap BtsApi2::setFolderPaused(const QString& key, bool value)
 {
     if (!exists(key) || paused(key) == value)
     {
+        DBG << "Folder does not exist or it is already paused. Returning empty value.";
         return QVariantMap();
     }
     QString fid = keyToFid(key);
     QVariantMap obj;
     obj.insert("paused", value);
-    QVariantMap response = patchVariantMap(obj, API_PREFIX + "/folders/" + fid, 10000);
+    QVariantMap response = patchVariantMap(obj, API_PREFIX + "/folders/" + fid, 2000);
     DBG << "response =" << response;
     return response;
 }
@@ -291,6 +292,10 @@ QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
     for (QVariant fileVariant : filesList)
     {
         QVariantMap map = qvariant_cast<QVariantMap>(fileVariant);
+        if (map.value("stateid").toInt() == FileState::DELETED)
+        {
+            continue;
+        }
         QString btsPath = map.value("path").toString();
         QDir dir(btsPath.replace(0,4,""));
         QString dirStr = dir.absolutePath();
@@ -447,13 +452,13 @@ bool BtsApi2::isIndexing(const QString& key)
         return false; //is not indexing at all.
     }
     //Indexing, let's see if has indexed long enough...
-    int deltaTime = Global::runningTime->elapsed() - indexingStartTime_[key];
+    int deltaTime = runningTimeMs() - indexingStartTime_[key];
     if (deltaTime > MIN_INDEXING_TIME)
     {
         return true; //Has indexed long enough
 
     }
-    indexingStartTime_[key] = Global::runningTime->elapsed();
+    indexingStartTime_[key] = runningTimeMs();
     return false; //Has not indexed long enough.
 }
 
@@ -473,7 +478,7 @@ QVariantMap BtsApi2::patchVariantMap(const QVariantMap& map, const QString& path
                               Q_ARG(const QVariantMap, map),
                               Q_ARG(const QString, path), Q_ARG(unsigned, timeout),
                               Q_RETURN_ARG(QVariantMap&, result));
-    DBG << "Done";
+    DBG << "Done. result =" << result;
     return result;
 }
 

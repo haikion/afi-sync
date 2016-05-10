@@ -11,7 +11,6 @@ SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
     status_(SyncStatus::NO_BTSYNC_CONNECTION),
     eta_(std::numeric_limits<int>::max())
 {
-    DBG << "perf.gap END";
     if (settings_ == nullptr)
     {
         settings_ = new QSettings();

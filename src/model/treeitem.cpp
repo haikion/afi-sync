@@ -8,14 +8,11 @@
 #include <QStringList>
 #include "treeitem.h"
 
-TreeItem::TreeItem(const QString& name, TreeItem* parentItem)//:
-    //QObject(0),
-    //m_parentItem(parentItem),
-    //name_(name)
+TreeItem::TreeItem(const QString& name, TreeItem* parentItem)
 {
     m_parentItem = parentItem;
     name_ = name;
-    DBG << "name set perf.gap BEGIN name=" << name;
+    DBG << "name set name=" << name;
 }
 
 void TreeItem::appendChild(TreeItem* item)
