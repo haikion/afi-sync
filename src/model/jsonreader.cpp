@@ -1,6 +1,5 @@
 #include <QFile>
 #include <QFileInfo> //Debug prints
-#include <QTime> //Performance testing
 #include <QNetworkReply>
 #include <QVariantMap>
 #include <QEventLoop>

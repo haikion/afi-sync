@@ -289,6 +289,7 @@ QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
     QVariantMap reply  = getVariantMap(API_PREFIX + "/folders/" + fid + "/files?path=" + pathEncoded);
     QVariantMap data = qvariant_cast<QVariantMap>(reply.value("data"));
     QList<QVariant> filesList = qvariant_cast<QList<QVariant>>(data.value("members"));
+    DBG << "Checking files in path: " << path << " filesList =" << filesList;
     for (QVariant fileVariant : filesList)
     {
         QVariantMap map = qvariant_cast<QVariantMap>(fileVariant);
@@ -516,9 +517,10 @@ int BtsApi2::getLastModified(const QString& key)
 
 void BtsApi2::postVariantMapSlot(const QVariantMap& map, const QString& path, QVariantMap& result)
 {
-    DBG << "current thread =" << QThread::currentThread();
     QJsonDocument jsonDoc = QJsonDocument(QJsonObject::fromVariantMap(map));
     QByteArray jsonBytes = jsonDoc.toJson();
+    DBG << "current thread =" << QThread::currentThread()
+        << " path =" << path << " jsonBytes =" << jsonBytes;
     QNetworkRequest request = createSecureRequest(path);
     QEventLoop loop;
     QNetworkReply* reply = nam_.post(request, jsonBytes);
@@ -527,6 +529,7 @@ void BtsApi2::postVariantMapSlot(const QVariantMap& map, const QString& path, QV
     loop.exec();
     heart_->beat(reply);
     QByteArray response = reply->readAll();
+    DBG << "response =" << response;
     result = bytesToVariantMap(response);
 }
 
@@ -583,9 +586,10 @@ BtsSpawnClient* BtsApi2::client()
 QVariantMap BtsApi2::setOwner(const QString& username)
 {
     QVariantMap map;
+    //Results in: invalid parameter 'devicename' submitted
+    //map.insert("devicename", "Desktop");
     map.insert("username", username);
     QVariantMap rVal = postVariantMap(map, API_PREFIX + "/owner");
-    DBG << "rVal =" << rVal;
     return rVal;
 }
 

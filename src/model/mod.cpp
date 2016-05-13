@@ -1,7 +1,6 @@
 #include "debug.h"
 #include <QTimer>
 #include <QtConcurrent/QtConcurrent>
-#include <QTime> //performance testing
 #include <QEventLoop>
 #include <QDirIterator>
 #include "global.h"
@@ -79,7 +78,7 @@ void Mod::start()
 
 void Mod::deleteExtraFiles()
 {
-    DBG << " name =" << name();
+    DBG << "name =" << name();
     if (!checked())
     {
         DBG << "Mod is inactive, doing nothing. name =" << name();
@@ -113,6 +112,7 @@ void Mod::deleteExtraFiles()
         DBG << "Deleting extra file: " << file << " from mod =" << name();
         QFile(file).remove();
     }
+    DBG << "Completed name =" << name();
 }
 
 bool Mod::checked() const

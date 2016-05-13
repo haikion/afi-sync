@@ -1,5 +1,4 @@
 #include <limits>
-#include <QTime>
 #include "syncitem.h"
 #include "debug.h"
 
