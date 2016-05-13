@@ -112,15 +112,16 @@ void Repository::generalLaunch(const QStringList& extraParams)
     QString steamExecutable = SettingsModel::steamPath() + "\\Steam.exe";
     QStringList arguments;
 
+    //FIXME: Figure out what to do....
+    //REMOVED FEATURE due to problems with BtSync reporting incorrect file listing...";
     //Failsafe: Check if installation needed incase download was not registered by AFISync
-    unsigned lastInstall = SettingsModel::installDate(name());
-    unsigned lastMod = lastModified();
-    DBG << "Checking if installation required lastModified =" << lastMod << "lastInstall =" << lastInstall;
-    if (lastMod > lastInstall)
-    {
-        DBG << "Installing...";
-        processCompletion();
-    }
+    //unsigned lastInstall = SettingsModel::installDate(name());
+    //unsigned lastMod = lastModified();
+    //DBG << "Checking if installation required lastModified =" << lastMod << "lastInstall =" << lastInstall;
+    //if (lastMod > lastInstall)
+    //{
+    //    processCompletion();
+    //}
 
     //arma3launcher wont start the game with correct parameters
     //if steam isn't running.

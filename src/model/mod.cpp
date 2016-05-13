@@ -37,7 +37,7 @@ void Mod::threadDestructor()
 
 void Mod::init()
 {
-    DBG << " current thread: " << QThread::currentThread() << " Worker thread: " << Global::workerThread;
+    DBG << "name =" << name() << "current thread: " << QThread::currentThread() << "Worker thread: " << Global::workerThread;
 
     if (!isOptional_)
     {
@@ -49,7 +49,7 @@ void Mod::init()
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(fetchEta()));
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(updateStatus()));
     updateTimer_.start();
-    DBG << "Completed name =" << name();
+    DBG << "name =" << name() << "Completed";
 }
 
 //Starts sync directory. If directory does not exist
@@ -65,15 +65,14 @@ void Mod::start()
 
     if (syncPath.toUpper() != dir.toUpper() || error != "")
     {
-        DBG << "Re-adding directory. syncPath ="
+        DBG << "name =" << name() << "Re-adding directory. syncPath ="
             << syncPath << "dir =" << dir
             << "error =" << error;
         //Disagreement between Sync and AfiSync
         sync_->removeFolder2(key_);
         sync_->addFolder(dir, key_, true);
     }
-    QVariantMap response = sync_->setFolderPaused(key_, false);
-    DBG << "response =" << response << "name =" << name();
+    sync_->setFolderPaused(key_, false);
 }
 
 void Mod::deleteExtraFiles()
@@ -81,7 +80,7 @@ void Mod::deleteExtraFiles()
     DBG << "name =" << name();
     if (!checked())
     {
-        DBG << "Mod is inactive, doing nothing. name =" << name();
+        DBG << "name =" << name()  << "Mod is inactive, doing nothing.";
         return;
     }
 
@@ -98,7 +97,7 @@ void Mod::deleteExtraFiles()
     //or ..bts sends incorrect files list...
     if (remoteFiles.size() == 0 || status() != SyncStatus::READY)
     {
-        DBG << "Warning: Not deleting extra files because mod is not fully synced. =" << name();
+        DBG << "name =" << name() << "Warning: Not deleting extra files because mod is not fully synced.";
         return; //Would delete everything otherwise
     }
 
@@ -147,7 +146,7 @@ QString Mod::joinText()
 //download.
 void Mod::repositoryEnableChanged(bool offline)
 {
-    DBG << " current thread: " << QThread::currentThread() << " Worker thread: " << Global::workerThread;
+    DBG << "name =" << name() << "current thread: " << QThread::currentThread() << "Worker thread: " << Global::workerThread;
     //just in case
     if (!sync_)
     {
@@ -198,7 +197,7 @@ QString Mod::key() const
 
 void Mod::addRepository(Repository* repository)
 {
-    DBG;
+    DBG << "mod name =" << name() << " repo name =" << repository->name();
 
     repositories_.push_back(repository);
     if (repositories().size() == 1)
@@ -207,13 +206,13 @@ void Mod::addRepository(Repository* repository)
         sync_ = repo->btsync();
         if (sync_->ready())
         {
-            DBG << "Calling init directly";
+            DBG << "name =" << name() << "Calling init directly";
             QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
         }
         else
         {
             connect(sync_, SIGNAL(initCompleted()), this, SLOT(init()));
-            DBG << "initCompleted connection created";
+            DBG << "name =" << name() << "initCompleted connection created";
         }
     }
 }
@@ -226,7 +225,7 @@ void Mod::removeRepository(Repository* repository)
     auto it = std::find(repositories_.begin(), repositories_.end(), repository);
     if (it == repositories_.end())
     {
-        DBG << "ERROR: Mod" << name() << "not found in repository:" << repository->name();
+        DBG << "name =" << name() << "ERROR: Mod" << name() << "not found in repository:" << repository->name();
         return;
     }
     repositories_.erase(it);
@@ -244,6 +243,7 @@ void Mod::updateStatus()
     }
     else if (eta() > 0)
     {
+        sync_->getSyncLevel(key_);
         setStatus(SyncStatus::DOWNLOADING);
     }
     else if (sync_->isIndexing(key_))
@@ -258,16 +258,28 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::PAUSED);
     }
-    else if (sync_->getSyncLevel(key_) == SyncLevel::SYNCED)
+    //Hack to fix BtSync reporting ready when it's not... :D (oh my god...)
+    else if (status() == SyncStatus::WAITING)
     {
-        setStatus(SyncStatus::READY);
+        static unsigned waitTime = 0;
+        ++waitTime;
+        if (waitTime > 5)
+        {
+            waitTime = 0;
+            setStatus(SyncStatus::READY);
+        }
+    }
+    //Peers, Eta == 0 and not indexing.
+    else if (status() != SyncStatus::READY)
+    {
+        setStatus(SyncStatus::WAITING);
     }
 }
 
 void Mod::checkboxClicked()
 {
     SyncItem::checkboxClicked();
-    DBG << "checked()=" << checked();
+    DBG << "name =" << name() << "checked()=" << checked();
     QMetaObject::invokeMethod(this, "repositoryEnableChanged", Qt::QueuedConnection);
 }
 

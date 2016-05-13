@@ -239,7 +239,7 @@ void BtsApi2::removeFolder2(const QString& key)
         DBG << "Folder does not exist, returning. key =" << key;
         return;
     }
-    DBG << "Folder found, deleting. key=" << key;
+    DBG << "Folder found, deleting. key =" << key;
     QString fid = keyToFid(key);
     QMetaObject::invokeMethod(this, "httpDeleteSlot", connectionType(),
                               Q_ARG(QString, API_PREFIX + "/folders/" + fid),
@@ -432,6 +432,7 @@ BtsFolderActivity BtsApi2::getFolderActivity(const QString& key)
     return folderIterator.value();
 }
 
+//Has nothing to do with being completed....
 SyncLevel BtsApi2::getSyncLevel(const QString& key)
 {
     BtsFolderActivity folder = getFolderActivity(key);
