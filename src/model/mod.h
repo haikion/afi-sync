@@ -36,6 +36,8 @@ public slots:
     void threadDestructor();
 
 private:
+    static const unsigned COMPLETION_WAIT_DURATION;
+
     bool isOptional_;
     QString key_;
     BtsApi2* sync_;

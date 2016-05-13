@@ -12,7 +12,7 @@ TreeItem::TreeItem(const QString& name, TreeItem* parentItem)
 {
     m_parentItem = parentItem;
     name_ = name;
-    DBG << "name set name=" << name;
+    DBG << "name set to" << name;
 }
 
 void TreeItem::appendChild(TreeItem* item)

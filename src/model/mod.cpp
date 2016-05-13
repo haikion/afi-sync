@@ -9,6 +9,8 @@
 #include "repository.h"
 #include "installer.h"
 
+const unsigned Mod::COMPLETION_WAIT_DURATION = 5;
+
 Mod::Mod(const QString& name, const QString& key, bool isOptional):
     SyncItem(name, 0),
     isOptional_(isOptional),
@@ -155,7 +157,7 @@ void Mod::repositoryEnableChanged(bool offline)
     bool allDisabled = true;
     for (const Repository* repo : repositories_)
     {
-        DBG <<"checking mod name=" << name() << " repo name=" << repo->name();
+        DBG <<"checking mod name =" << name() << " repo name =" << repo->name();
         if (repo->checked())
         {
             //At least one repo is active
@@ -263,7 +265,7 @@ void Mod::updateStatus()
     {
         static unsigned waitTime = 0;
         ++waitTime;
-        if (waitTime > 5)
+        if (waitTime > COMPLETION_WAIT_DURATION)
         {
             waitTime = 0;
             setStatus(SyncStatus::READY);
