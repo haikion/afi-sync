@@ -173,6 +173,15 @@ bool BtsApi2::ready()
     return ready_;
 }
 
+//Chrashes BtSync ...
+void BtsApi2::setPort(int port)
+{
+    QVariantMap map;
+    map.insert("listeningport", port);
+    QVariantMap rVal = patchVariantMap(map, API_PREFIX + "/client/settings");
+    DBG << "rVal =" << rVal;
+}
+
 
 QVariantMap BtsApi2::addFolder(const QString& path, const QString& key, bool force)
 {

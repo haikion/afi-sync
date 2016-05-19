@@ -112,6 +112,21 @@ unsigned SettingsModel::installDate(const QString& repoName)
     return settings()->value("installDate" + repoName).toInt();
 }
 
+void SettingsModel::setPort(const QString& port)
+{
+    settings()->setValue("port", port);
+    if (Global::sync == nullptr)
+    {
+        return;
+    }
+    Global::sync->setPort(port.toInt());
+}
+
+QString SettingsModel::port()
+{
+    return settings()->value("port", "0").toString();
+}
+
 void SettingsModel::setMaxUpload(const QString& value)
 {
     DBG;

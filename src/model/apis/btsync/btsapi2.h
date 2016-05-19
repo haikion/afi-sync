@@ -67,6 +67,7 @@ public:
     void setMaxUpload(unsigned limit);
     void setMaxDownload(unsigned limit);
     bool ready();
+    void setPort(int port);
 
 public slots:
     QVariantMap addFolder(const QString& path, const QString& key, bool force = false);

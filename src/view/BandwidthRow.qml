@@ -6,6 +6,7 @@ Rectangle {
 
     property string labelText
     property string fieldText
+    property string unit: "KB/s"
     signal fieldChanged()
     //Work-a-round ... Property binding gets old value.
     function getFieldText() {
@@ -35,18 +36,24 @@ Rectangle {
 
     TextField {
         property bool init: true
+        //Wait at least one second before apply
+        property Timer spamFilter: Timer {
+            interval: 1000
+            onTriggered: parent.parent.fieldChanged()
+        }
         id: tf
         validator: IntValidator {bottom: 0}
         enabled: cb.checked
         height: parent.height
-        x: 80
+        x: 130
         anchors.verticalCenter: parent.verticalCenter
         onTextChanged: {
             if (init)
             {
                 return;
             }
-            parent.fieldChanged()
+            spamFilter.restart()
+            //parent.fieldChanged()
         }
         Component.onCompleted: {
             text = fieldText
@@ -56,7 +63,7 @@ Rectangle {
     }
 
     Text {
-        text: "KB/s"
+        text: unit
         font.pixelSize: labelFont
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: tf.right

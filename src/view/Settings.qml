@@ -199,7 +199,7 @@ Column {
 
         Text {
             id: title
-            text: "Bandwidth Limits"
+            text: "Network Settings"
             font.pixelSize: labelFont
             anchors.top: parent.top
             anchors.topMargin: 3
@@ -215,7 +215,7 @@ Column {
             anchors.left: parent.left
             anchors.leftMargin: 3
             height: defaultHeight
-            labelText: "Upload:"
+            labelText: "Upload limit:"
             fieldText: SettingsModel.maxUpload()
             onFieldChanged: {
                 console.log("upload set: " + getFieldText())
@@ -224,18 +224,36 @@ Column {
         }
 
         BandwidthRow {
+            id: downloadRow
             anchors.top: uploadRow.bottom
             anchors.topMargin: 3
             anchors.left: parent.left
             anchors.leftMargin: 3
             height: defaultHeight
-            labelText: "Download:"
+            labelText: "Download limit:"
             fieldText: SettingsModel.maxDownload()
             onFieldChanged: {
                 console.log("Download set: " + getFieldText())
                 SettingsModel.setMaxDownload(getFieldText())
             }
         }
+
+        /*
+        BandwidthRow {
+            unit: ""
+            anchors.top: downloadRow.bottom
+            anchors.topMargin: 3
+            anchors.left: parent.left
+            anchors.leftMargin: 3
+            height: defaultHeight
+            labelText: "Port (0 = random):"
+            fieldText: SettingsModel.port()
+            onFieldChanged: {
+                console.log("Port set: " + getFieldText())
+                SettingsModel.setPort(getFieldText())
+            }
+        }
+        */
     }
 
     Rectangle {
