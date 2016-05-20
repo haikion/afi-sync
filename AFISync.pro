@@ -62,6 +62,7 @@ HEADERS += \
     src/model/debug.h \
     src/model/modviewadapter.h \
     src/model/apis/heart.h \
-    src/model/runningtime.h
+    src/model/runningtime.h \
+    src/model/apis/isync.h
 
 DISTFILES +=

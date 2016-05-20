@@ -1,5 +1,6 @@
 #ifndef DEBUG_H
 #define DEBUG_H
+#include <QDebug>
 #include "global.h"
 #include "runningtime.h"
 

@@ -7,6 +7,6 @@ namespace Global
     QThread* workerThread = new QThread();
     TreeModel* model = nullptr;
     QTextStream* logStream = nullptr;
-    BtsApi2* sync = nullptr;
+    ISync* sync = nullptr;
     bool guiless = false;
 }

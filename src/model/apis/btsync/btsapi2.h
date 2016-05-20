@@ -14,6 +14,7 @@
 #include <QSet>
 #include <QTimer>
 #include <QThread>
+#include "../isync.h"
 #include "../heart.h"
 #include "libbtsync-qt/bts_api.h"
 #include "libbtsync-qt/bts_spawnclient.h"
@@ -35,9 +36,10 @@ enum FileState {
     DELETED = 2
 };
 
-class BtsApi2: public BtsApi
+class BtsApi2: public BtsApi, public ISync
 {
     Q_OBJECT
+    Q_INTERFACES(ISync)
 
 public:
     BtsApi2(const QString& username, const QString& password, unsigned port, QObject* parent = nullptr);
@@ -51,7 +53,7 @@ public:
     SyncLevel getSyncLevel(const QString& key);
     bool noPeers(const QString& key);
     bool isIndexing(const QString& key);
-    QVariantMap setFolderPaused(const QString& key, bool value);
+    void setFolderPaused(const QString& key, bool value);
     int getFolderEta(const QString& key);
     void removeFolder2(const QString& key);
     QSet<QString> getFilesUpper(const QString& key, const QString& path = "");
@@ -70,7 +72,7 @@ public:
     void setPort(int port);
 
 public slots:
-    QVariantMap addFolder(const QString& path, const QString& key, bool force = false);
+    void addFolder(const QString& path, const QString& key, bool force = false);
     QString token();
     QVariantMap setDefaultSyncLevel(SyncLevel level);
     void restart2();

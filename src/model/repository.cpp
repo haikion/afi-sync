@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QStandardPaths>
+#include <QDateTime>
 #include "debug.h"
 #include "settingsmodel.h"
 #include "settingsmodel.h"
@@ -12,7 +13,7 @@
 Repository::Repository(const QString& name, const QString& serverAddress, unsigned port,
                       QString password, RootItem* parent):
     SyncItem(name, parent),
-    btsync_(parent->btsync()),
+    sync_(parent->sync()),
     serverAddress_(serverAddress),
     port_(port),
     password_(password),
@@ -283,10 +284,10 @@ QString Repository::joinText()
     return "Join Disabled";
 }
 
-BtsApi2* Repository::btsync() const
+ISync* Repository::sync() const
 {
     DBG;
-    return btsync_;
+    return sync_;
 }
 
 void Repository::enableMods()

@@ -13,7 +13,6 @@
 #include <QThread>
 #include <QFile>
 #include <QCoreApplication>
-#include "apis/btsync/libbtsync-qt/bts_global.h"
 #include "treeitem.h"
 #include "repository.h"
 #include "mod.h"

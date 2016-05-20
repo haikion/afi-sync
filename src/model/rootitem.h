@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QTimer>
-#include "apis/btsync/btsapi2.h"
+#include "apis/isync.h"
 #include "treemodel.h"
 #include "treeitem.h"
 
@@ -20,7 +20,7 @@ public:
     virtual ~RootItem();
 
     void updateView(TreeItem* item, int row = -1);
-    BtsApi2* btsync() const;
+    ISync* sync() const;
     QList<Repository*> childItems();
     void resetSyncSettings();
 
@@ -33,7 +33,7 @@ private slots:
 private:
     bool initializing_;
     TreeModel* parent_;
-    BtsApi2* sync_;
+    ISync* sync_;
     QTimer updateTimer_;
     QString username_;
     QString password_;

@@ -1,5 +1,4 @@
 #include <limits>
-#include <QtDebug>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QEventLoop>
@@ -99,7 +98,7 @@ BtsClient* BtsApi2::createBtsClient(const QString& username, const QString& pass
     }
     btsclient->setHost(host);
     btsclient->setAutorestart(false);
-    QString dataPath = Constants::BTSYNC_SETTINGS_PATH;
+    QString dataPath = Constants::SYNC_SETTINGS_PATH;
     DBG << "Creating BtSync data path.";
     QDir().mkpath(dataPath);
     btsclient->setDataPath(dataPath);
@@ -183,13 +182,12 @@ void BtsApi2::setPort(int port)
 }
 
 
-QVariantMap BtsApi2::addFolder(const QString& path, const QString& key, bool force)
+void BtsApi2::addFolder(const QString& path, const QString& key, bool force)
 {
     DBG << " path=" << path << " key=" << key;
     if (exists(key))
     {
         DBG << "Folder already exists!";
-        return QVariantMap();
     }
     QVariantMap obj;
     obj.insert("force", force);
@@ -201,7 +199,6 @@ QVariantMap BtsApi2::addFolder(const QString& path, const QString& key, bool for
     setOverwrite(key, true);
     setForce(key, true);
     DBG << "response =" << response << "path =" << path;
-    return response;
 }
 
 QVariantMap BtsApi2::setOverwrite(const QString& key, bool value)
@@ -225,19 +222,17 @@ QVariantMap BtsApi2::setForce(const QString& key, bool value)
 }
 
 
-QVariantMap BtsApi2::setFolderPaused(const QString& key, bool value)
+void BtsApi2::setFolderPaused(const QString& key, bool value)
 {
     if (!exists(key) || paused(key) == value)
     {
         DBG << "Folder does not exist or it is already paused. Returning empty value.";
-        return QVariantMap();
     }
     QString fid = keyToFid(key);
     QVariantMap obj;
     obj.insert("paused", value);
     QVariantMap response = patchVariantMap(obj, API_PREFIX + "/folders/" + fid, 2000);
     DBG << "response =" << response;
-    return response;
 }
 
 void BtsApi2::removeFolder2(const QString& key)

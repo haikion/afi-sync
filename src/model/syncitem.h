@@ -10,14 +10,14 @@
 namespace SyncStatus {
     static const QString DOWNLOADING = "Downloading...";
     static const QString READY = "Ready";
-    static const QString NO_BTSYNC_CONNECTION = "No Sync Connection.";
+    static const QString NO_SYNC_CONNECTION = "No Sync Connection.";
     static const QString INDEXING = "Indexing...";
     static const QString WAITING = "Waiting...";
-    static const QString NO_PEERS = "No peers";
+    static const QString NO_PEERS = "No Peers";
     static const QString NO_FILES = "No Files";
-    static const QString NOT_IN_BTSYNC = "Not in BTSync";
+    static const QString NOT_IN_SYNC = "Not in Sync";
     static const QString INACTIVE = "Inactive";
-    static const QString PAUSED = "paused";
+    static const QString PAUSED = "Paused";
 }
 
 class SyncItem : public TreeItem, public QObject
@@ -46,9 +46,7 @@ private:
     static QSettings* settings_;
     QString name_;
     QString status_;
-    BtsApi2* btsync_;
     int eta_;
-    //QSettings settings_; <- Causes slow construction.
 };
 
 #endif // ABSTRACTITEM_H

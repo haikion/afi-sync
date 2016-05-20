@@ -169,11 +169,6 @@ void SettingsModel::setModDownloadPath(const QString& path)
     }
 }
 
-bool SettingsModel::resetBtsync()
-{
-    return settings()->value("resetBtsync", false).toBool();
-}
-
 void SettingsModel::resetModDownloadPath()
 {
     setModDownloadPath(PathFinder::arma3MyDocuments());

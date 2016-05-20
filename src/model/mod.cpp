@@ -18,7 +18,7 @@ Mod::Mod(const QString& name, const QString& key, bool isOptional):
     sync_(0)
 {
     DBG;
-    setStatus(SyncStatus::NO_BTSYNC_CONNECTION);
+    setStatus(SyncStatus::NO_SYNC_CONNECTION);
     moveToThread(Global::workerThread);
     updateTimer_.moveToThread(Global::workerThread);
     qRegisterMetaType<QVector<int>>("QVector<int>");
@@ -205,7 +205,7 @@ void Mod::addRepository(Repository* repository)
     if (repositories().size() == 1)
     {
         Repository* repo = repositories_.at(0);
-        sync_ = repo->btsync();
+        sync_ = repo->sync();
         if (sync_->ready())
         {
             DBG << "name =" << name() << "Calling init directly";
@@ -213,7 +213,7 @@ void Mod::addRepository(Repository* repository)
         }
         else
         {
-            connect(sync_, SIGNAL(initCompleted()), this, SLOT(init()));
+            connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(init()));
             DBG << "name =" << name() << "initCompleted connection created";
         }
     }
@@ -241,11 +241,10 @@ void Mod::updateStatus()
     }
     else if (!sync_->exists(key_))
     {
-        setStatus(SyncStatus::NOT_IN_BTSYNC);
+        setStatus(SyncStatus::NOT_IN_SYNC);
     }
     else if (eta() > 0)
     {
-        sync_->getSyncLevel(key_);
         setStatus(SyncStatus::DOWNLOADING);
     }
     else if (sync_->isIndexing(key_))

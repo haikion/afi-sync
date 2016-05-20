@@ -1,4 +1,5 @@
 #include <limits>
+#include <QTime>
 #include "syncitem.h"
 #include "debug.h"
 
@@ -7,7 +8,7 @@ QSettings* SyncItem::settings_ = nullptr;
 SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
     TreeItem(name, parentItem),
     name_(name),
-    status_(SyncStatus::NO_BTSYNC_CONNECTION),
+    status_(SyncStatus::NO_SYNC_CONNECTION),
     eta_(std::numeric_limits<int>::max())
 {
     if (settings_ == nullptr)

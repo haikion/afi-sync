@@ -5,8 +5,7 @@
 #include <QModelIndex>
 #include <QVariant>
 #include <QVariant>
-#include "apis/btsync/libbtsync-qt/bts_spawnclient.h"
-#include "apis/btsync/btsapi2.h"
+#include "apis/isync.h"
 
 class RootItem;
 class TreeItem;
@@ -69,10 +68,6 @@ private:
     unsigned upload_;
 
     void setupModelData(const QStringList& lines, TreeItem* parent);
-    void setClient(BtsClient* newclient);
-    void initBtsync();
-    BtsClient*createBtsClient();
-    void handleZombie(BtsSpawnClient* btsclient);
     void postInit();
     QString bandwithString(int amount) const;
 };

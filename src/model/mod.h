@@ -4,7 +4,8 @@
 #include <vector>
 #include <QThread>
 #include <QObject>
-#include "apis/btsync/btsapi2.h"
+#include <QTimer>
+#include "apis/isync.h"
 #include "syncitem.h"
 
 class Repository;
@@ -40,7 +41,7 @@ private:
 
     bool isOptional_;
     QString key_;
-    BtsApi2* sync_;
+    ISync* sync_;
     QTimer updateTimer_;
     std::vector<Repository*> repositories_;
 

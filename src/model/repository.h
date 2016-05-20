@@ -21,7 +21,7 @@ public:
     void updateView(TreeItem* item, int row = -1);
     virtual void checkboxClicked();
     void checkboxClicked(bool offline);
-    BtsApi2* btsync() const;
+    ISync* sync() const;
     virtual QString startText();
     virtual QString joinText();
     void join();
@@ -35,7 +35,7 @@ private slots:
     void update();
 
 private:
-    BtsApi2* btsync_;
+    ISync* sync_;
     //Server details
     QString serverAddress_;
     unsigned port_;
@@ -44,7 +44,6 @@ private:
     //True if repo is ready
     bool ready_;
 
-    void handleDirError(unsigned errorCode, BtsGetFoldersResult folder);
     QString modsParameter() const;
     QStringList joinParameters() const;
     void generalLaunch(const QStringList& extraParams = QStringList());

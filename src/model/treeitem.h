@@ -2,7 +2,7 @@
 #define TREEITEM_H
 #include <QVariant>
 #include <QList>
-#include "apis/btsync/btsapi2.h"
+#include "apis/isync.h"
 
 //Impolements Qt tree model item
 

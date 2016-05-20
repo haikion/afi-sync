@@ -1,12 +1,13 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <QThread>
-#include "debug.h"
 #include <QModelIndex>
 #include <QFile>
 #include <QDir>
 #include <QSet>
 #include <QTimer>
+#include "apis/btsync/btsapi2.h"
+#include "debug.h"
 #include "global.h"
 #include "rootitem.h"
 #include "repository.h"
@@ -41,7 +42,7 @@ RootItem::RootItem(const QString& username, const QString& password, unsigned po
     }
     else
     {
-        connect(sync_, SIGNAL(initCompleted()), this, SLOT(removeOrphans()));
+        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(removeOrphans()));
     }
     initializing_ = false;
     Global::workerThread->start();
@@ -113,13 +114,13 @@ void RootItem::resetSyncSettings()
         }
     }
     //Brute way to avoid "file in use" while btsync is shutting down.
-    QDir dir(Constants::BTSYNC_SETTINGS_PATH);
+    QDir dir(Constants::SYNC_SETTINGS_PATH);
     int attempts = 0;
     while ( dir.exists() && attempts < 100 )
     {
         dir.removeRecursively();
         //It's rape time.
-        DBG << "Warning: Failure to delete BtSync Storage... retrying path ="
+        DBG << "Warning: Failure to delete Sync Storage... retrying path ="
             << dir.currentPath()
             << " attempts =" << attempts;
         QThread::sleep(1);
@@ -151,7 +152,7 @@ void RootItem::updateView(TreeItem* item, int row)
     parent_->updateView(item, row);
 }
 
-BtsApi2* RootItem::btsync() const
+ISync* RootItem::sync() const
 {
     return sync_;
 }
@@ -183,8 +184,8 @@ void RootItem::initSync()
     sync_ = new BtsApi2(username_, password_, port_);
     updateTimer_.setInterval(1000);
     DBG << "Setting up speed updates";
-    connect(&updateTimer_, SIGNAL(timeout()), sync_, SLOT(getSpeed()));
-    connect(sync_, SIGNAL(getSpeedResult(qint64,qint64)), parent_, SLOT(updateSpeed(qint64,qint64)));
+    connect(&updateTimer_, SIGNAL(timeout()), dynamic_cast<QObject*>(sync_), SLOT(getSpeed()));
+    connect(dynamic_cast<QObject*>(sync_), SIGNAL(getSpeedResult(qint64,qint64)), parent_, SLOT(updateSpeed(qint64,qint64)));
     if (sync_->ready())
     {
         DBG << "Starting updateTimer directly";
@@ -193,6 +194,6 @@ void RootItem::initSync()
     else
     {
         DBG << "Connecting updateTimer start to initCompleted()";
-        connect(sync_, SIGNAL(initCompleted()), &updateTimer_, SLOT(start()));
+        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), &updateTimer_, SLOT(start()));
     }
 }

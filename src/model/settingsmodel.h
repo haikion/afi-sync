@@ -12,8 +12,6 @@ class SettingsModel: public QObject
 public:
     SettingsModel(QObject* parent = 0);
 
-    bool resetBtsync();
-
 public slots:
     static QString launchParameters();
     void setLaunchParameters(const QString& parameters);
