@@ -55,7 +55,7 @@ public:
     bool isIndexing(const QString& key);
     void setFolderPaused(const QString& key, bool value);
     int getFolderEta(const QString& key);
-    void removeFolder2(const QString& key);
+    bool removeFolder2(const QString& key);
     QSet<QString> getFilesUpper(const QString& key, const QString& path = "");
     QVariantMap setOverwrite(const QString& key, bool value);
     QVariantMap setForce(const QString& key, bool value);
@@ -72,7 +72,7 @@ public:
     void setPort(int port);
 
 public slots:
-    void addFolder(const QString& path, const QString& key, bool force = false);
+    bool addFolder(const QString& path, const QString& key, bool force = false);
     QString token();
     QVariantMap setDefaultSyncLevel(SyncLevel level);
     void restart2();

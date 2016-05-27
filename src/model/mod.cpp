@@ -187,10 +187,11 @@ std::vector<Repository*> Mod::repositories() const
     return repositories_;
 }
 
-int Mod::lastModified()
-{
-    return sync_->getLastModified(key_);
-}
+//Not supported by libTorrent
+//int Mod::lastModified()
+//{
+//    return sync_->getLastModified(key_);
+//}
 
 QString Mod::key() const
 {

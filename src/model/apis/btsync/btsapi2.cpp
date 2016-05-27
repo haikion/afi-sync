@@ -182,12 +182,13 @@ void BtsApi2::setPort(int port)
 }
 
 
-void BtsApi2::addFolder(const QString& path, const QString& key, bool force)
+bool BtsApi2::addFolder(const QString& path, const QString& key, bool force)
 {
     DBG << " path=" << path << " key=" << key;
     if (exists(key))
     {
         DBG << "Folder already exists!";
+        return false;
     }
     QVariantMap obj;
     obj.insert("force", force);
@@ -199,6 +200,7 @@ void BtsApi2::addFolder(const QString& path, const QString& key, bool force)
     setOverwrite(key, true);
     setForce(key, true);
     DBG << "response =" << response << "path =" << path;
+    return true;
 }
 
 QVariantMap BtsApi2::setOverwrite(const QString& key, bool value)
@@ -235,13 +237,13 @@ void BtsApi2::setFolderPaused(const QString& key, bool value)
     DBG << "response =" << response;
 }
 
-void BtsApi2::removeFolder2(const QString& key)
+bool BtsApi2::removeFolder2(const QString& key)
 {
     DBG;
     if (!exists(key))
     {
         DBG << "Folder does not exist, returning. key =" << key;
-        return;
+        return false;
     }
     DBG << "Folder found, deleting. key =" << key;
     QString fid = keyToFid(key);
@@ -254,6 +256,7 @@ void BtsApi2::removeFolder2(const QString& key)
         DBG << "Checking if folder removed. attempts =" << attempts;
         fillCache();
     }
+    return true;
 }
 
 void BtsApi2::httpDeleteSlot(const QString& path, unsigned timeout)

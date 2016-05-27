@@ -53,7 +53,6 @@ Repository::~Repository()
 void Repository::processCompletion()
 {
     ready_ = true;
-    DBG << "LastModified: " << lastModified();
     for (Mod* mod : mods())
     {
         mod->deleteExtraFiles();
@@ -62,15 +61,16 @@ void Repository::processCompletion()
     SettingsModel::setInstallDate(name(), QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
 }
 
-int Repository::lastModified()
-{
-    int lastModified = 0;
-    for (Mod* mod : mods())
-    {
-        lastModified = std::max(lastModified, mod->lastModified());
-    }
-    return lastModified;
-}
+//FIXME: Clean up
+//int Repository::lastModified()
+//{
+//    int lastModified = 0;
+//    for (Mod* mod : mods())
+//    {
+//        lastModified = std::max(lastModified, mod->lastModified());
+//    }
+//    return lastModified;
+//}
 
 void Repository::updateView(TreeItem* item, int row)
 {

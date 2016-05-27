@@ -28,7 +28,7 @@ public:
     virtual QString startText();
     virtual QString joinText();
     std::vector<Repository*> repositories() const;
-    int lastModified();
+    //int lastModified();
     void deleteExtraFiles();
     virtual bool checked() const;
 

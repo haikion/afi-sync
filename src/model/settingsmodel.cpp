@@ -124,7 +124,7 @@ void SettingsModel::setPort(const QString& port)
 
 QString SettingsModel::port()
 {
-    return settings()->value("port", "0").toString();
+    return settings()->value("port", "42000").toString();
 }
 
 void SettingsModel::setMaxUpload(const QString& value)

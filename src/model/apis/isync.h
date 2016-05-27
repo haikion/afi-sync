@@ -22,13 +22,14 @@ public:
     //Fetches eta to ready state. Returns time in seconds.
     virtual int getFolderEta(const QString& key) = 0;
     //Removes folder with specific key.
-    virtual void removeFolder2(const QString& key) = 0;
+    virtual bool removeFolder2(const QString& key) = 0;
     //Returns list of files in folder in upper case format.
     virtual QSet<QString> getFilesUpper(const QString& key, const QString& path = "") = 0;
     //Returns true if folder with specific key exists.
     virtual bool exists(const QString& key) = 0;
+    //Not supported by libtorrent
     //Returns last modification date. Format: Seconds since epoch
-    virtual int getLastModified(const QString& key) = 0;
+    //virtual int getLastModified(const QString& key) = 0;
     //Returns true if folder is paused
     virtual bool paused(const QString& key) = 0;
     //Returns string describing the error. Returns empty string if no error.
@@ -46,7 +47,7 @@ public:
     //Sets outgoing port.
     virtual void setPort(int port) = 0;
     //Adds folder, path is local system directory, key is source, force is overwrite flag.
-    virtual void addFolder(const QString& path, const QString& key, bool force = false) = 0;
+    virtual bool addFolder(const QString& path, const QString& key, bool force = false) = 0;
     //Restarts sync
     virtual void restart2() = 0;
 

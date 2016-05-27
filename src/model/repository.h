@@ -47,7 +47,7 @@ private:
     QString modsParameter() const;
     QStringList joinParameters() const;
     void generalLaunch(const QStringList& extraParams = QStringList());
-    int lastModified();
+    //int lastModified(); FIXME: clean up
     RootItem* parentItem();
     QString createParFile(const QString& parameters);
 };
