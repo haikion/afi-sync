@@ -1,6 +1,7 @@
 import QtQuick 2.3
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
+import QtQuick.Dialogs 1.2
 import org.AFISync 0.1
 
 Item {
@@ -8,6 +9,8 @@ Item {
     visible: true
     property bool initializing: true
     property variant syncViewObj: syncView
+    property string downloadStr
+    property string uploadStr
 
     Component.onCompleted: {
         //syncViewObj = syncViewComponent.createObject(afiSyncWindow);
@@ -15,6 +18,26 @@ Item {
         console.log("loaded " + parent.enabled + " " + parent.visible + " " + parent.width + " " + parent.height)
         parent.visible = false;
         parent.visible = true;
+        speedTimer.running = true;
+    }
+
+    MessageDialog {
+        id: arma3RunningDlg
+        title: "Warning"
+        text: "ArmA 3 is running during download. Please close ArmA 3."
+    }
+
+    Timer {
+        id: speedTimer
+        interval: 1
+        running: false
+        repeat: true
+        onTriggered: {
+            downloadStr = TreeModel.getDownload()
+            uploadStr = TreeModel.getUpload()
+            if (parseInt(downloadStr) > 0 && ProcessMonitor.arma3Running())
+                arma3RunningDlg.visible = true
+        }
     }
 
     SyncView {
@@ -75,14 +98,15 @@ Item {
             }
 
             Text {
-                Component.onCompleted: {
-                    text = Qt.binding(function () {return TreeModel.download})
-                }
+                //Causes memory leak
+                //Component.onCompleted: {
+                //    text = Qt.binding(function () {return TreeModel.download})
+                //}
 
                 id: downloadAmountText
                 y: 0
                 width: 100
-                text: "Loading.."
+                text: downloadStr
                 anchors.left: downloadText.right
                 anchors.leftMargin: 0
                 anchors.bottom: parent.bottom
@@ -109,13 +133,14 @@ Item {
             }
 
             Text {
-                Component.onCompleted: {
-                    text = Qt.binding(function () {return TreeModel.upload})
-                }
+                //Memory leak
+                //Component.onCompleted: {
+                //    text = Qt.binding(function () {return TreeModel.upload})
+                //}
 
                 id: uploadAmountText
                 y: 0
-                text: "Loading..."
+                text: uploadStr
                 anchors.right: parent.right
                 anchors.rightMargin: 0
                 anchors.left: uploadText.right

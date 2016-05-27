@@ -12,6 +12,7 @@
 #include "treemodel.h"
 #include "settingsmodel.h"
 #include "debug.h"
+#include "processmonitor.h"
 
 static const QString LOG_FILE = "afisync.log";
 
@@ -31,6 +32,13 @@ static QObject* getSettingsModel(QQmlEngine* engine, QJSEngine* scriptEngine)
     return new SettingsModel(engine);
 }
 
+static QObject* getProcessMonitor(QQmlEngine* engine, QJSEngine* scriptEngine)
+{
+    Q_UNUSED(scriptEngine)
+
+    return new ProcessMonitor(engine);
+}
+
 void messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
     Q_UNUSED(type)
@@ -43,6 +51,7 @@ int gui(int argc, char* argv[])
 {
     qmlRegisterSingletonType<TreeModel>("org.AFISync", 0, 1, "TreeModel", getTreeModel);
     qmlRegisterSingletonType<SettingsModel>("org.AFISync", 0, 1, "SettingsModel", getSettingsModel);
+    qmlRegisterSingletonType<ProcessMonitor>("org.AFISync", 0, 1, "ProcessMonitor", getProcessMonitor);
     DBG << "QML Singletons registered";
     QGuiApplication app(argc, argv);
     DBG << "QGuiApplication created";

@@ -27,7 +27,8 @@ SOURCES += src/model/main.cpp \
     src/model/global.cpp \
     src/model/modviewadapter.cpp \
     src/model/apis/heart.cpp \
-    src/model/runningtime.cpp
+    src/model/runningtime.cpp \
+    src/model/processmonitor.cpp
 
 RESOURCES += qml.qrc
 
@@ -63,6 +64,7 @@ HEADERS += \
     src/model/modviewadapter.h \
     src/model/apis/heart.h \
     src/model/runningtime.h \
-    src/model/apis/isync.h
+    src/model/apis/isync.h \
+    src/model/processmonitor.h
 
 DISTFILES +=

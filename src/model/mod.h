@@ -44,6 +44,7 @@ private:
     ISync* sync_;
     QTimer updateTimer_;
     std::vector<Repository*> repositories_;
+    unsigned waitTime_;
 
     void buildPathHash();
 

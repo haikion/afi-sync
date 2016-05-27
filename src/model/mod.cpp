@@ -15,7 +15,8 @@ Mod::Mod(const QString& name, const QString& key, bool isOptional):
     SyncItem(name, 0),
     isOptional_(isOptional),
     key_(key),
-    sync_(0)
+    sync_(0),
+    waitTime_(0)
 {
     DBG;
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
@@ -263,11 +264,10 @@ void Mod::updateStatus()
     //Hack to fix BtSync reporting ready when it's not... :D (oh my god...)
     else if (status() == SyncStatus::WAITING)
     {
-        static unsigned waitTime = 0;
-        ++waitTime;
-        if (waitTime > COMPLETION_WAIT_DURATION)
+        ++waitTime_;
+        if (waitTime_ > COMPLETION_WAIT_DURATION)
         {
-            waitTime = 0;
+            waitTime_ = 0;
             setStatus(SyncStatus::READY);
         }
     }
