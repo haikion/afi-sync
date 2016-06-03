@@ -259,7 +259,6 @@ QSet<QString> LibTorrentApi::getFilesUpper(const QString& key, const QString& pa
     lt::file_storage files = torrentFile->files();
     for (int i = 0; i < files.num_files(); ++i)
     {
-        //FIXME
         QString value = QString::fromStdString(handle.save_path() + "\\" + files.file_path(i));
         value = QFileInfo(value).absoluteFilePath().toUpper();
         DBG << "appending value:" << value;
@@ -479,11 +478,10 @@ bool LibTorrentApi::addFolder(const QString& path, const QString& key, bool forc
         return false;
 
     QFileInfo fi(path);
-    QDir parentDir = fi.dir();
-    parentDir.mkpath(".");
-    if (!parentDir.isReadable())
+    QDir().mkpath(fi.absoluteFilePath());
+    if (!fi.isReadable())
     {
-        DBG << "ERROR: Parent dir " << parentDir.absolutePath() << " is not readable.";
+        DBG << "ERROR: Parent dir " << fi.absoluteFilePath() << "is not readable.";
         return false;
     }
 
@@ -494,16 +492,16 @@ bool LibTorrentApi::addFolder(const QString& path, const QString& key, bool forc
         return false;
     }
     lt::add_torrent_params atp;
-    atp.name = fi.fileName().toStdString();
+    //atp.name = fi.fileName().toStdString();
     atp.url = lowerKey.toStdString();
-    atp.save_path = QDir::toNativeSeparators(parentDir.absolutePath()).toStdString();
+    atp.save_path = QDir::toNativeSeparators(fi.absoluteFilePath()).toStdString();
     DBG << "url =" << QString::fromStdString(atp.url)
         << "save_path =" << QString::fromStdString(atp.save_path);
     lt::error_code ec;
     libtorrent::torrent_handle handle = session_->add_torrent(atp, ec);
     if (ec)
     {
-        DBG << "ERROR: Adding torrent failed. ec =" << ec.message().c_str();
+        DBG << "ERROR: Adding torrent failed:" << ec.message().c_str();
         return false;
     }
     //Wait for torrent file to download.
@@ -515,7 +513,7 @@ bool LibTorrentApi::addFolder(const QString& path, const QString& key, bool forc
     }
     if (status.state == lt::torrent_status::downloading_metadata)
     {
-        DBG << "ERROR: Failure downloading torrent from:" << key << "message =" << status.error.c_str();
+        DBG << "ERROR: Failure downloading torrent from" << key << ":" << status.error.c_str();
         return false;
     }
 
