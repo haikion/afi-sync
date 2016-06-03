@@ -43,9 +43,11 @@ class BtsApi2: public BtsApi, public ISync
 
 public:
     BtsApi2(const QString& username, const QString& password, unsigned port, QObject* parent = nullptr);
+    BtsApi2(QObject *parent = nullptr);
     BtsApi2(BtsClient* client, QObject* parent = nullptr);
     ~BtsApi2();
 
+    virtual void check(const QString& key);
     QList<BtsFolderActivity>  getFoldersActivityResult();
     FolderHash getFoldersActivity(); //Caching
     QList<QString> getFolderKeys();
@@ -66,8 +68,11 @@ public:
     QString error(const QString& key);
     QString getFolderPath(const QString& key);
     void shutdown2();
+    virtual qint64 getDownload() const;
+    virtual qint64 getUpload() const;
     void setMaxUpload(unsigned limit);
     void setMaxDownload(unsigned limit);
+    virtual bool folderReady(const QString& key);
     bool ready();
     void setPort(int port);
 

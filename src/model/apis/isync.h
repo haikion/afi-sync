@@ -11,10 +11,14 @@ class ISync
 public:
     virtual ~ISync() {}
 
+    //Rechecks folder
+    virtual void check(const QString& key) = 0;
     //Returns list of keys of added folders.
     virtual QList<QString> getFolderKeys() = 0;
     //Returns true if there are no peers.
     virtual bool noPeers(const QString& key) = 0;
+    //Returns true if folder with given key has finished downloading
+    virtual bool folderReady(const QString& key) = 0;
     //Returns true if folder is indexing or checking files.
     virtual bool isIndexing(const QString& key) = 0;
     //Sets folder in paused mode or starts if if value is set to false.
@@ -36,6 +40,9 @@ public:
     virtual QString error(const QString& key) = 0;
     //Returns file system path of the folder with specific key.
     virtual QString getFolderPath(const QString& key) = 0;
+    //Returns total bandwidths
+    virtual qint64 getDownload() = 0;
+    virtual qint64 getUpload() = 0;
     //Shutdowns the sync
     virtual void shutdown2() = 0;
     //Sets global max upload
@@ -43,7 +50,7 @@ public:
     //Sets global max download
     virtual void setMaxDownload(unsigned limit) = 0;
     //Returns true if the sync has loaded and is ready to take commands.
-    virtual bool ready() = 0;
+    virtual bool folderReady() = 0;
     //Sets outgoing port.
     virtual void setPort(int port) = 0;
     //Adds folder, path is local system directory, key is source, force is overwrite flag.

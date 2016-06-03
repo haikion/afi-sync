@@ -45,6 +45,7 @@ private:
     QTimer updateTimer_;
     std::vector<Repository*> repositories_;
     unsigned waitTime_;
+    bool dataDownloaded;
 
     void buildPathHash();
 

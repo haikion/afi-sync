@@ -7,6 +7,7 @@
 #include <QSet>
 #include <QTimer>
 #include "apis/btsync/btsapi2.h"
+#include "apis/libtorrent/libtorrentapi.h"
 #include "debug.h"
 #include "global.h"
 #include "rootitem.h"
@@ -36,7 +37,7 @@ RootItem::RootItem(const QString& username, const QString& password, unsigned po
     DBG << "initBtsync completed";
     JsonReader::fillEverything(this);
     DBG << "readJson completed";
-    if (sync_->ready())
+    if (sync_->folderReady())
     {
         removeOrphans();
     }
@@ -75,7 +76,7 @@ void RootItem::removeOrphans()
         {
             DBG << "Processing mod =" << mod->name()
                      << " key =" << mod->key()
-                     << " repository=" << repository->name();
+                     << " repository =" << repository->name();
             keys.insert(mod->key());
         }
     }
@@ -179,14 +180,27 @@ QString RootItem::defaultter(const QString& value, const QString& defaultValue)
     return value;
 }
 
+void RootItem::updateSpeed()
+{
+    if (!parent_ || !sync_)
+    {
+        DBG << "ERROR: null value. parent_ =" << parent_ << "sync_" << sync_;
+        return;
+    }
+
+    parent_->updateSpeed(sync_->getDownload(), sync_->getUpload());
+}
+
 void RootItem::initSync()
 {
-    sync_ = new BtsApi2(username_, password_, port_);
+    //sync_ = new BtsApi2(username_, password_, port_);
+    sync_ = new LibTorrentApi();
     updateTimer_.setInterval(1000);
     DBG << "Setting up speed updates";
-    connect(&updateTimer_, SIGNAL(timeout()), dynamic_cast<QObject*>(sync_), SLOT(getSpeed()));
-    connect(dynamic_cast<QObject*>(sync_), SIGNAL(getSpeedResult(qint64,qint64)), parent_, SLOT(updateSpeed(qint64,qint64)));
-    if (sync_->ready())
+    connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(updateSpeed()));
+    //connect(&updateTimer_, SIGNAL(timeout()), dynamic_cast<QObject*>(sync_), SLOT(getSpeed()));
+    //connect(dynamic_cast<QObject*>(sync_), SIGNAL(getSpeedResult(qint64,qint64)), parent_, SLOT(updateSpeed(qint64,qint64)));
+    if (sync_->folderReady())
     {
         DBG << "Starting updateTimer directly";
         updateTimer_.start();

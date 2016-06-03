@@ -1,9 +1,12 @@
 #ifndef LIBTORRENTAPI_H
 #define LIBTORRENTAPI_H
 
+#include <vector>
+
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/alert_types.hpp>
+#include <libtorrent/alert.hpp>
 
 #include <QObject>
 #include <QHash>
@@ -20,10 +23,12 @@ public:
     explicit LibTorrentApi(QObject *parent = 0);
     ~LibTorrentApi();
 
+    virtual void check(const QString& key);
     //Returns list of keys of added folders.
     virtual QList<QString> getFolderKeys();
     //Returns true if there are no peers.
     virtual bool noPeers(const QString& key);
+    virtual bool folderReady(const QString& key);
     //Returns true if folder is indexing or checking files.
     virtual bool isIndexing(const QString& key);
     //Sets folder in paused mode or starts if if value is set to false.
@@ -44,12 +49,15 @@ public:
     virtual QString getFolderPath(const QString& key);
     //Shutdowns the sync
     virtual void shutdown2();
+    //Total bandwiths
+    virtual qint64 getDownload();
+    virtual qint64 getUpload();
     //Sets global max upload
     virtual void setMaxUpload(unsigned limit);
     //Sets global max download
     virtual void setMaxDownload(unsigned limit);
     //Returns true if the sync has loaded and is ready to take commands.
-    virtual bool ready();
+    virtual bool folderReady();
     //Sets outgoing port.
     virtual void setPort(int port);
     //Adds folder, path is local system directory, key is source, force is overwrite flag.
@@ -72,7 +80,9 @@ private:
     libtorrent::session* session_;
     QHash<QString, libtorrent::torrent_handle> keyHash_;
     int numResumeData_;
+    std::vector<libtorrent::alert*>* alerts_;
 
+    void init();
     bool loadSettings();
     void saveSettings();
     boost::shared_ptr<libtorrent::torrent_info> loadFromFile(const QString& path) const;
@@ -84,12 +94,14 @@ private:
     boost::shared_ptr<const libtorrent::torrent_info> getTorrentFile(const libtorrent::torrent_handle& handle) const;
     QString getHashString(const libtorrent::torrent_handle& handle) const;
     QByteArray readFile(const QString& path) const;
-    void handleAlert(libtorrent::alert* a);
-    void handleListenFailedAlert(const libtorrent::listen_failed_alert* a);
-    void handleTorrentCheckAlert(const libtorrent::torrent_checked_alert* a);
-    void handleTorrentFinishedAlert(const libtorrent::torrent_finished_alert* a);
-    void handleListenSucceededAlert(const libtorrent::listen_succeeded_alert* a);
     int bytesToCheck(const QString& key) const;
+    void handleAlert(libtorrent::alert* a);
+    void handleListenFailedAlert(const libtorrent::listen_failed_alert* a) const;
+    void handleTorrentCheckAlert(const libtorrent::torrent_checked_alert* a) const;
+    void handleTorrentFinishedAlert(const libtorrent::torrent_finished_alert* a);
+    void handleListenSucceededAlert(const libtorrent::listen_succeeded_alert* a) const;
+    void handleFastresumeRejectedAlert(const libtorrent::fastresume_rejected_alert* a) const;
+    void handleMetadataReceivedAlert(const libtorrent::metadata_received_alert* a) const;
 };
 
 #endif // LIBTORRENTAPI_H

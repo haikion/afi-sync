@@ -32,6 +32,11 @@ BtsApi2::BtsApi2(const QString& username, const QString& password,
     foldersCache_.second = 0;
 }
 
+BtsApi2::BtsApi2(QObject* parent):
+    BtsApi2(Constants::DEFAULT_USERNAME, Constants::DEFAULT_PASSWORD, Constants::DEFAULT_PORT, parent)
+{
+}
+
 BtsApi2::BtsApi2(BtsClient* client, QObject* parent):
     BtsApi(client, parent),
     ready_(false)
@@ -51,6 +56,12 @@ BtsApi2::~BtsApi2()
     QMetaObject::invokeMethod(this, "threadDestructor", connectionType());
     thread_.quit();
     thread_.wait(3000);
+}
+
+void BtsApi2::check(const QString& key)
+{
+    //TODO: Implement if needed
+    return;
 }
 
 void BtsApi2::threadDestructor()
@@ -148,6 +159,18 @@ void BtsApi2::shutdown2()
     DBG << "Finished";
 }
 
+qint64 BtsApi2::getDownload() const
+{
+    //TODO: Implement if needed.
+    return 0;
+}
+
+qint64 BtsApi2::getUpload() const
+{
+    //TODO: Implement if needed.
+    return 0;
+}
+
 void BtsApi2::restart2()
 {
     QMetaObject::invokeMethod(this, "restartSlot", connectionType());
@@ -165,6 +188,14 @@ void BtsApi2::setMaxDownload(unsigned limit)
     QVariantMap obj;
     obj.insert("dlrate", limit);
     patchVariantMap(obj, API_PREFIX + "/client/settings");
+}
+
+bool BtsApi2::folderReady(const QString& key)
+{
+    if (noPeers(key) || isIndexing(key) || getFolderEta(key) != 0)
+        return false;
+
+    return true;
 }
 
 bool BtsApi2::ready()
@@ -454,6 +485,11 @@ bool BtsApi2::noPeers(const QString& key)
 
 bool BtsApi2::isIndexing(const QString& key)
 {
+    if (!exists(key))
+    {
+        DBG << "ERROR: Could not find torrent by key:" << key;
+        return false;
+    }
     BtsFolderActivity folder = getFolderActivity(key);
     if (!folder.indexing)
     {

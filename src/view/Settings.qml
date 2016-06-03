@@ -193,7 +193,7 @@ Column {
     Rectangle {
         color: "transparent"
         width: parent.width
-        height: 4*defaultHeight
+        height: 5*defaultHeight
         border.width: 1
         id: bandwidthRect
 
@@ -238,7 +238,6 @@ Column {
             }
         }
 
-        /*
         BandwidthRow {
             unit: ""
             anchors.top: downloadRow.bottom
@@ -253,7 +252,6 @@ Column {
                 SettingsModel.setPort(getFieldText())
             }
         }
-        */
     }
 
     Rectangle {

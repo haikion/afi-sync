@@ -29,6 +29,7 @@ public:
 
 private slots:
     void removeOrphans();
+    void updateSpeed();
 
 private:
     bool initializing_;

@@ -179,7 +179,10 @@ void BtsSpawnClient::startClient(bool force)
 	configObject.insert("storage_path", getDataPath());
     configObject.insert("download_limit", SettingsModel::maxDownload().toInt());
     configObject.insert("upload_limit", SettingsModel::maxUpload().toInt());
-    configObject.insert("listening_port", SettingsModel::port().toInt());
+    int port = SettingsModel::port().toInt();
+    if (port != 0)
+        configObject.insert("listening_port", port);
+
     configObject.insert("use_gui", true);
     configObject.insert("folder_rescan_interval", 10*60*60);
     configObject.insert("check_for_updates", false);

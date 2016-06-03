@@ -58,8 +58,6 @@ public slots:
     void resetSync();
     void processCompletion();
     QString versionString() const;
-
-private slots:
     void updateSpeed(qint64 download, qint64 upload);
 
 private:

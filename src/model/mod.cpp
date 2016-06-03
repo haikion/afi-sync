@@ -9,14 +9,15 @@
 #include "repository.h"
 #include "installer.h"
 
-const unsigned Mod::COMPLETION_WAIT_DURATION = 5;
+const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 
 Mod::Mod(const QString& name, const QString& key, bool isOptional):
     SyncItem(name, 0),
     isOptional_(isOptional),
     key_(key),
     sync_(0),
-    waitTime_(0)
+    waitTime_(0),
+    dataDownloaded(false) //Set to true on Downloading...
 {
     DBG;
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
@@ -28,19 +29,20 @@ Mod::Mod(const QString& name, const QString& key, bool isOptional):
 Mod::~Mod()
 {
     DBG;
-    QMetaObject::invokeMethod(this, "threadDestructor", Qt::BlockingQueuedConnection);
+    QMetaObject::invokeMethod(this, "threadDestructor", Qt::QueuedConnection);
 }
 
 
 void Mod::threadDestructor()
 {
-    DBG;
-    updateTimer_.stop();
+    //DBG << "name =" << name() << "current thread:" << QThread::currentThread() << "Worker thread:" << Global::workerThread
+    //    << "updateTimer thread:" << updateTimer_.thread();
+    //updateTimer_.stop(); //Might cause segmentation fault during shutdown. Why?
 }
 
 void Mod::init()
 {
-    DBG << "name =" << name() << "current thread: " << QThread::currentThread() << "Worker thread: " << Global::workerThread;
+    DBG << "name =" << name() << "current thread:" << QThread::currentThread() << "Worker thread:" << Global::workerThread;
 
     if (!isOptional_)
     {
@@ -62,7 +64,8 @@ void Mod::start()
 {
     DBG << "name =" << name();
     QString modPath = SettingsModel::modDownloadPath();
-    QString dir = QDir::toNativeSeparators(modPath + "/" + name());
+    //FIXME: Fix in btsync api
+    QString dir = QDir::toNativeSeparators(modPath);
     QString syncPath = QDir::toNativeSeparators(sync_->getFolderPath(key_));
     QString error = sync_->error(key_);
 
@@ -158,7 +161,7 @@ void Mod::repositoryEnableChanged(bool offline)
     bool allDisabled = true;
     for (const Repository* repo : repositories_)
     {
-        DBG <<"checking mod name =" << name() << " repo name =" << repo->name();
+        DBG <<"Checking mod name =" << name() << "repo name =" << repo->name();
         if (repo->checked())
         {
             //At least one repo is active
@@ -174,12 +177,12 @@ void Mod::repositoryEnableChanged(bool offline)
     if (allDisabled || !checked())
     {
         //All repositories unchecked
-        DBG << "Stopping mod sync dir name =" << name();
+        DBG << "Stopping mod transfer. name =" << name();
         sync_->setFolderPaused(key_, true);
         return;
     }
     //At least one repo active and mod checked
-    DBG << "Starting mod: " << name();
+    DBG << "Starting mod transfer. name =" << name();
     start();
 }
 
@@ -208,7 +211,7 @@ void Mod::addRepository(Repository* repository)
     {
         Repository* repo = repositories_.at(0);
         sync_ = repo->sync();
-        if (sync_->ready())
+        if (sync_->folderReady())
         {
             DBG << "name =" << name() << "Calling init directly";
             QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
@@ -245,21 +248,18 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::NOT_IN_SYNC);
     }
-    else if (eta() > 0)
+    else if (sync_->paused(key_))
     {
-        setStatus(SyncStatus::DOWNLOADING);
+        setStatus(SyncStatus::PAUSED);
     }
     else if (sync_->isIndexing(key_))
     {
         setStatus(SyncStatus::INDEXING);
     }
-    else if (sync_->noPeers(key_))
+    else if (eta() > 0)
     {
-        setStatus(SyncStatus::NO_PEERS);
-    }
-    else if (sync_->paused(key_))
-    {
-        setStatus(SyncStatus::PAUSED);
+        setStatus(SyncStatus::DOWNLOADING);
+        dataDownloaded = true;
     }
     //Hack to fix BtSync reporting ready when it's not... :D (oh my god...)
     else if (status() == SyncStatus::WAITING)
@@ -271,11 +271,32 @@ void Mod::updateStatus()
             setStatus(SyncStatus::READY);
         }
     }
+    else if (status() == SyncStatus::READY)
+    {
+        if (dataDownloaded)
+        {
+            dataDownloaded = false;
+            sync_->check(key_);
+        }
+
+        return;
+    }
+    else if (sync_->folderReady(key_))
+    {
+        setStatus(SyncStatus::WAITING);
+    }
+    //FIXME: libTorrent can be ready without having any peers.
+    else if (sync_->noPeers(key_))
+    {
+        setStatus(SyncStatus::NO_PEERS);
+    }
+    /*
     //Peers, Eta == 0 and not indexing.
     else if (status() != SyncStatus::READY)
     {
         setStatus(SyncStatus::WAITING);
     }
+    */
 }
 
 void Mod::checkboxClicked()
@@ -287,6 +308,11 @@ void Mod::checkboxClicked()
 
 void Mod::fetchEta()
 {
+    if (status() == SyncStatus::INACTIVE)
+    {
+        setEta(0);
+        return;
+    }
     int eta = sync_->getFolderEta(key_);
     if (eta == -404)
     {

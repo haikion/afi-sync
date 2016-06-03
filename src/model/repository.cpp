@@ -211,7 +211,7 @@ void Repository::updateEtaAndStatus()
         setStatus(SyncStatus::DOWNLOADING);
         ready_ = false;
     }
-    else if (modStatuses.find(SyncStatus::INDEXING) != modStatuses.end())
+    else if (modStatuses.contains(SyncStatus::INDEXING))
     {
         setStatus(SyncStatus::INDEXING);
     }

@@ -111,7 +111,7 @@ QString TreeModel::versionString() const
 
 void TreeModel::updateSpeed(qint64 download, qint64 upload)
 {
-    //DBG << "download= " << download << " upload =" << upload;
+    //DBG << "download =" << download << " upload =" << upload;
     if (download != download_)
     {
         download_ = download;

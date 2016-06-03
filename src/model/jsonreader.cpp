@@ -64,7 +64,7 @@ void JsonReader::fillEverything(RootItem* root)
                 QString modName = qvariant_cast<QString>(mod.value("name"));
                 bool isOptional = qvariant_cast<bool>(mod.value("optional", false));
                 DBG << "Parsed mod parameters";
-                newMod = new Mod(modName, key, isOptional);
+                newMod = new Mod(modName, key.toLower(), isOptional);
                 DBG << "New mod object created.";
                 modHash.insert(key, newMod);
                 DBG << "added to modhash";
