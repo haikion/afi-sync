@@ -17,7 +17,7 @@ Mod::Mod(const QString& name, const QString& key, bool isOptional):
     key_(key),
     sync_(0),
     waitTime_(0),
-    dataDownloaded(false) //Set to true on Downloading...
+    doPostProcessing_(false) //Set to true on Downloading...
 {
     DBG;
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
@@ -248,18 +248,15 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::NOT_IN_SYNC);
     }
-    else if (sync_->paused(key_))
-    {
-        setStatus(SyncStatus::PAUSED);
-    }
     else if (sync_->isIndexing(key_))
     {
         setStatus(SyncStatus::INDEXING);
+        doPostProcessing_ = true;
     }
     else if (eta() > 0)
     {
         setStatus(SyncStatus::DOWNLOADING);
-        dataDownloaded = true;
+        doPostProcessing_ = true;
     }
     //Hack to fix BtSync reporting ready when it's not... :D (oh my god...)
     else if (status() == SyncStatus::WAITING)
@@ -273,10 +270,10 @@ void Mod::updateStatus()
     }
     else if (status() == SyncStatus::READY)
     {
-        if (dataDownloaded)
+        if (doPostProcessing_)
         {
-            dataDownloaded = false;
-            sync_->check(key_);
+            doPostProcessing_ = false;
+
         }
 
         return;
@@ -284,6 +281,10 @@ void Mod::updateStatus()
     else if (sync_->folderReady(key_))
     {
         setStatus(SyncStatus::WAITING);
+    }
+    else if (sync_->paused(key_))
+    {
+        setStatus(SyncStatus::PAUSED);
     }
     //FIXME: libTorrent can be ready without having any peers.
     else if (sync_->noPeers(key_))
@@ -297,6 +298,13 @@ void Mod::updateStatus()
         setStatus(SyncStatus::WAITING);
     }
     */
+}
+
+bool Mod::processCompletion()
+{
+    sync_->check(key_);
+    deleteExtraFiles();
+    Installer::install(this);
 }
 
 void Mod::checkboxClicked()
@@ -316,6 +324,7 @@ void Mod::fetchEta()
     int eta = sync_->getFolderEta(key_);
     if (eta == -404)
     {
+        //timeout
         return;
     }
     setEta(eta);

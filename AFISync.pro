@@ -35,7 +35,8 @@ SOURCES += src/model/main.cpp \
     src/model/apis/heart.cpp \
     src/model/runningtime.cpp \
     src/model/processmonitor.cpp \
-    src/model/apis/libtorrent/libtorrentapi.cpp
+    src/model/apis/libtorrent/libtorrentapi.cpp \
+    src/model/cihash.cpp
 
 RESOURCES += qml.qrc
 
@@ -73,5 +74,6 @@ HEADERS += \
     src/model/runningtime.h \
     src/model/apis/isync.h \
     src/model/processmonitor.h \
-    src/model/apis/libtorrent/libtorrentapi.h
+    src/model/apis/libtorrent/libtorrentapi.h \
+    src/model/cihash.h
 DISTFILES +=

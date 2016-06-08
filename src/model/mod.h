@@ -31,6 +31,7 @@ public:
     //int lastModified();
     void deleteExtraFiles();
     virtual bool checked() const;
+    bool processCompletion();
 
 public slots:
     void repositoryEnableChanged(bool offline = false);
@@ -45,7 +46,7 @@ private:
     QTimer updateTimer_;
     std::vector<Repository*> repositories_;
     unsigned waitTime_;
-    bool dataDownloaded;
+    bool doPostProcessing_;
 
     void buildPathHash();
 

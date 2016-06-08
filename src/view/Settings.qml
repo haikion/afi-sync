@@ -2,7 +2,7 @@ import QtQuick 2.3
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick 2.2
-import QtQuick.Dialogs 1.0
+import QtQuick.Dialogs 1.2
 import org.AFISync 0.1
 import "." //Enables Global.qml
 
@@ -44,6 +44,12 @@ Column {
             folder = "file:///" + caller.text
             console.log("Folder: " + Qt.resolvedUrl(caller.text))
         }
+    }
+
+    MessageDialog {
+        id: arma3RunningDialog
+        title: "Aborted"
+        text: "ArmA 3 is running. Please close it and repeat the operation."
     }
 
     Rectangle {
@@ -285,8 +291,14 @@ Column {
             }
 
             Button {
-                text: "Fix Wrong Signature Error on Join"
+                text: "Fix Kicked from Server"
                 onClicked: {
+                    if (ProcessMonitor.arma3Running())
+                    {
+                        arma3RunningDialog.visible = true
+                        return
+                    }
+
                     var cache = text;
                     text = "Loading..."
                     enabled = false
@@ -296,7 +308,11 @@ Column {
                 }
                 height: defaultHeight
                 width: parent.width
+                //FIXME: Does not show
+                tooltip: "Rechecks every active repository, cleans mod directories from files that do not belong
+                          there and installs Team Speak plugin. Operation might take several minutes."
             }
+            /*
             Button {
                 text: "Reset Sync"
                 onClicked: {
@@ -311,6 +327,7 @@ Column {
                 height: defaultHeight
                 width: parent.width
             }
+            */
             Button {
                 text: "Report Bug..."
                 onClicked: {

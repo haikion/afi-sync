@@ -55,8 +55,7 @@ void Repository::processCompletion()
     ready_ = true;
     for (Mod* mod : mods())
     {
-        mod->deleteExtraFiles();
-        Installer::install(mod);
+        mod->processCompletion();
     }
     SettingsModel::setInstallDate(name(), QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
 }

@@ -133,7 +133,6 @@ bool LibTorrentApi::noPeers(const QString& key)
     lt::torrent_handle handle = keyHash_.value(key);
     lt::torrent_status status = handle.status();
     int rVal = status.num_peers == 0;
-    DBG << "key =" << key << "rVal =" << rVal << "num peers =" << status.num_peers;
     return rVal;
 }
 
@@ -187,7 +186,6 @@ int LibTorrentApi::getFolderEta(const QString& key)
     {
         int bc = bytesToCheck(key);
         int rVal = bc/AVG_CHECKING_SPEED;
-        DBG << "rVal =" << rVal;
         return rVal;
     }
 
@@ -316,6 +314,7 @@ void LibTorrentApi::shutdown2()
     saveSettings();
     for (const lt::torrent_handle& handle : keyHash_.values())
     {
+        //FIXME: This might take a long file when  "const ERROR: Unable to save torrent file. It is null."
         saveTorrentFile(handle);
     }
     generateResumeData();

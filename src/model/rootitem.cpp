@@ -97,6 +97,11 @@ void RootItem::processCompletion()
     DBG << "Started";
     for (Repository* repo : childItems())
     {
+        if (repo->status() == SyncStatus::INACTIVE)
+        {
+            DBG << "Skipping" << repo->name() << "due to inactivity.";
+            continue;
+        }
         repo->processCompletion();
     }
     DBG << "Finished";

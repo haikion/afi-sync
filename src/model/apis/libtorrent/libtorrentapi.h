@@ -12,6 +12,7 @@
 #include <QHash>
 #include <QDir>
 #include <QTimer>
+#include "../../cihash.h"
 #include "../isync.h"
 
 class LibTorrentApi : public QObject, public ISync
@@ -78,7 +79,7 @@ private:
 
     QTimer alertTimer_;
     libtorrent::session* session_;
-    QHash<QString, libtorrent::torrent_handle> keyHash_;
+    CiHash<libtorrent::torrent_handle> keyHash_;
     int numResumeData_;
     std::vector<libtorrent::alert*>* alerts_;
 
