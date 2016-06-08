@@ -26,7 +26,7 @@ bool SettingsModel::saveDir(const QString& key, const QString& path)
     return true;
 }
 
-QSettings*SettingsModel::settings()
+QSettings* SettingsModel::settings()
 {
     if (settings_ == nullptr)
     {

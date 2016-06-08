@@ -264,7 +264,8 @@ QSet<QString> LibTorrentApi::getFilesUpper(const QString& key, const QString& pa
     lt::file_storage files = torrentFile->files();
     for (int i = 0; i < files.num_files(); ++i)
     {
-        QString value = QString::fromStdString(handle.save_path() + "\\" + files.file_path(i));
+        lt::torrent_status status = handle.status(lt::torrent_handle::query_save_path);
+        QString value = QString::fromStdString(status.save_path + "\\" + files.file_path(i));
         value = QFileInfo(value).absoluteFilePath().toUpper();
         DBG << "appending value:" << value;
         rVal.insert(value);
@@ -708,10 +709,12 @@ boost::shared_ptr<lt::torrent_info> LibTorrentApi::loadFromFile(const QString& p
 
 void LibTorrentApi::handleTorrentFinishedAlert(const lt::torrent_finished_alert* a)
 {
-    /*
+
     lt::torrent_handle h = a->handle;
     lt::torrent_status s = h.status(lt::torrent_handle::query_name);
     QString name = QString::fromStdString(s.name);
+    DBG << "Torrent" << name << "has finished downloading.";
+    /*
 
     //Prevents checking->finished->checking loop.
     for (lt::alert* alert : *alerts_)
@@ -722,7 +725,6 @@ void LibTorrentApi::handleTorrentFinishedAlert(const lt::torrent_finished_alert*
             return;
         }
     }
-    DBG << "Torrent" << name << "has finished downloading. Rechecking...";
     a->handle.force_recheck();
     */
 }
@@ -750,6 +752,17 @@ void LibTorrentApi::handleMetadataReceivedAlert(const lt::metadata_received_aler
     QString name = QString::fromStdString(s.name);
     DBG << "Metadata received for torrent:" << name;
 }
+
+void LibTorrentApi::handlePortmapErrorAlert(const lt::portmap_error_alert* a) const
+{
+    DBG << "Port map error alert received:" << a->message().c_str();
+}
+
+void LibTorrentApi::handlePortmapAlert(const lt::portmap_alert* a) const
+{
+    DBG << "Port map alert received. Port:" << a->external_port;
+}
+
 
 void LibTorrentApi::handleAlert(lt::alert* a)
 {
@@ -804,8 +817,10 @@ void LibTorrentApi::handleAlert(lt::alert* a)
             case lt::torrent_delete_failed_alert::alert_type:
                 break;
             case lt::portmap_error_alert::alert_type:
+                handlePortmapErrorAlert(static_cast<lt::portmap_error_alert*>(a));
                 break;
             case lt::portmap_alert::alert_type:
+                handlePortmapAlert(static_cast<lt::portmap_alert*>(a));
                 break;
             case lt::peer_blocked_alert::alert_type:
                 break;

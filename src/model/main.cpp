@@ -63,8 +63,16 @@ int gui(int argc, char* argv[])
     return app.exec();
 }
 
-int cli(int argc, char* argv[], const QCommandLineParser& parser)
+int cli(int argc, char* argv[], QCommandLineParser& parser)
 {
+    QCoreApplication app(argc, argv);
+
+    QStringList args;
+    for (int i = 0; i < argc; ++i)
+    {
+        args.append(argv[i]);
+    }
+    parser.process(args);
     QString username, password, directory;
     unsigned port;
     username = parser.value("username");
@@ -79,7 +87,7 @@ int cli(int argc, char* argv[], const QCommandLineParser& parser)
     }
     SettingsModel::setModDownloadPath(dir.absoluteFilePath());
     SettingsModel::setPort(QString::number(port));
-    QCoreApplication app(argc, argv);
+
     Global::guiless = true;
     TreeModel* model = new TreeModel(username, password, port, &app);
     DBG << "model created";
@@ -105,23 +113,17 @@ int main(int argc, char* argv[])
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addOptions({
-                          {{"mirror", "directory"}, "Mirror all files into <directory>", "directory", SettingsModel::modDownloadPath()},
-                          {"port", "Web interface port", "port", QString::number(Constants::DEFAULT_PORT)},
-                          {"username", "Web interface username", "username", Constants::DEFAULT_USERNAME},
-                          {"password", "Web interface password", "password", Constants::DEFAULT_PASSWORD}
+                          {"mirror", "Mirror all files into <directory>", "directory", SettingsModel::modDownloadPath()},
+                          {"port", "External Port", "port", SettingsModel::port()},
+                          {"username", "Web interface username (deprecated)", "username", Constants::DEFAULT_USERNAME},
+                          {"password", "Web interface password (deprecated)", "password", Constants::DEFAULT_PASSWORD}
                       });
     #ifndef QT_DEBUG
         createLogFile();
         qInstallMessageHandler(messageHandler);
     #endif
     DBG << "\nAFISync" << Constants::VERSION_STRING << "started";
-    QStringList args;
-    for (int i = 0; i < argc; ++i)
-    {
-        args.append(argv[i]);
-    }
-    parser.process(args);
-    if (parser.isSet("mirror"))
+    if (argc > 1)
     {
         return cli(argc, argv, parser);
     }
