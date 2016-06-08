@@ -43,6 +43,13 @@ void LibTorrentApi::init()
     settings.set_int(lt::settings_pack::allowed_enc_level, lt::settings_pack::enc_level::pe_plaintext);
     settings.set_int(lt::settings_pack::in_enc_policy, lt::settings_pack::enc_policy::pe_disabled);
     settings.set_int(lt::settings_pack::out_enc_policy, lt::settings_pack::enc_policy::pe_disabled);
+    //Change user agent
+    std::string userAgent = "AFISync";
+    if (Global::guiless)
+    {
+        userAgent = "AFISync_Mirror";
+    }
+    settings.set_str(lt::settings_pack::user_agent, userAgent + "/" + Constants::VERSION_STRING.toStdString());
     session_->apply_settings(settings);
     loadSettings();
     loadTorrentFiles(Constants::SYNC_SETTINGS_PATH);

@@ -34,7 +34,7 @@ RootItem::RootItem(const QString& username, const QString& password, unsigned po
 {
     initSync();
     Global::sync = sync_;
-    DBG << "initBtsync completed";
+    DBG << "initSync completed";
     JsonReader::fillEverything(this);
     DBG << "readJson completed";
     if (sync_->folderReady())

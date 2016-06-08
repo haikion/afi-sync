@@ -78,12 +78,12 @@ int cli(int argc, char* argv[], const QCommandLineParser& parser)
         QCoreApplication::exit(2);
     }
     SettingsModel::setModDownloadPath(dir.absoluteFilePath());
+    SettingsModel::setPort(QString::number(port));
     QCoreApplication app(argc, argv);
     Global::guiless = true;
     TreeModel* model = new TreeModel(username, password, port, &app);
     DBG << "model created";
     model->enableRepositories();
-    Q_UNUSED(model)
     return app.exec();
 }
 
