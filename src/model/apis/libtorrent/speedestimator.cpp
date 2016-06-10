@@ -29,9 +29,9 @@ unsigned SpeedEstimator::estimate(const QString& key, int64_t toCheck)
         int64_t x_1 = val.first;
         int64_t t_1 = val.second;
 
-        if (x_1 > toCheck)
+        if (x_1 < toCheck)
         {
-            DBG << "ERROR: x_1 > toCheck. x_1 =" << x_1 << "toCheck =" << toCheck;
+            DBG << "ERROR: x_1 < toCheck. x_1 =" << x_1 << "toCheck =" << toCheck;
             return AVG_CHECKING_SPEED;
         }
 

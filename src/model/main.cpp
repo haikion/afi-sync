@@ -98,8 +98,8 @@ int cli(int argc, char* argv[], QCommandLineParser& parser)
     DBG << parser.errorText();
     QString username, password, directory;
     unsigned port;
-    username = parser.value("username");
-    password = parser.value("password");
+    //username = parser.value("username");
+    //password = parser.value("password");
     directory = parser.value("mirror");
     port = parser.value("port").toInt();
     QFileInfo dir(directory);
@@ -114,7 +114,7 @@ int cli(int argc, char* argv[], QCommandLineParser& parser)
     SettingsModel::setPort(QString::number(port));
 
     Global::guiless = true;
-    TreeModel* model = new TreeModel(username, password, port, &app);
+    TreeModel* model = new TreeModel("username", "password", port, &app);
     DBG << "model created";
     model->enableRepositories();
     return app.exec();
@@ -142,8 +142,8 @@ int main(int argc, char* argv[])
                            , "directory", SettingsModel::modDownloadPath()},
                           {"port", "External Port. Current value: " + SettingsModel::port()
                            , "port", SettingsModel::port()},
-                          {"username", "Web interface username (deprecated)", "username", Constants::DEFAULT_USERNAME},
-                          {"password", "Web interface password (deprecated)", "password", Constants::DEFAULT_PASSWORD}
+                          //{"username", "Web interface username (deprecated)", "username", Constants::DEFAULT_USERNAME},
+                          //{"password", "Web interface password (deprecated)", "password", Constants::DEFAULT_PASSWORD}
                       });
     #ifndef QT_DEBUG
         createLogFile();
