@@ -70,22 +70,24 @@ int cli(int argc, char* argv[], QCommandLineParser& parser)
     QStringList args;
     for (int i = 0; i < argc; ++i)
     {
+        DBG << argv[i];
         args.append(argv[i]);
     }
     parser.process(args);
+    DBG << parser.errorText();
     QString username, password, directory;
     unsigned port;
     username = parser.value("username");
     password = parser.value("password");
-    directory = parser.value("directory");
+    directory = parser.value("mirror");
     port = parser.value("port").toInt();
     QFileInfo dir(directory);
+    QString modDownloadPath = dir.absoluteFilePath();
     if (!dir.isDir() || !dir.isWritable())
     {
-        qDebug() << "Invalid path: " << dir.absolutePath();
+        qDebug() << "Invalid path:" << modDownloadPath;
         QCoreApplication::exit(2);
     }
-    QString modDownloadPath = dir.absoluteFilePath();
     DBG << "Setting mod download path:" << modDownloadPath;
     SettingsModel::setModDownloadPath(modDownloadPath);
     SettingsModel::setPort(QString::number(port));
@@ -115,8 +117,10 @@ int main(int argc, char* argv[])
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addOptions({
-                          {"mirror", "Mirror all files into <directory>", "directory", SettingsModel::modDownloadPath()},
-                          {"port", "External Port", "port", SettingsModel::port()},
+                          {"mirror", "Mirror all files into <directory>. Current value: " + SettingsModel::modDownloadPath()
+                           , "directory", SettingsModel::modDownloadPath()},
+                          {"port", "External Port. Current value: " + SettingsModel::port()
+                           , "port", SettingsModel::port()},
                           {"username", "Web interface username (deprecated)", "username", Constants::DEFAULT_USERNAME},
                           {"password", "Web interface password (deprecated)", "password", Constants::DEFAULT_PASSWORD}
                       });
