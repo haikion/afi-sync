@@ -273,8 +273,8 @@ QSet<QString> LibTorrentApi::getFilesUpper(const QString& key, const QString& pa
     for (int i = 0; i < files.num_files(); ++i)
     {
         lt::torrent_status status = handle.status(lt::torrent_handle::query_save_path);
-        QString value = QString::fromStdString(status.save_path + "\\" + files.file_path(i));
-        value = QFileInfo(value).absoluteFilePath().toUpper();
+        QString value = QString::fromStdString(status.save_path + "/" + files.file_path(i));
+        value = QDir::toNativeSeparators(value).toUpper();
         DBG << "appending value:" << value;
         rVal.insert(value);
     }

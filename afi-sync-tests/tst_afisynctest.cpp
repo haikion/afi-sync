@@ -1,10 +1,12 @@
 #include <QString>
 #include <QtTest>
 #include <QCoreApplication>
+#include <QString>
 #include "../src/model/jsonreader.h"
 #include "../src/model/rootitem.h"
 #include "../src/model/treemodel.h"
 #include "../src/model/repository.h"
+#include "../src/model/global.h"
 #include "../src/model/apis/libtorrent/libtorrentapi.h"
 
 class AfiSyncTest : public QObject
@@ -24,7 +26,20 @@ private Q_SLOTS:
     void jsonReaderRepoRename();
     void jsonReaderAddRepo();
     void jsonReaderRemoveRepo();
+    //LibTorrent tests
+    void saveAndLoad();
+    void getEta();
+    void setFolderPaused();
+    void getFolderKeys();
+    void getFilesUpper();
+    void addRemoveFolder();
+
+private:
+    LibTorrentApi* sync_;
+    static const QString TORRENT_1;
 };
+
+const QString AfiSyncTest::TORRENT_1 = "http://mythbox.no-ip.org/torrents/@vt5_1.torrent";
 
 AfiSyncTest::AfiSyncTest()
 {
@@ -32,10 +47,13 @@ AfiSyncTest::AfiSyncTest()
 
 void AfiSyncTest::initTestCase()
 {
+    QDir(Constants::SYNC_SETTINGS_PATH).removeRecursively();
+    sync_ = new LibTorrentApi();
 }
 
 void AfiSyncTest::cleanupTestCase()
 {
+    delete sync_;
 }
 
 void AfiSyncTest::jsonReaderBasic()
@@ -109,6 +127,64 @@ void AfiSyncTest::jsonReaderRemoveRepo()
     QCOMPARE(root->childItems().at(0)->name(), QString("armafinland.fi Primary"));
     delete model;
     delete root;
+}
+
+void AfiSyncTest::addRemoveFolder()
+{
+    sync_->addFolder("/home/niko/Downloads/ltTest", TORRENT_1);
+    bool exists = sync_->exists(TORRENT_1);
+    QCOMPARE(exists, true);
+    bool rVal = sync_->removeFolder2(TORRENT_1);
+    QCOMPARE(rVal, true);
+    exists = sync_->exists(TORRENT_1);
+    QCOMPARE(exists, false);
+}
+
+void AfiSyncTest::getFilesUpper()
+{
+    sync_->addFolder("/home/niko/Download/ltTest", TORRENT_1);
+    QSet<QString> files = sync_->getFilesUpper(TORRENT_1);
+    QCOMPARE(files.size(), 3);
+    sync_->removeFolder2(TORRENT_1);
+}
+
+void AfiSyncTest::getFolderKeys()
+{
+    sync_->addFolder("/home/niko/Download/ltTest", TORRENT_1);
+    QCOMPARE(sync_->getFolderKeys().size(), 1);
+    QCOMPARE(sync_->getFolderKeys().at(0), TORRENT_1.toLower());
+    sync_->removeFolder2(TORRENT_1);
+}
+
+void AfiSyncTest::setFolderPaused()
+{
+    sync_->addFolder("/home/niko/Download/ltTest", TORRENT_1);
+    sync_->setFolderPaused(TORRENT_1, true);
+    QCOMPARE(sync_->paused(TORRENT_1), true);
+    sync_->removeFolder2(TORRENT_1);
+}
+
+void AfiSyncTest::getEta()
+{
+    sync_->addFolder("/home/niko/Download/ltTest", TORRENT_1);
+    int eta = sync_->getFolderEta(TORRENT_1);
+    qDebug() << "eta =" << eta;
+    QVERIFY(eta > 0);
+    sync_->removeFolder2(TORRENT_1);
+}
+
+void AfiSyncTest::saveAndLoad()
+{
+    sync_->addFolder("/home/niko/Downloads/ltTest", TORRENT_1);
+    QThread::sleep(10);
+    delete sync_;
+    sync_ = new LibTorrentApi();
+    bool exists = sync_->exists(TORRENT_1);
+    QCOMPARE(exists, true);
+    bool rVal = sync_->removeFolder2(TORRENT_1);
+    QCOMPARE(rVal, true);
+    exists = sync_->exists(TORRENT_1);
+    QCOMPARE(exists, false);
 }
 
 QTEST_MAIN(AfiSyncTest)
