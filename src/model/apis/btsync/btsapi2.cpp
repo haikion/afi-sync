@@ -60,6 +60,8 @@ BtsApi2::~BtsApi2()
 
 void BtsApi2::check(const QString& key)
 {
+    Q_UNUSED(key);
+
     //TODO: Implement if needed
     return;
 }

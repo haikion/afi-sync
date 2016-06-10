@@ -25,7 +25,6 @@ namespace lt = libtorrent;
 
 const int LibTorrentApi::MAX_ETA = std::numeric_limits<int>::max();
 const QString LibTorrentApi::SETTINGS_PATH = Constants::SYNC_SETTINGS_PATH + "/libtorrent.dat";
-const int LibTorrentApi::AVG_CHECKING_SPEED = 20000000; //Bytes per sec
 const int LibTorrentApi::NOT_FOUND = -404;
 
 LibTorrentApi::LibTorrentApi(QObject *parent) :
@@ -212,9 +211,13 @@ int LibTorrentApi::getFolderEta(const QString& key)
         {
             return NOT_FOUND;
         }
-        int rVal = bc/AVG_CHECKING_SPEED;
+
+        unsigned checkingSpeed = speedEstimator_.estimate(key, bc);
+        int rVal = bc/checkingSpeed;
         return rVal;
     }
+    //Cut checking speed estimation.
+    speedEstimator_.cutEsimation(key);
 
     QString lowerKey = key.toLower();
     lt::torrent_handle handle = keyHash_.value(lowerKey);

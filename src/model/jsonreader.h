@@ -8,6 +8,7 @@
 #include <QHash>
 #include "mod.h"
 #include "repository.h"
+#include "syncnetworkaccessmanager.h"
 
 class JsonReader: public QObject
 {
@@ -27,7 +28,9 @@ private:
     static const QString FILE_PATH;
     static const QString DOWNLOADED_PATH;
     static const QString SEPARATOR;
+
     static QVariantMap jsonMap_;
+    static SyncNetworkAccessManager nam_;
 
     static QJsonDocument readJsonFile(const QString& path);
     static QVariantMap updateJson(const QString& url);

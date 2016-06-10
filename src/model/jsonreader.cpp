@@ -15,6 +15,7 @@ const QString JsonReader::FILE_PATH = "settings/repositories.json";
 const QString JsonReader::DOWNLOADED_PATH = FILE_PATH + "_new";
 const QString JsonReader::SEPARATOR = "|||";
 QVariantMap JsonReader::jsonMap_;
+SyncNetworkAccessManager JsonReader::nam_;
 
 
 //Fastest
@@ -193,11 +194,7 @@ QJsonDocument JsonReader::readJsonFile(const QString& path)
 //Downloads new json file.
 QVariantMap JsonReader::updateJson(const QString& url)
 {
-    QNetworkAccessManager nam;
-    QEventLoop loop;
-    QNetworkReply* reply = nam.get(QNetworkRequest(url));
-    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-    loop.exec(); //Wait for response.
+    QNetworkReply* reply = nam_.syncGet(QNetworkRequest(url));
     QFile file(DOWNLOADED_PATH);
     if (reply->bytesAvailable() == 0 || !file.open(QIODevice::WriteOnly))
     {

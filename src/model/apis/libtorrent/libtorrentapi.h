@@ -14,6 +14,7 @@
 #include <QTimer>
 #include "../../cihash.h"
 #include "../isync.h"
+#include "speedestimator.h"
 
 class LibTorrentApi : public QObject, public ISync
 {
@@ -76,7 +77,6 @@ signals:
 private:
     static const int MAX_ETA;
     static const QString SETTINGS_PATH;
-    static const int AVG_CHECKING_SPEED;
     static const int NOT_FOUND; //Unable to fetch eta
 
     QTimer alertTimer_;
@@ -84,6 +84,7 @@ private:
     CiHash<libtorrent::torrent_handle> keyHash_;
     int numResumeData_;
     std::vector<libtorrent::alert*>* alerts_;
+    SpeedEstimator speedEstimator_;
 
     void init();
     bool loadSettings();
