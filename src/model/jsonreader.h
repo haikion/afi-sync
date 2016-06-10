@@ -16,6 +16,9 @@ class JsonReader: public QObject
 public:
     //Fills rootItem according to XML file
     static void fillEverything(RootItem* root);
+    //Enables better testability.
+    static void fillEverything(RootItem *root, const QString& jsonFilePath);
+    static bool updateAvaible();
 
 signals:
     void modAppend(Mod* mod);
@@ -23,9 +26,14 @@ signals:
 private:
     static const QString FILE_PATH;
     static const QString DOWNLOADED_PATH;
+    static const QString SEPARATOR;
+    static QVariantMap jsonMap_;
 
-    static QJsonDocument openJsonFile(const QString& path);
-    static bool updateJson(const QString& url);
+    static QJsonDocument readJsonFile(const QString& path);
+    static QVariantMap updateJson(const QString& url);
+    static QString updateUrl(const QVariantMap& jsonMap);
+    static QSet<QString> addedMods(RootItem* root);
+    static QHash<QString, Repository*> addedRepos(RootItem* root);
 };
 
 #endif // JSONREADER_H

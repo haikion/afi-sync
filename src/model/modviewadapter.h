@@ -1,7 +1,6 @@
 #ifndef MODVIEWADAPTER_H
 #define MODVIEWADAPTER_H
 
-#include <QObject>
 #include "syncitem.h"
 #include "repository.h"
 #include "mod.h"
@@ -14,10 +13,9 @@
  */
 class ModViewAdapter : public SyncItem
 {
-    Q_OBJECT
-
 public:
     ModViewAdapter(Mod* mod, Repository* repo);
+    ~ModViewAdapter();
 
     virtual QString checkText();
     virtual QString startText();
@@ -26,14 +24,11 @@ public:
     virtual void checkboxClicked();
 
     Mod* mod() const;
+    void updateView();
 
 private:
     Mod* mod_;
     Repository* repo_;
-    QTimer timer_;
-
-private slots:
-    void updateView();
 };
 
 #endif // MODVIEWADAPTER_H

@@ -20,9 +20,6 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
     ready_(true)
 {
     DBG << "Created repo name =" << name;
-    updateTimer_.setInterval(1000);
-    updateTimer_.start();
-    connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
 }
 
 void Repository::update()
@@ -31,23 +28,35 @@ void Repository::update()
     updateView(this);
 }
 
+void Repository::stopUpdates()
+{
+    DBG << "stopped";
+    for (Mod* mod : mods())
+    {
+        mod->stopUpdates();
+    }
+}
+
+void Repository::startUpdates()
+{
+    //updateTimer_.start();
+    for (Mod* mod : mods())
+    {
+        mod->startUpdates();
+    }
+}
+
+
 Repository::~Repository()
 {
     DBG << "name =" << name();
     for (Mod* mod : mods())
     {
-        mod->removeRepository(this);
-        if (mod->repositories().size() == 0)
-        {
-            DBG << "Deleting mod: " << mod->name()
-                     << "from repo: " << name();
-            delete mod;
-        }
+        removeMod(mod->key());
     }
-    for (TreeItem* modAdapter : childItems())
-    {
-        delete modAdapter;
-    }
+    RootItem* parent = parentItem();
+    parent->removeChild(this);
+    parent->layoutChanged();
 }
 
 void Repository::processCompletion()
@@ -60,17 +69,6 @@ void Repository::processCompletion()
     SettingsModel::setInstallDate(name(), QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
 }
 
-//FIXME: Clean up
-//int Repository::lastModified()
-//{
-//    int lastModified = 0;
-//    for (Mod* mod : mods())
-//    {
-//        lastModified = std::max(lastModified, mod->lastModified());
-//    }
-//    return lastModified;
-//}
-
 void Repository::updateView(TreeItem* item, int row)
 {
     parentItem()->updateView(item, row);
@@ -79,7 +77,8 @@ void Repository::updateView(TreeItem* item, int row)
 void Repository::checkboxClicked(bool offline)
 {
     SyncItem::checkboxClicked();
-    updateTimer_.stop();
+    //FIXME: Is this a crash risk?
+    //updateTimer_.stop();
     setStatus("Processing new mods...");
     updateView(this);
     for (Mod* mod : mods())
@@ -87,7 +86,7 @@ void Repository::checkboxClicked(bool offline)
         QMetaObject::invokeMethod(mod, "repositoryEnableChanged",
                                   Qt::QueuedConnection, Q_ARG(bool, offline));
     }
-    updateTimer_.start();
+    //updateTimer_.start();
     DBG << "checked()=" << checked();
 }
 
@@ -112,17 +111,6 @@ void Repository::generalLaunch(const QStringList& extraParams)
     QString steamExecutable = SettingsModel::steamPath() + "\\Steam.exe";
     QStringList arguments;
 
-    //FIXME: Figure out what to do....
-    //REMOVED FEATURE due to problems with BtSync reporting incorrect file listing...";
-    //Failsafe: Check if installation needed incase download was not registered by AFISync
-    //unsigned lastInstall = SettingsModel::installDate(name());
-    //unsigned lastMod = lastModified();
-    //DBG << "Checking if installation required lastModified =" << lastMod << "lastInstall =" << lastInstall;
-    //if (lastMod > lastInstall)
-    //{
-    //    processCompletion();
-    //}
-
     //arma3launcher wont start the game with correct parameters
     //if steam isn't running.
     //Create tmp file containing parameters because steam.exe can only pass
@@ -142,8 +130,6 @@ void Repository::generalLaunch(const QStringList& extraParams)
     arguments << "-noLauncher";
     if (SettingsModel::battlEyeEnabled())
     {
-        //executable = SettingsModel::arma3Path() + "/arma3battleye.exe";
-        //arguments << "0" << "1"; //Be requires
         arguments << "-useBe";
     }
     if (extraParams.size() > 0)
@@ -164,7 +150,6 @@ void Repository::generalLaunch(const QStringList& extraParams)
 
 QString Repository::createParFile(const QString& parameters)
 {
-    //QString path = QFileInfo("afiSyncParameters.txt").absoluteFilePath();
     QString fileName = "afiSyncParameters.txt";
     QString path = SettingsModel::arma3Path() + "/" + fileName;
     DBG << path;
@@ -192,6 +177,7 @@ void Repository::updateEtaAndStatus()
     QSet<QString> readyStatuses;
     readyStatuses.insert(SyncStatus::READY);
     readyStatuses.insert(SyncStatus::INACTIVE);
+    readyStatuses.insert(SyncStatus::READY_PAUSED);
     if (!checked())
     {
         setStatus(SyncStatus::INACTIVE);
@@ -200,19 +186,15 @@ void Repository::updateEtaAndStatus()
     {
         //All mods are ready so repo is ready.
         setStatus(SyncStatus::READY);
-        if (!ready_)
-        {
-            processCompletion(); //Runs only once.
-        }
     }
     else if (modStatuses.contains(SyncStatus::DOWNLOADING))
     {
         setStatus(SyncStatus::DOWNLOADING);
         ready_ = false;
     }
-    else if (modStatuses.contains(SyncStatus::INDEXING))
+    else if (modStatuses.contains(SyncStatus::CHECKING))
     {
-        setStatus(SyncStatus::INDEXING);
+        setStatus(SyncStatus::CHECKING);
     }
     else
     {
@@ -254,7 +236,9 @@ QStringList Repository::joinParameters() const
 void Repository::appendMod(Mod* item)
 {
     item->addRepository(this);
-    TreeItem::appendChild(new ModViewAdapter(item, this));
+    ModViewAdapter* adp = new ModViewAdapter(item, this);
+    item->addModViewAdapter(adp);
+    TreeItem::appendChild(adp);
 }
 
 QString Repository::startText()
@@ -299,6 +283,46 @@ void Repository::enableMods()
             mod->checkboxClicked();
         }
     }
+}
+
+bool Repository::removeMod(const QString& key)
+{
+    for (Mod* mod : mods())
+    {
+        DBG << mod->key();
+        if (mod->key().toLower() == key.toLower())
+        {
+            DBG << "Removing mod" << mod->name() << "from repository" << name();
+            removeMod(mod);
+        }
+    }
+    DBG << "ERROR: key" << key << "not found in repository" << name();
+    return false;
+}
+
+bool Repository::removeMod(Mod* mod)
+{
+    if (!mod->removeRepository(this))
+    {
+        return false;
+    }
+    parentItem()->layoutChanged();
+    if (mod->repositories().size() == 0)
+    {
+        sync_->removeFolder2(mod->key());
+        delete mod;
+    }
+    return true;
+}
+
+bool Repository::contains(const QString& key) const
+{
+    for (const Mod* mod : mods())
+    {
+        if (mod->key() == key)
+            return true;
+    }
+    return false;
 }
 
 QList<Mod*> Repository::mods() const

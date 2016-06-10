@@ -56,6 +56,12 @@ void TreeModel::enableRepositories()
     rootItem_->enableRepositories();
 }
 
+void TreeModel::rowsChanged()
+{
+    DBG;
+    emit layoutChanged();
+}
+
 void TreeModel::checkboxClicked(const QModelIndex& index)
 {
     SyncItem* item = static_cast<SyncItem*>(index.internalPointer());
@@ -146,10 +152,15 @@ int TreeModel::columnCount(const QModelIndex& parent) const
 void TreeModel::updateView(TreeItem* item, int row)
 {
     if (row == -1)
-    {
         row = item->row();
-    }
+
     QModelIndex idx = createIndex(row, 0, item);
+    if (!idx.isValid())
+    {
+        DBG << "ERROR: Tried to update invalid index.";
+        return;
+    }
+
     emit dataChanged(idx, idx);
 }
 
@@ -213,8 +224,8 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent)
 
     if(!parentItem)
     {
-        DBG << "Invalid request. row=" << row
-                 << "column =" << column << "parent: " << parent;
+        DBG << "Invalid request. row =" << row
+            << "column =" << column << "parent =" << parent;
         return QModelIndex();
     }
     TreeItem* childItem = parentItem->child(row);

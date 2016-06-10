@@ -13,6 +13,7 @@ public:
     virtual ~TreeItem() = default;
 
     virtual void appendChild(TreeItem* child);
+    bool removeChild(TreeItem* child);
     TreeItem* child(int row);
     int childCount() const;
     int columnCount() const;

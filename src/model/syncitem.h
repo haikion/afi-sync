@@ -10,8 +10,9 @@
 namespace SyncStatus {
     static const QString DOWNLOADING = "Downloading...";
     static const QString READY = "Ready";
+    static const QString READY_PAUSED = "Ready and Paused";
     static const QString NO_SYNC_CONNECTION = "No Sync Connection.";
-    static const QString INDEXING = "Indexing...";
+    static const QString CHECKING = "Checking...";
     static const QString WAITING = "Waiting...";
     static const QString NO_PEERS = "No Peers";
     static const QString NO_FILES = "No Files";

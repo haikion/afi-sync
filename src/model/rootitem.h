@@ -26,16 +26,24 @@ public:
 
     void enableRepositories();
     void processCompletion();
+    void layoutChanged();
+    void stopUpdates();
+    void startUpdates();
 
 private slots:
     void removeOrphans();
     void updateSpeed();
+    void periodicRepoUpdate();
+    void update();
 
 private:
+    static const int REPO_UPDATE_DELAY;
+
     bool initializing_;
     TreeModel* parent_;
     ISync* sync_;
     QTimer updateTimer_;
+    QTimer repoTimer_;
     QString username_;
     QString password_;
     unsigned port_;

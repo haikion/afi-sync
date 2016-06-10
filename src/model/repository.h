@@ -10,8 +10,6 @@
 
 class Repository : public SyncItem
 {
-    Q_OBJECT
-
 public:
     Repository(const QString& name, const QString& serverAddress, unsigned port,
                QString password, RootItem* parent);
@@ -29,10 +27,12 @@ public:
     QList<Mod*> mods() const;
     void processCompletion();
     void enableMods();
-
-private slots:
-    void updateEtaAndStatus();
+    bool removeMod(const QString& key);
+    bool removeMod(Mod* mod);
+    bool contains(const QString& key) const;
     void update();
+    void startUpdates();
+    void stopUpdates();
 
 private:
     ISync* sync_;
@@ -40,7 +40,6 @@ private:
     QString serverAddress_;
     unsigned port_;
     QString password_;
-    QTimer updateTimer_;
     //True if repo is ready
     bool ready_;
 
@@ -50,6 +49,7 @@ private:
     //int lastModified(); FIXME: clean up
     RootItem* parentItem();
     QString createParFile(const QString& parameters);
+    void updateEtaAndStatus();
 };
 
 #endif // REPOSITORYITEM_H

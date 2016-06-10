@@ -20,6 +20,11 @@ void TreeItem::appendChild(TreeItem* item)
     m_childItems.append(item);
 }
 
+bool TreeItem::removeChild(TreeItem* child)
+{
+    return m_childItems.removeAll(child) > 0;
+}
+
 TreeItem* TreeItem::child(int row)
 {
     return m_childItems.value(row);
@@ -53,10 +58,18 @@ void TreeItem::setParentItem(TreeItem* parentItem)
 
 int TreeItem::row() const
 {
-    int rVal = 0;
+    int rVal = -1;
     if (m_parentItem)
     {
-        rVal = m_parentItem->m_childItems.indexOf(const_cast<TreeItem*>(this));
+        QList<TreeItem*> childs = m_parentItem->m_childItems;
+        if (childs.contains(const_cast<TreeItem*>(this)))
+        {
+            rVal = m_parentItem->m_childItems.indexOf(const_cast<TreeItem*>(this));
+        }
+    }
+    if (rVal == -1)
+    {
+        DBG << "ERROR:" << name_ << "has no row.";
     }
 
     return rVal;

@@ -76,6 +76,7 @@ private:
     static const int MAX_ETA;
     static const QString SETTINGS_PATH;
     static const int AVG_CHECKING_SPEED;
+    static const int NOT_FOUND; //Unable to fetch eta
 
     QTimer alertTimer_;
     libtorrent::session* session_;
@@ -95,7 +96,7 @@ private:
     boost::shared_ptr<const libtorrent::torrent_info> getTorrentFile(const libtorrent::torrent_handle& handle) const;
     QString getHashString(const libtorrent::torrent_handle& handle) const;
     QByteArray readFile(const QString& path) const;
-    int bytesToCheck(const QString& key) const;
+    int64_t bytesToCheck(const QString& key) const;
     void handleAlert(libtorrent::alert* a);
     void handleListenFailedAlert(const libtorrent::listen_failed_alert* a) const;
     void handleTorrentCheckAlert(const libtorrent::torrent_checked_alert* a) const;

@@ -5,10 +5,13 @@
 #include <QThread>
 #include <QObject>
 #include <QTimer>
+#include <QSet>
+#include <QVector>
 #include "apis/isync.h"
 #include "syncitem.h"
 
 class Repository;
+class ModViewAdapter;
 
 class Mod : public SyncItem
 {
@@ -22,20 +25,25 @@ public:
     virtual Repository* parentItem();
     //void handleDirError(BtsFolderActivity folder);
     void addRepository(Repository* repository);
-    void removeRepository(Repository* repository);
     virtual void checkboxClicked();
     virtual QString checkText();
     virtual QString startText();
     virtual QString joinText();
-    std::vector<Repository*> repositories() const;
+    QSet<Repository*> repositories() const;
     //int lastModified();
     void deleteExtraFiles();
     virtual bool checked() const;
-    bool processCompletion();
+    void processCompletion();
+    QVector<ModViewAdapter*> viewAdapters() const;
+    void addModViewAdapter(ModViewAdapter* adapter);
+    void stopUpdates();
+    void startUpdates();
+    void updateStatus();
 
 public slots:
     void repositoryEnableChanged(bool offline = false);
     void threadDestructor();
+    bool removeRepository(Repository* repository);
 
 private:
     static const unsigned COMPLETION_WAIT_DURATION;
@@ -43,19 +51,19 @@ private:
     bool isOptional_;
     QString key_;
     ISync* sync_;
-    QTimer updateTimer_;
-    std::vector<Repository*> repositories_;
+    QTimer* updateTimer_;
+    QSet<Repository*> repositories_;
     unsigned waitTime_;
     bool doPostProcessing_;
+    QVector<ModViewAdapter*> viewAdapters_;
 
     void buildPathHash();
+    void fetchEta();
 
 private slots:
-    void fetchEta();
-    void updateStatus();
     void start();
     void init();
-
+    void update();
 };
 
 #endif // MODITEM_H

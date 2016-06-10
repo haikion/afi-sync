@@ -17,7 +17,7 @@ public:
     virtual QList<QString> getFolderKeys() = 0;
     //Returns true if there are no peers.
     virtual bool noPeers(const QString& key) = 0;
-    //Returns true if folder with given key has finished downloading
+    //Returns true if folder with given key has finished (checked & downloaded).
     virtual bool folderReady(const QString& key) = 0;
     //Returns true if folder is indexing or checking files.
     virtual bool isIndexing(const QString& key) = 0;

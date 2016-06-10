@@ -91,7 +91,7 @@ TreeView {
         role: "status"
         resizable : false
         movable: false
-        width: 180
+        width: 110
     }
 
     TableViewColumn {

@@ -42,8 +42,9 @@ public:
     void updateView(TreeItem* item, int row = -1);
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
     void reset();
-
     void enableRepositories();
+    void rowsChanged();
+
 signals:
     void uploadChanged(QString newVal);
     void downloadChanged(QString newVal);

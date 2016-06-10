@@ -8,6 +8,7 @@
 #include "mod.h"
 #include "repository.h"
 #include "installer.h"
+#include "modviewadapter.h"
 
 const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 
@@ -16,28 +17,30 @@ Mod::Mod(const QString& name, const QString& key, bool isOptional):
     isOptional_(isOptional),
     key_(key),
     sync_(0),
+    updateTimer_(nullptr),
     waitTime_(0),
     doPostProcessing_(false) //Set to true on Downloading...
 {
     DBG;
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
     moveToThread(Global::workerThread);
-    updateTimer_.moveToThread(Global::workerThread);
     qRegisterMetaType<QVector<int>>("QVector<int>");
 }
 
 Mod::~Mod()
 {
     DBG;
+    for (ModViewAdapter* adp : viewAdapters_)
+    {
+        DBG << "Destroying adapter";
+        delete adp;
+    }
     QMetaObject::invokeMethod(this, "threadDestructor", Qt::QueuedConnection);
 }
 
-
 void Mod::threadDestructor()
 {
-    //DBG << "name =" << name() << "current thread:" << QThread::currentThread() << "Worker thread:" << Global::workerThread
-    //    << "updateTimer thread:" << updateTimer_.thread();
-    //updateTimer_.stop(); //Might cause segmentation fault during shutdown. Why?
+    delete updateTimer_;
 }
 
 void Mod::init()
@@ -48,13 +51,26 @@ void Mod::init()
     {
         setChecked(true);
     }
-    repositoryEnableChanged();
     //Periodically check mod progress
-    updateTimer_.setInterval(1000);
-    connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(fetchEta()));
-    connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(updateStatus()));
-    updateTimer_.start();
-    DBG << "name =" << name() << "Completed";
+    if (!updateTimer_)
+    {
+        updateTimer_ = new QTimer();
+    }
+    updateTimer_->setInterval(1000);
+    connect(updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
+    repositoryEnableChanged();
+    update();
+    DBG << "name =" << name() << "key =" << key() << "Completed";
+}
+
+void Mod::update()
+{
+    updateStatus();
+    fetchEta();
+    for (ModViewAdapter* adp : viewAdapters_)
+    {
+        adp->updateView();
+    }
 }
 
 //Starts sync directory. If directory does not exist
@@ -79,6 +95,7 @@ void Mod::start()
         sync_->addFolder(dir, key_, true);
     }
     sync_->setFolderPaused(key_, false);
+    QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
 }
 
 void Mod::deleteExtraFiles()
@@ -155,9 +172,8 @@ void Mod::repositoryEnableChanged(bool offline)
     DBG << "name =" << name() << "current thread: " << QThread::currentThread() << "Worker thread: " << Global::workerThread;
     //just in case
     if (!sync_)
-    {
         return;
-    }
+
     bool allDisabled = true;
     for (const Repository* repo : repositories_)
     {
@@ -179,6 +195,7 @@ void Mod::repositoryEnableChanged(bool offline)
         //All repositories unchecked
         DBG << "Stopping mod transfer. name =" << name();
         sync_->setFolderPaused(key_, true);
+        QMetaObject::invokeMethod(updateTimer_, "stop", Qt::QueuedConnection);
         return;
     }
     //At least one repo active and mod checked
@@ -186,30 +203,34 @@ void Mod::repositoryEnableChanged(bool offline)
     start();
 }
 
-std::vector<Repository*> Mod::repositories() const
+QSet<Repository*> Mod::repositories() const
 {
     return repositories_;
 }
-
-//Not supported by libTorrent
-//int Mod::lastModified()
-//{
-//    return sync_->getLastModified(key_);
-//}
 
 QString Mod::key() const
 {
     return key_;
 }
 
+void Mod::startUpdates()
+{
+    QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
+}
+
+void Mod::stopUpdates()
+{
+    QMetaObject::invokeMethod(updateTimer_, "stop", Qt::QueuedConnection);
+}
+
 void Mod::addRepository(Repository* repository)
 {
     DBG << "mod name =" << name() << " repo name =" << repository->name();
 
-    repositories_.push_back(repository);
+    repositories_.insert(repository);
     if (repositories().size() == 1)
     {
-        Repository* repo = repositories_.at(0);
+        Repository* repo = *repositories_.begin();
         sync_ = repo->sync();
         if (sync_->folderReady())
         {
@@ -224,18 +245,29 @@ void Mod::addRepository(Repository* repository)
     }
 }
 
-void Mod::removeRepository(Repository* repository)
+bool Mod::removeRepository(Repository* repository)
 {
     DBG;
 
     //disconnect(repository, SIGNAL(enableChanged()), this, SLOT(repositoryEnableChanged()));
-    auto it = std::find(repositories_.begin(), repositories_.end(), repository);
+    auto it = repositories_.find(repository);
     if (it == repositories_.end())
     {
-        DBG << "name =" << name() << "ERROR: Mod" << name() << "not found in repository:" << repository->name();
-        return;
+        DBG << "ERROR: Mod" << name() << "not found in repository:" << repository->name();
+        return false;
     }
     repositories_.erase(it);
+    return true;
+}
+
+QVector<ModViewAdapter*> Mod::viewAdapters() const
+{
+    return viewAdapters_;
+}
+
+void Mod::addModViewAdapter(ModViewAdapter* adapter)
+{
+    viewAdapters_.append(adapter);
 }
 
 void Mod::updateStatus()
@@ -250,7 +282,7 @@ void Mod::updateStatus()
     }
     else if (sync_->isIndexing(key_))
     {
-        setStatus(SyncStatus::INDEXING);
+        setStatus(SyncStatus::CHECKING);
         doPostProcessing_ = true;
     }
     else if (eta() > 0)
@@ -268,13 +300,14 @@ void Mod::updateStatus()
             setStatus(SyncStatus::READY);
         }
     }
-    else if (status() == SyncStatus::READY)
+    else if (status() == SyncStatus::READY && sync_->paused(key_))
+    {
+        setStatus(SyncStatus::READY_PAUSED);
+    }
+    else if (status() == SyncStatus::READY || status() == SyncStatus::READY_PAUSED)
     {
         if (doPostProcessing_)
-        {
             doPostProcessing_ = false;
-
-        }
 
         return;
     }
@@ -300,7 +333,7 @@ void Mod::updateStatus()
     */
 }
 
-bool Mod::processCompletion()
+void Mod::processCompletion()
 {
     sync_->check(key_);
     deleteExtraFiles();
@@ -324,7 +357,7 @@ void Mod::fetchEta()
     int eta = sync_->getFolderEta(key_);
     if (eta == -404)
     {
-        //timeout
+        DBG << "ERROR: Unable to retrieve eta for mod" << name();
         return;
     }
     setEta(eta);

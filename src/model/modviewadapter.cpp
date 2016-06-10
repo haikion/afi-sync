@@ -7,9 +7,11 @@ ModViewAdapter::ModViewAdapter(Mod* mod, Repository* repo):
     repo_(repo)
 {
     setParentItem(repo);
-    timer_.setInterval(1000);
-    connect(&timer_, SIGNAL(timeout()), this, SLOT(updateView()));
-    timer_.start();
+}
+
+ModViewAdapter::~ModViewAdapter()
+{
+    parentItem()->removeChild(this);
 }
 
 QString ModViewAdapter::checkText()

@@ -26,6 +26,7 @@ namespace lt = libtorrent;
 const int LibTorrentApi::MAX_ETA = std::numeric_limits<int>::max();
 const QString LibTorrentApi::SETTINGS_PATH = Constants::SYNC_SETTINGS_PATH + "/libtorrent.dat";
 const int LibTorrentApi::AVG_CHECKING_SPEED = 20000000; //Bytes per sec
+const int LibTorrentApi::NOT_FOUND = -404;
 
 LibTorrentApi::LibTorrentApi(QObject *parent) :
     QObject(parent),
@@ -87,7 +88,7 @@ void LibTorrentApi::saveSettings()
     QByteArray bytes;
     lt::bencode(std::back_inserter(bytes), e);
     writeFile(bytes, SETTINGS_PATH);
-    DBG << "Data saved." << bytes.size() << " bytes written.";
+    DBG << "Data saved." << bytes.size() << "bytes written.";
 }
 
 bool LibTorrentApi::loadSettings()
@@ -102,7 +103,7 @@ bool LibTorrentApi::loadSettings()
     lt::bdecode_node fast;
     lt::error_code ec;
     lt::bdecode(bytes.constData(), bytes.constData() + bytes.size(), fast, ec);
-    DBG << bytes.size() << " bytes read.";
+    DBG << bytes.size() << "bytes read.";
     if (ec || (fast.type() != lt::bdecode_node::dict_t))
     {
         DBG << "Failure";
@@ -121,7 +122,7 @@ QByteArray LibTorrentApi::readFile(const QString& path) const
     file.open(QFile::ReadOnly);
     if (!file.isReadable())
     {
-        DBG << "Unable to read file" << path;
+        DBG << "Unable to read file" << file.symLinkTarget();
         return rVal;
     }
 
@@ -191,8 +192,13 @@ int LibTorrentApi::getFolderEta(const QString& key)
 {
     if (isIndexing(key))
     {
-        int bc = bytesToCheck(key);
+        int64_t bc = bytesToCheck(key);
+        if (bc == NOT_FOUND)
+        {
+            return NOT_FOUND;
+        }
         int rVal = bc/AVG_CHECKING_SPEED;
+        DBG << "rVal =" << rVal;
         return rVal;
     }
 
@@ -208,18 +214,20 @@ int LibTorrentApi::getFolderEta(const QString& key)
     return (status.total_wanted - status.total_wanted_done) / download;
 }
 
-int LibTorrentApi::bytesToCheck(const QString& key) const
+int64_t LibTorrentApi::bytesToCheck(const QString& key) const
 {
     if (!session_)
-        return std::numeric_limits<int>::max();
+        return NOT_FOUND;
 
     lt::torrent_handle handle = keyHash_.value(key);
     lt::torrent_status status = handle.status();
-    int tw = status.total_wanted;
+    int64_t tw = status.total_wanted;
     if (tw == 0) //Not loaded yet.
-        return std::numeric_limits<int>::max();
+        return NOT_FOUND;
 
-    return tw*(1 - status.progress);
+    int64_t rVal = tw*(1 - status.progress);
+    //DBG << "rVal =" << rVal;
+    return rVal;
 }
 
 //In early states of torrent handle torrent_file is null. This function waits for 5 at most for it to get
@@ -301,7 +309,6 @@ QString LibTorrentApi::error(const QString& key)
 {
     lt::torrent_handle handle = keyHash_.value(key);
     QString rVal = QString::fromStdString(handle.status().error);
-    DBG << "key =" << key << "rVal =" << rVal;
     return rVal;
 }
 
@@ -438,7 +445,6 @@ bool LibTorrentApi::removeFolder2(const QString& key)
         return false;
     }
     libtorrent::torrent_handle handle = keyHash_.value(lowerKey);
-    DBG << keyHash_.size();
     if (!handle.is_valid())
     {
         lt::torrent_status sta = handle.status();
@@ -449,15 +455,20 @@ bool LibTorrentApi::removeFolder2(const QString& key)
         return false;
     }
     QString filePrefix = Constants::SYNC_SETTINGS_PATH + "/" + getHashString(handle);
-    DBG << "filePrefix =" << filePrefix;
     session_->remove_torrent(handle);
     keyHash_.remove(lowerKey);
     //Delete saved data
-    QFile(filePrefix + ".url").remove();
-    QFile(filePrefix + ".torrent").remove();
+    QString urlFile = filePrefix + ".url";
+    DBG << "Deleting file:" << urlFile;
+    QFile(urlFile).remove();
+    QString torrentFile = filePrefix + ".torrent";
+    DBG << "Deleting file:" << torrentFile;
+    QFile(torrentFile).remove();
 
     std::vector<lt::alert*>* alerts = new std::vector<lt::alert*>();
-    QFile(filePrefix + ".fastresume").remove();
+    QString fastresumeFile = filePrefix + ".fastresume";
+    DBG << "Deleting file:" << fastresumeFile;
+    QFile(fastresumeFile).remove();
     //Wait for removed alert (5s)
     //50 alert chunks may be received before torrent removed alert.
     for (int i = 0; i < 50; ++i)
@@ -713,20 +724,7 @@ void LibTorrentApi::handleTorrentFinishedAlert(const lt::torrent_finished_alert*
     lt::torrent_handle h = a->handle;
     lt::torrent_status s = h.status(lt::torrent_handle::query_name);
     QString name = QString::fromStdString(s.name);
-    DBG << "Torrent" << name << "has finished downloading.";
-    /*
-
-    //Prevents checking->finished->checking loop.
-    for (lt::alert* alert : *alerts_)
-    {
-        if (alert->type() == lt::torrent_checked_alert::alert_type)
-        {
-            DBG << "Checking was finished. No recheck.";
-            return;
-        }
-    }
-    a->handle.force_recheck();
-    */
+    DBG << "Torrent" << name << "has finished.";
 }
 
 void LibTorrentApi::handleTorrentCheckAlert(const lt::torrent_checked_alert* a) const

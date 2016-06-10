@@ -14,6 +14,9 @@
 #include "repository.h"
 #include "jsonreader.h"
 #include "settingsmodel.h"
+#include "processmonitor.h"
+
+const int RootItem::REPO_UPDATE_DELAY = 60000; //ms
 
 //TODO: Should it be faster?
 RootItem::RootItem(TreeModel* parentModel):
@@ -52,10 +55,12 @@ RootItem::RootItem(const QString& username, const QString& password, unsigned po
 RootItem::~RootItem()
 {
     DBG;
-    for (Repository* repo : childItems())
-    {
-        delete repo;
-    }
+    //Causes segfaults (because of workerThread->quit()?) and there is no need for this anyway
+    //if destructor is only used during program shutdown.
+    //for (Repository* repo : childItems())
+    //{
+    //    delete repo;
+    //}
     Global::workerThread->quit();
     Global::workerThread->wait(3000);
     DBG << "Shutdown2";
@@ -107,6 +112,31 @@ void RootItem::processCompletion()
     DBG << "Finished";
 }
 
+void RootItem::layoutChanged()
+{
+    parent_->rowsChanged();
+}
+
+void RootItem::stopUpdates()
+{
+    updateTimer_.stop();
+    repoTimer_.stop();
+    for (Repository* repo : childItems())
+    {
+        repo->stopUpdates();
+    }
+}
+
+void RootItem::startUpdates()
+{
+    updateTimer_.start();
+    repoTimer_.start();
+    for (Repository* repo : childItems())
+    {
+        repo->startUpdates();
+    }
+}
+
 void RootItem::resetSyncSettings()
 {
     DBG;
@@ -154,7 +184,7 @@ void RootItem::updateView(TreeItem* item, int row)
         //Wait for repos to load
         return;
     }
-    //DBG << "Updating row=" << row->row();
+    //DBG << "Updating row =" << row->row();
     parent_->updateView(item, row);
 }
 
@@ -196,23 +226,52 @@ void RootItem::updateSpeed()
     parent_->updateSpeed(sync_->getDownload(), sync_->getUpload());
 }
 
+void RootItem::periodicRepoUpdate()
+{
+    if (ProcessMonitor::afiSyncRunning())
+    {
+        DBG << "Ignored because Arma 3 is running";
+        return;
+    }
+    if (JsonReader::updateAvaible())
+    {
+        DBG << "Updating repo...";
+        JsonReader::fillEverything(this);
+        return;
+    }
+    DBG << "No repo updates";
+}
+
+void RootItem::update()
+{
+    updateSpeed();
+    for (Repository* repo : childItems())
+    {
+        repo->update();
+    }
+}
+
 void RootItem::initSync()
 {
     //sync_ = new BtsApi2(username_, password_, port_);
     sync_ = new LibTorrentApi();
     updateTimer_.setInterval(1000);
+    repoTimer_.setInterval(REPO_UPDATE_DELAY);
     DBG << "Setting up speed updates";
-    connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(updateSpeed()));
+    connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
+    connect(&repoTimer_, SIGNAL(timeout()), this, SLOT(periodicRepoUpdate()));
     //connect(&updateTimer_, SIGNAL(timeout()), dynamic_cast<QObject*>(sync_), SLOT(getSpeed()));
     //connect(dynamic_cast<QObject*>(sync_), SIGNAL(getSpeedResult(qint64,qint64)), parent_, SLOT(updateSpeed(qint64,qint64)));
     if (sync_->folderReady())
     {
         DBG << "Starting updateTimer directly";
         updateTimer_.start();
+        repoTimer_.start();
     }
     else
     {
         DBG << "Connecting updateTimer start to initCompleted()";
         connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), &updateTimer_, SLOT(start()));
+        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), &repoTimer_, SLOT(start()));
     }
 }
