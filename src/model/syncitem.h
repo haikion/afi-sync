@@ -19,6 +19,7 @@ namespace SyncStatus {
     static const QString NOT_IN_SYNC = "Not in Sync";
     static const QString INACTIVE = "Inactive";
     static const QString PAUSED = "Paused";
+    static const QString QUEUED = "Queued";
 }
 
 class SyncItem : public TreeItem, public QObject

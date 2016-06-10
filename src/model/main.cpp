@@ -85,7 +85,9 @@ int cli(int argc, char* argv[], QCommandLineParser& parser)
         qDebug() << "Invalid path: " << dir.absolutePath();
         QCoreApplication::exit(2);
     }
-    SettingsModel::setModDownloadPath(dir.absoluteFilePath());
+    QString modDownloadPath = dir.absoluteFilePath();
+    DBG << "Setting mod download path:" << modDownloadPath;
+    SettingsModel::setModDownloadPath(modDownloadPath);
     SettingsModel::setPort(QString::number(port));
 
     Global::guiless = true;

@@ -164,15 +164,23 @@ QString Repository::createParFile(const QString& parameters)
 
 void Repository::updateEtaAndStatus()
 {
-    //Eta
-    int eta = 0;
+    //Eta = max(active_folders) + sum(queued_folders)
+    int maxEta = 0;
+    int sumEta = 0;
     QSet<QString> modStatuses;
     for (Mod* item : mods())
     {
-        eta = std::max(item->eta(), eta);
+        if (item->status() == SyncStatus::QUEUED)
+        {
+            sumEta += item->eta();
+        }
+        else
+        {
+            maxEta = std::max(item->eta(), maxEta);
+        }
         modStatuses.insert(item->status());
     }
-    setEta(eta);
+    setEta(maxEta + sumEta);
     //Status
     QSet<QString> readyStatuses;
     readyStatuses.insert(SyncStatus::READY);

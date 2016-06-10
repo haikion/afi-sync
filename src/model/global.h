@@ -8,7 +8,7 @@
 
 namespace Constants {
     const QString SETTINGS_PATH = "settings";
-    const QString SYNC_SETTINGS_PATH = SETTINGS_PATH + "/BitTorrent_Sync";
+    const QString SYNC_SETTINGS_PATH = SETTINGS_PATH + "/sync";
     const QString DEFAULT_USERNAME = "user";
     const QString DEFAULT_PASSWORD = "password";
     const unsigned DEFAULT_PORT = 8887;

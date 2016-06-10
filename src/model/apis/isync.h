@@ -19,6 +19,8 @@ public:
     virtual bool noPeers(const QString& key) = 0;
     //Returns true if folder with given key has finished (checked & downloaded).
     virtual bool folderReady(const QString& key) = 0;
+    //Returns true if folder is queued for checking or downloading
+    virtual bool folderQueued(const QString& key) = 0;
     //Returns true if folder is indexing or checking files.
     virtual bool isIndexing(const QString& key) = 0;
     //Sets folder in paused mode or starts if if value is set to false.

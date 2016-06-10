@@ -280,6 +280,10 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::NOT_IN_SYNC);
     }
+    else if (sync_->folderQueued(key_))
+    {
+        setStatus(SyncStatus::QUEUED);
+    }
     else if (sync_->isIndexing(key_))
     {
         setStatus(SyncStatus::CHECKING);
@@ -308,8 +312,6 @@ void Mod::updateStatus()
     {
         if (doPostProcessing_)
             doPostProcessing_ = false;
-
-        return;
     }
     else if (sync_->folderReady(key_))
     {
@@ -319,18 +321,10 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::PAUSED);
     }
-    //FIXME: libTorrent can be ready without having any peers.
     else if (sync_->noPeers(key_))
     {
         setStatus(SyncStatus::NO_PEERS);
     }
-    /*
-    //Peers, Eta == 0 and not indexing.
-    else if (status() != SyncStatus::READY)
-    {
-        setStatus(SyncStatus::WAITING);
-    }
-    */
 }
 
 void Mod::processCompletion()

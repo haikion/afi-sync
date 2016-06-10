@@ -163,9 +163,24 @@ bool LibTorrentApi::isIndexing(const QString& key)
     //    << "\n checking_resume_data =" << lt::torrent_status::state_t::checking_resume_data
     //    << "\n queued_for_checking =" << lt::torrent_status::state_t::queued_for_checking;
     return (state == lt::torrent_status::state_t::checking_files
-          || state == lt::torrent_status::state_t::checking_resume_data
-          || state == lt::torrent_status::state_t::queued_for_checking
-          || state == lt::torrent_status::state_t::allocating);
+         || state == lt::torrent_status::state_t::checking_resume_data
+         || state == lt::torrent_status::state_t::queued_for_checking
+         || state == lt::torrent_status::state_t::allocating);
+}
+
+bool LibTorrentApi::folderQueued(const QString& key)
+{
+    lt::torrent_handle handle = keyHash_.value(key.toLower());
+    lt::torrent_status status = handle.status();
+    lt::torrent_status::state_t state = status.state;
+    //Default active downloads is 3.
+    //DBG << "key =" << key << "state =" << state << "active time =" << handle.name().c_str()
+    //    << "\n allocating =" << lt::torrent_status::state_t::allocating
+    //    << "\n checking files =" << lt::torrent_status::state_t::checking_files
+    //    << "\n checking_resume_data =" << lt::torrent_status::state_t::checking_resume_data
+    //    << "\n queued_for_checking =" << lt::torrent_status::state_t::queued_for_checking;
+    return ((state == lt::torrent_status::state_t::checking_files && status.queue_position > 1)
+        || (state == lt::torrent_status::downloading && status.queue_position > 3));
 }
 
 void LibTorrentApi::setFolderPaused(const QString& key, bool value)
@@ -198,7 +213,6 @@ int LibTorrentApi::getFolderEta(const QString& key)
             return NOT_FOUND;
         }
         int rVal = bc/AVG_CHECKING_SPEED;
-        DBG << "rVal =" << rVal;
         return rVal;
     }
 
@@ -458,7 +472,7 @@ bool LibTorrentApi::removeFolder2(const QString& key)
     session_->remove_torrent(handle);
     keyHash_.remove(lowerKey);
     //Delete saved data
-    QString urlFile = filePrefix + ".url";
+    QString urlFile = filePrefix + ".link";
     DBG << "Deleting file:" << urlFile;
     QFile(urlFile).remove();
     QString torrentFile = filePrefix + ".torrent";
@@ -569,7 +583,7 @@ bool LibTorrentApi::saveTorrentFile(const lt::torrent_handle& handle) const
     QByteArray torrentBytes;
     bencode(std::back_inserter(torrentBytes), new_torrent.generate());
     QString torrentFilePath = filePrefix + ".torrent";
-    QString urlFilePath = filePrefix + ".url";
+    QString urlFilePath = filePrefix + ".link";
     QByteArray url = keyHash_.key(handle).toLocal8Bit();
     return writeFile(torrentBytes, torrentFilePath) && writeFile(url, urlFilePath);
 }
@@ -679,7 +693,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         params.ti = loadFromFile(pathPrefix + ".torrent");
         params.save_path = SettingsModel::modDownloadPath().toStdString();
         params.resume_data = loadResumeData(pathPrefix + ".fastresume");
-        QString url = QString::fromLocal8Bit(readFile(pathPrefix + ".url"));
+        QString url = QString::fromLocal8Bit(readFile(pathPrefix + ".link"));
         DBG << url << (params.ti == 0) << params.resume_data.size();
         if (params.ti == 0 || url.isEmpty())
         {

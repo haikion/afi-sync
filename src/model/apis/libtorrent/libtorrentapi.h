@@ -32,6 +32,7 @@ public:
     virtual bool folderReady(const QString& key);
     //Returns true if folder is indexing or checking files.
     virtual bool isIndexing(const QString& key);
+    virtual bool folderQueued(const QString& key);
     //Sets folder in paused mode or starts if if value is set to false.
     virtual void setFolderPaused(const QString& key, bool value);
     //Fetches eta to ready state. Returns time in seconds.
