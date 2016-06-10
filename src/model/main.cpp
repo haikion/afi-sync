@@ -17,13 +17,16 @@
 
 static const QString LOG_FILE = "afisync.log";
 
-struct CleanExit{
-    CleanExit() {
+struct CleanExit
+{
+    CleanExit()
+    {
         signal(SIGINT, &CleanExit::exitQt);
         signal(SIGTERM, &CleanExit::exitQt);
     }
 
-    static void exitQt(int sig) {
+    static void exitQt(int sig)
+    {
         Q_UNUSED(sig);
 
         QCoreApplication::exit(0);
