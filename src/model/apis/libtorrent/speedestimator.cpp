@@ -2,7 +2,7 @@
 #include "../../debug.h"
 #include "speedestimator.h"
 
-const int SpeedEstimator::AVG_CHECKING_SPEED = 20000000; //Bytes per sec
+const int64_t SpeedEstimator::AVG_CHECKING_SPEED = 20000000; //Bytes per sec
 
 SpeedEstimator::SpeedEstimator():
     dX_(0), dT_(0)
@@ -27,11 +27,11 @@ unsigned SpeedEstimator::estimate(const QString& key, int64_t toCheck)
     {
         auto val = progresses_.value(key);
         int64_t x_1 = val.first;
-        unsigned t_1 = val.second;
+        int64_t t_1 = val.second;
 
-        if (x_1 < toCheck)
+        if (x_1 > toCheck)
         {
-            DBG << "ERROR: x_1 < toCheck. x_1 =" << x_1 << "toCheck =" << toCheck;
+            DBG << "ERROR: x_1 > toCheck. x_1 =" << x_1 << "toCheck =" << toCheck;
             return AVG_CHECKING_SPEED;
         }
 

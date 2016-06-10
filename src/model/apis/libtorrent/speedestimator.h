@@ -16,12 +16,12 @@ public:
     bool cutEsimation(const QString& key);
 
 private:
-    static const int AVG_CHECKING_SPEED;
+    static const int64_t AVG_CHECKING_SPEED;
 
     long unsigned dX_;
     long unsigned dT_; //ms
     //Contains x and timestamp
-    QHash<QString, std::pair<int64_t, unsigned>> progresses_;
+    QHash<QString, std::pair<int64_t, int64_t>> progresses_;
 };
 
 #endif // SPEEDESTIMATOR_H
