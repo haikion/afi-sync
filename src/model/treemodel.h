@@ -28,7 +28,7 @@ public:
     };
 
     explicit TreeModel(const QString& data, QObject* parent = 0);
-    explicit TreeModel(const QString& username, const QString& password, unsigned port, QObject* parent = 0);
+    explicit TreeModel(unsigned port, QObject* parent = 0);
     TreeModel(QObject* parent = 0);
     ~TreeModel();
 

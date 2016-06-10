@@ -20,10 +20,9 @@
 #include "rootitem.h"
 #include "global.h"
 
-TreeModel::TreeModel(const QString& username, const QString& password,
-                     unsigned port, QObject* parent) :
+TreeModel::TreeModel(unsigned port, QObject* parent) :
     QAbstractItemModel(parent),
-    rootItem_(new RootItem(username, password, port, this)),
+    rootItem_(new RootItem(port, this)),
     download_(0),
     upload_(0)
 {

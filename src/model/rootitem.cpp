@@ -20,19 +20,16 @@ const int RootItem::REPO_UPDATE_DELAY = 60000; //ms
 
 //TODO: Should it be faster?
 RootItem::RootItem(TreeModel* parentModel):
-    RootItem(Constants::DEFAULT_USERNAME, Constants::DEFAULT_PASSWORD,
-             Constants::DEFAULT_PORT, parentModel)
+    RootItem(Constants::DEFAULT_PORT, parentModel)
 {
 }
 
-RootItem::RootItem(const QString& username, const QString& password, unsigned port,
+RootItem::RootItem(unsigned port,
                    TreeModel* parentModel):
     QObject(),
     TreeItem("[DBG] Root Item"),
     initializing_(true),
     parent_(parentModel),
-    username_(username),
-    password_(password),
     port_(port)
 {
     initSync();
@@ -253,15 +250,12 @@ void RootItem::update()
 
 void RootItem::initSync()
 {
-    //sync_ = new BtsApi2(username_, password_, port_);
     sync_ = new LibTorrentApi();
     updateTimer_.setInterval(1000);
     repoTimer_.setInterval(REPO_UPDATE_DELAY);
     DBG << "Setting up speed updates";
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
     connect(&repoTimer_, SIGNAL(timeout()), this, SLOT(periodicRepoUpdate()));
-    //connect(&updateTimer_, SIGNAL(timeout()), dynamic_cast<QObject*>(sync_), SLOT(getSpeed()));
-    //connect(dynamic_cast<QObject*>(sync_), SIGNAL(getSpeedResult(qint64,qint64)), parent_, SLOT(updateSpeed(qint64,qint64)));
     if (sync_->folderReady())
     {
         DBG << "Starting updateTimer directly";

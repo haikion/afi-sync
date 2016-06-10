@@ -16,7 +16,7 @@ bool SpeedEstimator::cutEsimation(const QString& key)
 
 unsigned SpeedEstimator::estimate(const QString& key, int64_t toCheck)
 {
-    unsigned t_2 = runningTimeMs();
+    int64_t t_2 = runningTimeMs();
     int64_t rVal = AVG_CHECKING_SPEED;
     if (toCheck < 0)
     {
@@ -39,7 +39,7 @@ unsigned SpeedEstimator::estimate(const QString& key, int64_t toCheck)
         dT_ += t_2 - t_1;
         rVal = 1000 * dX_ / dT_;
     }
-    std::pair<long unsigned, unsigned> newVal(toCheck, t_2);
+    std::pair<int64_t, int64_t> newVal(toCheck, t_2);
     progresses_[key] = newVal;
     return rVal;
 }

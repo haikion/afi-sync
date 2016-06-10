@@ -15,8 +15,7 @@ class RootItem : public QObject, public TreeItem
 
 public:
     explicit RootItem(TreeModel* parentModel);
-    explicit RootItem(const QString& username, const QString& password,
-                      unsigned port, TreeModel* parentModel);
+    explicit RootItem(unsigned port, TreeModel* parentModel);
     virtual ~RootItem();
 
     void updateView(TreeItem* item, int row = -1);
@@ -44,8 +43,6 @@ private:
     ISync* sync_;
     QTimer updateTimer_;
     QTimer repoTimer_;
-    QString username_;
-    QString password_;
     unsigned port_;
 
     void initSync();
