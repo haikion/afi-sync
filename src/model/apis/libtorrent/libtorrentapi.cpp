@@ -495,7 +495,7 @@ bool LibTorrentApi::removeFolder2(const QString& key)
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
     {
-        DBG << ERROR_NOT_FOUND << key;
+        DBG << ERROR_KEY_NOT_FOUND << key;
         return false;
     }
     libtorrent::torrent_handle handle = it.value();
