@@ -80,6 +80,11 @@ void SyncItem::checkboxClicked()
     setChecked(!checked());
 }
 
+QSettings* SyncItem::settings() const
+{
+    return settings_;
+}
+
 void SyncItem::setStatus(const QString& status)
 {
     status_ = status;

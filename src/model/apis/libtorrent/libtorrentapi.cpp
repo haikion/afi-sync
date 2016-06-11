@@ -171,6 +171,10 @@ bool LibTorrentApi::folderQueued(const QString& key)
 {
     lt::torrent_handle handle = keyHash_.value(key.toLower());
     lt::torrent_status status = handle.status();
+    if (!status.auto_managed || status.is_finished)
+    {
+        return false;
+    }
     lt::torrent_status::state_t state = status.state;
     //Default active downloads is 3.
     //DBG << "key =" << key << "state =" << state << "active time =" << handle.name().c_str()
@@ -178,7 +182,7 @@ bool LibTorrentApi::folderQueued(const QString& key)
     //    << "\n checking files =" << lt::torrent_status::state_t::checking_files
     //    << "\n checking_resume_data =" << lt::torrent_status::state_t::checking_resume_data
     //    << "\n queued_for_checking =" << lt::torrent_status::state_t::queued_for_checking;
-    return ((state == lt::torrent_status::state_t::checking_files && status.queue_position > 1)
+    return ((state == lt::torrent_status::state_t::checking_files && status.queue_position > 0)
         || (state == lt::torrent_status::downloading && status.queue_position > 3));
 }
 
@@ -208,26 +212,30 @@ int LibTorrentApi::getFolderEta(const QString& key)
     {
         int64_t bc = bytesToCheck(key);
         if (bc == NOT_FOUND)
-        {
             return NOT_FOUND;
-        }
 
-        unsigned checkingSpeed = speedEstimator_.estimate(key, bc);
-        int rVal = bc/checkingSpeed;
+        int64_t checkingSpeed;
+        if (folderQueued(key))
+        {
+            checkingSpeed = speedEstimator_.estimation();
+        }
+        else
+        {
+            checkingSpeed = speedEstimator_.estimate(key, bc);
+        }
+        int64_t rVal = bc/checkingSpeed;
         return rVal;
     }
     //Cut checking speed estimation.
     speedEstimator_.cutEsimation(key);
-
-    QString lowerKey = key.toLower();
-    lt::torrent_handle handle = keyHash_.value(lowerKey);
-
-    if (paused(lowerKey)) return 0;
-
+    lt::torrent_handle handle = keyHash_.value(key);
     lt::torrent_status status = handle.status();
-    const unsigned download = status.download_rate;
+    if (status.is_finished)
+        return 0;
 
-    if (download == 0 || status.total_wanted == 0) return 0;
+    int download = status.download_rate;
+    if (download == 0 || status.total_wanted == 0)
+        return NOT_FOUND;
     return (status.total_wanted - status.total_wanted_done) / download;
 }
 
@@ -291,8 +299,7 @@ QSet<QString> LibTorrentApi::getFilesUpper(const QString& key, const QString& pa
     {
         lt::torrent_status status = handle.status(lt::torrent_handle::query_save_path);
         QString value = QString::fromStdString(status.save_path + "/" + files.file_path(i));
-        value = QDir::toNativeSeparators(value).toUpper();
-        DBG << "appending value:" << value;
+        value = QFileInfo(value).absoluteFilePath().toUpper();
         rVal.insert(value);
     }
     return rVal;

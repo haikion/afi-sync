@@ -44,6 +44,9 @@ public:
     void setChecked(bool checked);
     virtual void checkboxClicked();
 
+protected:
+    QSettings* settings() const;
+
 private:
     static QSettings* settings_;
     QString name_;

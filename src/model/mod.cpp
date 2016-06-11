@@ -18,8 +18,7 @@ Mod::Mod(const QString& name, const QString& key, bool isOptional):
     key_(key),
     sync_(0),
     updateTimer_(nullptr),
-    waitTime_(0),
-    doPostProcessing_(false) //Set to true on Downloading...
+    waitTime_(0)
 {
     DBG;
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
@@ -80,7 +79,6 @@ void Mod::start()
 {
     DBG << "name =" << name();
     QString modPath = SettingsModel::modDownloadPath();
-    //FIXME: Fix in btsync api
     QString dir = QDir::toNativeSeparators(modPath);
     QString syncPath = QDir::toNativeSeparators(sync_->getFolderPath(key_));
     QString error = sync_->error(key_);
@@ -132,7 +130,7 @@ void Mod::deleteExtraFiles()
     for (QString file : extraFiles)
     {
         DBG << "Deleting extra file: " << file << " from mod =" << name();
-        QFile(file).remove();
+        //QFile(file).remove();
     }
     DBG << "Completed name =" << name();
 }
@@ -272,6 +270,8 @@ void Mod::addModViewAdapter(ModViewAdapter* adapter)
 
 void Mod::updateStatus()
 {
+    QString processKey = name() + "/process";
+
     if (!checked())
     {
         setStatus(SyncStatus::INACTIVE);
@@ -287,12 +287,6 @@ void Mod::updateStatus()
     else if (sync_->isIndexing(key_))
     {
         setStatus(SyncStatus::CHECKING);
-        doPostProcessing_ = true;
-    }
-    else if (eta() > 0)
-    {
-        setStatus(SyncStatus::DOWNLOADING);
-        doPostProcessing_ = true;
     }
     //Hack to fix BtSync reporting ready when it's not... :D (oh my god...)
     else if (status() == SyncStatus::WAITING)
@@ -304,14 +298,16 @@ void Mod::updateStatus()
             setStatus(SyncStatus::READY);
         }
     }
-    else if (status() == SyncStatus::READY && sync_->paused(key_))
-    {
-        setStatus(SyncStatus::READY_PAUSED);
-    }
     else if (status() == SyncStatus::READY || status() == SyncStatus::READY_PAUSED)
     {
-        if (doPostProcessing_)
-            doPostProcessing_ = false;
+        bool process = settings()->value(processKey, false).toBool();
+        DBG << "Process =" << process;
+        if (process)
+        {
+            processCompletion();
+            DBG << "Process set to false";
+            settings()->setValue(processKey, false);
+        }
     }
     else if (sync_->folderReady(key_))
     {
@@ -319,11 +315,24 @@ void Mod::updateStatus()
     }
     else if (sync_->paused(key_))
     {
-        setStatus(SyncStatus::PAUSED);
+        if (status() == SyncStatus::READY)
+        {
+            setStatus(SyncStatus::READY_PAUSED);
+        }
+        else
+        {
+            setStatus(SyncStatus::PAUSED);
+        }
     }
     else if (sync_->noPeers(key_))
     {
         setStatus(SyncStatus::NO_PEERS);
+    }
+    else if (eta() > 0)
+    {
+        setStatus(SyncStatus::DOWNLOADING);
+        DBG << "process set to true";
+        settings()->setValue(processKey, true);
     }
 }
 

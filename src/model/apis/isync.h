@@ -29,7 +29,7 @@ public:
     virtual int getFolderEta(const QString& key) = 0;
     //Removes folder with specific key.
     virtual bool removeFolder2(const QString& key) = 0;
-    //Returns list of files in folder in upper case format.
+    //Returns list of files in folder in upper case unix (separator = /) format. Example: "C:/MODS/@MOD/FILE.PBO"
     virtual QSet<QString> getFilesUpper(const QString& key, const QString& path = "") = 0;
     //Returns true if folder with specific key exists.
     virtual bool exists(const QString& key) = 0;

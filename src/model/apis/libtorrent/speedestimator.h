@@ -12,7 +12,8 @@ public:
     SpeedEstimator();
 
     //toCheck is remaining x's.
-    unsigned estimate(const QString& key, int64_t toCheck);
+    int64_t estimate(const QString& key, const int64_t toCheck);
+    int64_t estimation() const;
     bool cutEsimation(const QString& key);
 
 private:

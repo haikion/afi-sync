@@ -14,14 +14,15 @@ bool SpeedEstimator::cutEsimation(const QString& key)
     return progresses_.remove(key) > 0;
 }
 
-unsigned SpeedEstimator::estimate(const QString& key, int64_t toCheck)
+int64_t SpeedEstimator::estimate(const QString& key, const int64_t toCheck)
 {
     int64_t t_2 = runningTimeMs();
-    int64_t rVal = AVG_CHECKING_SPEED;
-    if (toCheck < 0)
+    int64_t rVal = estimation();
+
+    if (toCheck <= 0)
     {
-        DBG << "ERROR: toCheck is negative. toCheck =" << toCheck;
-        return AVG_CHECKING_SPEED;
+        DBG << "ERROR: toCheck is negative or zero. toCheck =" << toCheck;
+        return rVal;
     }
     if (progresses_.contains(key))
     {
@@ -29,17 +30,35 @@ unsigned SpeedEstimator::estimate(const QString& key, int64_t toCheck)
         int64_t x_1 = val.first;
         int64_t t_1 = val.second;
 
-        if (x_1 < toCheck)
+        if (x_1 <= toCheck)
         {
-            DBG << "ERROR: x_1 < toCheck. x_1 =" << x_1 << "toCheck =" << toCheck;
-            return AVG_CHECKING_SPEED;
+            //DBG << "ERROR: x_1 <= toCheck. x_1 =" << x_1 << "toCheck =" << toCheck;
+            return rVal;
+        }
+        if (t_2 <= t_1)
+        {
+            DBG << "ERROR: t_2 <= t_2  t_1 =" << t_2 << "t_1 =" << t_1;
+            return rVal;
         }
 
         dX_ += x_1 - toCheck;
         dT_ += t_2 - t_1;
+
         rVal = 1000 * dX_ / dT_;
     }
     std::pair<int64_t, int64_t> newVal(toCheck, t_2);
     progresses_[key] = newVal;
+    //DBG  << "dT =" << dT_ << "dX =" << dX_ << "rVal =" << rVal;
+    return rVal;
+}
+
+int64_t SpeedEstimator::estimation() const
+{
+    int64_t rVal = AVG_CHECKING_SPEED;
+    if (dT_ > 10000  && dX_ > AVG_CHECKING_SPEED)
+    {
+        //Enough estimation data...
+        rVal = 1000 * dX_ / dT_;
+    }
     return rVal;
 }

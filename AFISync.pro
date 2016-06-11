@@ -44,7 +44,6 @@ SOURCES += src/model/main.cpp \
     src/model/runningtime.cpp \
     src/model/processmonitor.cpp \
     src/model/apis/libtorrent/libtorrentapi.cpp \
-    src/model/cihash.cpp \
     src/model/syncnetworkaccessmanager.cpp \
     src/model/apis/libtorrent/speedestimator.cpp
 
