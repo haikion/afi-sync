@@ -194,7 +194,7 @@ void BtsApi2::setMaxDownload(unsigned limit)
 
 bool BtsApi2::folderReady(const QString& key)
 {
-    if (noPeers(key) || isIndexing(key) || getFolderEta(key) != 0)
+    if (noPeers(key) || folderChecking(key) || getFolderEta(key) != 0)
         return false;
 
     return true;
@@ -317,7 +317,7 @@ void BtsApi2::restartSlot()
 QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
 {
     //Sometimes BtSync reports incorrect file listing. This is an attempt to fix it...
-    for (int i = 0; i < 10 && ( isIndexing(key) || noPeers(key) || getSyncLevel(key) != SyncLevel::SYNCED); ++i )
+    for (int i = 0; i < 10 && ( folderChecking(key) || noPeers(key) || getSyncLevel(key) != SyncLevel::SYNCED); ++i )
     {
         DBG << "Waiting for folder to be ready... i =" << i;
         QThread::sleep(1);
@@ -485,7 +485,7 @@ bool BtsApi2::noPeers(const QString& key)
     return folder.peers.size() == 0;
 }
 
-bool BtsApi2::isIndexing(const QString& key)
+bool BtsApi2::folderChecking(const QString& key)
 {
     if (!exists(key))
     {

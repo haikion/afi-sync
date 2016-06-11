@@ -54,7 +54,7 @@ public:
     BtsFolderActivity getFolderActivity(const QString& key);
     SyncLevel getSyncLevel(const QString& key);
     bool noPeers(const QString& key);
-    bool isIndexing(const QString& key);
+    bool folderChecking(const QString& key);
     void setFolderPaused(const QString& key, bool value);
     int getFolderEta(const QString& key);
     bool removeFolder2(const QString& key);

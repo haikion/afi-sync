@@ -23,9 +23,11 @@
 
 namespace lt = libtorrent;
 
-const int LibTorrentApi::MAX_ETA = std::numeric_limits<int>::max();
+//At least 100 max etas can be summed without overflow
+const int LibTorrentApi::MAX_ETA = std::numeric_limits<int>::max()/100;
 const QString LibTorrentApi::SETTINGS_PATH = Constants::SYNC_SETTINGS_PATH + "/libtorrent.dat";
 const int LibTorrentApi::NOT_FOUND = -404;
+const QString LibTorrentApi::ERROR_KEY_NOT_FOUND = "ERROR: not found. key =";
 
 LibTorrentApi::LibTorrentApi(QObject *parent) :
     QObject(parent),
@@ -68,7 +70,7 @@ void LibTorrentApi::check(const QString& key)
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
     {
-        DBG << "ERROR: could not find folder by key:" << key;
+        DBG << ERROR_KEY_NOT_FOUND << key;
         return;
     }
     lt::torrent_handle h = it.value();
@@ -145,15 +147,28 @@ bool LibTorrentApi::noPeers(const QString& key)
 
 bool LibTorrentApi::folderReady(const QString& key)
 {
-    lt::torrent_handle handle = keyHash_.value(key.toLower());
+    auto it = keyHash_.find(key);
+    if (it == keyHash_.end())
+    {
+        DBG << ERROR_KEY_NOT_FOUND << key;
+        return false;
+    }
+
+    lt::torrent_handle handle = it.value();
     lt::torrent_status status = handle.status();
     return status.is_finished;
 }
 
-bool LibTorrentApi::isIndexing(const QString& key)
+bool LibTorrentApi::folderChecking(const QString& key)
 {
-    QString keyLower =  key.toLower();
-    lt::torrent_handle handle = keyHash_.value(keyLower);
+    auto it = keyHash_.find(key);
+    if (it == keyHash_.end())
+    {
+        DBG << ERROR_KEY_NOT_FOUND << key;
+        return false;
+    }
+
+    lt::torrent_handle handle = it.value();
     lt::torrent_status status = handle.status();
     lt::torrent_status::state_t state = status.state;
     //DBG << "key =" << key << "state =" << state << "active time =" << handle.name().c_str()
@@ -188,12 +203,13 @@ bool LibTorrentApi::folderQueued(const QString& key)
 
 void LibTorrentApi::setFolderPaused(const QString& key, bool value)
 {
-    QString lowerKey = key.toLower();
-    if (!exists(lowerKey))
+    auto it = keyHash_.find(key);
+    if (it == keyHash_.end())
     {
+        DBG << ERROR_KEY_NOT_FOUND << key;
         return;
     }
-    lt::torrent_handle handle = keyHash_.value(lowerKey);
+    lt::torrent_handle handle = it.value();
     if (value)
     {
         handle.auto_managed(false);
@@ -208,9 +224,18 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
 
 int LibTorrentApi::getFolderEta(const QString& key)
 {
-    if (isIndexing(key))
+    auto it = keyHash_.find(key);
+    if (it == keyHash_.end())
     {
-        int64_t bc = bytesToCheck(key);
+        DBG << ERROR_KEY_NOT_FOUND << key;
+        return NOT_FOUND;
+    }
+    lt::torrent_handle handle = it.value();
+    lt::torrent_status status = handle.status();
+
+    if (folderChecking(key))
+    {
+        int64_t bc = bytesToCheck(status);
         if (bc == NOT_FOUND)
             return NOT_FOUND;
 
@@ -228,24 +253,26 @@ int LibTorrentApi::getFolderEta(const QString& key)
     }
     //Cut checking speed estimation.
     speedEstimator_.cutEsimation(key);
-    lt::torrent_handle handle = keyHash_.value(key);
-    lt::torrent_status status = handle.status();
     if (status.is_finished)
         return 0;
 
     int download = status.download_rate;
-    if (download == 0 || status.total_wanted == 0)
+    if (download == 0)
+        return MAX_ETA;
+
+    if (status.total_wanted == 0)
+    {
+        DBG << "ERROR: total_wanted = 0";
         return NOT_FOUND;
+    }
     return (status.total_wanted - status.total_wanted_done) / download;
 }
 
-int64_t LibTorrentApi::bytesToCheck(const QString& key) const
+int64_t LibTorrentApi::bytesToCheck(const lt::torrent_status& status) const
 {
     if (!session_)
         return NOT_FOUND;
 
-    lt::torrent_handle handle = keyHash_.value(key);
-    lt::torrent_status status = handle.status();
     int64_t tw = status.total_wanted;
     if (tw == 0) //Not loaded yet.
         return NOT_FOUND;
@@ -255,9 +282,11 @@ int64_t LibTorrentApi::bytesToCheck(const QString& key) const
     return rVal;
 }
 
-//In early states of torrent handle torrent_file is null. This function waits for 5 at most for it to get
+//In early states torrent_file is null.
+//This function waits for 5s at most for it to get
 //initialized.
-boost::shared_ptr<const lt::torrent_info> LibTorrentApi::getTorrentFile(const lt::torrent_handle& handle) const
+boost::shared_ptr<const lt::torrent_info> LibTorrentApi::getTorrentFile(
+        const lt::torrent_handle& handle) const
 {
     boost::shared_ptr<const lt::torrent_info> torrentFile = handle.torrent_file();
     for (int i = 0; !torrentFile; ++i)
@@ -276,13 +305,13 @@ QSet<QString> LibTorrentApi::getFilesUpper(const QString& key, const QString& pa
 
     DBG << "key =" << key;
     QSet<QString> rVal;
-    QString lowerKey = key.toLower();
-    if (!exists(key))
+    auto it = keyHash_.find(key);
+    if (it == keyHash_.end())
     {
-        DBG << "ERROR: folder does not exist.";
+        DBG << ERROR_KEY_NOT_FOUND << key;
         return rVal;
     }
-    lt::torrent_handle handle = keyHash_.value(lowerKey);
+    lt::torrent_handle handle = it.value();
     if (!handle.is_valid())
     {
         DBG << "ERROR: Folder is in invalid state.";
@@ -316,13 +345,13 @@ bool LibTorrentApi::exists(const QString& key)
 
 bool LibTorrentApi::paused(const QString& key)
 {
-    QString lowerKey = key.toLower();
-    if (!exists(lowerKey))
+    auto it = keyHash_.find(key);
+    if (it == keyHash_.end())
     {
-        DBG << "ERROR: not found. key =" << lowerKey;
+        DBG << "ERROR: not found. key =" << key;
         return true;
     }
-    lt::torrent_handle handle = keyHash_.value(lowerKey);
+    lt::torrent_handle handle = it.value();
     lt::torrent_status status = handle.status(lt::torrent_handle::query_accurate_download_counters);
     bool rVal = status.paused;
     //DBG << "key =" << key << "rVal =" << rVal;
@@ -353,7 +382,8 @@ void LibTorrentApi::shutdown2()
     saveSettings();
     for (const lt::torrent_handle& handle : keyHash_.values())
     {
-        //FIXME: This might take a long file when  "const ERROR: Unable to save torrent file. It is null."
+        //FIXME: This might take a long file when  "const ERROR: Unable to
+        //save torrent file. It is null."
         saveTorrentFile(handle);
     }
     generateResumeData();
@@ -462,13 +492,13 @@ bool LibTorrentApi::removeFolder2(const QString& key)
     if (!session_)
         return false;
 
-    QString lowerKey = key.toLower();
-    if (!exists(key))
+    auto it = keyHash_.find(key);
+    if (it == keyHash_.end())
     {
-        DBG << "Does not exist. Returning false...";
+        DBG << ERROR_NOT_FOUND << key;
         return false;
     }
-    libtorrent::torrent_handle handle = keyHash_.value(lowerKey);
+    libtorrent::torrent_handle handle = it.value();
     if (!handle.is_valid())
     {
         lt::torrent_status sta = handle.status();
@@ -480,7 +510,7 @@ bool LibTorrentApi::removeFolder2(const QString& key)
     }
     QString filePrefix = Constants::SYNC_SETTINGS_PATH + "/" + getHashString(handle);
     session_->remove_torrent(handle);
-    keyHash_.remove(lowerKey);
+    keyHash_.remove(key);
     //Delete saved data
     QString urlFile = filePrefix + ".link";
     DBG << "Deleting file:" << urlFile;
@@ -517,7 +547,10 @@ bool LibTorrentApi::addFolder(const QString& path, const QString& key, bool forc
 {
     DBG << "path =" << path << "key =" << key << "force =" << force;
     if (!session_)
+    {
+        DBG << "ERROR: session null";
         return false;
+    }
 
     QFileInfo fi(path);
     QDir().mkpath(fi.absoluteFilePath());
@@ -714,7 +747,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         lt::torrent_handle handle = session_->add_torrent(params);
         DBG << "finished =" << handle.status().progress;
         keyHash_.insert(url, handle);
-        isIndexing(url);
+        folderChecking(url);
 
         it.next();
     }

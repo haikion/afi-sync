@@ -32,7 +32,7 @@ public:
     virtual bool noPeers(const QString& key);
     virtual bool folderReady(const QString& key);
     //Returns true if folder is indexing or checking files.
-    virtual bool isIndexing(const QString& key);
+    virtual bool folderChecking(const QString& key);
     virtual bool folderQueued(const QString& key);
     //Sets folder in paused mode or starts if if value is set to false.
     virtual void setFolderPaused(const QString& key, bool value);
@@ -78,6 +78,7 @@ private:
     static const int MAX_ETA;
     static const QString SETTINGS_PATH;
     static const int NOT_FOUND; //Unable to fetch eta
+    static const QString ERROR_KEY_NOT_FOUND;
 
     QTimer alertTimer_;
     libtorrent::session* session_;
@@ -98,7 +99,7 @@ private:
     boost::shared_ptr<const libtorrent::torrent_info> getTorrentFile(const libtorrent::torrent_handle& handle) const;
     QString getHashString(const libtorrent::torrent_handle& handle) const;
     QByteArray readFile(const QString& path) const;
-    int64_t bytesToCheck(const QString& key) const;
+    int64_t bytesToCheck(const libtorrent::torrent_status& status) const;
     void handleAlert(libtorrent::alert* a);
     void handleListenFailedAlert(const libtorrent::listen_failed_alert* a) const;
     void handleTorrentCheckAlert(const libtorrent::torrent_checked_alert* a) const;

@@ -284,7 +284,7 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::QUEUED);
     }
-    else if (sync_->isIndexing(key_))
+    else if (sync_->folderChecking(key_))
     {
         setStatus(SyncStatus::CHECKING);
     }
@@ -300,8 +300,7 @@ void Mod::updateStatus()
     }
     else if (status() == SyncStatus::READY || status() == SyncStatus::READY_PAUSED)
     {
-        bool process = settings()->value(processKey, false).toBool();
-        DBG << "Process =" << process;
+        bool process = settings()->value(processKey, true).toBool();
         if (process)
         {
             processCompletion();
