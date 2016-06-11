@@ -1,6 +1,12 @@
-#include <ctime>
+#include <chrono>
+using namespace std::chrono;
+
+static auto startupTime = system_clock::now();
 
 unsigned runningTimeMs()
 {
-    return clock()*1000/CLOCKS_PER_SEC;
+    auto currentTime = system_clock::now();
+    auto dT = duration_cast<milliseconds>(currentTime - startupTime);
+    unsigned rVal = dT.count();
+    return rVal;
 }
