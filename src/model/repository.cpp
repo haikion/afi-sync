@@ -297,11 +297,11 @@ bool Repository::removeMod(const QString& key)
 {
     for (Mod* mod : mods())
     {
-        DBG << mod->key();
         if (mod->key().toLower() == key.toLower())
         {
             DBG << "Removing mod" << mod->name() << "from repository" << name();
             removeMod(mod);
+            return true;
         }
     }
     DBG << "ERROR: key" << key << "not found in repository" << name();
@@ -310,6 +310,7 @@ bool Repository::removeMod(const QString& key)
 
 bool Repository::removeMod(Mod* mod)
 {
+    //Removes mod view adapter.
     if (!mod->removeRepository(this))
     {
         return false;
@@ -317,6 +318,7 @@ bool Repository::removeMod(Mod* mod)
     parentItem()->layoutChanged();
     if (mod->repositories().size() == 0)
     {
+        //Mod may not exist if it doesn't belong to any repo.
         sync_->removeFolder2(mod->key());
         delete mod;
     }

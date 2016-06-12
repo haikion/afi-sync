@@ -59,6 +59,7 @@ private:
 
     void buildPathHash();
     void fetchEta();
+    bool stop();
 
 private slots:
     void start();

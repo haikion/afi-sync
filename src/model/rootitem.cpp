@@ -116,12 +116,14 @@ void RootItem::layoutChanged()
 
 void RootItem::stopUpdates()
 {
+    parent_->setHaltGui(true);
     updateTimer_.stop();
     repoTimer_.stop();
     for (Repository* repo : childItems())
     {
         repo->stopUpdates();
     }
+    parent_->setHaltGui(false);
 }
 
 void RootItem::startUpdates()

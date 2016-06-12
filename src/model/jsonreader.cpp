@@ -41,7 +41,6 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
         DBG << "ERROR: Json file parse failure. Exiting...";
         exit(2);
     }
-    //FIXME: Crashes when repo name changes.
     QList<QVariant> repositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
     DBG << "repositories size =" << repositories.size() << "updateurl =" << updateUrlStr;
     QHash<QString, Mod*> modHash;

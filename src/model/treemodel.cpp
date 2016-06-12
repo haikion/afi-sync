@@ -24,9 +24,15 @@ TreeModel::TreeModel(unsigned port, QObject* parent) :
     QAbstractItemModel(parent),
     rootItem_(new RootItem(port, this)),
     download_(0),
-    upload_(0)
+    upload_(0),
+    haltGui_(false)
 {
     DBG;
+}
+
+void TreeModel::setHaltGui(bool halt)
+{
+    haltGui_ = halt;
 }
 
 TreeModel::TreeModel(QObject* parent) :
@@ -188,7 +194,7 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex& index) const
 {
     //DBG;
 
-    if (!index.isValid())
+    if (!index.isValid() || haltGui_)
         return 0;
 
     return QAbstractItemModel::flags(index);
@@ -221,7 +227,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent)
     else
         parentItem = static_cast<TreeItem*>(parent.internalPointer());
 
-    if(!parentItem)
+    if(!parentItem || haltGui_)
     {
         DBG << "Invalid request. row =" << row
             << "column =" << column << "parent =" << parent;
@@ -242,7 +248,8 @@ QModelIndex TreeModel::parent(const QModelIndex& index) const
     TreeItem* childItem = static_cast<TreeItem*>(index.internalPointer());
     TreeItem* parentItem = childItem->parentItem();
 
-    if (parentItem == rootItem_ || parentItem == 0)
+    //FIXME: parentItem is sometimes 0xfeeefeee
+    if (parentItem == rootItem_ || parentItem == 0 || haltGui_)
         return QModelIndex();
 
     return createIndex(parentItem->row(), 0, parentItem);
@@ -254,7 +261,7 @@ int TreeModel::rowCount(const QModelIndex& parent) const
     if (parent.column() > 0)
         return 0;
 
-    if (!parent.isValid())
+    if (!parent.isValid() || haltGui_)
         parentItem = rootItem_;
     else
         parentItem = static_cast<TreeItem*>(parent.internalPointer());

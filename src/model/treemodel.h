@@ -44,6 +44,7 @@ public:
     void reset();
     void enableRepositories();
     void rowsChanged();
+    void setHaltGui(bool halt);
 
 signals:
     void uploadChanged(QString newVal);
@@ -65,6 +66,7 @@ private:
     RootItem* rootItem_;
     unsigned download_;
     unsigned upload_;
+    bool haltGui_;
 
     void setupModelData(const QStringList& lines, TreeItem* parent);
     void postInit();

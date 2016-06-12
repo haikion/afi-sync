@@ -73,16 +73,25 @@ void Mod::update()
 }
 
 //Starts sync directory. If directory does not exist
-//directory will be created. If path is incorrect
-//directory will be re-created correctly.
+//folder will be created. If path is incorrect
+//folder will be re-created correctly.
+//If mod is not in sync it will be added to it.
 void Mod::start()
 {
     DBG << "name =" << name();
     QString modPath = SettingsModel::modDownloadPath();
     QString dir = QDir::toNativeSeparators(modPath);
+
+    if (!sync_->exists(key_))
+    {
+        //Add folder
+        DBG << "Adding" << name() << "to sync.";
+        sync_->addFolder(dir, key_, true);
+    }
+
+    //Sanity checks
     QString syncPath = QDir::toNativeSeparators(sync_->getFolderPath(key_));
     QString error = sync_->error(key_);
-
     if (syncPath.toUpper() != dir.toUpper() || error != "")
     {
         DBG << "name =" << name() << "Re-adding directory. syncPath ="
@@ -92,8 +101,24 @@ void Mod::start()
         sync_->removeFolder2(key_);
         sync_->addFolder(dir, key_, true);
     }
+
+    //Do the actual starting
     sync_->setFolderPaused(key_, false);
     QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
+}
+
+bool Mod::stop()
+{
+    if (sync_->exists(key_))
+    {
+        //All repositories unchecked
+        DBG << "Stopping mod transfer. name =" << name();
+        sync_->setFolderPaused(key_, true);
+        QMetaObject::invokeMethod(updateTimer_, "stop", Qt::QueuedConnection);
+        update();
+        return true;
+    }
+    return false;
 }
 
 void Mod::deleteExtraFiles()
@@ -170,7 +195,10 @@ void Mod::repositoryEnableChanged(bool offline)
     DBG << "name =" << name() << "current thread: " << QThread::currentThread() << "Worker thread: " << Global::workerThread;
     //just in case
     if (!sync_)
+    {
+        DBG << "ERROR: Sync is null";
         return;
+    }
 
     bool allDisabled = true;
     for (const Repository* repo : repositories_)
@@ -190,10 +218,7 @@ void Mod::repositoryEnableChanged(bool offline)
     }
     if (allDisabled || !checked())
     {
-        //All repositories unchecked
-        DBG << "Stopping mod transfer. name =" << name();
-        sync_->setFolderPaused(key_, true);
-        QMetaObject::invokeMethod(updateTimer_, "stop", Qt::QueuedConnection);
+        stop();
         return;
     }
     //At least one repo active and mod checked
@@ -245,17 +270,29 @@ void Mod::addRepository(Repository* repository)
 
 bool Mod::removeRepository(Repository* repository)
 {
-    DBG;
+
+    QString errorMsg = QString("ERROR: Mod %1 not found in repository %2.").
+            arg(name()).arg(repository->name());
 
     //disconnect(repository, SIGNAL(enableChanged()), this, SLOT(repositoryEnableChanged()));
     auto it = repositories_.find(repository);
     if (it == repositories_.end())
     {
-        DBG << "ERROR: Mod" << name() << "not found in repository:" << repository->name();
+        DBG << errorMsg;
         return false;
     }
     repositories_.erase(it);
-    return true;
+    DBG << "Removing Mod View adapter...";
+    for (ModViewAdapter* adp : viewAdapters_)
+    {
+        if (adp->parentItem() == repository)
+        {
+            repository->removeChild(adp);
+            return true;
+        }
+    }
+    DBG << errorMsg;
+    return false;
 }
 
 QVector<ModViewAdapter*> Mod::viewAdapters() const

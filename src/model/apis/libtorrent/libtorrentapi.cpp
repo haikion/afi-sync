@@ -367,7 +367,13 @@ QString LibTorrentApi::error(const QString& key)
 
 QString LibTorrentApi::getFolderPath(const QString& key)
 {
-    libtorrent::torrent_handle handle = keyHash_.value(key);
+    auto it = keyHash_.find(key);
+    if (it == keyHash_.end())
+    {
+        DBG << ERROR_KEY_NOT_FOUND << key;
+        return "";
+    }
+    libtorrent::torrent_handle handle = it.value();
     lt::torrent_status status = handle.status(lt::torrent_handle::query_save_path);
     QString rVal = QString::fromStdString(status.save_path);
     DBG << "key =" << key << "rVal =" << rVal;
