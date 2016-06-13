@@ -210,6 +210,7 @@ void Mod::repositoryChanged(bool offline)
     }
     if (reposInactive() || !checked())
     {
+        DBG << "All repositories inactive or mod unchecked. Stopping...";
         stop();
         return;
     }
@@ -230,11 +231,13 @@ QString Mod::key() const
 
 void Mod::startUpdates()
 {
+    DBG;
     QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
 }
 
 void Mod::stopUpdates()
 {
+    DBG;
     QMetaObject::invokeMethod(updateTimer_, "stop", Qt::QueuedConnection);
 }
 
@@ -258,6 +261,7 @@ void Mod::addRepository(Repository* repository)
             DBG << "name =" << name() << "initCompleted connection created";
         }
     }
+    repositoryChanged();
 }
 
 bool Mod::removeRepository(Repository* repository)

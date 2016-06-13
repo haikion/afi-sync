@@ -48,6 +48,7 @@ RootItem::RootItem(unsigned port,
     initializing_ = false;
     Global::workerThread->setObjectName("workerThread");
     Global::workerThread->start();
+    DBG << "Worker thread started";
 }
 
 RootItem::~RootItem()

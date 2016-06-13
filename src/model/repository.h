@@ -49,6 +49,7 @@ private:
     RootItem* parentItem();
     QString createParFile(const QString& parameters);
     void updateEtaAndStatus();
+    void changed(bool offline = false);
 };
 
 #endif // REPOSITORYITEM_H

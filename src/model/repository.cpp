@@ -33,7 +33,7 @@ void Repository::update()
 
 void Repository::stopUpdates()
 {
-    DBG << "stopped";
+    DBG;
     for (Mod* mod : mods())
     {
         mod->stopUpdates();
@@ -42,7 +42,7 @@ void Repository::stopUpdates()
 
 void Repository::startUpdates()
 {
-    //updateTimer_.start();
+    DBG;
     for (Mod* mod : mods())
     {
         mod->startUpdates();
@@ -78,17 +78,22 @@ void Repository::updateView(TreeItem* item, int row)
     parentItem()->updateView(item, row);
 }
 
+void Repository::changed(bool offline)
+{
+    for (Mod* mod : mods())
+    {
+        QMetaObject::invokeMethod(mod, "repositoryChanged",
+                                  Qt::QueuedConnection, Q_ARG(bool, offline));
+    }
+}
+
 void Repository::checkboxClicked(bool offline)
 {
     SyncItem::checkboxClicked();
     //FIXME: Is this a crash risk?
     //updateTimer_.stop();
     setStatus("Processing new mods...");
-    for (Mod* mod : mods())
-    {
-        QMetaObject::invokeMethod(mod, "repositoryChanged",
-                                  Qt::QueuedConnection, Q_ARG(bool, offline));
-    }
+    changed(offline);
     DBG << "checked()=" << checked();
     update();
     if (!checked())

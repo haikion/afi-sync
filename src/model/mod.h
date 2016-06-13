@@ -61,10 +61,10 @@ private:
     bool reposInactive() const;
     void start();
     bool stop();
-    void init();
 
 private slots:
     void update();
+    void init();
 };
 
 #endif // MODITEM_H
