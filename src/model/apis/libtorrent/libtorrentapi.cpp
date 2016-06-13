@@ -438,7 +438,7 @@ void LibTorrentApi::setMaxDownload(unsigned limit)
     session_->apply_settings(pack);
 }
 
-bool LibTorrentApi::folderReady()
+bool LibTorrentApi::ready()
 {
     if (!session_)
         return false;

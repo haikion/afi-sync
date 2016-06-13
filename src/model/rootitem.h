@@ -26,8 +26,9 @@ public:
     void enableRepositories();
     void processCompletion();
     void layoutChanged();
-    void stopUpdates();
+    bool stopUpdates();
     void startUpdates();
+    void startUpdateTimers();
 
 private slots:
     void removeOrphans();

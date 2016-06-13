@@ -37,7 +37,7 @@ RootItem::RootItem(unsigned port,
     DBG << "initSync completed";
     JsonReader::fillEverything(this);
     DBG << "readJson completed";
-    if (sync_->folderReady())
+    if (sync_->ready())
     {
         removeOrphans();
     }
@@ -114,9 +114,10 @@ void RootItem::layoutChanged()
     parent_->rowsChanged();
 }
 
-void RootItem::stopUpdates()
+bool RootItem::stopUpdates()
 {
     parent_->setHaltGui(true);
+    bool rVal = updateTimer_.isActive() && repoTimer_.isActive();
     updateTimer_.stop();
     repoTimer_.stop();
     for (Repository* repo : childItems())
@@ -124,14 +125,33 @@ void RootItem::stopUpdates()
         repo->stopUpdates();
     }
     parent_->setHaltGui(false);
+    return rVal;
+}
+
+void RootItem::startUpdateTimers()
+{
+    if (sync_->ready())
+    {
+        DBG << "Starting updateTimer directly";
+        updateTimer_.start();
+        repoTimer_.start();
+    }
+    else
+    {
+        DBG << "Connecting updateTimer start to initCompleted()";
+        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), &updateTimer_, SLOT(start()), Qt::UniqueConnection);
+        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), &repoTimer_, SLOT(start()), Qt::UniqueConnection);
+    }
 }
 
 void RootItem::startUpdates()
 {
-    updateTimer_.start();
-    repoTimer_.start();
+    //startUpdateTimers(); Called by repo if needed
     for (Repository* repo : childItems())
     {
+        if (repo->status() == SyncStatus::INACTIVE)
+            continue;
+
         repo->startUpdates();
     }
 }
@@ -139,15 +159,17 @@ void RootItem::startUpdates()
 void RootItem::resetSyncSettings()
 {
     DBG;
-    sync_->shutdown2();
     for (Repository* repo : childItems())
     {
         if (repo->checked())
         {
+            //Disable repo
             repo->checkboxClicked(true);
+            //Display changes.
             repo->updateView(this);
         }
     }
+    sync_->shutdown2();
     //Brute way to avoid "file in use" while btsync is shutting down.
     QDir dir(Constants::SYNC_SETTINGS_PATH);
     int attempts = 0;
@@ -258,16 +280,4 @@ void RootItem::initSync()
     DBG << "Setting up speed updates";
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
     connect(&repoTimer_, SIGNAL(timeout()), this, SLOT(periodicRepoUpdate()));
-    if (sync_->folderReady())
-    {
-        DBG << "Starting updateTimer directly";
-        updateTimer_.start();
-        repoTimer_.start();
-    }
-    else
-    {
-        DBG << "Connecting updateTimer start to initCompleted()";
-        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), &updateTimer_, SLOT(start()));
-        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), &repoTimer_, SLOT(start()));
-    }
 }

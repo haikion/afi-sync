@@ -15,7 +15,6 @@ SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
     {
         settings_ = new QSettings();
     }
-    setChecked(checked());
 }
 
 QString SyncItem::checkText()

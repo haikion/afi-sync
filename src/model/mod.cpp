@@ -104,21 +104,24 @@ void Mod::start()
 
     //Do the actual starting
     sync_->setFolderPaused(key_, false);
-    QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
+    startUpdates();
 }
 
 bool Mod::stop()
 {
-    if (sync_->exists(key_))
-    {
-        //All repositories unchecked
-        DBG << "Stopping mod transfer. name =" << name();
-        sync_->setFolderPaused(key_, true);
-        QMetaObject::invokeMethod(updateTimer_, "stop", Qt::QueuedConnection);
-        update();
-        return true;
-    }
-    return false;
+    DBG;
+    if (!sync_->exists(key_))
+        return false;
+
+    if (!sync_->paused(key_))
+        return false;
+
+    //All repositories unchecked
+    DBG << "Stopping mod transfer. name =" << name();
+    sync_->setFolderPaused(key_, true);
+    QMetaObject::invokeMethod(updateTimer_, "stop", Qt::QueuedConnection);
+    update();
+    return true;
 }
 
 void Mod::deleteExtraFiles()
@@ -162,7 +165,7 @@ void Mod::deleteExtraFiles()
 
 bool Mod::checked() const
 {
-    if (!isOptional_)
+    if (!isOptional_ && !reposInactive())
     {
         return true;
     }
@@ -192,7 +195,7 @@ QString Mod::joinText()
 //download.
 void Mod::repositoryEnableChanged(bool offline)
 {
-    DBG << "name =" << name() << "current thread: " << QThread::currentThread() << "Worker thread: " << Global::workerThread;
+    DBG << "name =" << name() << "current thread:" << QThread::currentThread() << "Worker thread:" << Global::workerThread;
     //just in case
     if (!sync_)
     {
@@ -200,23 +203,12 @@ void Mod::repositoryEnableChanged(bool offline)
         return;
     }
 
-    bool allDisabled = true;
-    for (const Repository* repo : repositories_)
-    {
-        DBG <<"Checking mod name =" << name() << "repo name =" << repo->name();
-        if (repo->checked())
-        {
-            //At least one repo is active
-            allDisabled = false;
-            break;
-        }
-    }
     if (offline)
     {
         DBG << "Offline, not updating Sync";
         return;
     }
-    if (allDisabled || !checked())
+    if (reposInactive() || !checked())
     {
         stop();
         return;
@@ -255,7 +247,7 @@ void Mod::addRepository(Repository* repository)
     {
         Repository* repo = *repositories_.begin();
         sync_ = repo->sync();
-        if (sync_->folderReady())
+        if (sync_->ready())
         {
             DBG << "name =" << name() << "Calling init directly";
             QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
@@ -309,7 +301,7 @@ void Mod::updateStatus()
 {
     QString processKey = name() + "/process";
 
-    if (!checked())
+    if (!checked() || (!isOptional_ && reposInactive()))
     {
         setStatus(SyncStatus::INACTIVE);
     }
@@ -386,9 +378,21 @@ void Mod::checkboxClicked()
     QMetaObject::invokeMethod(this, "repositoryEnableChanged", Qt::QueuedConnection);
 }
 
+bool Mod::reposInactive() const
+{
+    for (Repository* repo : repositories_)
+    {
+        if (repo->status() != SyncStatus::INACTIVE)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 void Mod::fetchEta()
 {
-    if (status() == SyncStatus::INACTIVE)
+    if (status() == SyncStatus::INACTIVE || status() == SyncStatus::NOT_IN_SYNC)
     {
         setEta(0);
         return;

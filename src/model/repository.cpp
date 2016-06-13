@@ -20,6 +20,9 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
     ready_(true)
 {
     DBG << "Created repo name =" << name;
+    update();
+    if (checked())
+        startUpdates();
 }
 
 void Repository::update()
@@ -44,6 +47,7 @@ void Repository::startUpdates()
     {
         mod->startUpdates();
     }
+    parentItem()->startUpdateTimers();
 }
 
 
@@ -80,14 +84,17 @@ void Repository::checkboxClicked(bool offline)
     //FIXME: Is this a crash risk?
     //updateTimer_.stop();
     setStatus("Processing new mods...");
-    updateView(this);
     for (Mod* mod : mods())
     {
         QMetaObject::invokeMethod(mod, "repositoryEnableChanged",
                                   Qt::QueuedConnection, Q_ARG(bool, offline));
     }
-    //updateTimer_.start();
     DBG << "checked()=" << checked();
+    update();
+    if (!checked())
+        return;
+
+    startUpdates();
 }
 
 void Repository::checkboxClicked()

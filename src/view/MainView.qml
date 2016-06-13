@@ -29,7 +29,7 @@ Item {
 
     Timer {
         id: speedTimer
-        interval: 1
+        interval: 1000
         running: false
         repeat: true
         onTriggered: {

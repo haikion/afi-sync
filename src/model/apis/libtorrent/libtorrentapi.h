@@ -60,7 +60,7 @@ public:
     //Sets global max download
     virtual void setMaxDownload(unsigned limit);
     //Returns true if the sync has loaded and is ready to take commands.
-    virtual bool folderReady();
+    virtual bool ready();
     //Sets outgoing port.
     virtual void setPort(int port);
     //Adds folder, path is local system directory, key is source, force is overwrite flag.

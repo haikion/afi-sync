@@ -27,7 +27,7 @@ void JsonReader::fillEverything(RootItem* root)
 void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
 {
     DBG << "Stopping UI updates.";
-    root->stopUpdates();
+    bool updateRunning = root->stopUpdates();
     QJsonDocument origDoc = readJsonFile(jsonFilePath);
     jsonMap_ = qvariant_cast<QVariantMap>(origDoc.toVariant());
     QString updateUrlStr = updateUrl(jsonMap_);
@@ -127,7 +127,10 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
         delete repo;
     }
     DBG << "Starting UI updates.";
-    root->startUpdates();
+    if (updateRunning)
+    {
+        root->startUpdates();
+    }
 }
 
 QHash<QString, Repository*> JsonReader::addedRepos(RootItem* root)

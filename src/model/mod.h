@@ -54,16 +54,16 @@ private:
     QTimer* updateTimer_;
     QSet<Repository*> repositories_;
     unsigned waitTime_;
-    bool doPostProcessing_;
     QVector<ModViewAdapter*> viewAdapters_;
 
     void buildPathHash();
     void fetchEta();
+    bool reposInactive() const;
+    void start();
     bool stop();
+    void init();
 
 private slots:
-    void start();
-    void init();
     void update();
 };
 
