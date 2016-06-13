@@ -280,6 +280,7 @@ Column {
             id: troublesColumn
 
             Button {
+                z: -1 //Ensures tooltip is on top of button that is below this button.
                 text: "Force Activate Join and Start Buttons"
                 onClicked: {
                     Global.buttonsEnabled = true
@@ -291,6 +292,7 @@ Column {
             }
 
             Button {
+                z: -2
                 text: "Fix Kicked from Server"
                 onClicked: {
                     if (ProcessMonitor.arma3Running())
@@ -309,8 +311,16 @@ Column {
                 height: defaultHeight
                 width: parent.width
                 //FIXME: Does not show
-                tooltip: "Rechecks every active repository, cleans mod directories from files that do not belong
-                          there and installs Team Speak plugin. Operation might take several minutes."
+                ToolTip {
+                    id: tooltip1
+                    width: parent.width*0.7
+                    target: parent
+                    text:  "Rechecks every active repository, "
+                         + "cleans mod directories from files that do not belong "
+                         + "there and installs Team Speak plugin. Operation might "
+                         + "take several minutes."
+                    z: 10
+                }
             }
             /*
             Button {
@@ -329,6 +339,7 @@ Column {
             }
             */
             Button {
+                z: -3
                 text: "Report Bug..."
                 onClicked: {
                     Qt.openUrlExternally("https://form.jotformeu.com/61187638191361");

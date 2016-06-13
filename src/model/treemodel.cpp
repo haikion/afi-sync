@@ -248,7 +248,6 @@ QModelIndex TreeModel::parent(const QModelIndex& index) const
     TreeItem* childItem = static_cast<TreeItem*>(index.internalPointer());
     TreeItem* parentItem = childItem->parentItem();
 
-    //FIXME: parentItem is sometimes 0xfeeefeee
     if (parentItem == rootItem_ || parentItem == 0 || haltGui_)
         return QModelIndex();
 
