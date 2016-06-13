@@ -41,7 +41,7 @@ public:
     void updateStatus();
 
 public slots:
-    void repositoryEnableChanged(bool offline = false);
+    void repositoryChanged(bool offline = false);
     void threadDestructor();
     bool removeRepository(Repository* repository);
 

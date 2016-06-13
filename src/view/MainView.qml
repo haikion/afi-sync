@@ -8,13 +8,11 @@ Item {
     id: afiSyncWindow
     visible: true
     property bool initializing: true
-    property variant syncViewObj: syncView
+    property variant treeViewObj: treeView
     property string downloadStr
     property string uploadStr
 
     Component.onCompleted: {
-        //syncViewObj = syncViewComponent.createObject(afiSyncWindow);
-        //createSync()
         console.log("loaded " + parent.enabled + " " + parent.visible + " " + parent.width + " " + parent.height)
         parent.visible = false;
         parent.visible = true;
@@ -40,8 +38,8 @@ Item {
         }
     }
 
-    SyncView {
-        id: syncView
+    ATreeView {
+        id: treeView
         anchors.top: titleRectangle.bottom
         anchors.bottom: footerRectangle.top
     }

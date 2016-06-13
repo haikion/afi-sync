@@ -35,7 +35,7 @@ RootItem::RootItem(unsigned port,
     initSync();
     Global::sync = sync_;
     DBG << "initSync completed";
-    JsonReader::fillEverything(this);
+    jsonReader_.fillEverything(this);
     DBG << "readJson completed";
     if (sync_->ready())
     {
@@ -46,6 +46,7 @@ RootItem::RootItem(unsigned port,
         connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(removeOrphans()));
     }
     initializing_ = false;
+    Global::workerThread->setObjectName("workerThread");
     Global::workerThread->start();
 }
 
@@ -58,10 +59,12 @@ RootItem::~RootItem()
     //{
     //    delete repo;
     //}
+    stopUpdates();
     Global::workerThread->quit();
     Global::workerThread->wait(3000);
     DBG << "Shutdown2";
     sync_->shutdown2();
+    DBG << "Shutdown done";
     //Causes chrashes if BtSync connection is unestablished.
     //delete sync_;
 }
@@ -188,7 +191,7 @@ void RootItem::resetSyncSettings()
     sync_->restart2();
 }
 
-QList<Repository*> RootItem::childItems()
+QList<Repository*> RootItem::childItems() const
 {
     QList<Repository*> rVal;
     for (TreeItem* item : TreeItem::childItems())
@@ -254,10 +257,10 @@ void RootItem::periodicRepoUpdate()
         DBG << "Ignored because Arma 3 is running";
         return;
     }
-    if (JsonReader::updateAvaible())
+    if (jsonReader_.updateAvaible())
     {
         DBG << "Updating repo...";
-        JsonReader::fillEverything(this);
+        jsonReader_.fillEverything(this);
         return;
     }
     DBG << "No repo updates";

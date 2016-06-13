@@ -4,8 +4,6 @@ import QtQuick.Controls 1.4
 import QtQuick.Window 2.2
 import org.AFISync 0.1
 
-//TODO: Max, min size, column resize when small.
-
 ApplicationWindow {
     id: mainWindow
     visible: true
@@ -73,23 +71,20 @@ ApplicationWindow {
         anchors.right: mainWindow.right
         anchors.top: mainWindow.top
         height: mainWindow.height
-        //anchors.bottom: mainWindow.bottom
         visible: false
         color: "lightslategray"
-        //z: 10
         Settings {
             anchors.fill: parent
             mainView: mainView
             onApply: {
                 console.log("Apply event")
-                mainView.syncViewObj.updateCBs()
+                mainView.treeViewObj.updateCBs()
             }
         }
         Text {
             text: "by Hoxzer"
             anchors.right:  parent.right
             anchors.bottom: parent.bottom
-            //width: 100
         }
     }
 }

@@ -8,15 +8,13 @@
 #include <QJsonArray>
 #include "mod.h"
 #include "repository.h"
+#include "rootitem.h"
 #include "jsonreader.h"
 #include "debug.h"
 
 const QString JsonReader::FILE_PATH = "settings/repositories.json";
 const QString JsonReader::DOWNLOADED_PATH = FILE_PATH + "_new";
 const QString JsonReader::SEPARATOR = "|||";
-QVariantMap JsonReader::jsonMap_;
-SyncNetworkAccessManager JsonReader::nam_;
-
 
 //Fastest
 void JsonReader::fillEverything(RootItem* root)
@@ -133,7 +131,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
     }
 }
 
-QHash<QString, Repository*> JsonReader::addedRepos(RootItem* root)
+QHash<QString, Repository*> JsonReader::addedRepos(const RootItem* root) const
 {
     QHash<QString, Repository*> rVal;
     for (Repository* repo : root->childItems())
@@ -143,7 +141,7 @@ QHash<QString, Repository*> JsonReader::addedRepos(RootItem* root)
     return rVal;
 }
 
-QSet<QString> JsonReader::addedMods(RootItem* root)
+QSet<QString> JsonReader::addedMods(const RootItem* root) const
 {
     QSet<QString> rVal;
     for (Repository* repo : root->childItems())
@@ -156,7 +154,7 @@ QSet<QString> JsonReader::addedMods(RootItem* root)
     return rVal;
 }
 
-QString JsonReader::updateUrl(const QVariantMap& jsonMap)
+QString JsonReader::updateUrl(const QVariantMap& jsonMap) const
 {
     QString updateUrl = qvariant_cast<QString>(jsonMap.value("updateUrl"));
     return updateUrl;
@@ -172,9 +170,8 @@ bool JsonReader::updateAvaible()
     return false;
 }
 
-QJsonDocument JsonReader::readJsonFile(const QString& path)
+QJsonDocument JsonReader::readJsonFile(const QString& path) const
 {
-    //QString absolutePath = QCoreApplication::applicationFilePath() + "/" +path;
     QFile file(path);
     DBG << "opening file. path =" << QFileInfo(path).absoluteFilePath();
     if (!file.exists() || !file.open(QIODevice::ReadOnly))

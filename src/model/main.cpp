@@ -77,7 +77,9 @@ int gui(int argc, char* argv[])
     engine.load(QUrl(QStringLiteral("qrc:/SplashScreen.qml")));
     DBG << "QML Engine loaded";
 
-    return app.exec();
+    int rVal = app.exec();
+    DBG << "END";
+    return rVal;
 }
 
 int cli(int argc, char* argv[], QCommandLineParser& parser)

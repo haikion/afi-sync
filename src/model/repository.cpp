@@ -86,7 +86,7 @@ void Repository::checkboxClicked(bool offline)
     setStatus("Processing new mods...");
     for (Mod* mod : mods())
     {
-        QMetaObject::invokeMethod(mod, "repositoryEnableChanged",
+        QMetaObject::invokeMethod(mod, "repositoryChanged",
                                   Qt::QueuedConnection, Q_ARG(bool, offline));
     }
     DBG << "checked()=" << checked();

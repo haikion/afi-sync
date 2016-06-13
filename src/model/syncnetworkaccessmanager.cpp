@@ -9,12 +9,17 @@ SyncNetworkAccessManager::SyncNetworkAccessManager(QObject* parent):
     QNetworkAccessManager(parent)
 {
     moveToThread(&thread_);
+    thread_.setObjectName("SyncNetworkManager thread");
     thread_.start();
+    DBG << "Thread =" << &thread_ << "id" << thread_.currentThreadId();
 }
 
 SyncNetworkAccessManager::~SyncNetworkAccessManager()
 {
+    thread_.quit();
+    thread_.wait(1000);
     thread_.terminate();
+    thread_.wait(1000);
 }
 
 QNetworkReply* SyncNetworkAccessManager::syncGet(QNetworkRequest req, int timeout)

@@ -57,7 +57,7 @@ void Mod::init()
     }
     updateTimer_->setInterval(1000);
     connect(updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
-    repositoryEnableChanged();
+    repositoryChanged();
     update();
     DBG << "name =" << name() << "key =" << key() << "Completed";
 }
@@ -193,7 +193,7 @@ QString Mod::joinText()
 
 //If all repositories this mod is included in are disabled then stop the
 //download.
-void Mod::repositoryEnableChanged(bool offline)
+void Mod::repositoryChanged(bool offline)
 {
     DBG << "name =" << name() << "current thread:" << QThread::currentThread() << "Worker thread:" << Global::workerThread;
     //just in case
@@ -266,7 +266,6 @@ bool Mod::removeRepository(Repository* repository)
     QString errorMsg = QString("ERROR: Mod %1 not found in repository %2.").
             arg(name()).arg(repository->name());
 
-    //disconnect(repository, SIGNAL(enableChanged()), this, SLOT(repositoryEnableChanged()));
     auto it = repositories_.find(repository);
     if (it == repositories_.end())
     {
@@ -274,12 +273,12 @@ bool Mod::removeRepository(Repository* repository)
         return false;
     }
     repositories_.erase(it);
-    DBG << "Removing Mod View adapter...";
     for (ModViewAdapter* adp : viewAdapters_)
     {
         if (adp->parentItem() == repository)
         {
             repository->removeChild(adp);
+            DBG << "Mod View Adapter removed.";
             return true;
         }
     }
@@ -374,8 +373,8 @@ void Mod::processCompletion()
 void Mod::checkboxClicked()
 {
     SyncItem::checkboxClicked();
-    DBG << "name =" << name() << "checked()=" << checked();
-    QMetaObject::invokeMethod(this, "repositoryEnableChanged", Qt::QueuedConnection);
+    DBG << "name =" << name() << "checked() =" << checked();
+    QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
 }
 
 bool Mod::reposInactive() const
@@ -383,9 +382,7 @@ bool Mod::reposInactive() const
     for (Repository* repo : repositories_)
     {
         if (repo->status() != SyncStatus::INACTIVE)
-        {
             return false;
-        }
     }
     return true;
 }

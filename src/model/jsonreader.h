@@ -7,8 +7,10 @@
 #include <QString>
 #include <QHash>
 #include "mod.h"
-#include "repository.h"
 #include "syncnetworkaccessmanager.h"
+
+class RootItem;
+class Repository;
 
 class JsonReader: public QObject
 {
@@ -16,10 +18,10 @@ class JsonReader: public QObject
 
 public:
     //Fills rootItem according to XML file
-    static void fillEverything(RootItem* root);
+    void fillEverything(RootItem* root);
     //Enables better testability.
-    static void fillEverything(RootItem *root, const QString& jsonFilePath);
-    static bool updateAvaible();
+    void fillEverything(RootItem *root, const QString& jsonFilePath);
+    bool updateAvaible();
 
 signals:
     void modAppend(Mod* mod);
@@ -29,14 +31,14 @@ private:
     static const QString DOWNLOADED_PATH;
     static const QString SEPARATOR;
 
-    static QVariantMap jsonMap_;
-    static SyncNetworkAccessManager nam_;
+    QVariantMap jsonMap_;
+    SyncNetworkAccessManager nam_;
 
-    static QJsonDocument readJsonFile(const QString& path);
-    static QVariantMap updateJson(const QString& url);
-    static QString updateUrl(const QVariantMap& jsonMap);
-    static QSet<QString> addedMods(RootItem* root);
-    static QHash<QString, Repository*> addedRepos(RootItem* root);
+    QJsonDocument readJsonFile(const QString& path) const;
+    QVariantMap updateJson(const QString& url);
+    QString updateUrl(const QVariantMap& jsonMap) const;
+    QSet<QString> addedMods(const RootItem* root) const;
+    QHash<QString, Repository*> addedRepos(const RootItem* root) const;
 };
 
 #endif // JSONREADER_H

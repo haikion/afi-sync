@@ -6,8 +6,10 @@
 #include "apis/isync.h"
 #include "treemodel.h"
 #include "treeitem.h"
+#include "jsonreader.h"
 
 class Repository;
+class JsonReader;
 
 class RootItem : public QObject, public TreeItem
 {
@@ -20,7 +22,7 @@ public:
 
     void updateView(TreeItem* item, int row = -1);
     ISync* sync() const;
-    QList<Repository*> childItems();
+    QList<Repository*> childItems() const;
     void resetSyncSettings();
 
     void enableRepositories();
@@ -45,6 +47,7 @@ private:
     QTimer updateTimer_;
     QTimer repoTimer_;
     unsigned port_;
+    JsonReader jsonReader_;
 
     void initSync();
     QString defaultter(const QString& value, const QString& defaultValue);

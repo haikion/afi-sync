@@ -1,7 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file alias="TreeViewButton.qml">src/view/TreeViewButton.qml</file>
-        <file alias="SyncView.qml">src/view/SyncView.qml</file>
+        <file alias="ATreeView.qml">src/view/ATreeView.qml</file>
         <file alias="Settings.qml">src/view/Settings.qml</file>
         <file alias="MainView.qml">src/view/MainView.qml</file>
         <file alias="afisync_header.png">src/view/afisync_header.png</file>
