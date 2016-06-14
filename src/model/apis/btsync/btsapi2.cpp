@@ -58,7 +58,7 @@ BtsApi2::~BtsApi2()
     thread_.wait(3000);
 }
 
-void BtsApi2::check(const QString& key)
+void BtsApi2::checkFolder(const QString& key)
 {
     Q_UNUSED(key);
 
@@ -75,7 +75,7 @@ void BtsApi2::postInit()
 {
     DBG << "Thread =" << QThread::currentThread();
     heart_ = new Heart(this);
-    connect(heart_,  SIGNAL(death()), this, SLOT(restart2()));
+    connect(heart_,  SIGNAL(death()), this, SLOT(restart()));
     activateSettings();
     ready_ = true;
     DBG << "emiting initCompleted() token =" << token_;
@@ -121,13 +121,13 @@ BtsClient* BtsApi2::createBtsClient(const QString& username, const QString& pass
     return btsclient;
 }
 
-bool BtsApi2::paused(const QString& key)
+bool BtsApi2::folderPaused(const QString& key)
 {
     BtsFolderActivity folder = getFolderActivity(key);
     return folder.paused;
 }
 
-QString BtsApi2::error(const QString& key)
+QString BtsApi2::folderError(const QString& key)
 {
     BtsFolderActivity folder = getFolderActivity(key);
     if (folder.error == 0)
@@ -137,14 +137,14 @@ QString BtsApi2::error(const QString& key)
     return folder.status;
 }
 
-QString BtsApi2::getFolderPath(const QString& key)
+QString BtsApi2::folderPath(const QString& key)
 {
     BtsFolderActivity folder = getFolderActivity(key);
     QString path = QDir(folder.path).absolutePath(); //Cross platform
     return path;
 }
 
-void BtsApi2::shutdown2()
+void BtsApi2::shutdown()
 {
     heart_->stop();
     client()->killClient(); //Exit never succeeds...
@@ -161,19 +161,19 @@ void BtsApi2::shutdown2()
     DBG << "Finished";
 }
 
-qint64 BtsApi2::getDownload() const
+qint64 BtsApi2::download() const
 {
     //TODO: Implement if needed.
     return 0;
 }
 
-qint64 BtsApi2::getUpload() const
+qint64 BtsApi2::upload() const
 {
     //TODO: Implement if needed.
     return 0;
 }
 
-void BtsApi2::restart2()
+void BtsApi2::restart()
 {
     QMetaObject::invokeMethod(this, "restartSlot", connectionType());
 }
@@ -194,7 +194,7 @@ void BtsApi2::setMaxDownload(unsigned limit)
 
 bool BtsApi2::folderReady(const QString& key)
 {
-    if (noPeers(key) || folderChecking(key) || getFolderEta(key) != 0)
+    if (folderNoPeers(key) || folderChecking(key) || folderEta(key) != 0)
         return false;
 
     return true;
@@ -218,7 +218,7 @@ void BtsApi2::setPort(int port)
 bool BtsApi2::addFolder(const QString& path, const QString& key, bool force)
 {
     DBG << " path=" << path << " key=" << key;
-    if (exists(key))
+    if (folderExists(key))
     {
         DBG << "Folder already exists!";
         return false;
@@ -259,7 +259,7 @@ QVariantMap BtsApi2::setForce(const QString& key, bool value)
 
 void BtsApi2::setFolderPaused(const QString& key, bool value)
 {
-    if (!exists(key) || paused(key) == value)
+    if (!folderExists(key) || folderPaused(key) == value)
     {
         DBG << "Folder does not exist or it is already paused. Returning empty value.";
     }
@@ -270,10 +270,10 @@ void BtsApi2::setFolderPaused(const QString& key, bool value)
     DBG << "response =" << response;
 }
 
-bool BtsApi2::removeFolder2(const QString& key)
+bool BtsApi2::removeFolder(const QString& key)
 {
     DBG;
-    if (!exists(key))
+    if (!folderExists(key))
     {
         DBG << "Folder does not exist, returning. key =" << key;
         return false;
@@ -284,7 +284,7 @@ bool BtsApi2::removeFolder2(const QString& key)
                               Q_ARG(QString, API_PREFIX + "/folders/" + fid),
                               Q_ARG(unsigned, 10000));
     //Wait for folder to get actually deleted.
-    for (int attempts = 0; exists(key) && attempts < 20; ++attempts)
+    for (int attempts = 0; folderExists(key) && attempts < 20; ++attempts)
     {
         DBG << "Checking if folder removed. attempts =" << attempts;
         fillCache();
@@ -308,7 +308,7 @@ void BtsApi2::httpDeleteSlot(const QString& path, unsigned timeout)
 
 void BtsApi2::restartSlot()
 {
-    shutdown2();
+    shutdown();
     client()->startClient(true);
     heart_->reset();
     activateSettings();
@@ -317,7 +317,7 @@ void BtsApi2::restartSlot()
 QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
 {
     //Sometimes BtSync reports incorrect file listing. This is an attempt to fix it...
-    for (int i = 0; i < 10 && ( folderChecking(key) || noPeers(key) || getSyncLevel(key) != SyncLevel::SYNCED); ++i )
+    for (int i = 0; i < 10 && ( folderChecking(key) || folderNoPeers(key) || getSyncLevel(key) != SyncLevel::SYNCED); ++i )
     {
         DBG << "Waiting for folder to be ready... i =" << i;
         QThread::sleep(1);
@@ -425,7 +425,7 @@ FolderHash BtsApi2::getFoldersActivity()
     return foldersCache_.first;
 }
 
-QList<QString> BtsApi2::getFolderKeys()
+QList<QString> BtsApi2::folderKeys()
 {
     QList<QString> rVal;
     for (BtsFolderActivity folder : getFoldersActivity())
@@ -455,7 +455,7 @@ void BtsApi2::getVariantMapSlot(const QString& path, unsigned timeout, QVariantM
     delete reply;
 }
 
-int BtsApi2::getFolderEta(const QString& key)
+int BtsApi2::folderEta(const QString& key)
 {
     BtsFolderActivity folder = getFolderActivity(key);
     return folder.down_eta;
@@ -479,7 +479,7 @@ SyncLevel BtsApi2::getSyncLevel(const QString& key)
     return static_cast<SyncLevel>(folder.synclevel);
 }
 
-bool BtsApi2::noPeers(const QString& key)
+bool BtsApi2::folderNoPeers(const QString& key)
 {
     BtsFolderActivity folder = getFolderActivity(key);
     return folder.peers.size() == 0;
@@ -487,7 +487,7 @@ bool BtsApi2::noPeers(const QString& key)
 
 bool BtsApi2::folderChecking(const QString& key)
 {
-    if (!exists(key))
+    if (!folderExists(key))
     {
         DBG << "ERROR: Could not find torrent by key:" << key;
         return false;
@@ -529,7 +529,7 @@ QVariantMap BtsApi2::patchVariantMap(const QVariantMap& map, const QString& path
     return result;
 }
 
-bool BtsApi2::exists(const QString& key)
+bool BtsApi2::folderExists(const QString& key)
 {
     FolderHash folders = getFoldersActivity();
     if (folders.contains(key))

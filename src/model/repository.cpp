@@ -8,7 +8,7 @@
 #include "settingsmodel.h"
 #include "repository.h"
 #include "installer.h"
-#include "modviewadapter.h"
+#include "modadapter.h"
 
 Repository::Repository(const QString& name, const QString& serverAddress, unsigned port,
                       QString password, RootItem* parent):
@@ -253,11 +253,8 @@ QStringList Repository::joinParameters() const
     return rVal;
 }
 
-void Repository::appendMod(Mod* item)
+void Repository::appendModAdapter(ModAdapter* adp)
 {
-    item->addRepository(this);
-    ModAdapter* adp = new ModAdapter(item, this);
-    item->addModViewAdapter(adp);
     TreeItem::appendChild(adp);
 }
 
@@ -331,7 +328,7 @@ bool Repository::removeMod(Mod* mod)
     if (mod->repositories().size() == 0)
     {
         //Mod may not exist if it doesn't belong to any repo.
-        sync_->removeFolder2(mod->key());
+        sync_->removeFolder(mod->key());
         delete mod;
     }
     return true;

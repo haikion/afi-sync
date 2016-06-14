@@ -18,13 +18,13 @@ class Mod : public SyncItem
     Q_OBJECT
 
 public:
-    Mod(const QString& name, const QString& key, bool isOptional);
+    Mod(const QString& name, const QString& key);
     ~Mod();
 
     QString key() const;
     virtual Repository* parentItem();
     //void handleDirError(BtsFolderActivity folder);
-    void addRepository(Repository* repository);
+    void appendRepository(Repository* repository);
     virtual void checkboxClicked();
     virtual QString checkText();
     virtual QString startText();
@@ -35,7 +35,7 @@ public:
     virtual bool ticked() const;
     void processCompletion();
     QVector<ModAdapter*> viewAdapters() const;
-    void addModViewAdapter(ModAdapter* adapter);
+    void appendModAdapter(ModAdapter* adapter);
     void stopUpdates();
     void startUpdates();
     void updateStatus();
@@ -49,7 +49,6 @@ public slots:
 private:
     static const unsigned COMPLETION_WAIT_DURATION;
 
-    bool isOptional_;
     QString key_;
     ISync* sync_;
     QTimer* updateTimer_;

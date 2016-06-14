@@ -8,13 +8,12 @@
 #include "mod.h"
 #include "repository.h"
 #include "installer.h"
-#include "modviewadapter.h"
+#include "modadapter.h"
 
 const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 
-Mod::Mod(const QString& name, const QString& key, bool isOptional):
+Mod::Mod(const QString& name, const QString& key):
     SyncItem(name, 0),
-    isOptional_(isOptional),
     key_(key),
     sync_(0),
     updateTimer_(nullptr),
@@ -46,7 +45,7 @@ void Mod::init()
 {
     DBG << "name =" << name() << "current thread:" << QThread::currentThread() << "Worker thread:" << Global::workerThread;
 
-    if (!isOptional_)
+    if (!isOptional())
     {
         setTicked(true);
     }
@@ -82,7 +81,7 @@ void Mod::start()
     QString modPath = SettingsModel::modDownloadPath();
     QString dir = QDir::toNativeSeparators(modPath);
 
-    if (!sync_->exists(key_))
+    if (!sync_->folderExists(key_))
     {
         //Add folder
         DBG << "Adding" << name() << "to sync.";
@@ -90,15 +89,15 @@ void Mod::start()
     }
 
     //Sanity checks
-    QString syncPath = QDir::toNativeSeparators(sync_->getFolderPath(key_));
-    QString error = sync_->error(key_);
+    QString syncPath = QDir::toNativeSeparators(sync_->folderPath(key_));
+    QString error = sync_->folderError(key_);
     if (syncPath.toUpper() != dir.toUpper() || error != "")
     {
         DBG << "name =" << name() << "Re-adding directory. syncPath ="
             << syncPath << "dir =" << dir
             << "error =" << error;
         //Disagreement between Sync and AfiSync
-        sync_->removeFolder2(key_);
+        sync_->removeFolder(key_);
         sync_->addFolder(dir, key_, true);
     }
 
@@ -110,10 +109,10 @@ void Mod::start()
 bool Mod::stop()
 {
     DBG;
-    if (!sync_->exists(key_))
+    if (!sync_->folderExists(key_))
         return false;
 
-    if (!sync_->paused(key_))
+    if (!sync_->folderPaused(key_))
         return false;
 
     DBG << "Stopping mod transfer. name =" << name();
@@ -165,7 +164,7 @@ void Mod::deleteExtraFiles()
 
 bool Mod::ticked() const
 {
-    if (!isOptional_ && !reposInactive())
+    if (!isOptional() && !reposInactive())
     {
         return true;
     }
@@ -174,7 +173,7 @@ bool Mod::ticked() const
 
 QString Mod::checkText()
 {
-    if (!isOptional_)
+    if (!isOptional())
     {
         return "disabled";
     }
@@ -242,7 +241,7 @@ void Mod::stopUpdates()
     QMetaObject::invokeMethod(updateTimer_, "stop", Qt::QueuedConnection);
 }
 
-void Mod::addRepository(Repository* repository)
+void Mod::appendRepository(Repository* repository)
 {
     DBG << "mod name =" << name() << " repo name =" << repository->name();
 
@@ -291,9 +290,15 @@ bool Mod::removeRepository(Repository* repository)
     return false;
 }
 
+//Returns true only if all adapters are optional
 bool Mod::isOptional() const
 {
-    return isOptional_;
+    bool rVal = true;
+    for (ModAdapter* adp : viewAdapters())
+    {
+        rVal = rVal && adp->isOptional();
+    }
+    return rVal;
 }
 
 QVector<ModAdapter*> Mod::viewAdapters() const
@@ -301,7 +306,7 @@ QVector<ModAdapter*> Mod::viewAdapters() const
     return adapters_;
 }
 
-void Mod::addModViewAdapter(ModAdapter* adapter)
+void Mod::appendModAdapter(ModAdapter* adapter)
 {
     adapters_.append(adapter);
 }
@@ -310,11 +315,11 @@ void Mod::updateStatus()
 {
     QString processKey = name() + "/process";
 
-    if (!ticked() || (!isOptional_ && reposInactive()))
+    if (!ticked() || reposInactive())
     {
         setStatus(SyncStatus::INACTIVE);
     }
-    else if (!sync_->exists(key_))
+    else if (!sync_->folderExists(key_))
     {
         setStatus(SyncStatus::NOT_IN_SYNC);
     }
@@ -350,7 +355,7 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::WAITING);
     }
-    else if (sync_->paused(key_))
+    else if (sync_->folderPaused(key_))
     {
         if (status() == SyncStatus::READY)
         {
@@ -361,7 +366,7 @@ void Mod::updateStatus()
             setStatus(SyncStatus::PAUSED);
         }
     }
-    else if (sync_->noPeers(key_))
+    else if (sync_->folderNoPeers(key_))
     {
         setStatus(SyncStatus::NO_PEERS);
     }
@@ -375,7 +380,7 @@ void Mod::updateStatus()
 
 void Mod::processCompletion()
 {
-    sync_->check(key_);
+    sync_->checkFolder(key_);
     deleteExtraFiles();
     Installer::install(this);
 }
@@ -390,7 +395,7 @@ void Mod::checkboxClicked()
     }
     setTicked(allDisabled);
     DBG << name() << "checked state set to" << ticked();
-    //Below cmd will the download if repository is active.
+    //Below cmd will start the download if repository is active.
     QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
 }
 
@@ -411,7 +416,7 @@ void Mod::fetchEta()
         setEta(0);
         return;
     }
-    int eta = sync_->getFolderEta(key_);
+    int eta = sync_->folderEta(key_);
     if (eta == -404)
     {
         DBG << "ERROR: Unable to retrieve eta for mod" << name();

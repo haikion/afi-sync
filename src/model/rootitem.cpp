@@ -64,7 +64,7 @@ RootItem::~RootItem()
     Global::workerThread->quit();
     Global::workerThread->wait(3000);
     DBG << "Shutdown2";
-    sync_->shutdown2();
+    sync_->shutdown();
     DBG << "Shutdown done";
     //Causes chrashes if BtSync connection is unestablished.
     //delete sync_;
@@ -86,13 +86,13 @@ void RootItem::removeOrphans()
             keys.insert(mod->key());
         }
     }
-    for (const QString& key : sync_->getFolderKeys())
+    for (const QString& key : sync_->folderKeys())
     {
         if (!keys.contains(key))
         {
             //Not found
             DBG << "Deleting folder with key:" << key;
-            sync_->removeFolder2(key);
+            sync_->removeFolder(key);
         }
     }
     DBG << "remove orhpans completed";
@@ -173,7 +173,7 @@ void RootItem::resetSyncSettings()
             repo->updateView(this);
         }
     }
-    sync_->shutdown2();
+    sync_->shutdown();
     //Brute way to avoid "file in use" while btsync is shutting down.
     QDir dir(Constants::SYNC_SETTINGS_PATH);
     int attempts = 0;
@@ -189,7 +189,7 @@ void RootItem::resetSyncSettings()
     }
     DBG << "Sync storage deleted. path =" << dir.currentPath();
     dir.mkpath(".");
-    sync_->restart2();
+    sync_->restart();
 }
 
 QList<Repository*> RootItem::childItems() const
@@ -248,7 +248,7 @@ void RootItem::updateSpeed()
         return;
     }
 
-    parent_->updateSpeed(sync_->getDownload(), sync_->getUpload());
+    parent_->updateSpeed(sync_->download(), sync_->upload());
 }
 
 void RootItem::periodicRepoUpdate()

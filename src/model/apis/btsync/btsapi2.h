@@ -47,29 +47,29 @@ public:
     BtsApi2(BtsClient* client, QObject* parent = nullptr);
     ~BtsApi2();
 
-    virtual void check(const QString& key);
+    virtual void checkFolder(const QString& key);
     QList<BtsFolderActivity>  getFoldersActivityResult();
     FolderHash getFoldersActivity(); //Caching
-    QList<QString> getFolderKeys();
+    QList<QString> folderKeys();
     BtsFolderActivity getFolderActivity(const QString& key);
     SyncLevel getSyncLevel(const QString& key);
-    bool noPeers(const QString& key);
+    bool folderNoPeers(const QString& key);
     bool folderChecking(const QString& key);
     void setFolderPaused(const QString& key, bool value);
-    int getFolderEta(const QString& key);
-    bool removeFolder2(const QString& key);
+    int folderEta(const QString& key);
+    bool removeFolder(const QString& key);
     QSet<QString> getFilesUpper(const QString& key, const QString& path = "");
     QVariantMap setOverwrite(const QString& key, bool value);
     QVariantMap setForce(const QString& key, bool value);
-    bool exists(const QString& key);
+    bool folderExists(const QString& key);
     QVariantMap setShowNotifications(bool value);
     int getLastModified(const QString& key);
-    bool paused(const QString& key);
-    QString error(const QString& key);
-    QString getFolderPath(const QString& key);
-    void shutdown2();
-    virtual qint64 getDownload() const;
-    virtual qint64 getUpload() const;
+    bool folderPaused(const QString& key);
+    QString folderError(const QString& key);
+    QString folderPath(const QString& key);
+    void shutdown();
+    virtual qint64 download() const;
+    virtual qint64 upload() const;
     void setMaxUpload(unsigned limit);
     void setMaxDownload(unsigned limit);
     virtual bool folderReady(const QString& key);
@@ -80,7 +80,7 @@ public slots:
     bool addFolder(const QString& path, const QString& key, bool force = false);
     QString token();
     QVariantMap setDefaultSyncLevel(SyncLevel level);
-    void restart2();
+    void restart();
 
 signals:
     void initCompleted();

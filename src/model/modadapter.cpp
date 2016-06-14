@@ -1,14 +1,20 @@
 #include "debug.h"
-#include "modviewadapter.h"
+#include "modadapter.h"
+#include "repository.h"
 
-ModAdapter::ModAdapter(Mod* mod, Repository* repo):
+ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional):
     SyncItem(mod->name(), repo),
     mod_(mod),
-    repo_(repo)
+    repo_(repo),
+    isOptional_(isOptional)
 {
     setParentItem(repo);
     QString repoStr = repo_->name().replace("/| ","_");
     tickedKey_ = name() + "/" + repoStr + "ticked";
+    //Connect everything
+    repo->appendModAdapter(this);
+    mod->appendModAdapter(this);
+    mod->appendRepository(repo);
 }
 
 ModAdapter::~ModAdapter()
@@ -52,18 +58,19 @@ bool ModAdapter::ticked() const
 
 void ModAdapter::setTicked(bool checked)
 {
-    if (!mod_->isOptional())
+    if (!isOptional_)
     {
         DBG << "ERROR: Tried to set checked for non optional mod" << name();
         return;
     }
 
     settings()->setValue(tickedKey_, checked);
+    mod_->checkboxClicked();
 }
 
 bool ModAdapter::isOptional() const
 {
-    return mod_->isOptional();
+    return isOptional_;
 }
 
 Mod* ModAdapter::mod() const

@@ -15,7 +15,7 @@
 class ModAdapter : public SyncItem
 {
 public:
-    ModAdapter(Mod* mod, Repository* repo);
+    ModAdapter(Mod* mod, Repository* repo, bool isOptional);
     ~ModAdapter();
 
     virtual QString checkText();
@@ -34,6 +34,7 @@ private:
     Mod* mod_;
     Repository* repo_;
     QString tickedKey_;
+    bool isOptional_;
 };
 
 #endif // MODVIEWADAPTER_H

@@ -15,7 +15,7 @@ public:
                QString password, RootItem* parent);
     ~Repository();
 
-    virtual void appendMod(Mod* item);
+    void appendModAdapter(ModAdapter* adp);
     void updateView(TreeItem* item, int row = -1);
     virtual void checkboxClicked();
     void checkboxClicked(bool offline);

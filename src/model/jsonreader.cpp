@@ -11,6 +11,7 @@
 #include "rootitem.h"
 #include "jsonreader.h"
 #include "debug.h"
+#include "modadapter.h"
 
 const QString JsonReader::FILE_PATH = "settings/repositories.json";
 const QString JsonReader::DOWNLOADED_PATH = FILE_PATH + "_new";
@@ -93,15 +94,15 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             {
                 DBG << "Creating new mod...";
                 QString modName = qvariant_cast<QString>(mod.value("name"));
-                bool isOptional = qvariant_cast<bool>(mod.value("optional", false));
                 DBG << "Parsed mod parameters";
-                newMod = new Mod(modName, key.toLower(), isOptional);
+                newMod = new Mod(modName, key.toLower());
                 DBG << "New mod object created.";
                 modHash.insert(key, newMod);
                 DBG << "added to modhash";
             }
+            bool isOptional = mod.value("optional", false).toBool();
             DBG << "appending mod name =" << newMod->name() << " key =" << newMod->key();
-            repo->appendMod(newMod);
+            new ModAdapter(newMod, repo, isOptional);
         }
     }
 

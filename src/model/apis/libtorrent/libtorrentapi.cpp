@@ -62,10 +62,10 @@ void LibTorrentApi::init()
 
 LibTorrentApi::~LibTorrentApi()
 {
-    shutdown2();
+    shutdown();
 }
 
-void LibTorrentApi::check(const QString& key)
+void LibTorrentApi::checkFolder(const QString& key)
 {
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
@@ -132,12 +132,12 @@ QByteArray LibTorrentApi::readFile(const QString& path) const
     return rVal;
 }
 
-QList<QString> LibTorrentApi::getFolderKeys()
+QList<QString> LibTorrentApi::folderKeys()
 {
     return keyHash_.keys();
 }
 
-bool LibTorrentApi::noPeers(const QString& key)
+bool LibTorrentApi::folderNoPeers(const QString& key)
 {
     lt::torrent_handle handle = keyHash_.value(key);
     lt::torrent_status status = handle.status();
@@ -222,7 +222,7 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
     }
 }
 
-int LibTorrentApi::getFolderEta(const QString& key)
+int LibTorrentApi::folderEta(const QString& key)
 {
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
@@ -335,7 +335,7 @@ QSet<QString> LibTorrentApi::getFilesUpper(const QString& key, const QString& pa
 
 }
 
-bool LibTorrentApi::exists(const QString& key)
+bool LibTorrentApi::folderExists(const QString& key)
 {
     bool rVal = keyHash_.contains(key.toLower());
     //DBG << "key =" << key << "rVal =" << rVal;
@@ -343,7 +343,7 @@ bool LibTorrentApi::exists(const QString& key)
 }
 
 
-bool LibTorrentApi::paused(const QString& key)
+bool LibTorrentApi::folderPaused(const QString& key)
 {
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
@@ -358,14 +358,14 @@ bool LibTorrentApi::paused(const QString& key)
     return rVal;
 }
 
-QString LibTorrentApi::error(const QString& key)
+QString LibTorrentApi::folderError(const QString& key)
 {
     lt::torrent_handle handle = keyHash_.value(key);
     QString rVal = QString::fromStdString(handle.status().error);
     return rVal;
 }
 
-QString LibTorrentApi::getFolderPath(const QString& key)
+QString LibTorrentApi::folderPath(const QString& key)
 {
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
@@ -380,7 +380,7 @@ QString LibTorrentApi::getFolderPath(const QString& key)
     return rVal;
 }
 
-void LibTorrentApi::shutdown2()
+void LibTorrentApi::shutdown()
 {
     alertTimer_.stop();
     alertTimer_.disconnect();
@@ -402,7 +402,7 @@ void LibTorrentApi::shutdown2()
     }
 }
 
-qint64 LibTorrentApi::getUpload()
+qint64 LibTorrentApi::upload()
 {
     if (!session_)
         return 0;
@@ -410,7 +410,7 @@ qint64 LibTorrentApi::getUpload()
     return session_->status().payload_upload_rate;
 }
 
-qint64 LibTorrentApi::getDownload()
+qint64 LibTorrentApi::download()
 {
     if (!session_)
         return 0;
@@ -464,7 +464,7 @@ void LibTorrentApi::setPort(int port)
     session_->apply_settings(pack);
 }
 
-void LibTorrentApi::restart2()
+void LibTorrentApi::restart()
 {
     DBG << "Reloading settings...";
     if (session_)
@@ -492,7 +492,7 @@ void LibTorrentApi::handleAlerts()
 }
 
 
-bool LibTorrentApi::removeFolder2(const QString& key)
+bool LibTorrentApi::removeFolder(const QString& key)
 {
     DBG << "key =" << key;
     if (!session_)
@@ -567,7 +567,7 @@ bool LibTorrentApi::addFolder(const QString& path, const QString& key, bool forc
     }
 
     QString lowerKey = key.toLower();
-    if (exists(key))
+    if (folderExists(key))
     {
         DBG << "ERROR: Torrent already added.";
         return false;

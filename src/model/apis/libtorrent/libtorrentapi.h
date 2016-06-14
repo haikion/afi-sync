@@ -25,36 +25,38 @@ public:
     explicit LibTorrentApi(QObject *parent = 0);
     ~LibTorrentApi();
 
-    virtual void check(const QString& key);
-    //Returns list of keys of added folders.
-    virtual QList<QString> getFolderKeys();
+    virtual void checkFolder(const QString& key);
     //Returns true if there are no peers.
-    virtual bool noPeers(const QString& key);
+    virtual bool folderNoPeers(const QString& key);
+    //Returns list of keys of added folders.
+    virtual QList<QString> folderKeys();
     virtual bool folderReady(const QString& key);
     //Returns true if folder is indexing or checking files.
     virtual bool folderChecking(const QString& key);
     virtual bool folderQueued(const QString& key);
-    //Sets folder in paused mode or starts if if value is set to false.
-    virtual void setFolderPaused(const QString& key, bool value);
     //Fetches eta to ready state. Returns time in seconds.
-    virtual int getFolderEta(const QString& key);
+    virtual int folderEta(const QString& key);
+    //Adds folder, path is local system directory, key is source, force is overwrite flag.
+    virtual bool addFolder(const QString& path, const QString& key, bool force = false);
     //Removes folder with specific key.
-    virtual bool removeFolder2(const QString& key);
+    virtual bool removeFolder(const QString& key);
     //Returns list of files in folder in upper case format.
     virtual QSet<QString> getFilesUpper(const QString& key, const QString& path = "");
     //Returns true if folder with specific key exists.
-    virtual bool exists(const QString& key);
+    virtual bool folderExists(const QString& key);
     //Returns true if folder is paused
-    virtual bool paused(const QString& key);
+    virtual bool folderPaused(const QString& key);
+    //Sets folder in paused mode or starts if if value is set to false.
+    virtual void setFolderPaused(const QString& key, bool value);
     //Returns string describing the error. Returns empty string if no error.
-    virtual QString error(const QString& key);
+    virtual QString folderError(const QString& key);
     //Returns file system path of the folder with specific key.
-    virtual QString getFolderPath(const QString& key);
+    virtual QString folderPath(const QString& key);
     //Shutdowns the sync
-    virtual void shutdown2();
+    virtual void shutdown();
     //Total bandwiths
-    virtual qint64 getDownload();
-    virtual qint64 getUpload();
+    virtual qint64 download();
+    virtual qint64 upload();
     //Sets global max upload
     virtual void setMaxUpload(unsigned limit);
     //Sets global max download
@@ -63,10 +65,8 @@ public:
     virtual bool ready();
     //Sets outgoing port.
     virtual void setPort(int port);
-    //Adds folder, path is local system directory, key is source, force is overwrite flag.
-    virtual bool addFolder(const QString& path, const QString& key, bool force = false);
     //Restarts sync
-    virtual void restart2();
+    virtual void restart();
 
 private slots:
     void handleAlerts();
