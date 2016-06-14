@@ -19,7 +19,7 @@ SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
 
 QString SyncItem::checkText()
 {
-    QString rVal = checked() ? "true" : "false";
+    QString rVal = ticked() ? "true" : "false";
     return rVal;
 }
 
@@ -64,19 +64,19 @@ void SyncItem::setName(const QString& name)
     name_ = name;
 }
 
-bool SyncItem::checked() const
+bool SyncItem::ticked() const
 {
     return settings_->value(name() + "/checked", false).toBool();
 }
 
-void SyncItem::setChecked(bool checked)
+void SyncItem::setTicked(bool checked)
 {
     settings_->setValue(name() + "/checked", checked);
 }
 
 void SyncItem::checkboxClicked()
 {
-    setChecked(!checked());
+    setTicked(!ticked());
 }
 
 QSettings* SyncItem::settings() const

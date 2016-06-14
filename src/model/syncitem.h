@@ -40,8 +40,8 @@ public:
     void setStatus(const QString& status);
     QString name() const;
     void setName(const QString& name);
-    virtual bool checked() const;
-    void setChecked(bool checked);
+    virtual bool ticked() const;
+    void setTicked(bool ticked);
     virtual void checkboxClicked();
 
 protected:

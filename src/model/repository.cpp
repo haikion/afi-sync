@@ -21,7 +21,7 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
 {
     DBG << "Created repo name =" << name;
     update();
-    if (checked())
+    if (ticked())
         startUpdates();
 }
 
@@ -94,9 +94,9 @@ void Repository::checkboxClicked(bool offline)
     //updateTimer_.stop();
     setStatus("Processing new mods...");
     changed(offline);
-    DBG << "checked()=" << checked();
+    DBG << "checked()=" << ticked();
     update();
-    if (!checked())
+    if (!ticked())
         return;
 
     startUpdates();
@@ -198,7 +198,7 @@ void Repository::updateEtaAndStatus()
     readyStatuses.insert(SyncStatus::READY);
     readyStatuses.insert(SyncStatus::INACTIVE);
     readyStatuses.insert(SyncStatus::READY_PAUSED);
-    if (!checked())
+    if (!ticked())
     {
         setStatus(SyncStatus::INACTIVE);
     }
@@ -231,7 +231,7 @@ QString Repository::modsParameter() const
     QString rVal = "-mod=";
     for (const Mod* mod : mods())
     {
-        if (mod->checked())
+        if (mod->ticked())
         {
             QDir modDir(SettingsModel::modDownloadPath() + "/" + mod->name());
             rVal += modDir.absolutePath() + ";";
@@ -256,14 +256,14 @@ QStringList Repository::joinParameters() const
 void Repository::appendMod(Mod* item)
 {
     item->addRepository(this);
-    ModViewAdapter* adp = new ModViewAdapter(item, this);
+    ModAdapter* adp = new ModAdapter(item, this);
     item->addModViewAdapter(adp);
     TreeItem::appendChild(adp);
 }
 
 QString Repository::startText()
 {
-    if (checked() == false)
+    if (ticked() == false)
     {
         return "Start Disabled";
     }
@@ -276,7 +276,7 @@ QString Repository::startText()
 
 QString Repository::joinText()
 {
-    if (checked() == false)
+    if (ticked() == false)
     {
         return "Join Disabled";
     }
@@ -296,11 +296,11 @@ ISync* Repository::sync() const
 void Repository::enableMods()
 {
     DBG << "name =" << name();
-    for (Mod* mod : mods())
+    for (ModAdapter* adp : modAdapters())
     {
-        if (!mod->checked())
+        if (adp->isOptional() && !adp->ticked())
         {
-            mod->checkboxClicked();
+            adp->checkboxClicked();
         }
     }
 }
@@ -352,10 +352,21 @@ QList<Mod*> Repository::mods() const
     QList<Mod*> rVal;
     for (TreeItem* item : TreeItem::childItems())
     {
-        rVal.append(static_cast<ModViewAdapter*>(item)->mod());
+        rVal.append(static_cast<ModAdapter*>(item)->mod());
     }
     return rVal;
 }
+
+QList<ModAdapter*> Repository::modAdapters() const
+{
+    QList<ModAdapter*> rVal;
+    for (TreeItem* item : TreeItem::childItems())
+    {
+        rVal.append(static_cast<ModAdapter*>(item));
+    }
+    return rVal;
+}
+
 
 RootItem* Repository::parentItem()
 {

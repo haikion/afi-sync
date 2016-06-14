@@ -11,7 +11,7 @@
 #include "syncitem.h"
 
 class Repository;
-class ModViewAdapter;
+class ModAdapter;
 
 class Mod : public SyncItem
 {
@@ -32,13 +32,14 @@ public:
     QSet<Repository*> repositories() const;
     //int lastModified();
     void deleteExtraFiles();
-    virtual bool checked() const;
+    virtual bool ticked() const;
     void processCompletion();
-    QVector<ModViewAdapter*> viewAdapters() const;
-    void addModViewAdapter(ModViewAdapter* adapter);
+    QVector<ModAdapter*> viewAdapters() const;
+    void addModViewAdapter(ModAdapter* adapter);
     void stopUpdates();
     void startUpdates();
     void updateStatus();
+    bool isOptional() const;
 
 public slots:
     void repositoryChanged(bool offline = false);
@@ -54,7 +55,7 @@ private:
     QTimer* updateTimer_;
     QSet<Repository*> repositories_;
     unsigned waitTime_;
-    QVector<ModViewAdapter*> viewAdapters_;
+    QVector<ModAdapter*> adapters_;
 
     void buildPathHash();
     void fetchEta();

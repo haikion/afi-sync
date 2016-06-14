@@ -50,6 +50,7 @@ private:
     QString createParFile(const QString& parameters);
     void updateEtaAndStatus();
     void changed(bool offline = false);
+    QList<ModAdapter*> modAdapters() const;
 };
 
 #endif // REPOSITORYITEM_H

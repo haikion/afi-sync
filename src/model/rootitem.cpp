@@ -165,7 +165,7 @@ void RootItem::resetSyncSettings()
     DBG;
     for (Repository* repo : childItems())
     {
-        if (repo->checked())
+        if (repo->ticked())
         {
             //Disable repo
             repo->checkboxClicked(true);
@@ -223,7 +223,7 @@ void RootItem::enableRepositories()
     DBG;
     for (Repository* repo : childItems())
     {
-        if (!repo->checked())
+        if (!repo->ticked())
         {
             repo->checkboxClicked();
         }

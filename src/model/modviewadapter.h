@@ -8,20 +8,24 @@
 /*
  * Solves the compatibility issue between tree structure and mod repo structure.
  * Mod can belong to multiple repositories, however TreeItem can only have one parent.
- * This item will have only one parent but mod_ might be shared amongst multiple ModViewAdapters.
- * Each repository has its own ModViewAdapter.
+ * This item will have only one parent but mod_ might be shared amongst multiple ModAdapter.
+ * Each repository has its own ModAdapter. Also solves the problem in which mod is in two repositories
+ * but optional in only one.
  */
-class ModViewAdapter : public SyncItem
+class ModAdapter : public SyncItem
 {
 public:
-    ModViewAdapter(Mod* mod, Repository* repo);
-    ~ModViewAdapter();
+    ModAdapter(Mod* mod, Repository* repo);
+    ~ModAdapter();
 
     virtual QString checkText();
     virtual QString startText();
     virtual QString joinText();
     virtual QString status() const;
     virtual void checkboxClicked();
+    virtual bool ticked() const;
+    void setTicked(bool ticked);
+    bool isOptional() const;
 
     Mod* mod() const;
     void updateView();
@@ -29,6 +33,7 @@ public:
 private:
     Mod* mod_;
     Repository* repo_;
+    QString tickedKey_;
 };
 
 #endif // MODVIEWADAPTER_H

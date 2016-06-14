@@ -29,7 +29,7 @@ Mod::Mod(const QString& name, const QString& key, bool isOptional):
 Mod::~Mod()
 {
     DBG;
-    for (ModViewAdapter* adp : viewAdapters_)
+    for (ModAdapter* adp : adapters_)
     {
         DBG << "Destroying adapter";
         delete adp;
@@ -48,7 +48,7 @@ void Mod::init()
 
     if (!isOptional_)
     {
-        setChecked(true);
+        setTicked(true);
     }
     //Periodically check mod progress
     if (!updateTimer_)
@@ -66,7 +66,7 @@ void Mod::update()
 {
     updateStatus();
     fetchEta();
-    for (ModViewAdapter* adp : viewAdapters_)
+    for (ModAdapter* adp : adapters_)
     {
         adp->updateView();
     }
@@ -116,7 +116,6 @@ bool Mod::stop()
     if (!sync_->paused(key_))
         return false;
 
-    //All repositories unchecked
     DBG << "Stopping mod transfer. name =" << name();
     sync_->setFolderPaused(key_, true);
     QMetaObject::invokeMethod(updateTimer_, "stop", Qt::QueuedConnection);
@@ -127,7 +126,7 @@ bool Mod::stop()
 void Mod::deleteExtraFiles()
 {
     DBG << "name =" << name();
-    if (!checked())
+    if (!ticked())
     {
         DBG << "name =" << name()  << "Mod is inactive, doing nothing.";
         return;
@@ -146,7 +145,8 @@ void Mod::deleteExtraFiles()
     //or ..bts sends incorrect files list...
     if (remoteFiles.size() == 0 || status() != SyncStatus::READY)
     {
-        DBG << "name =" << name() << "Warning: Not deleting extra files because mod is not fully synced.";
+        DBG << "name =" << name()
+            << "Warning: Not deleting extra files because mod is not fully synced.";
         return; //Would delete everything otherwise
     }
 
@@ -163,13 +163,13 @@ void Mod::deleteExtraFiles()
     DBG << "Completed name =" << name();
 }
 
-bool Mod::checked() const
+bool Mod::ticked() const
 {
     if (!isOptional_ && !reposInactive())
     {
         return true;
     }
-    return SyncItem::checked();
+    return SyncItem::ticked();
 }
 
 QString Mod::checkText()
@@ -195,22 +195,23 @@ QString Mod::joinText()
 //download.
 void Mod::repositoryChanged(bool offline)
 {
-    DBG << "name =" << name() << "current thread:" << QThread::currentThread() << "Worker thread:" << Global::workerThread;
+    DBG << "name =" << name() << "current thread:"
+        << QThread::currentThread() << "Worker thread:" << Global::workerThread;
     //just in case
     if (!sync_)
     {
-        DBG << "ERROR: Sync is null";
+        DBG << "ERROR: Sync is null" << name();
         return;
     }
 
     if (offline)
     {
-        DBG << "Offline, not updating Sync";
+        DBG << "Offline, not updating Sync" << name();
         return;
     }
-    if (reposInactive() || !checked())
+    if (reposInactive() || !ticked())
     {
-        DBG << "All repositories inactive or mod unchecked. Stopping...";
+        DBG << "All repositories inactive or mod unchecked. Stopping" << name();
         stop();
         return;
     }
@@ -231,13 +232,13 @@ QString Mod::key() const
 
 void Mod::startUpdates()
 {
-    DBG;
+    DBG << name();
     QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
 }
 
 void Mod::stopUpdates()
 {
-    DBG;
+    DBG << name();
     QMetaObject::invokeMethod(updateTimer_, "stop", Qt::QueuedConnection);
 }
 
@@ -277,7 +278,7 @@ bool Mod::removeRepository(Repository* repository)
         return false;
     }
     repositories_.erase(it);
-    for (ModViewAdapter* adp : viewAdapters_)
+    for (ModAdapter* adp : adapters_)
     {
         if (adp->parentItem() == repository)
         {
@@ -290,21 +291,26 @@ bool Mod::removeRepository(Repository* repository)
     return false;
 }
 
-QVector<ModViewAdapter*> Mod::viewAdapters() const
+bool Mod::isOptional() const
 {
-    return viewAdapters_;
+    return isOptional_;
 }
 
-void Mod::addModViewAdapter(ModViewAdapter* adapter)
+QVector<ModAdapter*> Mod::viewAdapters() const
 {
-    viewAdapters_.append(adapter);
+    return adapters_;
+}
+
+void Mod::addModViewAdapter(ModAdapter* adapter)
+{
+    adapters_.append(adapter);
 }
 
 void Mod::updateStatus()
 {
     QString processKey = name() + "/process";
 
-    if (!checked() || (!isOptional_ && reposInactive()))
+    if (!ticked() || (!isOptional_ && reposInactive()))
     {
         setStatus(SyncStatus::INACTIVE);
     }
@@ -376,8 +382,15 @@ void Mod::processCompletion()
 
 void Mod::checkboxClicked()
 {
-    SyncItem::checkboxClicked();
-    DBG << "name =" << name() << "checked() =" << checked();
+    //Activate download when mod is active in at least on repo.
+    bool allDisabled = false;
+    for (ModAdapter* adp : adapters_)
+    {
+        allDisabled = allDisabled || adp->ticked();
+    }
+    setTicked(allDisabled);
+    DBG << name() << "checked state set to" << ticked();
+    //Below cmd will the download if repository is active.
     QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
 }
 
