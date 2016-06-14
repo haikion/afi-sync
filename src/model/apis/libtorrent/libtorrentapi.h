@@ -36,12 +36,12 @@ public:
     virtual bool folderQueued(const QString& key);
     //Fetches eta to ready state. Returns time in seconds.
     virtual int folderEta(const QString& key);
-    //Adds folder, path is local system directory, key is source, force is overwrite flag.
-    virtual bool addFolder(const QString& path, const QString& key, bool force = false);
+    //Adds folder, path is local system directory, key is source.
+    virtual bool addFolder(const QString& key, const QString& path);
     //Removes folder with specific key.
     virtual bool removeFolder(const QString& key);
     //Returns list of files in folder in upper case format.
-    virtual QSet<QString> getFilesUpper(const QString& key, const QString& path = "");
+    virtual QSet<QString> folderFilesUpper(const QString& key);
     //Returns true if folder with specific key exists.
     virtual bool folderExists(const QString& key);
     //Returns true if folder is paused

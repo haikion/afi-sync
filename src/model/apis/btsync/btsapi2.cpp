@@ -215,7 +215,7 @@ void BtsApi2::setPort(int port)
 }
 
 
-bool BtsApi2::addFolder(const QString& path, const QString& key, bool force)
+bool BtsApi2::addFolder(const QString& key, const QString& path)
 {
     DBG << " path=" << path << " key=" << key;
     if (folderExists(key))
@@ -224,7 +224,7 @@ bool BtsApi2::addFolder(const QString& path, const QString& key, bool force)
         return false;
     }
     QVariantMap obj;
-    obj.insert("force", force);
+    obj.insert("force", true);
     obj.insert("secret", key);
     obj.insert("path", path);
     QVariantMap response = postVariantMap(obj, API_PREFIX + "/folders");
@@ -314,7 +314,13 @@ void BtsApi2::restartSlot()
     activateSettings();
 }
 
-QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
+QSet<QString> BtsApi2::folderFilesUpper(const QString &key)
+{
+    QSet<QString> rVal = filesUpperRecursive(key);
+    return rVal;
+}
+
+QSet<QString> BtsApi2::filesUpperRecursive(const QString& key, const QString& path)
 {
     //Sometimes BtSync reports incorrect file listing. This is an attempt to fix it...
     for (int i = 0; i < 10 && ( folderChecking(key) || folderNoPeers(key) || getSyncLevel(key) != SyncLevel::SYNCED); ++i )
@@ -347,7 +353,7 @@ QSet<QString> BtsApi2::getFilesUpper(const QString& key, const QString& path)
         else
         {
             QString relpath = map.value("relpath").toString();
-            rVal += getFilesUpper(key, relpath);
+            rVal += filesUpperRecursive(key, relpath);
         }
     }
     return rVal;

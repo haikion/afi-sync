@@ -85,7 +85,7 @@ void Mod::start()
     {
         //Add folder
         DBG << "Adding" << name() << "to sync.";
-        sync_->addFolder(dir, key_, true);
+        sync_->addFolder(dir, key_);
     }
 
     //Sanity checks
@@ -98,7 +98,7 @@ void Mod::start()
             << "error =" << error;
         //Disagreement between Sync and AfiSync
         sync_->removeFolder(key_);
-        sync_->addFolder(dir, key_, true);
+        sync_->addFolder(key_, dir);
     }
 
     //Do the actual starting
@@ -132,7 +132,7 @@ void Mod::deleteExtraFiles()
     }
 
     QSet<QString> localFiles;
-    QSet<QString> remoteFiles = sync_->getFilesUpper(key_);
+    QSet<QString> remoteFiles = sync_->folderFilesUpper(key_);
 
     QDir dir(SettingsModel::modDownloadPath() + "/" + name());
     QDirIterator it(dir.absolutePath(), QDir::Files, QDirIterator::Subdirectories);

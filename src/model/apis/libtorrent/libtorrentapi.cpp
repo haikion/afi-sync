@@ -299,10 +299,8 @@ boost::shared_ptr<const lt::torrent_info> LibTorrentApi::getTorrentFile(
     return torrentFile;
 }
 
-QSet<QString> LibTorrentApi::getFilesUpper(const QString& key, const QString& path)
+QSet<QString> LibTorrentApi::folderFilesUpper(const QString& key)
 {
-    Q_UNUSED(path)
-
     DBG << "key =" << key;
     QSet<QString> rVal;
     auto it = keyHash_.find(key);
@@ -549,9 +547,9 @@ bool LibTorrentApi::removeFolder(const QString& key)
     return false;
 }
 
-bool LibTorrentApi::addFolder(const QString& path, const QString& key, bool force)
+bool LibTorrentApi::addFolder(const QString& key, const QString& path)
 {
-    DBG << "path =" << path << "key =" << key << "force =" << force;
+    DBG << "path =" << path << "key =" << key;
     if (!session_)
     {
         DBG << "ERROR: session null";

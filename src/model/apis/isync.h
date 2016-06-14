@@ -30,7 +30,7 @@ public:
     //Removes folder with specific key.
     virtual bool removeFolder(const QString& key) = 0;
     //Returns list of files in folder in upper case unix (separator = /) format. Example: "C:/MODS/@MOD/FILE.PBO"
-    virtual QSet<QString> getFilesUpper(const QString& key, const QString& path = "") = 0;
+    virtual QSet<QString> folderFilesUpper(const QString& key) = 0;
     //Returns true if folder with specific key exists.
     virtual bool folderExists(const QString& key) = 0;
     //Not supported by libtorrent
@@ -55,8 +55,8 @@ public:
     virtual bool ready() = 0;
     //Sets outgoing port.
     virtual void setPort(int port) = 0;
-    //Adds folder, path is local system directory, key is source, force is overwrite flag.
-    virtual bool addFolder(const QString& path, const QString& key, bool force = false) = 0;
+    //Adds folder, path is local system directory, key is source.
+    virtual bool addFolder(const QString& key, const QString& path) = 0;
     //Restarts sync
     virtual void restart() = 0;
 
