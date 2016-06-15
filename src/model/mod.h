@@ -34,7 +34,7 @@ public:
     void deleteExtraFiles();
     virtual bool ticked() const;
     void processCompletion();
-    QVector<ModAdapter*> viewAdapters() const;
+    QVector<ModAdapter*> modAdapters() const;
     void appendModAdapter(ModAdapter* adapter);
     void stopUpdates();
     void startUpdates();

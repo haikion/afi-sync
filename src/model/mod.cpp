@@ -156,19 +156,24 @@ void Mod::deleteExtraFiles()
     QSet<QString> extraFiles = localFiles - remoteFiles;
     for (QString file : extraFiles)
     {
-        DBG << "Deleting extra file: " << file << " from mod =" << name();
-        //QFile(file).remove();
+        DBG << "Deleting extra file" << file << "from mod" << name();
+        QFile(file).remove();
     }
     DBG << "Completed name =" << name();
 }
 
+//Returns true if at least one adapter is active.
 bool Mod::ticked() const
 {
     if (!isOptional() && !reposInactive())
     {
         return true;
     }
-    return SyncItem::ticked();
+    for (ModAdapter* adp : modAdapters())
+    {
+        if (adp->ticked())
+            return true;
+    }
 }
 
 QString Mod::checkText()
@@ -294,14 +299,14 @@ bool Mod::removeRepository(Repository* repository)
 bool Mod::isOptional() const
 {
     bool rVal = true;
-    for (ModAdapter* adp : viewAdapters())
+    for (ModAdapter* adp : modAdapters())
     {
         rVal = rVal && adp->isOptional();
     }
     return rVal;
 }
 
-QVector<ModAdapter*> Mod::viewAdapters() const
+QVector<ModAdapter*> Mod::modAdapters() const
 {
     return adapters_;
 }
