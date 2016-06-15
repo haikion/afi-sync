@@ -166,9 +166,8 @@ void Mod::deleteExtraFiles()
 bool Mod::ticked() const
 {
     if (!isOptional() && !reposInactive())
-    {
         return true;
-    }
+
     for (ModAdapter* adp : modAdapters())
     {
         if (adp->ticked())
