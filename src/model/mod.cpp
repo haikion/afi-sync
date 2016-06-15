@@ -67,7 +67,8 @@ void Mod::update()
     fetchEta();
     for (ModAdapter* adp : adapters_)
     {
-        adp->updateView();
+        //Run in main (UI) thread.
+        QMetaObject::invokeMethod(adp, "updateView", Qt::QueuedConnection);
     }
 }
 

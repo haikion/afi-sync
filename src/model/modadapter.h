@@ -14,6 +14,8 @@
  */
 class ModAdapter : public SyncItem
 {
+    Q_OBJECT
+
 public:
     ModAdapter(Mod* mod, Repository* repo, bool isOptional);
     ~ModAdapter();
@@ -28,6 +30,8 @@ public:
     bool isOptional() const;
 
     Mod* mod() const;
+
+public slots:
     void updateView();
 
 private:
