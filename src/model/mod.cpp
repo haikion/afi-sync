@@ -174,6 +174,7 @@ bool Mod::ticked() const
         if (adp->ticked())
             return true;
     }
+    return false;
 }
 
 QString Mod::checkText()
