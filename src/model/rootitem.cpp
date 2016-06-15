@@ -115,7 +115,8 @@ void RootItem::processCompletion()
 
 void RootItem::layoutChanged()
 {
-    parent_->rowsChanged();
+    //Run only in GUI thread.
+    QMetaObject::invokeMethod(parent_, "layoutChanged", Qt::QueuedConnection);
 }
 
 bool RootItem::stopUpdates()

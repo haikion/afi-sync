@@ -43,7 +43,6 @@ public:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
     void reset();
     void enableRepositories();
-    void rowsChanged();
     void setHaltGui(bool halt);
 
 signals:
@@ -51,6 +50,7 @@ signals:
     void downloadChanged(QString newVal);
 
 public slots:
+    void layoutChanged();
     QString getDownload() const;
     QString getUpload() const;
     bool isRepository(const QModelIndex& index) const;

@@ -61,7 +61,7 @@ void TreeModel::enableRepositories()
     rootItem_->enableRepositories();
 }
 
-void TreeModel::rowsChanged()
+void TreeModel::layoutChanged()
 {
     DBG;
     emit layoutChanged();
