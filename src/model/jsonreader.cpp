@@ -174,7 +174,6 @@ bool JsonReader::updateAvaible()
 QJsonDocument JsonReader::readJsonFile(const QString& path) const
 {
     QFile file(path);
-    DBG << "opening file. path =" << QFileInfo(path).absoluteFilePath();
     if (!file.exists() || !file.open(QIODevice::ReadOnly))
     {
         DBG << "ERROR: failed to open json file: " << path << " file.exists =" << file.exists();
