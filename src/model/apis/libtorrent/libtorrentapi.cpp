@@ -210,13 +210,17 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
         return;
     }
     lt::torrent_handle handle = it.value();
+    QString name = QString::fromStdString(handle.status().name);
     if (value)
     {
+        DBG << "Pausing torrent" << name;
         handle.auto_managed(false);
         handle.pause();
+        DBG << handle.status().paused;
     }
     else
     {
+        DBG << "Starting torrent" << name;
         handle.resume();
         handle.auto_managed(true);
     }
@@ -350,7 +354,7 @@ bool LibTorrentApi::folderPaused(const QString& key)
         return true;
     }
     lt::torrent_handle handle = it.value();
-    lt::torrent_status status = handle.status(lt::torrent_handle::query_accurate_download_counters);
+    lt::torrent_status status = handle.status();
     bool rVal = status.paused;
     //DBG << "key =" << key << "rVal =" << rVal;
     return rVal;

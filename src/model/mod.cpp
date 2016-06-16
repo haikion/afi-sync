@@ -109,12 +109,12 @@ void Mod::start()
 
 bool Mod::stop()
 {
-    DBG;
+    DBG << name();
     if (!sync_->folderExists(key_))
+    {
+        DBG << "ERROR: Folder" << name() << "does not exist.";
         return false;
-
-    if (!sync_->folderPaused(key_))
-        return false;
+    }
 
     DBG << "Stopping mod transfer. name =" << name();
     sync_->setFolderPaused(key_, true);
@@ -216,8 +216,11 @@ void Mod::repositoryChanged(bool offline)
     }
     if (reposInactive() || !ticked())
     {
-        DBG << "All repositories inactive or mod unchecked. Stopping" << name();
-        stop();
+        if (sync_->folderExists(key_))
+        {
+            DBG << "All repositories inactive or mod unchecked. Stopping" << name();
+            stop();
+        }
         return;
     }
     //At least one repo active and mod checked
