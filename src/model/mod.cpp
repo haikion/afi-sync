@@ -86,7 +86,7 @@ void Mod::start()
     {
         //Add folder
         DBG << "Adding" << name() << "to sync.";
-        sync_->addFolder(dir, key_);
+        sync_->addFolder(key_, dir);
     }
 
     //Sanity checks
@@ -379,7 +379,6 @@ void Mod::updateStatus()
     else if (eta() > 0)
     {
         setStatus(SyncStatus::DOWNLOADING);
-        DBG << "process set to true";
         settings()->setValue(processKey, true);
     }
 }

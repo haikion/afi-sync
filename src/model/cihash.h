@@ -22,7 +22,7 @@ public:
     int remove(const QString& key)
     {
         QString lowerKey = key.toLower();
-        return QHash<QString, T>::remove(key);
+        return QHash<QString, T>::remove(lowerKey);
     }
 
     bool contains(const QString& key) const

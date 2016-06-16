@@ -123,7 +123,7 @@ QByteArray LibTorrentApi::readFile(const QString& path) const
     file.open(QFile::ReadOnly);
     if (!file.isReadable())
     {
-        DBG << "Unable to read file" << file.symLinkTarget();
+        DBG << "Warning: unable to read file" << path;
         return rVal;
     }
 
@@ -197,8 +197,8 @@ bool LibTorrentApi::folderQueued(const QString& key)
     //    << "\n checking files =" << lt::torrent_status::state_t::checking_files
     //    << "\n checking_resume_data =" << lt::torrent_status::state_t::checking_resume_data
     //    << "\n queued_for_checking =" << lt::torrent_status::state_t::queued_for_checking;
-    return ((state == lt::torrent_status::state_t::checking_files && status.queue_position > 0)
-        || (state == lt::torrent_status::downloading && status.queue_position > 3));
+    return ((state == lt::torrent_status::state_t::queued_for_checking)
+        || (state == lt::torrent_status::downloading && status.paused));
 }
 
 void LibTorrentApi::setFolderPaused(const QString& key, bool value)
@@ -398,6 +398,8 @@ void LibTorrentApi::shutdown()
         session_ = nullptr;
         DBG << "Session deleted";
     }
+    DBG << "Clearing keyHash_";
+    keyHash_.clear();
 }
 
 qint64 LibTorrentApi::upload()
@@ -449,7 +451,10 @@ bool LibTorrentApi::ready()
 void LibTorrentApi::setPort(int port)
 {
     if (!session_)
+    {
+        DBG << "ERROR: session is null";
         return;
+    }
 
     DBG << "port =" << port;
     if (port < 0)
@@ -469,6 +474,7 @@ void LibTorrentApi::restart()
     {
         delete session_;
         session_ = nullptr;
+        keyHash_.clear();
     }
     session_ = new lt::session();
     loadSettings();
@@ -565,7 +571,7 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& path)
     }
 
     QString lowerKey = key.toLower();
-    if (folderExists(key))
+    if (folderExists(lowerKey))
     {
         DBG << "ERROR: Torrent already added.";
         return false;

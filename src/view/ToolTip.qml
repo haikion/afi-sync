@@ -1,7 +1,7 @@
 //Copied from: https://wiki.qt.io/QtQuick_ToolTip_Component
 //Author: Shav
-import QtQuick 2.0
-import QtQuick.Controls 1.1
+import QtQuick 2.3
+import QtQuick.Controls 1.4
 import QtGraphicalEffects 1.0
 
 Item {
