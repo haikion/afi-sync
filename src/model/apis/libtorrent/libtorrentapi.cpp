@@ -178,7 +178,6 @@ bool LibTorrentApi::folderChecking(const QString& key)
     //    << "\n queued_for_checking =" << lt::torrent_status::state_t::queued_for_checking;
     return (state == lt::torrent_status::state_t::checking_files
          || state == lt::torrent_status::state_t::checking_resume_data
-         || state == lt::torrent_status::state_t::queued_for_checking
          || state == lt::torrent_status::state_t::allocating);
 }
 
@@ -192,13 +191,18 @@ bool LibTorrentApi::folderQueued(const QString& key)
     }
     lt::torrent_status::state_t state = status.state;
     //Default active downloads is 3.
-    //DBG << "key =" << key << "state =" << state << "active time =" << handle.name().c_str()
+    //DBG << "key =" << key << "state =" << state << "name =" << handle.name().c_str()
     //    << "\n allocating =" << lt::torrent_status::state_t::allocating
     //    << "\n checking files =" << lt::torrent_status::state_t::checking_files
     //    << "\n checking_resume_data =" << lt::torrent_status::state_t::checking_resume_data
-    //    << "\n queued_for_checking =" << lt::torrent_status::state_t::queued_for_checking;
-    return ((state == lt::torrent_status::state_t::queued_for_checking)
-        || (state == lt::torrent_status::downloading && status.paused));
+    //    << "\n queued_for_checking =" << lt::torrent_status::state_t::queued_for_checking
+    //    << "\n pos =" << status.queue_position;
+    bool checkingQueued = (folderChecking(key) && status.queue_position > 0)
+            //This state is usually not set when queued for checking...
+            || state == lt::torrent_status::state_t::queued_for_checking;
+    //Auto manager pauses torrent when queued.
+    bool downloadQueued = state == lt::torrent_status::downloading && status.paused;
+    return checkingQueued || downloadQueued;
 }
 
 void LibTorrentApi::setFolderPaused(const QString& key, bool value)
