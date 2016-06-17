@@ -66,7 +66,7 @@ public:
     //Sets outgoing port.
     virtual void setPort(int port);
     //Restarts sync
-    virtual void restart();
+    virtual void start();
 
 private slots:
     void handleAlerts();
@@ -79,6 +79,7 @@ private:
     static const QString SETTINGS_PATH;
     static const int NOT_FOUND; //Unable to fetch eta
     static const QString ERROR_KEY_NOT_FOUND;
+    static const QString ERROR_SESSION_NULL;
 
     QTimer alertTimer_;
     libtorrent::session* session_;
@@ -88,7 +89,7 @@ private:
     SpeedEstimator speedEstimator_;
 
     void init();
-    bool loadSettings();
+    bool loadLtSettings();
     void saveSettings();
     boost::shared_ptr<libtorrent::torrent_info> loadFromFile(const QString& path) const;
     void loadTorrentFiles(const QDir& dir);
@@ -100,6 +101,7 @@ private:
     QString getHashString(const libtorrent::torrent_handle& handle) const;
     QByteArray readFile(const QString& path) const;
     int64_t bytesToCheck(const libtorrent::torrent_status& status) const;
+    bool loadSettings();
     void handleAlert(libtorrent::alert* a);
     void handleListenFailedAlert(const libtorrent::listen_failed_alert* a) const;
     void handleTorrentCheckAlert(const libtorrent::torrent_checked_alert* a) const;

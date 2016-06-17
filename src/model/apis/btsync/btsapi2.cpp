@@ -75,7 +75,7 @@ void BtsApi2::postInit()
 {
     DBG << "Thread =" << QThread::currentThread();
     heart_ = new Heart(this);
-    connect(heart_,  SIGNAL(death()), this, SLOT(restart()));
+    connect(heart_,  SIGNAL(death()), this, SLOT(start()));
     activateSettings();
     ready_ = true;
     DBG << "emiting initCompleted() token =" << token_;
@@ -173,7 +173,7 @@ qint64 BtsApi2::upload() const
     return 0;
 }
 
-void BtsApi2::restart()
+void BtsApi2::start()
 {
     QMetaObject::invokeMethod(this, "restartSlot", connectionType());
 }

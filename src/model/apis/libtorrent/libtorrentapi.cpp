@@ -28,6 +28,7 @@ const int LibTorrentApi::MAX_ETA = std::numeric_limits<int>::max()/100;
 const QString LibTorrentApi::SETTINGS_PATH = Constants::SYNC_SETTINGS_PATH + "/libtorrent.dat";
 const int LibTorrentApi::NOT_FOUND = -404;
 const QString LibTorrentApi::ERROR_KEY_NOT_FOUND = "ERROR: not found. key =";
+const QString LibTorrentApi::ERROR_SESSION_NULL = "ERROR: session is null.";
 
 LibTorrentApi::LibTorrentApi(QObject *parent) :
     QObject(parent),
@@ -39,6 +40,19 @@ LibTorrentApi::LibTorrentApi(QObject *parent) :
 }
 
 void LibTorrentApi::init()
+{
+    loadSettings();
+    connect(&alertTimer_, SIGNAL(timeout()), this, SLOT(handleAlerts()));
+    alertTimer_.setInterval(1000);
+    alertTimer_.start();
+}
+
+LibTorrentApi::~LibTorrentApi()
+{
+    shutdown();
+}
+
+bool LibTorrentApi::loadSettings()
 {
     lt::settings_pack settings;
     //Disable encryption
@@ -52,18 +66,20 @@ void LibTorrentApi::init()
         userAgent = "AFISync_Mirror";
     }
     settings.set_str(lt::settings_pack::user_agent, userAgent + "/" + Constants::VERSION_STRING.toStdString());
+    //Load port setting
     settings.set_str(lt::settings_pack::listen_interfaces, "0.0.0.0:" + SettingsModel::port().toStdString());
-    session_->apply_settings(settings);
-    loadSettings();
-    loadTorrentFiles(Constants::SYNC_SETTINGS_PATH);
-    connect(&alertTimer_, SIGNAL(timeout()), this, SLOT(handleAlerts()));
-    alertTimer_.setInterval(1000);
-    alertTimer_.start();
-}
+    //Load bandwidth limits
+    QString uLimit = SettingsModel::maxUpload();
+    QString dLimit = SettingsModel::maxDownload();
+    if (uLimit != "")
+        settings.set_int(lt::settings_pack::upload_rate_limit, uLimit.toInt() * 1024);
+    if (dLimit != "")
+        settings.set_int(lt::settings_pack::download_rate_limit, dLimit.toInt() * 1024);
 
-LibTorrentApi::~LibTorrentApi()
-{
-    shutdown();
+    session_->apply_settings(settings);
+    bool rVal = loadLtSettings();
+    loadTorrentFiles(Constants::SYNC_SETTINGS_PATH);
+    return rVal;
 }
 
 void LibTorrentApi::checkFolder(const QString& key)
@@ -93,7 +109,8 @@ void LibTorrentApi::saveSettings()
     DBG << "Data saved." << bytes.size() << "bytes written.";
 }
 
-bool LibTorrentApi::loadSettings()
+//Loads libTorrent specific settings
+bool LibTorrentApi::loadLtSettings()
 {
     DBG;
     if (!session_)
@@ -387,16 +404,14 @@ QString LibTorrentApi::folderPath(const QString& key)
     return rVal;
 }
 
+//Shutdowns libtorrent session and saves settings.
 void LibTorrentApi::shutdown()
 {
     alertTimer_.stop();
-    alertTimer_.disconnect();
     DBG << "Alert timer stopped";
     saveSettings();
     for (const lt::torrent_handle& handle : keyHash_.values())
     {
-        //FIXME: This might take a long file when  "const ERROR: Unable to
-        //save torrent file. It is null."
         saveTorrentFile(handle);
     }
     generateResumeData();
@@ -407,8 +422,8 @@ void LibTorrentApi::shutdown()
         session_ = nullptr;
         DBG << "Session deleted";
     }
-    DBG << "Clearing keyHash_";
     keyHash_.clear();
+    DBG << "keyHash_ cleared";
 }
 
 qint64 LibTorrentApi::upload()
@@ -430,7 +445,10 @@ qint64 LibTorrentApi::download()
 void LibTorrentApi::setMaxUpload(unsigned limit)
 {
     if (!session_)
+    {
+        DBG << ERROR_SESSION_NULL;
         return;
+    }
 
     lt::settings_pack pack;
     pack.set_int(lt::settings_pack::upload_rate_limit, limit * 1024);
@@ -440,7 +458,10 @@ void LibTorrentApi::setMaxUpload(unsigned limit)
 void LibTorrentApi::setMaxDownload(unsigned limit)
 {
     if (!session_)
+    {
+        DBG << ERROR_SESSION_NULL;
         return;
+    }
 
     lt::settings_pack pack;
     pack.set_int(lt::settings_pack::download_rate_limit, limit * 1024);
@@ -476,17 +497,17 @@ void LibTorrentApi::setPort(int port)
     session_->apply_settings(pack);
 }
 
-void LibTorrentApi::restart()
+void LibTorrentApi::start()
 {
     DBG << "Reloading settings...";
     if (session_)
     {
-        delete session_;
-        session_ = nullptr;
-        keyHash_.clear();
+        DBG << "ERROR: Session is not null. Shutting down...";
+        shutdown();
     }
     session_ = new lt::session();
     loadSettings();
+    alertTimer_.start();
 }
 
 void LibTorrentApi::handleAlerts()
@@ -801,6 +822,12 @@ void LibTorrentApi::handleTorrentFinishedAlert(const lt::torrent_finished_alert*
     lt::torrent_status s = h.status(lt::torrent_handle::query_name);
     QString name = QString::fromStdString(s.name);
     DBG << "Torrent" << name << "has finished.";
+    if (Global::guiless)
+    {
+        DBG << "Disabling torrent auto management in order to seed every completed torrent.";
+        h.auto_managed(false);
+        h.resume();
+    }
 }
 
 void LibTorrentApi::handleTorrentCheckAlert(const lt::torrent_checked_alert* a) const

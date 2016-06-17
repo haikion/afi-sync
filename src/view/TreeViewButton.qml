@@ -12,7 +12,7 @@ Rectangle {
         id: button
 
         Button {
-            property string value: parent.parent.styleData.value
+            property string value: parent.parent != null ? parent.parent.styleData.value : "disabled"
 
             text: parent.text
             anchors.centerIn: parent

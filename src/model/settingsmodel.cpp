@@ -86,8 +86,7 @@ void SettingsModel::resetSteamPath()
 
 QString SettingsModel::maxUpload()
 {
-    QString rVal = settings()->value("maxUpload", "0").toString();
-    DBG << "rVal =" << rVal;
+    QString rVal = settings()->value("maxUpload", "").toString();
     return rVal;
 }
 
@@ -99,7 +98,7 @@ void SettingsModel::setMaxDownload(const QString& value)
 
 QString SettingsModel::maxDownload()
 {
-    return settings()->value("maxDownload", "0").toString();
+    return settings()->value("maxDownload", "").toString();
 }
 
 void SettingsModel::setInstallDate(const QString& repoName, const unsigned& value)

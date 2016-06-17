@@ -81,7 +81,7 @@ public slots:
     bool addFolder(const QString& key, const QString& path);
     QString token();
     QVariantMap setDefaultSyncLevel(SyncLevel level);
-    void restart();
+    void start();
 
 signals:
     void initCompleted();

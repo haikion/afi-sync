@@ -175,7 +175,7 @@ void RootItem::resetSyncSettings()
         }
     }
     sync_->shutdown();
-    //Brute way to avoid "file in use" while btsync is shutting down.
+    //Brute way to avoid "file in use" while sync is shutting down.
     QDir dir(Constants::SYNC_SETTINGS_PATH);
     int attempts = 0;
     while ( dir.exists() && attempts < 100 )
@@ -183,14 +183,13 @@ void RootItem::resetSyncSettings()
         dir.removeRecursively();
         //It's rape time.
         DBG << "Warning: Failure to delete Sync Storage... retrying path ="
-            << dir.currentPath()
-            << " attempts =" << attempts;
+            << dir.currentPath() << "attempts =" << attempts;
         QThread::sleep(1);
         ++attempts;
     }
     DBG << "Sync storage deleted. path =" << dir.currentPath();
     dir.mkpath(".");
-    sync_->restart();
+    sync_->start();
 }
 
 QList<Repository*> RootItem::childItems() const

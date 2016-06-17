@@ -58,7 +58,7 @@ public:
     //Adds folder, path is local system directory, key is source.
     virtual bool addFolder(const QString& key, const QString& path) = 0;
     //Restarts sync
-    virtual void restart() = 0;
+    virtual void start() = 0;
 
 signals: // <- ignored by moc and only serves as documentation aid
     // The code will work exactly the same if signals: is absent.

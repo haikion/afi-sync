@@ -7,7 +7,7 @@ Rectangle {
     property string labelText
     property string fieldText
     property string unit: "KB/s"
-    property string defaultValue: "0"
+    property string defaultValue: ""
     property bool checked: cb.checked
     signal fieldChanged()
     //Work-a-round ... Property binding gets old value.
@@ -55,12 +55,10 @@ Rectangle {
                 return;
             }
             spamFilter.restart()
-            //parent.fieldChanged()
         }
         Component.onCompleted: {
             text = fieldText
             init = false
-            //label.verticalCenter = verticalCenter
         }
     }
 
