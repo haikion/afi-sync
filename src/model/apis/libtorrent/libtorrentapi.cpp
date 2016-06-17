@@ -633,6 +633,8 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& path)
     }
 
     keyHash_.insert(lowerKey, handle);
+    tryMirrorSettings(handle);
+
     return true;
 }
 
@@ -785,11 +787,20 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
             continue;
         }
         lt::torrent_handle handle = session_->add_torrent(params);
-        DBG << "finished =" << handle.status().progress;
         keyHash_.insert(url, handle);
-        folderChecking(url);
+        tryMirrorSettings(handle);
 
         it.next();
+    }
+}
+
+//Sets mirror specific settings if mirror
+void LibTorrentApi::tryMirrorSettings(lt::torrent_handle& h)
+{
+    if (Global::guiless)
+    {
+        DBG << "Disabling auto management for" << h.name().c_str() << "in order to seed every completed torrent.";
+        h.auto_managed(false);
     }
 }
 
@@ -822,12 +833,6 @@ void LibTorrentApi::handleTorrentFinishedAlert(const lt::torrent_finished_alert*
     lt::torrent_status s = h.status(lt::torrent_handle::query_name);
     QString name = QString::fromStdString(s.name);
     DBG << "Torrent" << name << "has finished.";
-    if (Global::guiless)
-    {
-        DBG << "Disabling torrent auto management in order to seed every completed torrent.";
-        h.auto_managed(false);
-        h.resume();
-    }
 }
 
 void LibTorrentApi::handleTorrentCheckAlert(const lt::torrent_checked_alert* a) const
