@@ -7,6 +7,8 @@ Rectangle {
     property string labelText
     property string fieldText
     property string unit: "KB/s"
+    property string defaultValue: "0"
+    property bool checked: cb.checked
     signal fieldChanged()
     //Work-a-round ... Property binding gets old value.
     function getFieldText() {
@@ -15,11 +17,11 @@ Rectangle {
 
     CheckBox {
         id: cb
-        checked: fieldText != "0"
+        checked: fieldText != defaultValue
         anchors.verticalCenter: parent.verticalCenter
         onCheckedChanged: {
             if (!checked) {
-                tf.text = "0"
+                tf.text = defaultValue
                 fieldChanged()
             }
         }

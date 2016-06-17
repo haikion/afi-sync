@@ -52,6 +52,7 @@ void LibTorrentApi::init()
         userAgent = "AFISync_Mirror";
     }
     settings.set_str(lt::settings_pack::user_agent, userAgent + "/" + Constants::VERSION_STRING.toStdString());
+    settings.set_str(lt::settings_pack::listen_interfaces, "0.0.0.0:" + SettingsModel::port().toStdString());
     session_->apply_settings(settings);
     loadSettings();
     loadTorrentFiles(Constants::SYNC_SETTINGS_PATH);

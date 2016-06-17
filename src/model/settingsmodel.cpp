@@ -117,6 +117,7 @@ void SettingsModel::setPort(const QString& port)
     settings()->setValue("port", port);
     if (Global::sync == nullptr)
     {
+        DBG << "ERROR: sync is null";
         return;
     }
     Global::sync->setPort(port.toInt());
@@ -124,7 +125,12 @@ void SettingsModel::setPort(const QString& port)
 
 QString SettingsModel::port()
 {
-    return settings()->value("port", "0").toString();
+    return settings()->value("port", QString::number(Constants::DEFAULT_PORT)).toString();
+}
+
+void SettingsModel::resetPort()
+{
+    settings()->setValue("port", QString::number(Constants::DEFAULT_PORT));
 }
 
 void SettingsModel::setMaxUpload(const QString& value)

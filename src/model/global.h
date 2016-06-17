@@ -11,7 +11,7 @@ namespace Constants {
     const QString SYNC_SETTINGS_PATH = SETTINGS_PATH + "/sync";
     const QString DEFAULT_USERNAME = "user";
     const QString DEFAULT_PASSWORD = "password";
-    const unsigned DEFAULT_PORT = 8887;
+    const unsigned DEFAULT_PORT = 41000;
     const QString VERSION_STRING = "v0.41Experimental";
 }
 

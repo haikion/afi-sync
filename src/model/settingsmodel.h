@@ -37,6 +37,7 @@ public slots:
     static unsigned installDate(const QString& repoName);
     static void setPort(const QString& port);
     static QString port();
+    static void resetPort();
 
 private:
     static QSettings* settings_;

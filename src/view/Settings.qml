@@ -250,11 +250,19 @@ Column {
             anchors.left: parent.left
             anchors.leftMargin: 3
             height: defaultHeight
-            labelText: "Port (0 = unset):"
+            labelText: "Port:"
             fieldText: SettingsModel.port()
+            defaultValue: "41000"
             onFieldChanged: {
                 console.log("Port set: " + getFieldText())
                 SettingsModel.setPort(getFieldText())
+            }
+            onCheckedChanged: {
+                if (!checked) {
+                    SettingsModel.resetPort()
+                    tf.text = SettingsModel.port()
+                    fieldChanged()
+                }
             }
         }
     }
