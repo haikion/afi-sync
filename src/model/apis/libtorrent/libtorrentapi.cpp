@@ -799,7 +799,8 @@ void LibTorrentApi::tryMirrorSettings(lt::torrent_handle& h)
 {
     if (Global::guiless)
     {
-        DBG << "Disabling auto management for" << h.name().c_str() << "in order to seed every completed torrent.";
+        DBG << "Disabling auto management for" << h.status().name.c_str()
+            << "in order to seed every completed torrent.";
         h.auto_managed(false);
     }
 }
