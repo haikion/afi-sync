@@ -244,7 +244,15 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
     {
         DBG << "Starting torrent" << name;
         handle.resume();
-        handle.auto_managed(true);
+        if (Global::guiless)
+        {
+            handle.auto_managed(false);
+            DBG << "Auto management disabled in mirror mode.";
+        }
+        else
+        {
+            handle.auto_managed(true);
+        }
     }
 }
 
@@ -631,9 +639,7 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& path)
         DBG << "ERROR: Failure downloading torrent from" << key << ":" << status.error.c_str();
         return false;
     }
-
     keyHash_.insert(lowerKey, handle);
-    tryMirrorSettings(handle);
 
     return true;
 }
@@ -788,20 +794,8 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         }
         lt::torrent_handle handle = session_->add_torrent(params);
         keyHash_.insert(url, handle);
-        tryMirrorSettings(handle);
 
         it.next();
-    }
-}
-
-//Sets mirror specific settings if mirror
-void LibTorrentApi::tryMirrorSettings(lt::torrent_handle& h)
-{
-    if (Global::guiless)
-    {
-        DBG << "Disabling auto management for" << h.status().name.c_str()
-            << "in order to seed every completed torrent.";
-        h.auto_managed(false);
     }
 }
 

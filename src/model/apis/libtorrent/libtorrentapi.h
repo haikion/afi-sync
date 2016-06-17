@@ -102,7 +102,6 @@ private:
     QByteArray readFile(const QString& path) const;
     int64_t bytesToCheck(const libtorrent::torrent_status& status) const;
     bool loadSettings();
-    void tryMirrorSettings(libtorrent::torrent_handle& h);
     void handleAlert(libtorrent::alert* a);
     void handleListenFailedAlert(const libtorrent::listen_failed_alert* a) const;
     void handleTorrentCheckAlert(const libtorrent::torrent_checked_alert* a) const;
