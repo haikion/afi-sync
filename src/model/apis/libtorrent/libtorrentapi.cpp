@@ -247,7 +247,7 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
         if (Global::guiless)
         {
             handle.auto_managed(false);
-            DBG << "Auto management disabled in mirror mode.";
+            DBG << "Auto management disabled for" << name << "in mirror mode.";
         }
         else
         {

@@ -93,9 +93,9 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             else
             {
                 QString modName = qvariant_cast<QString>(mod.value("name"));
-                DBG << "Parsed mod parameters";
+                DBG << "Parsed mod parameters for" << modName;
                 newMod = new Mod(modName, key.toLower());
-                DBG << "New mod object created:" << modName << ".";
+                DBG << "New mod object created:" << modName;
                 modHash.insert(key, newMod);
                 DBG << modName << "added to modhash";
             }
