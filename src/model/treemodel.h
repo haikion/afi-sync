@@ -50,7 +50,7 @@ signals:
     void downloadChanged(QString newVal);
 
 public slots:
-    void layoutChanged();
+    void rowsChanged();
     QString getDownload() const;
     QString getUpload() const;
     bool isRepository(const QModelIndex& index) const;

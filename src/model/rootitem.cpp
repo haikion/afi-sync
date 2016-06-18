@@ -113,10 +113,10 @@ void RootItem::processCompletion()
     DBG << "Finished";
 }
 
-void RootItem::layoutChanged()
+void RootItem::rowsChanged()
 {
     //Run only in GUI thread.
-    QMetaObject::invokeMethod(parent_, "layoutChanged", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(parent_, "rowsChanged", Qt::QueuedConnection);
 }
 
 bool RootItem::stopUpdates()

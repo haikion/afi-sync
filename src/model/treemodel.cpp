@@ -61,7 +61,7 @@ void TreeModel::enableRepositories()
     rootItem_->enableRepositories();
 }
 
-void TreeModel::layoutChanged()
+void TreeModel::rowsChanged()
 {
     DBG;
     emit layoutChanged();
@@ -194,7 +194,7 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex& index) const
 {
     //DBG;
 
-    if (!index.isValid() || haltGui_)
+    if (haltGui_ || !index.isValid())
         return 0;
 
     return QAbstractItemModel::flags(index);
@@ -217,7 +217,7 @@ QHash<int,QByteArray> TreeModel::roleNames() const
 QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent)
             const
 {
-    if (!hasIndex(row, column, parent))
+    if (haltGui_ || !hasIndex(row, column, parent))
         return QModelIndex();
 
     TreeItem* parentItem;
@@ -227,7 +227,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent)
     else
         parentItem = static_cast<TreeItem*>(parent.internalPointer());
 
-    if(!parentItem || haltGui_)
+    if(!parentItem)
     {
         DBG << "Invalid request. row =" << row
             << "column =" << column << "parent =" << parent;
@@ -242,13 +242,13 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent)
 
 QModelIndex TreeModel::parent(const QModelIndex& index) const
 {
-    if (!index.isValid())
+    if (haltGui_ || !index.isValid())
         return QModelIndex();
 
     TreeItem* childItem = static_cast<TreeItem*>(index.internalPointer());
     TreeItem* parentItem = childItem->parentItem();
 
-    if (parentItem == rootItem_ || parentItem == 0 || haltGui_)
+    if (parentItem == rootItem_ || parentItem == 0)
         return QModelIndex();
 
     return createIndex(parentItem->row(), 0, parentItem);
@@ -260,7 +260,7 @@ int TreeModel::rowCount(const QModelIndex& parent) const
     if (parent.column() > 0)
         return 0;
 
-    if (!parent.isValid() || haltGui_)
+    if (haltGui_ || !parent.isValid())
         parentItem = rootItem_;
     else
         parentItem = static_cast<TreeItem*>(parent.internalPointer());

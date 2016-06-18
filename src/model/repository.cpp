@@ -60,7 +60,7 @@ Repository::~Repository()
     }
     RootItem* parent = parentItem();
     parent->removeChild(this);
-    parent->layoutChanged();
+    parent->rowsChanged();
 }
 
 void Repository::processCompletion()
@@ -324,7 +324,7 @@ bool Repository::removeMod(Mod* mod)
         DBG << "ERROR: Unable to remove" << mod->name() << "from repository" << name();
         return false;
     }
-    parentItem()->layoutChanged();
+    parentItem()->rowsChanged();
     if (mod->repositories().size() == 0)
     {
         //Mod may not exist if it doesn't belong to any repo.

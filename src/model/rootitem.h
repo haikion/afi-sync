@@ -27,7 +27,7 @@ public:
 
     void enableRepositories();
     void processCompletion();
-    void layoutChanged();
+    void rowsChanged();
     bool stopUpdates();
     void startUpdates();
     void startUpdateTimers();
