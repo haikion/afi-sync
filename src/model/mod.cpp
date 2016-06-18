@@ -43,7 +43,8 @@ void Mod::threadDestructor()
 
 void Mod::init()
 {
-    DBG << "name =" << name() << "current thread:" << QThread::currentThread() << "Worker thread:" << Global::workerThread;
+    DBG << "name =" << name() << "current thread:" << QThread::currentThread()
+        << "Worker thread:" << Global::workerThread;
 
     if (!isOptional())
     {
@@ -270,7 +271,7 @@ void Mod::appendRepository(Repository* repository)
             DBG << "name =" << name() << "initCompleted connection created";
         }
     }
-    repositoryChanged();
+    QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
 }
 
 bool Mod::removeRepository(Repository* repository)

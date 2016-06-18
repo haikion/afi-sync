@@ -286,7 +286,6 @@ QString Repository::joinText()
 
 ISync* Repository::sync() const
 {
-    DBG;
     return sync_;
 }
 
@@ -322,6 +321,7 @@ bool Repository::removeMod(Mod* mod)
     //Removes mod view adapter.
     if (!mod->removeRepository(this))
     {
+        DBG << "ERROR: Unable to remove" << mod->name() << "from repository" << name();
         return false;
     }
     parentItem()->layoutChanged();

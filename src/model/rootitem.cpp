@@ -95,7 +95,7 @@ void RootItem::removeOrphans()
             sync_->removeFolder(key);
         }
     }
-    DBG << "remove orhpans completed";
+    DBG << "Done";
 }
 
 void RootItem::processCompletion()
