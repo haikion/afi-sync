@@ -1,8 +1,7 @@
 #include <csignal>
 #include <QCoreApplication>
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
-#include <QQuickWindow>
 #include <QQuickItem>
 #include <QtQml>
 #include <QSettings>
@@ -70,7 +69,7 @@ int gui(int argc, char* argv[])
     qmlRegisterSingletonType<SettingsModel>("org.AFISync", 0, 1, "SettingsModel", getSettingsModel);
     qmlRegisterSingletonType<ProcessMonitor>("org.AFISync", 0, 1, "ProcessMonitor", getProcessMonitor);
     DBG << "QML Singletons registered";
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
     DBG << "QGuiApplication created";
     QQmlApplicationEngine engine;
     //DBG << 3.2;

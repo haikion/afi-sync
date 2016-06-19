@@ -287,7 +287,6 @@ Column {
             id: troublesColumn
 
             Button {
-                z: -1 //Ensures tooltip is on top of button that is below this button.
                 text: "Force Activate Join and Start Buttons"
                 onClicked: {
                     Global.buttonsEnabled = true
@@ -299,7 +298,6 @@ Column {
             }
 
             Button {
-                z: -2
                 text: "Fix Kicked from Server"
                 onClicked: {
                     if (ProcessMonitor.arma3Running())
@@ -317,36 +315,14 @@ Column {
                 }
                 height: defaultHeight
                 width: parent.width
-                //FIXME: Does not show
-                ToolTip {
-                    id: tooltip1
-                    width: parent.width*0.7
-                    target: parent
-                    text:  "Rechecks every active repository, "
-                         + "cleans mod directories from files that do not belong "
-                         + "there and installs Team Speak plugin. Operation might "
-                         + "take several minutes."
-                    z: 10
-                }
+                tooltip: "Rechecks every active repository,\n" +
+                         "cleans mod directories from files\n" +
+                         "that do not belong there and installs\n" +
+                         "Team Speak plugin. Operation might take\n" +
+                         "several minutes."
+
             }
-            /*
             Button {
-                text: "Reset Sync"
-                onClicked: {
-                    var cache = text;
-                    text = "Loading..."
-                    enabled = false
-                    TreeModel.resetSync()
-                    apply()
-                    enabled = true
-                    text = cache
-                }
-                height: defaultHeight
-                width: parent.width
-            }
-            */
-            Button {
-                z: -3
                 text: "Report Bug..."
                 onClicked: {
                     Qt.openUrlExternally("https://form.jotformeu.com/61187638191361");

@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += qml quick
+QT += qml quick widgets
 CONFIG += c++11
 
 RC_ICONS = src/view/armafin-logo-64px2.ico
@@ -9,7 +9,7 @@ RC_ICONS = src/view/armafin-logo-64px2.ico
 win32 {
     INCLUDEPATH += D:\AfiSync\sources\libtorrent-rasterbar-1.1.0\include
     INCLUDEPATH += D:\AfiSync\sources\boost_1_61_0
-    LIBS += -LD:\AfiSync\sources\boost_1_61_0\stage\lib -llibboost_system-mgw49-mt-1_61 -lws2_32 #  -llibboost_chrono-mgw49-mt-1_61
+    LIBS += -LD:\AfiSync\sources\boost_1_61_0\stage\lib -llibboost_system-mgw49-mt-1_61 -lws2_32
     LIBS += -LD:\AfiSync\sources\libtorrent-rasterbar-1.1.0\bin\gcc-mingw-4.9.2\release\threading-multi -llibtorrent.dll
 }
 
@@ -18,7 +18,6 @@ unix {
 }
 
 DEFINES += _HAS_ITERATOR_DEBUGGING=0 _SECURE_SCL=0
-#DEFINES += BOOST_USE_WINAPI_VERSION=0x0501
 
 SOURCES += src/model/main.cpp \
     src/model/treeitem.cpp \
