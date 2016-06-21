@@ -199,15 +199,19 @@ bool LibTorrentApi::folderChecking(const QString& key)
          || state == lt::torrent_status::state_t::allocating);
 }
 
+//Overly complicated function which returns true if folder is queued for anything.
+//libTorrent does not seem to have a proper way to query this...
 bool LibTorrentApi::folderQueued(const QString& key)
 {
     lt::torrent_handle handle = keyHash_.value(key.toLower());
     lt::torrent_status status = handle.status();
-    if (!status.auto_managed || status.is_finished)
+    lt::torrent_status::state_t state = status.state;
+
+    //Torrent is always paused when queued
+    if (!status.auto_managed || status.is_finished || !status.paused)
     {
         return false;
     }
-    lt::torrent_status::state_t state = status.state;
     //Default active downloads is 3.
     //DBG << "key =" << key << "state =" << state << "name =" << handle.name().c_str()
     //    << "\n allocating =" << lt::torrent_status::state_t::allocating
@@ -215,11 +219,12 @@ bool LibTorrentApi::folderQueued(const QString& key)
     //    << "\n checking_resume_data =" << lt::torrent_status::state_t::checking_resume_data
     //    << "\n queued_for_checking =" << lt::torrent_status::state_t::queued_for_checking
     //    << "\n pos =" << status.queue_position;
-    bool checkingQueued = (folderChecking(key) && status.queue_position > 0)
+    //Auto manager pauses torrent when queued. status.queue_position cannot be used
+    //as activation threshold may change for arbitary reasons.
+    bool checkingQueued = folderChecking(key)
             //This state is usually not set when queued for checking...
             || state == lt::torrent_status::state_t::queued_for_checking;
-    //Auto manager pauses torrent when queued.
-    bool downloadQueued = state == lt::torrent_status::downloading && status.paused;
+    bool downloadQueued = state == lt::torrent_status::downloading;
     return checkingQueued || downloadQueued;
 }
 
