@@ -17,7 +17,7 @@ class ModAdapter : public SyncItem
     Q_OBJECT
 
 public:
-    ModAdapter(Mod* mod, Repository* repo, bool isOptional);
+    ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index);
     ~ModAdapter();
 
     virtual QString checkText();

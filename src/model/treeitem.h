@@ -1,5 +1,6 @@
 #ifndef TREEITEM_H
 #define TREEITEM_H
+#include <limits>
 #include <QVariant>
 #include <QList>
 #include "apis/isync.h"
@@ -12,7 +13,7 @@ public:
     explicit TreeItem(const QString& name, TreeItem* parentItem = 0);
     virtual ~TreeItem() = default;
 
-    virtual void appendChild(TreeItem* child);
+    virtual void appendChild(TreeItem* child, int index = std::numeric_limits<int>::max());
     bool removeChild(TreeItem* child);
     TreeItem* child(int row);
     int childCount() const;

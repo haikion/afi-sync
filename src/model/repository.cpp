@@ -253,9 +253,9 @@ QStringList Repository::joinParameters() const
     return rVal;
 }
 
-void Repository::appendModAdapter(ModAdapter* adp)
+void Repository::appendModAdapter(ModAdapter* adp, int index)
 {
-    TreeItem::appendChild(adp);
+    TreeItem::appendChild(adp, index);
 }
 
 QString Repository::startText()

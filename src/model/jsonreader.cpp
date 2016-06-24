@@ -70,8 +70,9 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             root->appendChild(repo);
         }
         QList<QVariant> mods = qvariant_cast<QList<QVariant>>(repository.value("mods"));
-        for (QVariant modVar : mods)
+        for (int i = 0; i < mods.size(); ++i)
         {
+            QVariant modVar = mods.at(i);
             QVariantMap mod = qvariant_cast<QVariantMap>(modVar);
             QString key = qvariant_cast<QString>(mod.value("key")).toLower();
             DBG << "key parsed. key =" << key;
@@ -101,7 +102,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             }
             bool isOptional = mod.value("optional", false).toBool();
             DBG << "appending mod name =" << newMod->name() << " key =" << newMod->key();
-            new ModAdapter(newMod, repo, isOptional);
+            new ModAdapter(newMod, repo, isOptional, i);
         }
     }
 

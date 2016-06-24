@@ -2,7 +2,7 @@
 #include "modadapter.h"
 #include "repository.h"
 
-ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional):
+ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index):
     SyncItem(mod->name(), repo),
     mod_(mod),
     repo_(repo),
@@ -12,7 +12,7 @@ ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional):
     QString repoStr = repo_->name().replace("/| ","_");
     tickedKey_ = name() + "/" + repoStr + "ticked";
     //Connect everything
-    repo->appendModAdapter(this);
+    repo->appendModAdapter(this, index);
     mod->appendModAdapter(this);
     mod->appendRepository(repo);
 }

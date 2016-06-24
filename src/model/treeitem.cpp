@@ -15,9 +15,9 @@ TreeItem::TreeItem(const QString& name, TreeItem* parentItem)
     DBG << "name set to" << name;
 }
 
-void TreeItem::appendChild(TreeItem* item)
+void TreeItem::appendChild(TreeItem* item, int index)
 {
-    m_childItems.append(item);
+    m_childItems.insert(index, item);
 }
 
 bool TreeItem::removeChild(TreeItem* child)
