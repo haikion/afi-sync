@@ -1,7 +1,6 @@
 #ifndef JSONREADER_H
 #define JSONREADER_H
 
-#include <vector>
 #include <QJsonDocument>
 #include <QVariantMap>
 #include <QString>
