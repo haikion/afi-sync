@@ -37,153 +37,145 @@ private Q_SLOTS:
 private:
     LibTorrentApi* sync_;
     static const QString TORRENT_1;
+    TreeModel* model_;
+    JsonReader reader_;
+    RootItem* root_;
 };
 
 const QString AfiSyncTest::TORRENT_1 = "http://mythbox.no-ip.org/torrents/@vt5_1.torrent";
 
-AfiSyncTest::AfiSyncTest()
+AfiSyncTest::AfiSyncTest():
+   sync_(nullptr),
+   model_(nullptr),
+   root_(nullptr)
 {
 }
 
 void AfiSyncTest::initTestCase()
 {
+    if (sync_)
+       delete sync_;
+    if (model_)
+       delete model_;
+    if (root_)
+       delete root_;
+
     QDir(Constants::SYNC_SETTINGS_PATH).removeRecursively();
     sync_ = new LibTorrentApi();
+    model_ = new TreeModel();
+    root_ = new RootItem(model_);
 }
 
 void AfiSyncTest::cleanupTestCase()
 {
     delete sync_;
+    delete model_;
+    delete root_;
 }
 
 void AfiSyncTest::jsonReaderBasic()
 {
-    TreeModel* model = new TreeModel("", "", 12345);
-    RootItem* root = new RootItem(model);
-    JsonReader::fillEverything(root, "repoBasic.json");
-    QCOMPARE(root->childItems().size(), 1);
-    QCOMPARE(root->childItems().at(0)->mods().size(), 1);
-    QCOMPARE(root->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
-    delete model;
-    delete root;
+    reader_.fillEverything(root_, "repoBasic.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
 }
 
 void AfiSyncTest::jsonReaderModUpdate()
 {
-    TreeModel* model = new TreeModel("", "", 12345);
-    RootItem* root = new RootItem(model);
-    JsonReader::fillEverything(root, "repoBasic.json");
-    JsonReader::fillEverything(root, "repoUp1.json");
-    QCOMPARE(root->childItems().size(), 1);
-    QCOMPARE(root->childItems().at(0)->mods().size(), 2);
-    QCOMPARE(root->childItems().at(0)->mods().at(1)->name(), QString("@update"));
-    delete model;
-    delete root;
+    reader_.fillEverything(root_, "repoBasic.json");
+    reader_.fillEverything(root_, "repoUp1.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
+    QCOMPARE(root_->childItems().at(0)->mods().at(1)->name(), QString("@update"));
 }
 
 void AfiSyncTest::jsonReaderModRemove()
 {
-    TreeModel* model = new TreeModel("", "", 12345);
-    RootItem* root = new RootItem(model);
-    JsonReader::fillEverything(root, "repoUp1.json");
-    JsonReader::fillEverything(root, "repoBasic.json");
-    QCOMPARE(root->childItems().size(), 1);
-    QCOMPARE(root->childItems().at(0)->mods().size(), 1);
-    QCOMPARE(root->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
-    delete model;
-    delete root;
+    reader_.fillEverything(root_, "repoUp1.json");
+    reader_.fillEverything(root_, "repoBasic.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
 }
 
 void AfiSyncTest::jsonReaderRepoRename()
 {
-    TreeModel* model = new TreeModel("", "", 12345);
-    RootItem* root = new RootItem(model);
-    JsonReader::fillEverything(root, "repoBasic.json");
-    JsonReader::fillEverything(root, "repoRename.json");
-    QCOMPARE(root->childItems().size(), 1);
-    QCOMPARE(root->childItems().at(0)->name(), QString("armafinland.fi Primary2"));
-    delete model;
-    delete root;
+    reader_.fillEverything(root_, "repoBasic.json");
+    reader_.fillEverything(root_, "repoRename.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary2"));
 }
 
 void AfiSyncTest::jsonReaderAddRepo()
 {
-    TreeModel* model = new TreeModel("", "", 12345);
-    RootItem* root = new RootItem(model);
-    JsonReader::fillEverything(root, "repoBasic.json");
-    JsonReader::fillEverything(root, "repo2.json");
-    QCOMPARE(root->childItems().size(), 2);
-    delete model;
-    delete root;
+    reader_.fillEverything(root_, "repoBasic.json");
+    reader_.fillEverything(root_, "repo2.json");
+    QCOMPARE(root_->childItems().size(), 2);
 }
 
 void AfiSyncTest::jsonReaderRemoveRepo()
 {
-    TreeModel* model = new TreeModel("", "", 12345);
-    RootItem* root = new RootItem(model);
-    JsonReader::fillEverything(root, "repo2.json");
-    JsonReader::fillEverything(root, "repoBasic.json");
-    QCOMPARE(root->childItems().size(),1);
-    QCOMPARE(root->childItems().at(0)->name(), QString("armafinland.fi Primary"));
-    delete model;
-    delete root;
+    reader_.fillEverything(root_, "repo2.json");
+    reader_.fillEverything(root_, "repoBasic.json");
+    QCOMPARE(root_->childItems().size(),1);
+    QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary"));
 }
 
 void AfiSyncTest::addRemoveFolder()
 {
-    sync_->addFolder("/home/niko/Downloads/ltTest", TORRENT_1);
-    bool exists = sync_->exists(TORRENT_1);
+    sync_->addFolder(TORRENT_1, "/home/niko/Downloads/ltTest");
+    bool exists = sync_->folderExists(TORRENT_1);
     QCOMPARE(exists, true);
-    bool rVal = sync_->removeFolder2(TORRENT_1);
+    bool rVal = sync_->removeFolder(TORRENT_1);
     QCOMPARE(rVal, true);
-    exists = sync_->exists(TORRENT_1);
+    exists = sync_->folderExists(TORRENT_1);
     QCOMPARE(exists, false);
 }
 
 void AfiSyncTest::getFilesUpper()
 {
-    sync_->addFolder("/home/niko/Download/ltTest", TORRENT_1);
-    QSet<QString> files = sync_->getFilesUpper(TORRENT_1);
+    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest");
+    QSet<QString> files = sync_->folderFilesUpper(TORRENT_1);
     QCOMPARE(files.size(), 3);
-    sync_->removeFolder2(TORRENT_1);
+    sync_->removeFolder(TORRENT_1);
 }
 
 void AfiSyncTest::getFolderKeys()
 {
-    sync_->addFolder("/home/niko/Download/ltTest", TORRENT_1);
-    QCOMPARE(sync_->getFolderKeys().size(), 1);
-    QCOMPARE(sync_->getFolderKeys().at(0), TORRENT_1.toLower());
-    sync_->removeFolder2(TORRENT_1);
+    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest");
+    QCOMPARE(sync_->folderKeys().size(), 1);
+    QCOMPARE(sync_->folderKeys().at(0), TORRENT_1.toLower());
+    sync_->removeFolder(TORRENT_1);
 }
 
 void AfiSyncTest::setFolderPaused()
 {
-    sync_->addFolder("/home/niko/Download/ltTest", TORRENT_1);
+    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest");
     sync_->setFolderPaused(TORRENT_1, true);
-    QCOMPARE(sync_->paused(TORRENT_1), true);
-    sync_->removeFolder2(TORRENT_1);
+    QCOMPARE(sync_->folderPaused(TORRENT_1), true);
+    sync_->removeFolder(TORRENT_1);
 }
 
 void AfiSyncTest::getEta()
 {
-    sync_->addFolder("/home/niko/Download/ltTest", TORRENT_1);
-    int eta = sync_->getFolderEta(TORRENT_1);
+    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest");
+    int eta = sync_->folderEta(TORRENT_1);
     qDebug() << "eta =" << eta;
     QVERIFY(eta > 0);
-    sync_->removeFolder2(TORRENT_1);
+    sync_->removeFolder(TORRENT_1);
 }
 
 void AfiSyncTest::saveAndLoad()
 {
-    sync_->addFolder("/home/niko/Downloads/ltTest", TORRENT_1);
+    sync_->addFolder(TORRENT_1, "/home/niko/Downloads/ltTest");
     QThread::sleep(10);
-    delete sync_;
     sync_ = new LibTorrentApi();
-    bool exists = sync_->exists(TORRENT_1);
+    bool exists = sync_->folderExists(TORRENT_1);
     QCOMPARE(exists, true);
-    bool rVal = sync_->removeFolder2(TORRENT_1);
+    bool rVal = sync_->removeFolder(TORRENT_1);
     QCOMPARE(rVal, true);
-    exists = sync_->exists(TORRENT_1);
+    exists = sync_->folderExists(TORRENT_1);
     QCOMPARE(exists, false);
 }
 

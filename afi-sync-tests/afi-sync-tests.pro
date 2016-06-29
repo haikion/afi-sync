@@ -27,12 +27,11 @@ TEMPLATE = app
 
 
 SOURCES += tst_afisynctest.cpp \
-    ../src/model/cihash.cpp \
     ../src/model/global.cpp \
     ../src/model/installer.cpp \
     ../src/model/jsonreader.cpp \
     ../src/model/mod.cpp \
-    ../src/model/modviewadapter.cpp \
+    ../src/model/modadapter.cpp \
     ../src/model/pathfinder.cpp \
     ../src/model/processmonitor.cpp \
     ../src/model/repository.cpp \
@@ -43,7 +42,8 @@ SOURCES += tst_afisynctest.cpp \
     ../src/model/treeitem.cpp \
     ../src/model/treemodel.cpp \
     ../src/model/apis/libtorrent/libtorrentapi.cpp \
-    ../src/model/apis/heart.cpp
+    ../src/model/syncnetworkaccessmanager.cpp \
+    ../src/model/apis/libtorrent/speedestimator.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \
@@ -54,7 +54,7 @@ HEADERS += \
     ../src/model/installer.h \
     ../src/model/jsonreader.h \
     ../src/model/mod.h \
-    ../src/model/modviewadapter.h \
+    ../src/model/modadapter.h \
     ../src/model/pathfinder.h \
     ../src/model/processmonitor.h \
     ../src/model/repository.h \
@@ -65,5 +65,6 @@ HEADERS += \
     ../src/model/treeitem.h \
     ../src/model/treemodel.h \
     ../src/model/apis/libtorrent/libtorrentapi.h \
-    ../src/model/apis/heart.h \
-    ../src/model/apis/isync.h
+    ../src/model/apis/isync.h \
+    ../src/model/syncnetworkaccessmanager.h \
+    ../src/model/apis/libtorrent/speedestimator.h
