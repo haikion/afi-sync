@@ -169,6 +169,7 @@ void AfiSyncTest::getEta()
 void AfiSyncTest::saveAndLoad()
 {
     sync_->addFolder(TORRENT_1, "/home/niko/Downloads/ltTest");
+    delete sync_;
     QThread::sleep(10);
     sync_ = new LibTorrentApi();
     bool exists = sync_->folderExists(TORRENT_1);
