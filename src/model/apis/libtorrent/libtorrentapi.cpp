@@ -59,6 +59,11 @@ bool LibTorrentApi::loadSettings()
     settings.set_int(lt::settings_pack::allowed_enc_level, lt::settings_pack::enc_level::pe_plaintext);
     settings.set_int(lt::settings_pack::in_enc_policy, lt::settings_pack::enc_policy::pe_disabled);
     settings.set_int(lt::settings_pack::out_enc_policy, lt::settings_pack::enc_policy::pe_disabled);
+    //Disable TCP, enable uTP
+    settings.set_bool(lt::settings_pack::enable_incoming_tcp, false);
+    settings.set_bool(lt::settings_pack::enable_outgoing_tcp, false);
+    settings.set_bool(lt::settings_pack::enable_incoming_utp, true);
+    settings.set_bool(lt::settings_pack::enable_outgoing_utp, true);
     //Change user agent
     std::string userAgent = "AFISync";
     if (Global::guiless)
@@ -705,6 +710,7 @@ void LibTorrentApi::generateResumeData() const
         ++outstanding_resume_data;
     }
 
+    //FixMe: Crash inside this loop
     while (outstanding_resume_data > 0)
     {
         lt::alert* test = session_->wait_for_alert(lt::seconds(10));
@@ -719,17 +725,14 @@ void LibTorrentApi::generateResumeData() const
         {
             if (lt::alert_cast<lt::save_resume_data_failed_alert>(a))
             {
-                //lt::process_alert(a);
+                DBG << "Failure in saving resume data:" << a->message().c_str();
                 --outstanding_resume_data;
                 continue;
             }
 
             lt::save_resume_data_alert const* rd = lt::alert_cast<lt::save_resume_data_alert>(a);
             if (rd == 0)
-            {
-                    //lt::process_alert(a);
-                    continue;
-            }
+                continue;
 
             lt::torrent_handle h = rd->handle;
 
@@ -739,7 +742,9 @@ void LibTorrentApi::generateResumeData() const
             out.unsetf(std::ios_base::skipws);
             bencode(std::ostream_iterator<char>(out), *rd->resume_data);
             --outstanding_resume_data;
+            DBG << "Resume data generated for" << h.status().name.c_str();
         }
+        DBG << "Deleting alerts";
         delete alerts;
     }
 }
