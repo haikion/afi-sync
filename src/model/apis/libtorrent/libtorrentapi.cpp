@@ -32,7 +32,7 @@ const QString LibTorrentApi::ERROR_SESSION_NULL = "ERROR: session is null.";
 
 LibTorrentApi::LibTorrentApi(QObject *parent) :
     QObject(parent),
-    session_(new lt::session()),
+    session_(nullptr),
     numResumeData_(0)
 {
     init();
@@ -41,7 +41,7 @@ LibTorrentApi::LibTorrentApi(QObject *parent) :
 
 void LibTorrentApi::init()
 {
-    loadSettings();
+    createSession();
     connect(&alertTimer_, SIGNAL(timeout()), this, SLOT(handleAlerts()));
     alertTimer_.setInterval(1000);
     alertTimer_.start();
@@ -52,18 +52,22 @@ LibTorrentApi::~LibTorrentApi()
     shutdown();
 }
 
-bool LibTorrentApi::loadSettings()
+bool LibTorrentApi::createSession()
 {
+    DBG;
     lt::settings_pack settings;
     //Disable encryption
     settings.set_int(lt::settings_pack::allowed_enc_level, lt::settings_pack::enc_level::pe_plaintext);
     settings.set_int(lt::settings_pack::in_enc_policy, lt::settings_pack::enc_policy::pe_disabled);
     settings.set_int(lt::settings_pack::out_enc_policy, lt::settings_pack::enc_policy::pe_disabled);
-    //Disable TCP, enable uTP
-    settings.set_bool(lt::settings_pack::enable_incoming_tcp, false);
-    settings.set_bool(lt::settings_pack::enable_outgoing_tcp, false);
-    settings.set_bool(lt::settings_pack::enable_incoming_utp, true);
-    settings.set_bool(lt::settings_pack::enable_outgoing_utp, true);
+    //Disable uTP, enable TCP
+    settings.set_bool(lt::settings_pack::enable_incoming_tcp, true);
+    settings.set_bool(lt::settings_pack::enable_outgoing_tcp, true);
+    settings.set_bool(lt::settings_pack::enable_incoming_utp, false);
+    settings.set_bool(lt::settings_pack::enable_outgoing_utp, false);
+    //Disable DHT
+    settings.set_bool(lt::settings_pack::enable_dht, false);
+
     //Change user agent
     std::string userAgent = "AFISync";
     if (Global::guiless)
@@ -81,7 +85,13 @@ bool LibTorrentApi::loadSettings()
     if (dLimit != "")
         settings.set_int(lt::settings_pack::download_rate_limit, dLimit.toInt() * 1024);
 
-    session_->apply_settings(settings);
+    //Sanity check
+    if (session_)
+    {
+        DBG << "ERROR: Session is not null.";
+        delete session_;
+    }
+    session_ = new lt::session(settings);
     bool rVal = loadLtSettings();
     loadTorrentFiles(Constants::SYNC_SETTINGS_PATH);
     return rVal;
@@ -523,15 +533,17 @@ void LibTorrentApi::start()
         DBG << "ERROR: Session is not null. Shutting down...";
         shutdown();
     }
-    session_ = new lt::session();
-    loadSettings();
+    createSession();
     alertTimer_.start();
 }
 
 void LibTorrentApi::handleAlerts()
 {
     if (!session_)
+    {
+        DBG << ERROR_SESSION_NULL;
         return;
+    }
 
     alerts_ = new std::vector<lt::alert*>();
     session_->wait_for_alert(lt::milliseconds(900));
@@ -546,6 +558,8 @@ void LibTorrentApi::handleAlerts()
 
 bool LibTorrentApi::removeFolder(const QString& key)
 {
+    static const QString MSG_DELETING_FILE = "Deleting file:";
+
     DBG << "key =" << key;
     if (!session_)
         return false;
@@ -571,15 +585,15 @@ bool LibTorrentApi::removeFolder(const QString& key)
     keyHash_.remove(key);
     //Delete saved data
     QString urlFile = filePrefix + ".link";
-    DBG << "Deleting file:" << urlFile;
+    DBG << MSG_DELETING_FILE << urlFile;
     QFile(urlFile).remove();
     QString torrentFile = filePrefix + ".torrent";
-    DBG << "Deleting file:" << torrentFile;
+    DBG << MSG_DELETING_FILE << torrentFile;
     QFile(torrentFile).remove();
 
     std::vector<lt::alert*>* alerts = new std::vector<lt::alert*>();
     QString fastresumeFile = filePrefix + ".fastresume";
-    DBG << "Deleting file:" << fastresumeFile;
+    DBG << MSG_DELETING_FILE << fastresumeFile;
     QFile(fastresumeFile).remove();
     //Wait for removed alert (5s)
     //50 alert chunks may be received before torrent removed alert.
@@ -606,7 +620,7 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& path)
     DBG << "path =" << path << "key =" << key;
     if (!session_)
     {
-        DBG << "ERROR: session null";
+        DBG << ERROR_SESSION_NULL;
         return false;
     }
 
@@ -760,7 +774,7 @@ bool LibTorrentApi::writeFile(const QByteArray& data, const QString& path) const
 
     if (!file.isWritable())
     {
-        DBG << "error file" << path << " is not writable.";
+        DBG << "ERROR: file" << path << " is not writable.";
         return false;
     }
     DBG << "Writing file:" << path;
@@ -796,7 +810,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         params.resume_data = loadResumeData(pathPrefix + ".fastresume");
         QString url = QString::fromLocal8Bit(readFile(pathPrefix + ".link"));
         DBG << url << (params.ti == 0) << params.resume_data.size();
-        if (params.ti == 0 || url.isEmpty())
+        if (params.ti == 0 || url.isEmpty() || !params.ti->is_valid())
         {
             DBG << "ERROR: loading torrent" << filePath;
             it.next();
@@ -875,6 +889,13 @@ void LibTorrentApi::handlePortmapAlert(const lt::portmap_alert* a) const
 }
 
 
+void LibTorrentApi::handlePortmapLogAlert(const lt::portmap_log_alert* a) const
+{
+    DBG << a->log_message();
+}
+
+
+
 void LibTorrentApi::handleAlert(lt::alert* a)
 {
     try
@@ -932,6 +953,9 @@ void LibTorrentApi::handleAlert(lt::alert* a)
                 break;
             case lt::portmap_alert::alert_type:
                 handlePortmapAlert(static_cast<lt::portmap_alert*>(a));
+                break;
+            case lt::portmap_log_alert::alert_type:
+                handlePortmapLogAlert(static_cast<lt::portmap_log_alert*>(a));
                 break;
             case lt::peer_blocked_alert::alert_type:
                 break;

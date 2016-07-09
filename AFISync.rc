@@ -1,0 +1,31 @@
+#include "winuser.h"
+
+IDI_ICON1   ICON    DISCARDABLE "src/view/armafin-logo-64px2.ico"
+//CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "manifest.xml"
+
+1 VERSIONINFO
+FILEVERSION 0,0,0,1
+PRODUCTVERSION 0,0,0,1
+FILEOS 0x4
+FILETYPE 0x0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904B0"
+    BEGIN
+      VALUE "CompanyName", "AFI"
+      VALUE "FileDescription", "AFISync"
+      VALUE "FileVersion", "0,0,0,1"
+      VALUE "InternalName", "AFISync"
+      VALUE "LegalCopyright", "Copyright © 2016 AFI"
+      VALUE "OriginalFilename", "AFISync.exe"
+      VALUE "ProductName", "AFISync"
+      VALUE "ProductVersion", "0,0,0,1"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0409, 0x04B0
+  END
+END

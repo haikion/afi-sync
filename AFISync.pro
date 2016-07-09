@@ -3,10 +3,8 @@ TEMPLATE = app
 QT += qml quick widgets
 CONFIG += c++11
 
-RC_ICONS = src/view/armafin-logo-64px2.ico
-
-
 win32 {
+    RC_FILE = AFISync.rc
     INCLUDEPATH += D:\AfiSync\sources\libtorrent-rasterbar-1.1.0\include
     INCLUDEPATH += D:\AfiSync\sources\boost_1_61_0
     LIBS += -LD:\AfiSync\sources\boost_1_61_0\stage\lib -llibboost_system-mgw49-mt-1_61 -lws2_32
@@ -86,4 +84,6 @@ HEADERS += \
     src/model/cihash.h \
     src/model/syncnetworkaccessmanager.h \
     src/model/apis/libtorrent/speedestimator.h
-DISTFILES +=
+DISTFILES += \
+    AFISync.rc \
+    manifest.xml

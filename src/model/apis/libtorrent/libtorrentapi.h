@@ -101,7 +101,7 @@ private:
     QString getHashString(const libtorrent::torrent_handle& handle) const;
     QByteArray readFile(const QString& path) const;
     int64_t bytesToCheck(const libtorrent::torrent_status& status) const;
-    bool loadSettings();
+    bool createSession();
     void handleAlert(libtorrent::alert* a);
     void handleListenFailedAlert(const libtorrent::listen_failed_alert* a) const;
     void handleTorrentCheckAlert(const libtorrent::torrent_checked_alert* a) const;
@@ -111,6 +111,7 @@ private:
     void handleMetadataReceivedAlert(const libtorrent::metadata_received_alert* a) const;
     void handlePortmapErrorAlert(const libtorrent::portmap_error_alert* a) const;
     void handlePortmapAlert(const libtorrent::portmap_alert* a) const;
+    void handlePortmapLogAlert(const libtorrent::portmap_log_alert* a) const;
 };
 
 #endif // LIBTORRENTAPI_H
