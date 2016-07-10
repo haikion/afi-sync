@@ -724,7 +724,6 @@ void LibTorrentApi::generateResumeData() const
         ++outstanding_resume_data;
     }
 
-    //FixMe: Crash inside this loop
     while (outstanding_resume_data > 0)
     {
         lt::alert* test = session_->wait_for_alert(lt::seconds(10));
@@ -888,13 +887,10 @@ void LibTorrentApi::handlePortmapAlert(const lt::portmap_alert* a) const
     DBG << "Port map alert received. Port:" << a->external_port;
 }
 
-
 void LibTorrentApi::handlePortmapLogAlert(const lt::portmap_log_alert* a) const
 {
     DBG << a->log_message();
 }
-
-
 
 void LibTorrentApi::handleAlert(lt::alert* a)
 {

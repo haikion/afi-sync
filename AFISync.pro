@@ -9,6 +9,7 @@ win32 {
     INCLUDEPATH += D:\AfiSync\sources\boost_1_61_0
     LIBS += -LD:\AfiSync\sources\boost_1_61_0\stage\lib -llibboost_system-mgw49-mt-1_61 -lws2_32
     LIBS += -LD:\AfiSync\sources\libtorrent-rasterbar-1.1.0\bin\gcc-mingw-4.9.2\release\threading-multi -llibtorrent.dll
+    QMAKE_CXXFLAGS += -Wno-missing-field-initializers
 }
 
 unix {
@@ -83,7 +84,8 @@ HEADERS += \
     src/model/apis/libtorrent/libtorrentapi.h \
     src/model/cihash.h \
     src/model/syncnetworkaccessmanager.h \
-    src/model/apis/libtorrent/speedestimator.h
+    src/model/apis/libtorrent/speedestimator.h \
+    src/model/version.h
 DISTFILES += \
     AFISync.rc \
     manifest.xml

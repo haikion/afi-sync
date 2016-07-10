@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QTextStream>
 #include "treemodel.h"
+#include "version.h"
 #include "apis/isync.h"
 
 namespace Constants {
@@ -12,7 +13,7 @@ namespace Constants {
     const QString DEFAULT_USERNAME = "user";
     const QString DEFAULT_PASSWORD = "password";
     const unsigned DEFAULT_PORT = 41000;
-    const QString VERSION_STRING = "v0.42Experimental";
+    const QString VERSION_STRING = VERSION_CHARS;
 }
 
 namespace Global
