@@ -887,11 +887,6 @@ void LibTorrentApi::handlePortmapAlert(const lt::portmap_alert* a) const
     DBG << "Port map alert received. Port:" << a->external_port;
 }
 
-void LibTorrentApi::handlePortmapLogAlert(const lt::portmap_log_alert* a) const
-{
-    DBG << a->log_message();
-}
-
 void LibTorrentApi::handleAlert(lt::alert* a)
 {
     try
@@ -951,7 +946,6 @@ void LibTorrentApi::handleAlert(lt::alert* a)
                 handlePortmapAlert(static_cast<lt::portmap_alert*>(a));
                 break;
             case lt::portmap_log_alert::alert_type:
-                handlePortmapLogAlert(static_cast<lt::portmap_log_alert*>(a));
                 break;
             case lt::peer_blocked_alert::alert_type:
                 break;
