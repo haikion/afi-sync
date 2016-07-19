@@ -9,6 +9,6 @@
 
 #define MAJOR_VERSION 0
 #define MINOR_VERSION 42
-#define VERSION_CHARS "v" STR(MAJOR_VERSION) "." STR(MINOR_VERSION) "Experimental"
+#define VERSION_CHARS "v" STR(MAJOR_VERSION) "." STR(MINOR_VERSION) ""
 
 #endif // VERSION_H
