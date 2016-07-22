@@ -40,6 +40,14 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
         DBG << "ERROR: Json file parse failure. Exiting...";
         exit(2);
     }
+    //Delta update
+    QString newDeltaUpdateUrl = jsonMap_.value("deltaUpdates").toString();
+    if (newDeltaUpdateUrl.size() != 0 && root->deltaUpdatesKey() != newDeltaUpdateUrl)
+    {
+        DBG << "Updating delta update url";
+        root->setDeltaUpdatesKey(newDeltaUpdateUrl);
+    }
+
     QList<QVariant> repositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
     DBG << "repositories size =" << repositories.size() << "updateurl =" << updateUrlStr;
     QHash<QString, Mod*> modHash;

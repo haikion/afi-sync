@@ -43,7 +43,12 @@ SOURCES += tst_afisynctest.cpp \
     ../src/model/treemodel.cpp \
     ../src/model/apis/libtorrent/libtorrentapi.cpp \
     ../src/model/syncnetworkaccessmanager.cpp \
-    ../src/model/apis/libtorrent/speedestimator.cpp
+    ../src/model/apis/libtorrent/speedestimator.cpp \
+    ../src/model/apis/libtorrent/ahasher.cpp \
+    ../src/model/apis/libtorrent/deltadownloader.cpp \
+    ../src/model/apis/libtorrent/deltamanager.cpp \
+    ../src/model/apis/libtorrent/deltapatcher.cpp \
+    ../src/model/fileutils.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \
@@ -67,4 +72,9 @@ HEADERS += \
     ../src/model/apis/libtorrent/libtorrentapi.h \
     ../src/model/apis/isync.h \
     ../src/model/syncnetworkaccessmanager.h \
-    ../src/model/apis/libtorrent/speedestimator.h
+    ../src/model/apis/libtorrent/speedestimator.h \
+    ../src/model/apis/libtorrent/ahasher.h \
+    ../src/model/apis/libtorrent/deltadownloader.h \
+    ../src/model/apis/libtorrent/deltamanager.h \
+    ../src/model/apis/libtorrent/deltapatcher.h \
+    ../src/model/fileutils.h

@@ -149,6 +149,17 @@ void RootItem::startUpdateTimers()
     }
 }
 
+void RootItem::setDeltaUpdatesKey(const QString& key)
+{
+    sync_->setDeltaUpdatesFolder(key, SettingsModel::modDownloadPath());
+    deltaUpdateKey_ = key;
+}
+
+QString RootItem::deltaUpdatesKey() const
+{
+    return sync_->deltaUpdatesKey();
+}
+
 void RootItem::startUpdates()
 {
     //startUpdateTimers(); Called by repo if needed

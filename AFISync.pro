@@ -43,7 +43,12 @@ SOURCES += src/model/main.cpp \
     src/model/processmonitor.cpp \
     src/model/apis/libtorrent/libtorrentapi.cpp \
     src/model/syncnetworkaccessmanager.cpp \
-    src/model/apis/libtorrent/speedestimator.cpp
+    src/model/apis/libtorrent/speedestimator.cpp \
+    src/model/apis/libtorrent/ahasher.cpp \
+    src/model/apis/libtorrent/deltadownloader.cpp \
+    src/model/apis/libtorrent/deltapatcher.cpp \
+    src/model/apis/libtorrent/deltamanager.cpp \
+    src/model/fileutils.cpp
 
 RESOURCES += qml.qrc
 
@@ -85,7 +90,12 @@ HEADERS += \
     src/model/cihash.h \
     src/model/syncnetworkaccessmanager.h \
     src/model/apis/libtorrent/speedestimator.h \
-    src/model/version.h
+    src/model/version.h \
+    src/model/apis/libtorrent/ahasher.h \
+    src/model/apis/libtorrent/deltadownloader.h \
+    src/model/apis/libtorrent/deltapatcher.h \
+    src/model/apis/libtorrent/deltamanager.h \
+    src/model/fileutils.h
 DISTFILES += \
     AFISync.rc \
     manifest.xml

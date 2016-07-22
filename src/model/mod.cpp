@@ -87,7 +87,7 @@ void Mod::start()
     {
         //Add folder
         DBG << "Adding" << name() << "to sync.";
-        sync_->addFolder(key_, dir);
+        sync_->addFolder(key_, dir, name());
     }
 
     //Sanity checks
@@ -100,7 +100,7 @@ void Mod::start()
             << "error =" << error;
         //Disagreement between Sync and AfiSync
         sync_->removeFolder(key_);
-        sync_->addFolder(key_, dir);
+        sync_->addFolder(key_, dir, name());
     }
 
     //Do the actual starting
