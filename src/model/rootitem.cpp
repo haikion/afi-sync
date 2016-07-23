@@ -6,7 +6,6 @@
 #include <QDir>
 #include <QSet>
 #include <QTimer>
-#include "apis/btsync/btsapi2.h"
 #include "apis/libtorrent/libtorrentapi.h"
 #include "debug.h"
 #include "global.h"

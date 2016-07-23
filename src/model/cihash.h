@@ -30,6 +30,7 @@ public:
         return QHash<QString, T>::contains(key.toLower());
     }
 
+    //FixMe: Figure out why this cannot be const
     CiHashIt find(const QString& key)
     {
         return QHash<QString, T>::find(key.toLower());

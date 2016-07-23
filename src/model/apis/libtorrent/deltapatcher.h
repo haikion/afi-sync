@@ -1,4 +1,8 @@
- #ifndef DELTAPATCHER_H
+/*
+ * Performs delta patching of files. Works on file system level.
+ */
+
+#ifndef DELTAPATCHER_H
 #define DELTAPATCHER_H
 
 #include <QObject>
@@ -23,16 +27,14 @@ public:
     bool delta(const QString& oldDir, QString laterDir);
     static int latestVersion(const QString& modName, const QStringList& fileNames);
     static QStringList filterPatches(const QString& modPath, const QStringList& allPatches);
-    static bool copyRecursively(const QString& srcFilePath, const QString& tgtFilePath);
 
 signals:
-    void patched(bool success);
+    void patched(QString modPath, bool success);
 
 private:
     static const QString XDELTA_EXECUTABLE;
     static const QString SZIP_EXECUTABLE;
     static const int TIMEOUT;
-    static const int MAX_MERGES;
     static const QString DELTA_POSTFIX;
     static const QString DELTA_EXTENSION;
     static const QString SEPARATOR;

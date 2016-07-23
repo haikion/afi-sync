@@ -13,13 +13,13 @@
 #include <libtorrent/session.hpp>
 #include <libtorrent/bdecode.hpp>
 #include <libtorrent/create_torrent.hpp>
-#include "libtorrentapi.h"
 #include <QFile>
 #include <QFileInfo>
 #include <QDirIterator>
 #include "../../settingsmodel.h"
 #include "../../global.h"
 #include "../../debug.h"
+#include "libtorrentapi.h"
 
 namespace lt = libtorrent;
 
@@ -33,6 +33,7 @@ const QString LibTorrentApi::ERROR_SESSION_NULL = "ERROR: session is null.";
 LibTorrentApi::LibTorrentApi(QObject *parent) :
     QObject(parent),
     session_(nullptr),
+    deltaManager_(nullptr),
     numResumeData_(0)
 {
     init();
@@ -99,13 +100,15 @@ bool LibTorrentApi::createSession()
 
 void LibTorrentApi::checkFolder(const QString& key)
 {
-    auto it = keyHash_.find(key);
-    if (it == keyHash_.end())
+    if (deltaManager_ && deltaManager_->contains(key))
     {
-        DBG << ERROR_KEY_NOT_FOUND << key;
+        DBG << "ERROR: Torrent is being delta patched. Recheck refused.";
         return;
     }
-    lt::torrent_handle h = it.value();
+    lt::torrent_handle h = getHandle(key);
+    if (!h.is_valid())
+        return;
+
     DBG << "Checking torrent with key" << key;
     h.force_recheck();
 }
@@ -167,41 +170,42 @@ QByteArray LibTorrentApi::readFile(const QString& path) const
 
 QList<QString> LibTorrentApi::folderKeys()
 {
-    return keyHash_.keys();
+    QList<QString> rVal = keyHash_.keys();
+    if (deltaManager_)
+        rVal += deltaManager_->folderKeys();
+
+    return rVal;
 }
 
 bool LibTorrentApi::folderNoPeers(const QString& key)
 {
-    lt::torrent_handle handle = keyHash_.value(key);
+    lt::torrent_handle handle = getHandle(key);
+    if (!handle.is_valid())
+        return true;
+
     lt::torrent_status status = handle.status();
-    int rVal = status.num_peers == 0;
-    return rVal;
+    return status.num_peers == 0;
 }
 
 bool LibTorrentApi::folderReady(const QString& key)
 {
-    auto it = keyHash_.find(key);
-    if (it == keyHash_.end())
-    {
-        DBG << ERROR_KEY_NOT_FOUND << key;
+    if (deltaManager_ && deltaManager_->contains(key.toLower()))
         return false;
-    }
 
-    lt::torrent_handle handle = it.value();
+    lt::torrent_handle handle = getHandle(key);
+    if (!handle.is_valid())
+        return false;
+
     lt::torrent_status status = handle.status();
     return status.is_finished;
 }
 
 bool LibTorrentApi::folderChecking(const QString& key)
 {
-    auto it = keyHash_.find(key);
-    if (it == keyHash_.end())
-    {
-        DBG << ERROR_KEY_NOT_FOUND << key;
+    lt::torrent_handle handle = getHandle(key);
+    if (!handle.is_valid())
         return false;
-    }
 
-    lt::torrent_handle handle = it.value();
     lt::torrent_status status = handle.status();
     lt::torrent_status::state_t state = status.state;
     //DBG << "key =" << key << "state =" << state << "active time =" << handle.name().c_str()
@@ -218,15 +222,17 @@ bool LibTorrentApi::folderChecking(const QString& key)
 //libTorrent does not seem to have a proper way to query this...
 bool LibTorrentApi::folderQueued(const QString& key)
 {
+    if (deltaManager_ && deltaManager_->contains(key))
+        return false;
+
     lt::torrent_handle handle = keyHash_.value(key.toLower());
     lt::torrent_status status = handle.status();
     lt::torrent_status::state_t state = status.state;
 
     //Torrent is always paused when queued
     if (!status.auto_managed || status.is_finished || !status.paused)
-    {
         return false;
-    }
+
     //Default active downloads is 3.
     //DBG << "key =" << key << "state =" << state << "name =" << handle.name().c_str()
     //    << "\n allocating =" << lt::torrent_status::state_t::allocating
@@ -245,13 +251,11 @@ bool LibTorrentApi::folderQueued(const QString& key)
 
 void LibTorrentApi::setFolderPaused(const QString& key, bool value)
 {
-    auto it = keyHash_.find(key);
-    if (it == keyHash_.end())
-    {
-        DBG << ERROR_KEY_NOT_FOUND << key;
+    lt::torrent_handle handle = getHandle(key);
+
+    if (!handle.is_valid())
         return;
-    }
-    lt::torrent_handle handle = it.value();
+
     QString name = QString::fromStdString(handle.status().name);
     if (value)
     {
@@ -278,35 +282,45 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
 
 int LibTorrentApi::folderEta(const QString& key)
 {
-    auto it = keyHash_.find(key);
-    if (it == keyHash_.end())
+    lt::torrent_handle handle;
+    QString torrentKey = key;
+    if (deltaManager_ && (key == deltaUpdatesKey_ || deltaManager_->contains(key)))
+    {
+        handle = deltaManager_->handle();
+        torrentKey = deltaUpdatesKey_;
+    }
+    else
+    {
+        handle = getHandle(key);
+    }
+    if (!handle.is_valid())
     {
         DBG << ERROR_KEY_NOT_FOUND << key;
-        return NOT_FOUND;
+        return MAX_ETA;
     }
-    lt::torrent_handle handle = it.value();
+
     lt::torrent_status status = handle.status();
 
-    if (folderChecking(key))
+    if (folderChecking(torrentKey))
     {
         int64_t bc = bytesToCheck(status);
         if (bc == NOT_FOUND)
             return NOT_FOUND;
 
         int64_t checkingSpeed;
-        if (folderQueued(key))
+        if (folderQueued(torrentKey))
         {
             checkingSpeed = speedEstimator_.estimation();
         }
         else
         {
-            checkingSpeed = speedEstimator_.estimate(key, bc);
+            checkingSpeed = speedEstimator_.estimate(torrentKey, bc);
         }
         int64_t rVal = bc/checkingSpeed;
         return rVal;
     }
     //Cut checking speed estimation.
-    speedEstimator_.cutEsimation(key);
+    speedEstimator_.cutEsimation(torrentKey);
     if (status.is_finished)
         return 0;
 
@@ -319,7 +333,16 @@ int LibTorrentApi::folderEta(const QString& key)
         DBG << "ERROR: total_wanted = 0";
         return NOT_FOUND;
     }
-    return (status.total_wanted - status.total_wanted_done) / download;
+    boost::int64_t totalWanted = status.total_wanted;
+    boost::int64_t totalWantedDone = status.total_wanted_done;
+    if (key == deltaUpdatesKey_)
+    {
+        //In case of delta update, only account for mod specific patch downloads.
+        totalWanted = deltaManager_->totalWanted(key);
+        totalWantedDone = deltaManager_->totalWantedDone(key);
+    }
+
+    return (totalWanted - totalWantedDone) / download;
 }
 
 int64_t LibTorrentApi::bytesToCheck(const lt::torrent_status& status) const
@@ -357,18 +380,10 @@ QSet<QString> LibTorrentApi::folderFilesUpper(const QString& key)
 {
     DBG << "key =" << key;
     QSet<QString> rVal;
-    auto it = keyHash_.find(key);
-    if (it == keyHash_.end())
-    {
-        DBG << ERROR_KEY_NOT_FOUND << key;
-        return rVal;
-    }
-    lt::torrent_handle handle = it.value();
+    lt::torrent_handle handle = getHandle(key);
     if (!handle.is_valid())
-    {
-        DBG << "ERROR: Folder is in invalid state.";
         return rVal;
-    }
+
     boost::shared_ptr<const lt::torrent_info> torrentFile = getTorrentFile(handle);
     if (!torrentFile)
     {
@@ -389,21 +404,16 @@ QSet<QString> LibTorrentApi::folderFilesUpper(const QString& key)
 
 bool LibTorrentApi::folderExists(const QString& key)
 {
-    bool rVal = keyHash_.contains(key.toLower());
-    //DBG << "key =" << key << "rVal =" << rVal;
-    return rVal;
+    return getHandle(key).is_valid();
 }
 
 
 bool LibTorrentApi::folderPaused(const QString& key)
 {
-    auto it = keyHash_.find(key);
-    if (it == keyHash_.end())
-    {
-        DBG << "ERROR: not found. key =" << key;
-        return true;
-    }
-    lt::torrent_handle handle = it.value();
+    lt::torrent_handle handle = getHandle(key);
+    if (!handle.is_valid())
+        return false;
+
     lt::torrent_status status = handle.status();
     bool rVal = status.paused;
     //DBG << "key =" << key << "rVal =" << rVal;
@@ -412,20 +422,20 @@ bool LibTorrentApi::folderPaused(const QString& key)
 
 QString LibTorrentApi::folderError(const QString& key)
 {
-    lt::torrent_handle handle = keyHash_.value(key);
+    lt::torrent_handle handle = getHandle(key);
+    if (!handle.is_valid())
+        return "";
+
     QString rVal = QString::fromStdString(handle.status().error);
     return rVal;
 }
 
 QString LibTorrentApi::folderPath(const QString& key)
 {
-    auto it = keyHash_.find(key);
-    if (it == keyHash_.end())
-    {
-        DBG << ERROR_KEY_NOT_FOUND << key;
+    lt::torrent_handle handle = getHandle(key);
+    if (!handle.is_valid())
         return "";
-    }
-    libtorrent::torrent_handle handle = it.value();
+
     lt::torrent_status status = handle.status(lt::torrent_handle::query_save_path);
     QString rVal = QString::fromStdString(status.save_path);
     DBG << "key =" << key << "rVal =" << rVal;
@@ -442,6 +452,12 @@ void LibTorrentApi::shutdown()
     {
         saveTorrentFile(handle);
     }
+    if (deltaManager_ && deltaManager_->handle().is_valid())
+    {
+        DBG << "Saving delta download torrent.";
+        saveTorrentFile(deltaManager_->handle());
+    }
+    //ToDo: Save deltaPatching handle...
     generateResumeData();
     DBG << "Settings saved";
     if (session_)
@@ -498,11 +514,7 @@ void LibTorrentApi::setMaxDownload(unsigned limit)
 
 bool LibTorrentApi::ready()
 {
-    if (!session_)
-        return false;
-
     bool rVal = session_->is_valid();
-    DBG << "rVal =" << rVal;
     return rVal;
 }
 
@@ -555,6 +567,11 @@ void LibTorrentApi::handleAlerts()
     delete alerts_;
 }
 
+QString LibTorrentApi::deltaUpdatesKey()
+{
+    return deltaUpdatesKey_;
+}
+
 
 bool LibTorrentApi::removeFolder(const QString& key)
 {
@@ -564,13 +581,10 @@ bool LibTorrentApi::removeFolder(const QString& key)
     if (!session_)
         return false;
 
-    auto it = keyHash_.find(key);
-    if (it == keyHash_.end())
-    {
-        DBG << ERROR_KEY_NOT_FOUND << key;
+    lt::torrent_handle handle = getHandle(key);
+    if (!handle.is_valid())
         return false;
-    }
-    libtorrent::torrent_handle handle = it.value();
+
     if (!handle.is_valid())
     {
         lt::torrent_status sta = handle.status();
@@ -615,13 +629,33 @@ bool LibTorrentApi::removeFolder(const QString& key)
     return false;
 }
 
-bool LibTorrentApi::addFolder(const QString& key, const QString& path)
+void LibTorrentApi::setDeltaUpdatesFolder(const QString& key, const QString& path)
 {
     DBG << "path =" << path << "key =" << key;
+    if (deltaManager_)
+    {
+        delete deltaManager_;
+        deltaManager_ = nullptr;
+    }
+
+    lt::torrent_handle handle = addFolderGeneric(key, path);
+    if (!handle.is_valid())
+    {
+        DBG << "Warning: Torrent is invalid. Delta patching disabled.";
+        return;
+    }
+    createDeltaManager(handle, key);
+    //ToDo: Update url when it changes..
+}
+
+lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key, const QString path)
+{
+    DBG << "path =" << path << "key =" << key;
+
     if (!session_)
     {
         DBG << ERROR_SESSION_NULL;
-        return false;
+        return lt::torrent_handle();
     }
 
     QFileInfo fi(path);
@@ -629,17 +663,15 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& path)
     if (!fi.isReadable())
     {
         DBG << "ERROR: Parent dir " << fi.absoluteFilePath() << "is not readable.";
-        return false;
+        return lt::torrent_handle();
     }
-
     QString lowerKey = key.toLower();
     if (folderExists(lowerKey))
     {
         DBG << "ERROR: Torrent already added.";
-        return false;
+        return lt::torrent_handle();
     }
     lt::add_torrent_params atp;
-    //atp.name = fi.fileName().toStdString();
     atp.url = lowerKey.toStdString();
     atp.save_path = QDir::toNativeSeparators(fi.absoluteFilePath()).toStdString();
     DBG << "url =" << QString::fromStdString(atp.url)
@@ -649,7 +681,7 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& path)
     if (ec)
     {
         DBG << "ERROR: Adding torrent failed:" << ec.message().c_str();
-        return false;
+        return lt::torrent_handle();
     }
     //Wait for torrent file to download.
     lt::torrent_status status = handle.status();
@@ -661,11 +693,54 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& path)
     if (status.state == lt::torrent_status::downloading_metadata)
     {
         DBG << "ERROR: Failure downloading torrent from" << key << ":" << status.error.c_str();
-        return false;
+        return lt::torrent_handle();
     }
+
+    return handle;
+}
+
+lt::torrent_handle LibTorrentApi::getHandle(const QString& key)
+{
+    auto it = keyHash_.find(key);
+    if (it != keyHash_.end())
+        return it.value();
+
+    if (deltaManager_ && (key == deltaUpdatesKey_ || deltaManager_->contains(key)))
+        return deltaManager_->handle();
+
+    DBG << ERROR_KEY_NOT_FOUND << key;
+    return lt::torrent_handle();
+}
+
+bool LibTorrentApi::addFolder(const QString& key, const QString& path, const QString& name)
+{
+    return addFolder(key, path, name, true);
+}
+
+bool LibTorrentApi::addFolder(const QString& key, const QString& path, const QString& name, bool patchingEnabled)
+{
+    QString lowerKey = key.toLower();
+
+    if (patchingEnabled && deltaManager_ && deltaManager_->patchAvailable(name))
+    {
+        deltaManager_->patch(name, lowerKey);
+        return true;
+    }
+    lt::torrent_handle handle = addFolderGeneric(lowerKey, path);
     keyHash_.insert(lowerKey, handle);
 
     return true;
+}
+
+//ToDo: Consider removal of success
+void LibTorrentApi::handlePatched(const QString& key, const QString& modName, bool success)
+{
+    Q_UNUSED(success)
+
+    QString path = SettingsModel::modDownloadPath();
+    DBG << "Patching done. Readding mod." << key << modName << success;
+    //Re-add folder and prevent infinite loop by patch refusal.
+    addFolder(key, path, modName, false);
 }
 
 QString LibTorrentApi::getHashString(const lt::torrent_handle& handle) const
@@ -700,6 +775,9 @@ bool LibTorrentApi::saveTorrentFile(const lt::torrent_handle& handle) const
     QString torrentFilePath = filePrefix + ".torrent";
     QString urlFilePath = filePrefix + ".link";
     QByteArray url = keyHash_.key(handle).toLocal8Bit();
+    if (deltaManager_ && deltaManager_->handle() == handle)
+        url = deltaUpdatesKey_.toLocal8Bit();
+
     return writeFile(torrentBytes, torrentFilePath) && writeFile(url, urlFilePath);
 }
 
@@ -782,6 +860,14 @@ bool LibTorrentApi::writeFile(const QByteArray& data, const QString& path) const
     return true;
 }
 
+void LibTorrentApi::createDeltaManager(lt::torrent_handle handle, const QString& key)
+{
+    deltaManager_ = new DeltaManager(handle, this);
+    deltaUpdatesKey_ = key.toLower();
+    connect(deltaManager_, SIGNAL(patched(QString, QString, bool)),
+            this, SLOT(handlePatched(QString, QString, bool)));
+}
+
 void LibTorrentApi::loadTorrentFiles(const QDir& dir)
 {
     if (!dir.isReadable())
@@ -811,12 +897,23 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         DBG << url << (params.ti == 0) << params.resume_data.size();
         if (params.ti == 0 || url.isEmpty() || !params.ti->is_valid())
         {
-            DBG << "ERROR: loading torrent" << filePath;
+            DBG << "ERROR: loading torrent" << filePath
+                << "url =" << url;
             it.next();
             continue;
         }
         lt::torrent_handle handle = session_->add_torrent(params);
-        keyHash_.insert(url, handle);
+        QString name = QString::fromStdString(params.ti->name());
+        if (name == Constants::DELTA_PATCHES_NAME)
+        {
+            DBG << "Loading delta patches torrent.";
+            createDeltaManager(handle, url);
+        }
+        else
+        {
+            DBG << "Appending" << name;
+            keyHash_.insert(url, handle);
+        }
 
         it.next();
     }

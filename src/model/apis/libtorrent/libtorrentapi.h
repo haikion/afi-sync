@@ -12,9 +12,11 @@
 #include <QHash>
 #include <QDir>
 #include <QTimer>
+#include <QSet>
 #include "../../cihash.h"
 #include "../isync.h"
 #include "speedestimator.h"
+#include "deltamanager.h"
 
 class LibTorrentApi : public QObject, public ISync
 {
@@ -25,6 +27,8 @@ public:
     explicit LibTorrentApi(QObject *parent = 0);
     ~LibTorrentApi();
 
+    virtual void setDeltaUpdatesFolder(const QString& key, const QString& path);
+    virtual QString deltaUpdatesKey();
     virtual void checkFolder(const QString& key);
     //Returns true if there are no peers.
     virtual bool folderNoPeers(const QString& key);
@@ -37,7 +41,7 @@ public:
     //Fetches eta to ready state. Returns time in seconds.
     virtual int folderEta(const QString& key);
     //Adds folder, path is local system directory, key is source.
-    virtual bool addFolder(const QString& key, const QString& path);
+    virtual bool addFolder(const QString& key, const QString& path, const QString& name);
     //Removes folder with specific key.
     virtual bool removeFolder(const QString& key);
     //Returns list of files in folder in upper case format.
@@ -70,6 +74,7 @@ public:
 
 private slots:
     void handleAlerts();
+    void handlePatched(const QString& key, const QString& modName, bool success);
 
 signals:
     void initCompleted();
@@ -84,9 +89,11 @@ private:
     QTimer alertTimer_;
     libtorrent::session* session_;
     CiHash<libtorrent::torrent_handle> keyHash_;
+    DeltaManager* deltaManager_;
     int numResumeData_;
     std::vector<libtorrent::alert*>* alerts_;
     SpeedEstimator speedEstimator_;
+    QString deltaUpdatesKey_;
 
     void init();
     bool loadLtSettings();
@@ -94,14 +101,19 @@ private:
     boost::shared_ptr<libtorrent::torrent_info> loadFromFile(const QString& path) const;
     void loadTorrentFiles(const QDir& dir);
     bool writeFile(const QByteArray& data, const QString& path) const;
-    bool saveTorrentFile(const libtorrent::torrent_handle& handle) const;
+    bool saveTorrentFile(const libtorrent::torrent_handle& getHandle) const;
     void generateResumeData() const;
     std::vector<char> loadResumeData(const QString& path) const;
-    boost::shared_ptr<const libtorrent::torrent_info> getTorrentFile(const libtorrent::torrent_handle& handle) const;
-    QString getHashString(const libtorrent::torrent_handle& handle) const;
+    boost::shared_ptr<const libtorrent::torrent_info> getTorrentFile(const libtorrent::torrent_handle& getHandle) const;
+    QString getHashString(const libtorrent::torrent_handle& getHandle) const;
     QByteArray readFile(const QString& path) const;
     int64_t bytesToCheck(const libtorrent::torrent_status& status) const;
     bool createSession();
+    libtorrent::torrent_handle addFolderGeneric(const QString& key, const QString path);
+    int folderEta(libtorrent::torrent_handle getHandle);
+    libtorrent::torrent_handle getHandle(const QString& key);
+    bool addFolder(const QString& key, const QString& path, const QString& name, bool patchingEnabled);
+    void createDeltaManager(libtorrent::torrent_handle handle, const QString& key);
     void handleAlert(libtorrent::alert* a);
     void handleListenFailedAlert(const libtorrent::listen_failed_alert* a) const;
     void handleTorrentCheckAlert(const libtorrent::torrent_checked_alert* a) const;
