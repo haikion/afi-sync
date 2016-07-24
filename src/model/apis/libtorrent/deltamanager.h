@@ -29,7 +29,8 @@ public:
     libtorrent::torrent_handle handle() const;
     boost::int64_t totalWanted(const QString& key);
     boost::int64_t totalWantedDone(const QString& key);
-    QList<QString> folderKeys();
+    QStringList folderKeys();
+    CiHash<QString> keyHash() const;
 
 signals:
     void patched(QString key, QString modName, bool success);

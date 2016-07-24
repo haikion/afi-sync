@@ -632,8 +632,11 @@ bool LibTorrentApi::removeFolder(const QString& key)
 void LibTorrentApi::setDeltaUpdatesFolder(const QString& key, const QString& path)
 {
     DBG << "path =" << path << "key =" << key;
+    CiHash<QString> keyHash;
     if (deltaManager_)
     {
+        DBG << "Updating delta updates folder...";
+        keyHash = deltaManager_->keyHash();
         delete deltaManager_;
         deltaManager_ = nullptr;
     }
@@ -645,7 +648,13 @@ void LibTorrentApi::setDeltaUpdatesFolder(const QString& key, const QString& pat
         return;
     }
     createDeltaManager(handle, key);
-    //ToDo: Update url when it changes..
+    for (QString key : keyHash)
+    {
+        QString name = keyHash.value(key);
+        DBG << "Retrying patching for" << name << key;
+        //Re-apply pending patches.
+        deltaManager_->patch(name, key);
+    }
 }
 
 lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key, const QString path)

@@ -43,6 +43,11 @@ void DeltaManager::update()
     }
 }
 
+CiHash<QString> DeltaManager::keyHash() const
+{
+    return keyHash_;
+}
+
 bool DeltaManager::patch(const QString& modName, const QString& key)
 {
     if (!patchAvailable(modName))
@@ -101,7 +106,7 @@ int64_t DeltaManager::totalWantedDone(const QString& key)
     return downloader_->totalWantedDone(it.value());
 }
 
-QList<QString> DeltaManager::folderKeys()
+QStringList DeltaManager::folderKeys()
 {
     return keyHash_.keys();
 }

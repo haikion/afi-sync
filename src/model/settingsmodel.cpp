@@ -155,7 +155,7 @@ void SettingsModel::setBattlEyeEnabled(bool enabled)
 
 QString SettingsModel::modDownloadPath()
 {
-    return settings()->value("modDownloadPath", PathFinder::arma3MyDocuments()).toString();
+    return settings()->value("modDownloadPath", PathFinder::arma3Path()).toString();
 }
 
 void SettingsModel::setModDownloadPath(const QString& path)
