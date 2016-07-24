@@ -404,7 +404,7 @@ QSet<QString> LibTorrentApi::folderFilesUpper(const QString& key)
 
 bool LibTorrentApi::folderExists(const QString& key)
 {
-    return getHandle(key).is_valid();
+    return getHandleSilent(key).is_valid();
 }
 
 
@@ -699,7 +699,8 @@ lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key, const QSt
     return handle;
 }
 
-lt::torrent_handle LibTorrentApi::getHandle(const QString& key)
+//Does not print error message.
+lt::torrent_handle LibTorrentApi::getHandleSilent(const QString& key)
 {
     auto it = keyHash_.find(key);
     if (it != keyHash_.end())
@@ -708,8 +709,16 @@ lt::torrent_handle LibTorrentApi::getHandle(const QString& key)
     if (deltaManager_ && (key == deltaUpdatesKey_ || deltaManager_->contains(key)))
         return deltaManager_->handle();
 
-    DBG << ERROR_KEY_NOT_FOUND << key;
     return lt::torrent_handle();
+}
+
+lt::torrent_handle LibTorrentApi::getHandle(const QString& key)
+{
+    lt::torrent_handle rVal = getHandleSilent(key);
+    if (!rVal.is_valid())
+        DBG << ERROR_KEY_NOT_FOUND << key;
+
+    return rVal;
 }
 
 bool LibTorrentApi::addFolder(const QString& key, const QString& path, const QString& name)

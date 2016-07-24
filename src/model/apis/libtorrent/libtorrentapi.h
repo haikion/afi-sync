@@ -123,6 +123,7 @@ private:
     void handleMetadataReceivedAlert(const libtorrent::metadata_received_alert* a) const;
     void handlePortmapErrorAlert(const libtorrent::portmap_error_alert* a) const;
     void handlePortmapAlert(const libtorrent::portmap_alert* a) const;
+    libtorrent::torrent_handle getHandleSilent(const QString& key);
 };
 
 #endif // LIBTORRENTAPI_H

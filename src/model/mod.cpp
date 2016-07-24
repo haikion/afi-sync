@@ -47,14 +47,12 @@ void Mod::init()
         << "Worker thread:" << Global::workerThread;
 
     if (!isOptional())
-    {
         setTicked(true);
-    }
+
     //Periodically check mod progress
     if (!updateTimer_)
-    {
         updateTimer_ = new QTimer();
-    }
+
     updateTimer_->setInterval(1000);
     connect(updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
     repositoryChanged();
