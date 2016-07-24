@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QTextStream>
 #include <QCommandLineParser>
+#include "apis/libtorrent/deltapatcher.h"
 #include "global.h"
 #include "treemodel.h"
 #include "settingsmodel.h"
@@ -15,6 +16,7 @@
 #include "processmonitor.h"
 
 static const QString LOG_FILE = "afisync.log";
+static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
 
 struct CleanExit
 {
@@ -97,6 +99,26 @@ int cli(int argc, char* argv[], QCommandLineParser& parser)
     }
     parser.process(args);
     DBG << parser.errorText();
+
+    //Delta patching
+    QSet<QString> missingArgs = DELTA_ARGS.toSet() - parser.optionNames().toSet();
+    if (missingArgs.size() < DELTA_ARGS.size())
+    {
+        if (missingArgs.size() != 0)
+        {
+            qDebug() << "ERROR: Missing arguments:" << missingArgs;
+            return 2;
+        }
+        QString oldPath = parser.value(DELTA_ARGS.at(0));
+        QString newPath = parser.value(DELTA_ARGS.at(1));
+        QString patchesPath = parser.value(DELTA_ARGS.at(2));
+        DeltaPatcher dp(patchesPath);
+        dp.delta(oldPath, newPath);
+
+        return 0;
+    }
+    DBG << "FAIL" << missingArgs.size() << missingArgs;
+
     QString username, password, directory;
     unsigned port;
     directory = parser.value("mirror");
@@ -141,6 +163,9 @@ int main(int argc, char* argv[])
                            , "directory", SettingsModel::modDownloadPath()},
                           {"port", "External Port. Current value: " + SettingsModel::port()
                            , "port", SettingsModel::port()},
+                          {DELTA_ARGS.at(0), "Delta patch generation:  Defines path to old version", DELTA_ARGS.at(0)},
+                          {DELTA_ARGS.at(1), "Delta patch generation:  Defines path to new version", DELTA_ARGS.at(1)},
+                          {DELTA_ARGS.at(2), "Delta patch generation:  Defines path to patches directory", DELTA_ARGS.at(2)},
                      });
     #ifndef QT_DEBUG
         createLogFile();
