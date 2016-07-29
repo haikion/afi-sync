@@ -93,7 +93,6 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
 {
     static const QString ERROR_NO_PATCHES = "ERROR: no patches found for";
 
-    DBG << modPath << allPatches;
     QString modName = QFileInfo(modPath).fileName();
     int ltstVersion = latestVersion(modName, allPatches);
     if (ltstVersion == -1)
@@ -102,7 +101,6 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
         return QStringList();
     }
     QStringList patches;
-    DBG << "modpath =" << modPath;
     QString hash = AHasher::hash(modPath);
     QRegExp regEx(modName + ".*" + hash + "\\" + SEPARATOR + "7z");
     QStringList matches = allPatches.filter(regEx);
@@ -129,7 +127,6 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
         }
         patches.append(matches.at(0));
     }
-    DBG << patches;
     return patches;
 }
 

@@ -1,7 +1,10 @@
 #include <QFileInfo>
+#include <QDirIterator>
+#include "libtorrent/torrent_info.hpp"
 #include "../../debug.h"
 #include "../../global.h"
 #include "../../settingsmodel.h"
+#include "../../fileutils.h"
 #include "deltamanager.h"
 
 namespace lt = libtorrent;
@@ -29,17 +32,10 @@ bool DeltaManager::patchAvailable(const QString& modName)
 
 void DeltaManager::update()
 {
-    DBG << "Updating...";
     for (QString modName : keyHash_.values())
     {
         if (downloader_->patchDownloaded(modName))
             patcher_->patch(SettingsModel::modDownloadPath() + "/" + modName);
-    }
-    //Stop updates if there is nothing to process.
-    if (keyHash_.empty())
-    {
-        DBG << "Nothing to process, stopping updates.";
-        delete updateTimer_;
     }
 }
 
@@ -68,6 +64,7 @@ bool DeltaManager::patch(const QString& modName, const QString& key)
         return true;
     }
     downloader_->downloadPatch(modName);
+    DBG << handle_.status().save_path.c_str();
     return true;
     //Patch will be recalled once download is completed.
 }
@@ -117,5 +114,63 @@ void DeltaManager::handlePatched(const QString& modPath, bool success)
     QString key = keyHash_.key(modName);
     DBG << key << modName;
     keyHash_.remove(key);
+    if (keyHash_.empty())
+    {
+        deleteExtraFiles(); //Cleanup residue from older delta patches torrent.
+        //Stop updates
+        if (updateTimer_)
+        {
+            delete updateTimer_;
+            updateTimer_ = nullptr;
+        }
+    }
+
     emit patched(key, modName, success);
+}
+
+void DeltaManager::deleteExtraFiles()
+{
+    QString savePath = QString::fromStdString(downloader_->handle().status().save_path);
+    QSet<QString> torrentFiles = torrentFilesUpper();
+    QSet<QString> localFiles;
+    QDirIterator it(savePath + "/" + Constants::DELTA_PATCHES_NAME);
+    while (it.hasNext())
+    {
+        QFileInfo fi = it.next();
+        if (fi.isFile())
+            localFiles.insert(fi.absoluteFilePath().toUpper());
+    }
+    DBG << savePath << localFiles << torrentFiles;
+
+    QSet<QString> extraFiles = localFiles - torrentFiles;
+    for (const QString& filePath : extraFiles)
+    {
+        DBG << "Deleting" << filePath;
+        FileUtils::rmCi(filePath);
+    }
+}
+
+QSet<QString> DeltaManager::torrentFilesUpper()
+{
+    QSet<QString> rVal;
+    lt::torrent_handle handle = downloader_->handle();
+    if (!handle.is_valid())
+        return rVal;
+
+    boost::shared_ptr<const lt::torrent_info> torrentFile = handle.torrent_file();
+    if (!torrentFile)
+    {
+        DBG << "ERROR: torrent_file is null";
+        return rVal;
+    }
+    lt::file_storage files = torrentFile->files();
+    for (int i = 0; i < files.num_files(); ++i)
+    {
+        lt::torrent_status status = handle.status(lt::torrent_handle::query_save_path);
+        QString value = QString::fromStdString(status.save_path + "/" + files.file_path(i));
+        value = QFileInfo(value).absoluteFilePath().toUpper();
+        rVal.insert(value);
+    }
+    return rVal;
+
 }

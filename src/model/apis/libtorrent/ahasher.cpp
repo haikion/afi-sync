@@ -30,7 +30,6 @@ QString AHasher::hash(QList<QFileInfo> files)
     for (int padding = 4 - rVal.size(); padding > 0; --padding)
         rVal.prepend("0");
 
-    DBG << "rVal =" << rVal;
     return rVal;
 }
 

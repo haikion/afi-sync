@@ -2,6 +2,7 @@
 #include <QtTest>
 #include <QCoreApplication>
 #include <QString>
+#include <QStringList>
 
 #include <libtorrent/torrent_info.hpp>
 
@@ -22,7 +23,7 @@ const QString TORRENT_1 = "http://mythbox.no-ip.org/torrents/@vt5_1.torrent";
 //Delta patching consts
 static const QString FILES_PATH = "files";
 static const QString TMP_PATH = "temp";
-static const QString TORRENT_2 = FILES_PATH  + "/afisync_patches.torrent";
+static const QString TORRENT_2 = FILES_PATH  + "/afisync_patches_1.torrent";
 static const QString MOD_NAME_1 = "@mod1";
 static const QString MOD_PATH_1 = TMP_PATH + "/1/" + MOD_NAME_1;
 static const QString MOD_PATH_2 = TMP_PATH + "/2/" + MOD_NAME_1;
@@ -78,6 +79,7 @@ private Q_SLOTS:
     void managerContainsNeg();
     void managerPatch();
     void managerPatchNeg();
+    void deltaExtraFileDeletion();
     //FileUtils tests
     void copy();
     void copyDeep();
@@ -95,7 +97,7 @@ private:
     libtorrent::session* session_;
     SettingsModel* settings_;
 
-    libtorrent::torrent_handle createHandle();
+    libtorrent::torrent_handle createHandle(const QString& modDownloadPath = TMP_PATH);
 };
 
 AfiSyncTest::AfiSyncTest():
@@ -340,7 +342,7 @@ void AfiSyncTest::patch()
     QCOMPARE(hash1, hash2);
 }
 
-libtorrent::torrent_handle AfiSyncTest::createHandle()
+libtorrent::torrent_handle AfiSyncTest::createHandle(const QString& modDownloadPath)
 {
     using namespace libtorrent;
     namespace lt = libtorrent;
@@ -355,7 +357,7 @@ libtorrent::torrent_handle AfiSyncTest::createHandle()
         return libtorrent::torrent_handle();
     }
     add_torrent_params p;
-    p.save_path = TMP_PATH.toStdString();
+    p.save_path = modDownloadPath.toStdString();
     p.ti = boost::make_shared<torrent_info>(TORRENT_2.toStdString(), boost::ref(ec), 0);
     if (ec)
     {
@@ -460,6 +462,25 @@ void AfiSyncTest::managerPatchNeg()
     DeltaManager manager(handle_);
     manager.patch("@doesnotexist", "http://fakekey.org/fake.torrent");
     afterDelta();
+}
+
+void AfiSyncTest::deltaExtraFileDeletion()
+{
+    beforeDelta();
+    QString modsPath = TMP_PATH + "/1";
+    handle_ = createHandle(modsPath);
+    QString tmpTorrent = modsPath + "/afisync_patches/afisync_patches_1.torrent";
+
+    settings_->setModDownloadPath(modsPath);
+    FileUtils::copy(TORRENT_2, tmpTorrent);
+    DeltaManager manager(handle_);
+    QEventLoop loop;
+    manager.patch("@mod1", "http://fakeurl.com/@mod1_3.torrent");
+    connect(&manager, SIGNAL(patched(QString, QString, bool)), &loop, SLOT(quit()));
+    loop.exec();
+    bool exists = QFile(tmpTorrent).exists();
+    afterDelta();
+    QVERIFY(!exists);
 }
 
 //FileUtils tests

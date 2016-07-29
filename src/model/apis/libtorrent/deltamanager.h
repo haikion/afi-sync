@@ -45,6 +45,8 @@ private:
     CiHash<QString> keyHash_;
     libtorrent::torrent_handle handle_;
     QTimer* updateTimer_;
+    QSet<QString> torrentFilesUpper();
+    void deleteExtraFiles();
 };
 
 #endif // DELTAMANAGER_H

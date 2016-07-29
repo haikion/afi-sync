@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QFile>
 #include <QStringList>
+#include <QDirIterator>
 #include "debug.h"
 #include "fileutils.h"
 
@@ -63,4 +64,33 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
         return false;
     }
     return true;
+}
+
+bool FileUtils::rmCi(QString path)
+{
+    path.replace("\\", "/");
+    if (!path.startsWith("/"))
+    {
+        DBG << "ERROR: Only absolute paths are supported";
+    }
+    //Construct case sentive path by comparing dirs in case insentive mode.
+    QStringList dirNames = path.split("/");
+    dirNames.removeFirst();
+    QString casedPath = "/";
+    for (QString dirName : dirNames)
+    {
+        QDirIterator it(casedPath);
+        while (it.hasNext())
+        {
+            QFileInfo fi = it.next();
+            DBG << fi.fileName() << dirName;
+            if (fi.fileName().toUpper() == dirName.toUpper())
+            {
+                casedPath += "/" + fi.fileName();
+                DBG << casedPath;
+            }
+        }
+    }
+    casedPath.replace("//", "/");
+    return QFile(casedPath).remove();
 }

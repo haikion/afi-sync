@@ -32,10 +32,12 @@ DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle, QObje
     handle_.pause();
     fileStorage_ = torrent->files();
     createFilePaths();
+    handle_.force_recheck();
     for (int i = 0; i < fileStorage_.num_files(); ++i)
     {
+        DBG << handle_.file_priority(i);
         //Do not download anything.
-        handle_.file_priority(i, 0);
+        handle_.file_priority(i, 1); //FixMe: Setting this to 0 causes 0% completion.
     }
 }
 
@@ -66,6 +68,7 @@ bool DeltaDownloader::patchDownloaded(const QString& modName) const
 {
     boost::int64_t done = totalWantedDone(modName);
     boost::int64_t wanted = totalWanted(modName);
+    DBG << "done =" << done << "/" << wanted;
     return done >= wanted;
 }
 
@@ -75,7 +78,7 @@ bool DeltaDownloader::downloadPatch(const QString& modName)
     QVector<int> indexes = fileIndexes(modName);
     for (int i : indexes)
     {
-        handle_.file_priority(i, 1);
+        handle_.file_priority(i, 4);
     }
     return indexes.size() > 0;
 }
@@ -105,6 +108,8 @@ boost::int64_t DeltaDownloader::totalWantedDone(const QString& modName) const
 
     for (int i : fileIndexes(modName))
     {
+        lt::torrent_status status = handle_.status();
+        DBG << progresses.at(i) << handle_.file_priority(i);
         downloaded += progresses.at(i);
     }
     return downloaded;
@@ -142,7 +147,6 @@ QVector<int> DeltaDownloader::fileIndexes(const QString& modName) const
 
 QStringList DeltaDownloader::patches(const QString& modName) const
 {
-    DBG << filePaths_;
     return DeltaPatcher::filterPatches(
                 SettingsModel::modDownloadPath() + "/" + modName, filePaths_);
 }
