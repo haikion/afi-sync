@@ -10,23 +10,14 @@
 // taken from utils/fileutils.cpp. We can not use utils here since that depends app_version.h.
 bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
 {
-    DBG << dstPath;
     QFileInfo srcFi(srcPath);
     //Directory
     if (srcFi.isDir())
     {
-        QDir dstDir(dstPath);
-        if (!dstDir.exists())
-        {
-            //Rename root directory
-            dstDir.cdUp();
-        }
-
-        QString dirName = QFileInfo(dstPath).fileName();
-        dstDir.mkpath(dirName);
+        QDir().mkpath(dstPath);
         if (!QFileInfo(dstPath).exists())
         {
-            DBG << "ERROR: Failed to create directory" << dirName;
+            DBG << "ERROR: Failed to create directory" << dstPath;
             return false;
         }
         QDir srcDir(srcPath);

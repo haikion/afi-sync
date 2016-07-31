@@ -19,10 +19,10 @@
 #include "../src/model/apis/libtorrent/deltapatcher.h"
 #include "../src/model/apis/libtorrent/deltamanager.h"
 
-const QString TORRENT_1 = "http://mythbox.no-ip.org/torrents/@vt5_1.torrent";
 //Delta patching consts
 static const QString FILES_PATH = "files";
 static const QString TMP_PATH = "temp";
+static const QString TORRENT_1 = "http://88.193.244.18/torrents/@vt5_1.torrent";
 static const QString TORRENT_2 = FILES_PATH  + "/afisync_patches_1.torrent";
 static const QString MOD_NAME_1 = "@mod1";
 static const QString MOD_PATH_1 = TMP_PATH + "/1/" + MOD_NAME_1;
@@ -84,7 +84,7 @@ private Q_SLOTS:
     void copy();
     void copyDeep();
     void noSuchDir();
-    void dstExists();
+    void copyDeepOverwrite();
 
 private:
     LibTorrentApi* sync_;
@@ -227,18 +227,22 @@ void AfiSyncTest::getEta()
     sync_->removeFolder(TORRENT_1);
 }
 
+//Creates sync, adds folder, deletes sync, creates sync again. Added folder should still exist.
 void AfiSyncTest::saveAndLoad()
 {
-    sync_->addFolder(TORRENT_1, "/home/niko/Downloads/ltTest", "@vt5");
+    QDir().mkpath(TMP_PATH);
+    settings_->setModDownloadPath(TMP_PATH);
+    sync_->addFolder(TORRENT_1, QFileInfo(TMP_PATH).absoluteFilePath(), "@vt5");
     delete sync_;
     QThread::sleep(10);
     sync_ = new LibTorrentApi();
     bool exists = sync_->folderExists(TORRENT_1);
-    QCOMPARE(exists, true);
     bool rVal = sync_->removeFolder(TORRENT_1);
-    QCOMPARE(rVal, true);
-    exists = sync_->folderExists(TORRENT_1);
-    QCOMPARE(exists, false);
+    bool existsAfterDelete = sync_->folderExists(TORRENT_1);
+    QDir(TMP_PATH).removeRecursively();
+    QVERIFY(exists);
+    QVERIFY(rVal);
+    QVERIFY(!existsAfterDelete);
 }
 
 //LibTorrent Delta Patching Tests
@@ -505,23 +509,23 @@ void AfiSyncTest::copyDeep()
     QVERIFY(rVal);
 }
 
+//Tests if dir is copied over dir when going to over 0 level.
+void AfiSyncTest::copyDeepOverwrite()
+{
+    FileUtils::copy(SRC_PATH, DST_PATH);
+    FileUtils::copy(SRC_PATH, DST_PATH);
+    QDir dstDir(DST_PATH);
+    bool rVal = dstDir.exists();
+    dstDir.removeRecursively(); //cleanup
+    QVERIFY(rVal);
+}
+
 void AfiSyncTest::noSuchDir()
 {
     QDir(DST_PATH).removeRecursively();
     QString noExist = "noExist";
     FileUtils::copy("noExist", DST_PATH);
     QVERIFY(!QFileInfo(DST_PATH).exists());
-}
-
-void AfiSyncTest::dstExists()
-{
-    QDir().mkpath(TMP_PATH);
-    FileUtils::copy(SRC_PATH, DST_PATH);
-    QString name = QFileInfo(DST_PATH).fileName();
-    QDir dstDir(DST_PATH + "/" + name);
-    bool rVal = dstDir.exists();
-    QDir(TMP_PATH).removeRecursively(); //cleanup
-    QVERIFY(rVal);
 }
 
 QTEST_MAIN(AfiSyncTest)

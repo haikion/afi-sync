@@ -454,8 +454,8 @@ void LibTorrentApi::shutdown()
     }
     if (deltaManager_ && deltaManager_->handle().is_valid())
     {
-        DBG << "Saving delta download torrent.";
         saveTorrentFile(deltaManager_->handle());
+        DBG << "Delta Download torrent saved.";
     }
     //ToDo: Save deltaPatching handle...
     generateResumeData();
@@ -712,6 +712,7 @@ lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key, const QSt
 lt::torrent_handle LibTorrentApi::getHandleSilent(const QString& key)
 {
     auto it = keyHash_.find(key);
+    DBG << keyHash_.size();
     if (it != keyHash_.end())
         return it.value();
 
@@ -890,7 +891,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
 {
     if (!dir.isReadable())
     {
-        DBG << "dir" << dir.absolutePath() << "is not readable";
+        DBG << "ERROR: directory" << dir.absolutePath() << "is not readable.";
         return;
     }
 
