@@ -33,7 +33,6 @@ QString PathFinder::teamspeak3Path()
         //Windows 7
         QSettings settings("HKEY_CLASSES_ROOT\\ts3file\\shell\\open\\command", QSettings::NativeFormat);
         path = settings.value("Default", QCoreApplication::applicationDirPath()).toString();
-        //TODO: Figure out a more direct approach
         path.remove(" \"%1\"");
         path.replace("\\ts3client_win64.exe", "");
         path.remove("\"");

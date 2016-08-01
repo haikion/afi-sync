@@ -24,6 +24,8 @@ static const QString FILES_PATH = "files";
 static const QString TMP_PATH = "temp";
 static const QString TORRENT_1 = "http://88.193.244.18/torrents/@vt5_1.torrent";
 static const QString TORRENT_2 = FILES_PATH  + "/afisync_patches_1.torrent";
+static const QString TORRENT_3 = "http://88.193.244.18/torrents/@mod1_1.torrent";
+static const QString TORRENT_4 = "http://88.193.244.18/torrents/afisync_patches_1.torrent";
 static const QString MOD_NAME_1 = "@mod1";
 static const QString MOD_PATH_1 = TMP_PATH + "/1/" + MOD_NAME_1;
 static const QString MOD_PATH_2 = TMP_PATH + "/2/" + MOD_NAME_1;
@@ -80,6 +82,8 @@ private Q_SLOTS:
     void managerPatch();
     void managerPatchNeg();
     void deltaExtraFileDeletion();
+    void deltaDownloadDownloader();
+    void deltaDownload();
     //FileUtils tests
     void copy();
     void copyDeep();
@@ -97,7 +101,7 @@ private:
     libtorrent::session* session_;
     SettingsModel* settings_;
 
-    libtorrent::torrent_handle createHandle(const QString& modDownloadPath = TMP_PATH);
+    libtorrent::torrent_handle createHandle(const QString& url = QString(), const QString& modDownloadPath = TMP_PATH);
 };
 
 AfiSyncTest::AfiSyncTest():
@@ -125,6 +129,7 @@ void AfiSyncTest::initTestCase()
     sync_ = new LibTorrentApi();
     model_ = new TreeModel();
     root_ = new RootItem(model_);
+    qDebug() << "END OF INIT TEST CASE";
 }
 
 void AfiSyncTest::cleanupTestCase()
@@ -154,6 +159,8 @@ void AfiSyncTest::jsonReaderModUpdate()
 void AfiSyncTest::jsonReaderModRemove()
 {
     reader_.fillEverything(root_, "repoUp1.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
     reader_.fillEverything(root_, "repoBasic.json");
     QCOMPARE(root_->childItems().size(), 1);
     QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
@@ -178,8 +185,9 @@ void AfiSyncTest::jsonReaderAddRepo()
 void AfiSyncTest::jsonReaderRemoveRepo()
 {
     reader_.fillEverything(root_, "repo2.json");
+    //Produces getHandle error because fake torrents cannot be downloaded!
     reader_.fillEverything(root_, "repoBasic.json");
-    QCOMPARE(root_->childItems().size(),1);
+    QCOMPARE(root_->childItems().size(), 1);
     QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary"));
 }
 
@@ -326,6 +334,8 @@ void AfiSyncTest::chainPatch()
 void AfiSyncTest::torrentName()
 {
     beforeDelta();
+    handle_ = createHandle();
+    QVERIFY(handle_.torrent_file() != nullptr);
     QString name = QString::fromStdString(handle_.torrent_file()->name());
     afterDelta();
     QCOMPARE(name, DELTA_PATCH_NAME);
@@ -346,7 +356,7 @@ void AfiSyncTest::patch()
     QCOMPARE(hash1, hash2);
 }
 
-libtorrent::torrent_handle AfiSyncTest::createHandle(const QString& modDownloadPath)
+libtorrent::torrent_handle AfiSyncTest::createHandle(const QString& url, const QString& modDownloadPath)
 {
     using namespace libtorrent;
     namespace lt = libtorrent;
@@ -362,7 +372,14 @@ libtorrent::torrent_handle AfiSyncTest::createHandle(const QString& modDownloadP
     }
     add_torrent_params p;
     p.save_path = modDownloadPath.toStdString();
-    p.ti = boost::make_shared<torrent_info>(TORRENT_2.toStdString(), boost::ref(ec), 0);
+    if (url.size() != 0)
+    {
+        p.url = url.toStdString();
+    }
+    else
+    {
+        p.ti = boost::make_shared<torrent_info>(TORRENT_2.toStdString(), boost::ref(ec), 0);
+    }
     if (ec)
     {
         fprintf(stderr, "%s\n", ec.message().c_str());
@@ -374,6 +391,19 @@ libtorrent::torrent_handle AfiSyncTest::createHandle(const QString& modDownloadP
         fprintf(stderr, "%s\n", ec.message().c_str());
         return handle;
     }
+    //Wait for torrent file to download.
+    lt::torrent_status status = handle.status();
+    for (int a = 0; a < 100 && status.state == lt::torrent_status::downloading_metadata; ++a)
+    {
+        QThread::msleep(100);
+        status = handle.status();
+    }
+    if (status.state == lt::torrent_status::downloading_metadata)
+    {
+        qDebug() << "ERROR: Failure downloading torrent from" << url << ":" << status.error.c_str();
+        return lt::torrent_handle();
+    }
+
     return handle;
 }
 
@@ -472,7 +502,7 @@ void AfiSyncTest::deltaExtraFileDeletion()
 {
     beforeDelta();
     QString modsPath = TMP_PATH + "/1";
-    handle_ = createHandle(modsPath);
+    handle_ = createHandle("", modsPath);
     QString tmpTorrent = modsPath + "/afisync_patches/afisync_patches_1.torrent";
 
     settings_->setModDownloadPath(modsPath);
@@ -485,6 +515,43 @@ void AfiSyncTest::deltaExtraFileDeletion()
     bool exists = QFile(tmpTorrent).exists();
     afterDelta();
     QVERIFY(!exists);
+}
+
+void AfiSyncTest::deltaDownloadDownloader()
+{
+   beforeDelta();
+   QString modsPath = TMP_PATH + "/1";
+   QDir patchesDir = QDir(modsPath + "/" + DELTA_PATCH_NAME);
+   patchesDir.removeRecursively();
+
+   handle_ = createHandle(TORRENT_4, modsPath);
+   DeltaDownloader downloader(handle_);
+   downloader.downloadPatch("@mod1");
+   while (downloader.patchDownloaded("@mod1"))
+   {
+      QThread::sleep(5);
+      qDebug() << "Waiting...";
+   }
+}
+
+void AfiSyncTest::deltaDownload()
+{
+   beforeDelta();
+   QString modsPath = TMP_PATH + "/1";
+   QDir patchesDir = QDir(modsPath + "/" + DELTA_PATCH_NAME);
+   patchesDir.removeRecursively();
+
+   handle_ = createHandle(TORRENT_4, modsPath);
+   settings_->setModDownloadPath(modsPath);
+   DeltaManager manager(handle_);
+
+   QEventLoop loop;
+   QObject::connect(&manager, SIGNAL(patched(QString, QString, bool)), &loop, SLOT(quit()));
+   manager.patch("@mod1", TORRENT_3);
+   qDebug() << "Waiting for patched signal...";
+   loop.exec();
+   qDebug() << "Patched signal received";
+   afterDelta();
 }
 
 //FileUtils tests
@@ -527,6 +594,7 @@ void AfiSyncTest::noSuchDir()
     FileUtils::copy("noExist", DST_PATH);
     QVERIFY(!QFileInfo(DST_PATH).exists());
 }
+
 
 QTEST_MAIN(AfiSyncTest)
 

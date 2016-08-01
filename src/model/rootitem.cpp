@@ -17,7 +17,6 @@
 
 const int RootItem::REPO_UPDATE_DELAY = 60000; //ms
 
-//TODO: Should it be faster?
 RootItem::RootItem(TreeModel* parentModel):
     RootItem(Constants::DEFAULT_PORT, parentModel)
 {

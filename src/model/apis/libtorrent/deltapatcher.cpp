@@ -45,7 +45,6 @@ void DeltaPatcher::threadConstructor(const QString& patchesPath)
 DeltaPatcher::~DeltaPatcher()
 {
     process_->kill();
-    //ToDo: Cleanup
     thread_->quit();
     thread_->wait(5000);
     thread_->terminate();
@@ -144,11 +143,7 @@ bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
 bool DeltaPatcher::runCmd(const QString& cmd)
 {
     DBG << "Running command:" << cmd;
-    //return true;
-    //if (QFileInfo(workingDir).exists())
-    //{ TODO: Remove
-    //    process.setWorkingDirectory(workingDir);
-    //}
+
     process_->start(cmd);
     if (!waitFinished(process_))
         return false;
@@ -184,9 +179,9 @@ bool DeltaPatcher::waitFinished(QProcess* process) const
 void DeltaPatcher::cleanUp(QDir& deltaDir, QDir& tmpDir)
 {
     DBG << "Deleting dir" << deltaDir.absolutePath();
-    deltaDir.removeRecursively(); //TODO: Uncomment
+    deltaDir.removeRecursively();
     DBG << "Deleting dir" << tmpDir.absolutePath();
-    tmpDir.removeRecursively(); //TODO: Uncomment
+    tmpDir.removeRecursively();
 }
 
 bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& targetPath)
@@ -325,123 +320,6 @@ bool DeltaPatcher::delta(const QString& oldDir, QString laterPath)
 
     return true;
 }
-/*
-//Merges every vcdiff and appends file additions from both patches.
-//files that not longer belong to the mod are removed.
-//FIXME: Same names
-void DeltaPatcher::merge(const QString& oldPatchZip,
-                         const QString& newPatchPath,
-                         const QString& newModDir) const
-{
-    static const QString MERGE_POSTFIX = "_merge";
-
-    QFileInfo zipFile(oldPatchZip);
-    //File name format: @modName.from.to.mergeCount.7z
-    QStringList lst = zipFile.fileName().split(SEPARATOR);
-    QString modName = lst.at(0);
-    QString from = lst.at(1);
-    QString to = QFileInfo(newPatchPath).fileName().split(SEPARATOR).at(2);
-    int mergeCount = lst.at(3).toInt();
-    QString extractedPath = zipFile.dir().absolutePath() + "/" + modName + DELTA_POSTFIX;
-    QString mergedPath = extractedPath + MERGE_POSTFIX;
-    QSet<QString> normalFiles;
-
-    if (from == to)
-    {
-        DBG << "ERROR: File hashes are identical. Aborting...";
-        return;
-    }
-    if (mergeCount > MAX_MERGES)
-    {
-        DBG << "Merge count exceedes the maximum of" << MAX_MERGES
-                 << "aborting...";
-        return;
-    }
-
-    extract(oldPatchZip);
-
-    //Iterate through old patch files.
-    //merge vcdiffs and append files.
-    QDirIterator it(extractedPath, QDir::Files, QDirIterator::Subdirectories);
-    while (it.hasNext())
-    {
-        QFileInfo oldFile = it.next();
-        QString oldFilePath = oldFile.absolutePath();
-        QString relPath = oldFilePath.remove(extractedPath);
-
-        QString mergedFilePath = mergedPath + relPath;
-        QFileInfo mergedFileFile = QFileInfo(mergedFilePath);
-
-        if (oldFile.fileName().endsWith(DELTA_EXTENSION))
-        {
-            QString newPatchPath = newPatchPath + relPath;
-            QFileInfo newPatchFile(newPatchPath);
-
-            if (!newPatchFile.exists())
-            {
-                DBG << "File" << oldFile.absolutePath()
-                         << "not found in new patch. Ignoring...";
-                continue;
-            }
-
-            QDir().mkpath(mergedFileFile.dir().absolutePath()); //Create parent dir
-
-            runCmd(XDELTA_EXECUTABLE + " merge -m "
-                   + QDir::toNativeSeparators(oldFilePath) + " "
-                   + QDir::toNativeSeparators(newPatchPath) + " "
-                   + QDir::toNativeSeparators(mergedFilePath));
-
-            continue;
-        }
-
-        //Non vcdiff file. Append...
-        QString modFilePath = newModDir + relPath;
-        normalFiles.insert(modFilePath);
-    }
-
-    //Process non vcdiff files in later patch.
-    QDirIterator it2(newPatchPath, QDir::Files, QDirIterator::Subdirectories);
-    while (it2.hasNext())
-    {
-        QFileInfo newFile = it2.next();
-
-        if (newFile.fileName().endsWith(DELTA_EXTENSION))
-            continue;
-
-        QString relPath = newFile.absolutePath().remove(newPatchPath);
-        QString modFilePath = newModDir + relPath;
-        normalFiles.insert(modFilePath);
-    }
-
-    //Filter out non vcdiff files that are no longer included in the mod.
-    //Copy remaining into merged folder
-    for (QString modFilePath : normalFiles)
-    {
-        QFileInfo modFile(modFilePath);
-
-        if (!modFile.exists())
-        {
-            DBG << "file" << modFilePath << "does not exist in mod in anymore and"
-                     << "will not be included in the patch.";
-            continue;
-        }
-
-        QString relPath = modFilePath.remove(newModDir);
-        QString mergedPath = mergedPath + relPath;
-        QFileInfo mergedFileFile(mergedPath);
-
-        QDir().mkpath(mergedFileFile.dir().absolutePath()); //Create parent dir
-        QFile::copy(modFilePath, mergedPath);
-    }
-    DBG << "Removing directory" << extractedPath;
-    //QDir(extractedPath).removeRecursively(); Todo: Uncomment
-    DBG << "Renaming" << mergedPath  << "to" << extractedPath;
-    //QDir::rename(mergedPath, extractedPath); Todo: Uncomment
-    compress(extractedPath, modName + SEPARATOR + from
-             + SEPARATOR + to + SEPARATOR + QString::number(mergeCount) + ".7z");
-
-}
-*/
 
 bool DeltaPatcher::extract(const QString& zipPath)
 {

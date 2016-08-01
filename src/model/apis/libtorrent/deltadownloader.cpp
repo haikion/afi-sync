@@ -32,13 +32,17 @@ DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle, QObje
     handle_.pause();
     fileStorage_ = torrent->files();
     createFilePaths();
-    handle_.force_recheck();
     for (int i = 0; i < fileStorage_.num_files(); ++i)
     {
-        DBG << handle_.file_priority(i);
-        //Do not download anything.
-        handle_.file_priority(i, 1); //FixMe: Setting this to 0 causes 0% completion.
+        if (QFileInfo(fileStorage_.file_path(i,
+                 handle_.status().save_path).c_str()).exists());
+        {
+                continue;
+        }
+        //Do not download anything. Sets priority to 0 whenever file does not exist.
+        handle_.file_priority(i, 0);
     }
+    handle_.resume();
 }
 
 void DeltaDownloader::createFilePaths()
