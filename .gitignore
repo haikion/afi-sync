@@ -9,7 +9,6 @@ apikey.h
 *.la
 *.lai
 *.so
-*.dll
 *.dylib
 
 # Qt-es
