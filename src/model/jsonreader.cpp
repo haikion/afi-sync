@@ -77,6 +77,8 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
                 << " port =" << QString::number(serverPort);
             root->appendChild(repo);
         }
+        bool battlEyeEnabled = qvariant_cast<bool>(repository.value("battlEyeEnabled", true));
+        repo->setBattlEyeEnabled(battlEyeEnabled);
         QList<QVariant> mods = qvariant_cast<QList<QVariant>>(repository.value("mods"));
         for (int i = 0; i < mods.size(); ++i)
         {

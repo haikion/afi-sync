@@ -14,8 +14,8 @@
 #include "settingsmodel.h"
 #include "debug.h"
 #include "processmonitor.h"
+#include "logmanager.h"
 
-static const QString LOG_FILE = "afisync.log";
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
 
 struct CleanExit
@@ -67,7 +67,8 @@ void messageHandler(QtMsgType type, const QMessageLogContext& context, const QSt
 
 void createLogFile()
 {
-    QFile* file = new QFile(LOG_FILE);
+    LogManager().rotateLogs();
+    QFile* file = new QFile(Constants::LOG_FILE);
     file->open(QIODevice::WriteOnly | QIODevice::Append);
     Global::logStream = new QTextStream(file);
 }

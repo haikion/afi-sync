@@ -17,7 +17,8 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
     serverAddress_(serverAddress),
     port_(port),
     password_(password),
-    ready_(true)
+    ready_(true),
+    battlEyeEnabled_(true)
 {
     DBG << "Created repo name =" << name;
     update();
@@ -38,6 +39,11 @@ void Repository::stopUpdates()
     {
         mod->stopUpdates();
     }
+}
+
+void Repository::setBattlEyeEnabled(bool battleEyeEnabled)
+{
+    battlEyeEnabled_ = battleEyeEnabled;
 }
 
 void Repository::startUpdates()
@@ -140,14 +146,12 @@ void Repository::generalLaunch(const QStringList& extraParams)
         arguments << modsParameter();
     }
     arguments << "-noLauncher";
-    if (SettingsModel::battlEyeEnabled())
-    {
+    if (battlEyeEnabled_)
         arguments << "-useBe";
-    }
+
     if (extraParams.size() > 0)
-    {
         arguments << extraParams;
-    }
+
     QString paramsString = SettingsModel::launchParameters();
     if (paramsString.size() > 0)
     {

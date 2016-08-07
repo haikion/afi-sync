@@ -43,7 +43,10 @@ SOURCES += src/model/main.cpp \
     src/model/apis/libtorrent/deltadownloader.cpp \
     src/model/apis/libtorrent/deltapatcher.cpp \
     src/model/apis/libtorrent/deltamanager.cpp \
-    src/model/fileutils.cpp
+    src/model/fileutils.cpp \
+    src/model/logmanager.cpp \
+    src/model/console.cpp \
+    src/model/szip.cpp
 
 RESOURCES += qml.qrc
 
@@ -80,7 +83,11 @@ HEADERS += \
     src/model/apis/libtorrent/deltadownloader.h \
     src/model/apis/libtorrent/deltapatcher.h \
     src/model/apis/libtorrent/deltamanager.h \
-    src/model/fileutils.h
+    src/model/fileutils.h \
+    src/model/logmanager.h \
+    src/model/console.h \
+    src/model/szip.h
+
 DISTFILES += \
     AFISync.rc \
     manifest.xml

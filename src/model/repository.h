@@ -33,6 +33,7 @@ public:
     void update();
     void startUpdates();
     void stopUpdates();
+    void setBattlEyeEnabled(bool battlEyeEnabled);
 
 private:
     ISync* sync_;
@@ -42,6 +43,7 @@ private:
     QString password_;
     //True if repo is ready
     bool ready_;
+    bool battlEyeEnabled_;
 
     QString modsParameter() const;
     QStringList joinParameters() const;

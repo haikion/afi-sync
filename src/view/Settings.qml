@@ -55,7 +55,7 @@ Column {
         color: "transparent"
         width: parent.width
         border.width: 1
-        height: title11.height + alp.height + be.height + 20
+        height: title11.height + alp.height + 20
 
         SettingsTitle {
             id: title11
@@ -82,24 +82,6 @@ Column {
                 onTextChanged: SettingsModel.setLaunchParameters(text);
                 width: parent.width
                 height: defaultHeight
-            }
-        }
-        //ToDo: repositories.json should do this.
-        Row {
-            anchors.top: alp.bottom
-            anchors.topMargin: 3
-            spacing: 4
-            anchors.left: parent.left
-            anchors.leftMargin: fieldSpacing/2
-            id: be
-
-            CheckBox {
-                checked: SettingsModel.battlEyeEnabled();
-                onCheckedChanged: SettingsModel.setBattlEyeEnabled(checked);
-            }
-            Text {
-                text: qsTr("BattlEye  ")
-                font.pixelSize: labelFont
             }
         }
     }
