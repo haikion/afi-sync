@@ -101,6 +101,33 @@ QString SettingsModel::maxDownload()
     return settings()->value("maxDownload", "").toString();
 }
 
+void SettingsModel::setMaxDownloadEnabled(bool value)
+{
+    if (!value)
+        Global::sync->setMaxDownload(0); //Disable limit
+
+    return settings()->setValue("maxDownloadEnabled", value);
+
+}
+
+bool SettingsModel::maxDownloadEnabled()
+{
+    return settings()->value("maxDownloadEnabled", false).toBool();
+}
+
+void SettingsModel::setMaxUploadEnabled(bool value)
+{
+    if (!value)
+        Global::sync->setMaxUpload(0); //Disable limit
+
+    return settings()->setValue("maxUploadEnabled", value);
+}
+
+bool SettingsModel::maxUploadEnabled()
+{
+    return settings()->value("maxUploadEnabled", false).toBool();
+}
+
 void SettingsModel::setInstallDate(const QString& repoName, const unsigned& value)
 {
     settings()->setValue("installDate" + repoName, value);

@@ -33,8 +33,12 @@ public slots:
     static void resetSteamPath();
     static void setMaxUpload(const QString& value);
     static QString maxUpload();
+    static void setMaxUploadEnabled(bool value);
+    static bool maxUploadEnabled();
     static void setMaxDownload(const QString& value);
     static QString maxDownload();
+    static void setMaxDownloadEnabled(bool value);
+    static bool maxDownloadEnabled();
     static void setInstallDate(const QString& repoName, const unsigned& value);
     static unsigned installDate(const QString& repoName);
     static void setPort(const QString& port);

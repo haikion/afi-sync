@@ -204,9 +204,11 @@ Column {
             height: defaultHeight
             labelText: "Upload limit:"
             fieldText: SettingsModel.maxUpload()
+            checked: SettingsModel.maxUploadEnabled()
             onFieldChanged: {
                 console.log("upload set: " + getFieldText())
                 SettingsModel.setMaxUpload(getFieldText())
+                SettingsModel.setMaxUploadEnabled(checked)
             }
         }
 
@@ -219,9 +221,11 @@ Column {
             height: defaultHeight
             labelText: "Download limit:"
             fieldText: SettingsModel.maxDownload()
+            checked: SettingsModel.maxDownloadEnabled()
             onFieldChanged: {
                 console.log("Download set: " + getFieldText())
                 SettingsModel.setMaxDownload(getFieldText())
+                SettingsModel.setMaxDownloadEnabled(checked)
             }
         }
 

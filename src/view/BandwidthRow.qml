@@ -17,13 +17,10 @@ Rectangle {
 
     CheckBox {
         id: cb
-        checked: fieldText != defaultValue
+        //checked: fieldText != defaultValue
         anchors.verticalCenter: parent.verticalCenter
         onCheckedChanged: {
-            if (!checked) {
-                tf.text = defaultValue
-                fieldChanged()
-            }
+            fieldChanged()
         }
     }
 
