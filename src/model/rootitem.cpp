@@ -262,6 +262,14 @@ void RootItem::updateSpeed()
 
 void RootItem::periodicRepoUpdate()
 {
+    for (Repository* repo : childItems())
+    {
+        if (repo->status() == SyncStatus::PATCHING)
+        {
+            DBG << "Periodic update disabled while patching.";
+            return;
+        }
+    }
     if (ProcessMonitor::afiSyncRunning())
     {
         DBG << "Ignored because Arma 3 is running";

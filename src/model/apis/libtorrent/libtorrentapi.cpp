@@ -284,9 +284,11 @@ int LibTorrentApi::folderEta(const QString& key)
 {
     lt::torrent_handle handle;
     QString torrentKey = key;
+    int increment = 0;
     if (deltaManager_ && (key == deltaUpdatesKey_ || deltaManager_->contains(key)))
     {
         handle = deltaManager_->handle();
+        increment = deltaManager_->patchingEta(key);
         torrentKey = deltaUpdatesKey_;
     }
     else
@@ -317,12 +319,12 @@ int LibTorrentApi::folderEta(const QString& key)
             checkingSpeed = speedEstimator_.estimate(torrentKey, bc);
         }
         int64_t rVal = bc/checkingSpeed;
-        return rVal;
+        return rVal + increment;
     }
     //Cut checking speed estimation.
     speedEstimator_.cutEsimation(torrentKey);
     if (status.is_finished)
-        return 0;
+        return increment;
 
     int download = status.download_rate;
     if (download == 0)
@@ -342,7 +344,12 @@ int LibTorrentApi::folderEta(const QString& key)
         totalWantedDone = deltaManager_->totalWantedDone(key);
     }
 
-    return (totalWanted - totalWantedDone) / download;
+    return ((totalWanted - totalWantedDone) / download) + increment;
+}
+
+bool LibTorrentApi::folderPatching(const QString& key)
+{
+    return deltaManager_ && deltaManager_->contains(key);
 }
 
 int64_t LibTorrentApi::bytesToCheck(const lt::torrent_status& status) const
@@ -712,7 +719,6 @@ lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key, const QSt
 lt::torrent_handle LibTorrentApi::getHandleSilent(const QString& key)
 {
     auto it = keyHash_.find(key);
-    DBG << keyHash_.size();
     if (it != keyHash_.end())
         return it.value();
 
@@ -740,7 +746,8 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& path, const QSt
 {
     QString lowerKey = key.toLower();
 
-    if (patchingEnabled && deltaManager_ && deltaManager_->patchAvailable(name))
+    if (SettingsModel::deltaPatchingEnabled() &&
+            patchingEnabled && deltaManager_ && deltaManager_->patchAvailable(name))
     {
         deltaManager_->patch(name, lowerKey);
         return true;
@@ -759,7 +766,7 @@ void LibTorrentApi::handlePatched(const QString& key, const QString& modName, bo
     QString path = SettingsModel::modDownloadPath();
     DBG << "Patching done. Readding mod." << key << modName << success;
     //Re-add folder and prevent infinite loop by patch refusal.
-    addFolder(key, path, modName, false);
+    addFolder(key, SettingsModel::modDownloadPath(), modName, false);
 }
 
 QString LibTorrentApi::getHashString(const lt::torrent_handle& handle) const

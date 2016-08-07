@@ -17,6 +17,8 @@ public slots:
     void setLaunchParameters(const QString& parameters);
     static bool battlEyeEnabled();
     void setBattlEyeEnabled(bool enabled);
+    static bool deltaPatchingEnabled();
+    void setDeltaPatchingEnabled(bool enabled);
     static QString modDownloadPath();
     static void setModDownloadPath(const QString& path);
     void resetModDownloadPath();

@@ -29,6 +29,7 @@ public:
     libtorrent::torrent_handle handle() const;
     boost::int64_t totalWanted(const QString& key);
     boost::int64_t totalWantedDone(const QString& key);
+    int patchingEta(const QString& key);
     QStringList folderKeys();
     CiHash<QString> keyHash() const;
 
@@ -43,6 +44,7 @@ private:
     DeltaDownloader* downloader_;
     DeltaPatcher* patcher_;
     CiHash<QString> keyHash_;
+    QSet<QString> inDownload_;
     libtorrent::torrent_handle handle_;
     QTimer* updateTimer_;
     QSet<QString> torrentFilesUpper();

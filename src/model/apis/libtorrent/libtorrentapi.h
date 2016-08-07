@@ -40,6 +40,7 @@ public:
     virtual bool folderQueued(const QString& key);
     //Fetches eta to ready state. Returns time in seconds.
     virtual int folderEta(const QString& key);
+    virtual bool folderPatching(const QString& key);
     //Adds folder, path is local system directory, key is source.
     virtual bool addFolder(const QString& key, const QString& path, const QString& name);
     //Removes folder with specific key.

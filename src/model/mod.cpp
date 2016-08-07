@@ -359,6 +359,10 @@ void Mod::updateStatus()
             settings()->setValue(processKey, false);
         }
     }
+    else if (sync_->folderPatching(key_))
+    {
+        setStatus(SyncStatus::PATCHING);
+    }
     else if (sync_->folderReady(key_))
     {
         setStatus(SyncStatus::WAITING);

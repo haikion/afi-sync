@@ -11,6 +11,7 @@
 #include <QProcess>
 #include <QThread>
 #include <QDir>
+#include <QQueue>
 
 class DeltaPatcher: public QObject
 {
@@ -27,6 +28,11 @@ public:
     bool delta(const QString& oldDir, QString laterDir);
     static int latestVersion(const QString& modName, const QStringList& fileNames);
     static QStringList filterPatches(const QString& modPath, const QStringList& allPatches);
+    qint64 bytesPatched(const QString& modName) const;
+    //Returns total number of bytes in a patch when patch is being applied.
+    //Returns zero otherwise.
+    qint64 totalBytes(const QString& modName = "") const;
+    bool notPatching();
 
 signals:
     void patched(QString modPath, bool success);
@@ -40,14 +46,15 @@ private:
     static const QString SEPARATOR;
     static const QString PATCH_DIR;
 
+    qint64 bytesPatched_;
+    qint64 totalBytes_;
     QProcess* process_;
     QFileInfo* patchesFi_;
     QThread* thread_;
+    QString patchingMod_;
 
-    //void merge(const QString& oldPatchZip, const QString& newPatchPath,
-    //           const QString& newModDir) const;
     bool extract(const QString& zipPath);
-    bool createDir(const QDir& dir) const;
+    bool createEmptyDir(QDir dir) const;
     bool waitFinished(QProcess* process) const;
     bool patchExtracted(const QString& extractedPath, const QString& targetPath);
     void cleanUp(QDir& deltaDir, QDir& tmpDir);

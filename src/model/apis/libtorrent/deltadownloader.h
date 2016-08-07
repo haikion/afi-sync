@@ -40,7 +40,7 @@ private:
     QStringList patches(const QString& modName) const;
     void createFilePaths();
     QString hash(const QString& modName) const;
-    QVector<int> fileIndexes(const QString& modName) const;
+    QVector<int> patchIndexes(const QString& modName) const;
 };
 
 #endif // DELTADOWNLOADER_H

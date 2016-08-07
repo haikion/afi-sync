@@ -84,7 +84,7 @@ Column {
                 height: defaultHeight
             }
         }
-
+        //ToDo: repositories.json should do this.
         Row {
             anchors.top: alp.bottom
             anchors.topMargin: 3
@@ -198,7 +198,7 @@ Column {
     Rectangle {
         color: "transparent"
         width: parent.width
-        height: 5*defaultHeight
+        height: 6*defaultHeight
         border.width: 1
         id: bandwidthRect
 
@@ -244,6 +244,7 @@ Column {
         }
 
         BandwidthRow {
+            id: portRow
             unit: ""
             anchors.top: downloadRow.bottom
             anchors.topMargin: 3
@@ -262,6 +263,24 @@ Column {
                     SettingsModel.resetPort()
                     tf.text = SettingsModel.port()
                     fieldChanged()
+                }
+            }
+
+            Row {
+                id: deltaPatchingRow
+
+                anchors.top: portRow.bottom
+                anchors.topMargin: 3
+                spacing: 4
+                anchors.left: parent.left
+
+                CheckBox {
+                    checked: SettingsModel.deltaPatchingEnabled();
+                    onCheckedChanged: SettingsModel.setDeltaPatchingEnabled(checked);
+                }
+                Text {
+                    text: qsTr("Delta Patching")
+                    font.pixelSize: labelFont
                 }
             }
         }

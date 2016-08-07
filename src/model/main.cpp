@@ -65,8 +65,20 @@ void messageHandler(QtMsgType type, const QMessageLogContext& context, const QSt
     *Global::logStream << msg << "\n";
 }
 
+void createLogFile()
+{
+    QFile* file = new QFile(LOG_FILE);
+    file->open(QIODevice::WriteOnly | QIODevice::Append);
+    Global::logStream = new QTextStream(file);
+}
+
 int gui(int argc, char* argv[])
 {
+    #ifndef QT_DEBUG
+        createLogFile();
+        qInstallMessageHandler(messageHandler);
+    #endif
+    DBG << "\nAFISync" << Constants::VERSION_STRING << "started";
     qmlRegisterSingletonType<TreeModel>("org.AFISync", 0, 1, "TreeModel", getTreeModel);
     qmlRegisterSingletonType<SettingsModel>("org.AFISync", 0, 1, "SettingsModel", getSettingsModel);
     qmlRegisterSingletonType<ProcessMonitor>("org.AFISync", 0, 1, "ProcessMonitor", getProcessMonitor);
@@ -74,7 +86,6 @@ int gui(int argc, char* argv[])
     QApplication app(argc, argv);
     DBG << "QGuiApplication created";
     QQmlApplicationEngine engine;
-    //DBG << 3.2;
     engine.load(QUrl(QStringLiteral("qrc:/SplashScreen.qml")));
     DBG << "QML Engine loaded";
 
@@ -83,8 +94,20 @@ int gui(int argc, char* argv[])
     return rVal;
 }
 
-int cli(int argc, char* argv[], QCommandLineParser& parser)
+int cli(int argc, char* argv[])
 {
+    QCommandLineParser parser;
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addOptions({
+                          {"mirror", "Mirror all files into <directory>. Current value: " + SettingsModel::modDownloadPath()
+                           , "directory", SettingsModel::modDownloadPath()},
+                          {"port", "External Port. Current value: " + SettingsModel::port()
+                           , "port", SettingsModel::port()},
+                          {DELTA_ARGS.at(0), "Delta patch generation:  Defines path to old version", DELTA_ARGS.at(0)},
+                          {DELTA_ARGS.at(1), "Delta patch generation:  Defines path to new version", DELTA_ARGS.at(1)},
+                          {DELTA_ARGS.at(2), "Delta patch generation:  Defines path to patches directory", DELTA_ARGS.at(2)},
+                     });
     //Linux ctrl+c compatability
     CleanExit cleanExit;
     Q_UNUSED(cleanExit);
@@ -141,13 +164,6 @@ int cli(int argc, char* argv[], QCommandLineParser& parser)
     return app.exec();
 }
 
-void createLogFile()
-{
-    QFile* file = new QFile(LOG_FILE);
-    file->open(QIODevice::WriteOnly | QIODevice::Append);
-    Global::logStream = new QTextStream(file);
-}
-
 int main(int argc, char* argv[])
 {
     QCoreApplication::setOrganizationName("AFISync");
@@ -155,26 +171,9 @@ int main(int argc, char* argv[])
     QCoreApplication::setApplicationName("AFISync");
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, Constants::SETTINGS_PATH);
     QSettings::setDefaultFormat(QSettings::IniFormat);
-    QCommandLineParser parser;
-    parser.addHelpOption();
-    parser.addVersionOption();
-    parser.addOptions({
-                          {"mirror", "Mirror all files into <directory>. Current value: " + SettingsModel::modDownloadPath()
-                           , "directory", SettingsModel::modDownloadPath()},
-                          {"port", "External Port. Current value: " + SettingsModel::port()
-                           , "port", SettingsModel::port()},
-                          {DELTA_ARGS.at(0), "Delta patch generation:  Defines path to old version", DELTA_ARGS.at(0)},
-                          {DELTA_ARGS.at(1), "Delta patch generation:  Defines path to new version", DELTA_ARGS.at(1)},
-                          {DELTA_ARGS.at(2), "Delta patch generation:  Defines path to patches directory", DELTA_ARGS.at(2)},
-                     });
-    #ifndef QT_DEBUG
-        createLogFile();
-        qInstallMessageHandler(messageHandler);
-    #endif
-    DBG << "\nAFISync" << Constants::VERSION_STRING << "started";
     if (argc > 1)
     {
-        return cli(argc, argv, parser);
+        return cli(argc, argv);
     }
     return gui(argc, argv);
 }

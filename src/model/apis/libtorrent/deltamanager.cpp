@@ -18,6 +18,9 @@ DeltaManager::DeltaManager(lt::torrent_handle handle, QObject* parent):
     updateTimer_(nullptr)
 {
     connect(patcher_, SIGNAL(patched(QString, bool)), this, SLOT(handlePatched(QString, bool)));
+    updateTimer_ = new QTimer(this);
+    updateTimer_->setInterval(1000);
+    connect(updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
 }
 
 DeltaManager::~DeltaManager()
@@ -32,10 +35,13 @@ bool DeltaManager::patchAvailable(const QString& modName)
 
 void DeltaManager::update()
 {
-    for (QString modName : keyHash_.values())
+    for (QString modName : inDownload_)
     {
-        if (downloader_->patchDownloaded(modName))
+        if (patcher_->notPatching() && downloader_->patchDownloaded(modName))
+        {
+            inDownload_.remove(modName);
             patcher_->patch(SettingsModel::modDownloadPath() + "/" + modName);
+        }
     }
 }
 
@@ -50,14 +56,9 @@ bool DeltaManager::patch(const QString& modName, const QString& key)
         return false;
 
     keyHash_.insert(key, modName);
-    if (!updateTimer_)
-    {
-        DBG << "Starting updates";
-        updateTimer_ = new QTimer(this);
-        updateTimer_->setInterval(1000);
-        connect(updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
-        updateTimer_->start();
-    }
+    inDownload_.insert(modName);
+    DBG << "Starting updates";
+    QMetaObject::invokeMethod(updateTimer_, "start", Qt::BlockingQueuedConnection);
     if (downloader_->patchDownloaded(modName))
     {
         patcher_->patch(SettingsModel::modDownloadPath() + "/" + modName);
@@ -101,6 +102,21 @@ int64_t DeltaManager::totalWantedDone(const QString& key)
     }
 
     return downloader_->totalWantedDone(it.value());
+}
+
+int DeltaManager::patchingEta(const QString& key)
+{
+    static const qint64 SPEED =  600000;
+    QString modName = keyHash_.value(key);
+    //Returns extracted if being patched (more accurate)
+    qint64 totalBytes = patcher_->totalBytes(modName);
+    if (totalBytes == 0) //If downloading, return 7z size
+        totalBytes = totalWanted(key) * 1.4;
+
+    qint64 bytesPatched = patcher_->bytesPatched(modName);
+    qint64 bytesReq = totalBytes - bytesPatched;
+    DBG <<  totalBytes << bytesReq << bytesPatched;
+    return bytesReq/SPEED;
 }
 
 QStringList DeltaManager::folderKeys()

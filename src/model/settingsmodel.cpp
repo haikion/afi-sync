@@ -148,6 +148,16 @@ bool SettingsModel::battlEyeEnabled()
     return settings()->value("battlEyeEnabled", true).toBool();
 }
 
+void SettingsModel::setDeltaPatchingEnabled(bool enabled)
+{
+    settings()->setValue("deltaPatchingEnabled", enabled);
+}
+
+bool SettingsModel::deltaPatchingEnabled()
+{
+    return settings()->value("deltaPatchingEnabled", true).toBool();
+}
+
 void SettingsModel::setBattlEyeEnabled(bool enabled)
 {
     settings()->setValue("battlEyeEnabled", enabled);

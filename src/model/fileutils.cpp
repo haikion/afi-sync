@@ -57,6 +57,68 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
     return true;
 }
 
+bool FileUtils::move(const QString& srcPath, const QString& dstPath)
+{
+    QFileInfo srcFi(srcPath);
+    //Directory
+    if (srcFi.isDir())
+    {
+        QDir().mkpath(dstPath);
+        if (!QFileInfo(dstPath).exists())
+        {
+            DBG << "ERROR: Failed to create directory" << dstPath;
+            return false;
+        }
+        QDir srcDir(srcPath);
+        QStringList fileNames = srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+        for (const QString& fileName : fileNames)
+        {
+            const QString newSrcPath
+                    = srcPath + QLatin1Char('/') + fileName;
+            const QString newDstPath
+                    = dstPath + QLatin1Char('/') + fileName;
+            if (!move(newSrcPath, newDstPath))
+                return false;
+        }
+    }
+    //File
+    else if (srcFi.isFile())
+    {
+        QFile dstFile(dstPath);
+        DBG << "Moving" << srcPath << "to" << dstPath;
+        dstFile.remove();
+        if (dstFile.exists())
+        {
+            DBG << "Cannot overwrite file" << dstPath;
+            return false;
+        }
+        if (!QFile::rename(srcPath, dstPath))
+        {
+            DBG << "Failure to copy " << srcPath << "to" << dstPath;
+            return false;
+        }
+    }
+    else
+    {
+        DBG << srcPath << "does not exist";
+        return false;
+    }
+    return true;
+}
+
+qint64 FileUtils::dirSize(const QString& path)
+{
+    qint64 rVal = 0;
+    QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext())
+    {
+        rVal += it.fileInfo().size();
+        it.next();
+    }
+
+    return rVal;
+}
+
 bool FileUtils::rmCi(QString path)
 {
     path.replace("\\", "/");

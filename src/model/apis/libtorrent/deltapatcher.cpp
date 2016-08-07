@@ -7,6 +7,7 @@
 #include <QDebug>
 #include "../../fileutils.h"
 #include "../../debug.h"
+#include "../../runningtime.h"
 #include "ahasher.h"
 #include "deltapatcher.h"
 
@@ -14,8 +15,8 @@
     const QString DeltaPatcher::XDELTA_EXECUTABLE = "xdelta3";
     const QString DeltaPatcher::SZIP_EXECUTABLE = "7za";
 #else
-    const QString DeltaPatcher::XDELTA_EXECUTABLE = "bin/xdelta3.exe";
-    const QString DeltaPatcher::SZIP_EXECUTABLE = "bin/7za.exe";
+    const QString DeltaPatcher::XDELTA_EXECUTABLE = "bin\\xdelta3.exe";
+    const QString DeltaPatcher::SZIP_EXECUTABLE = "bin\\7za.exe";
 #endif
 
 //20 minutes. 7za compression may take a while
@@ -26,9 +27,11 @@ const QString DeltaPatcher::SEPARATOR = ".";
 const QString DeltaPatcher::PATCH_DIR = "delta_patch";
 
 
-DeltaPatcher::DeltaPatcher(const QString& patchesPath)
+DeltaPatcher::DeltaPatcher(const QString& patchesPath):
+    bytesPatched_(0),
+    totalBytes_(0),
+    thread_(new QThread(this))
 {
-    thread_ = new QThread(this);
     moveToThread(thread_);
     thread_->start();
     QMetaObject::invokeMethod(this, "threadConstructor", Qt::BlockingQueuedConnection,
@@ -68,6 +71,7 @@ void DeltaPatcher::patchDirSync(const QString& modPath)
     DBG << allPatches << patchesDir.absolutePath()
         << patchesFi_->absoluteFilePath() << modPath;
     QString modName = QFileInfo(modPath).fileName();
+    patchingMod_ = modName; //Needed for eta
     QStringList patches = filterPatches(modPath, allPatches);
     if (patches.size() == 0)
     {
@@ -82,10 +86,14 @@ void DeltaPatcher::patchDirSync(const QString& modPath)
         if (!patch(patchPath, modPath))
         {
             emit patched(modPath, false);
+            bytesPatched_ = 0;
+            patchingMod_ = "";
             return;
         }
     }
     emit patched(modPath, true);
+    bytesPatched_ = 0;
+    patchingMod_ = "";
 }
 
 QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringList& allPatches)
@@ -129,6 +137,56 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
     return patches;
 }
 
+qint64 DeltaPatcher::bytesPatched(const QString& modName) const
+{
+    static const qint64 INTERVAL = 60000;
+
+    static qint64 prevBytesPatched = 0;
+    static qint64 speed = 250000;
+    static qint64 increment = 0;
+    static qint64 startTime = runningTimeMs();
+    static qint64 prevTime = runningTimeMs();
+
+    if (modName.toLower() != patchingMod_.toLower())
+        return 0;
+
+    qint64 currentTime = runningTimeMs();
+    //Simulates progression, when no actual change happens
+    //because user needs continious feedback.
+    if (prevBytesPatched == bytesPatched_)
+    {
+        increment += (speed * (currentTime - prevTime))/1000;
+        prevTime = currentTime;
+        qint64 rVal =  bytesPatched_ + increment;
+        DBG << rVal;
+        return rVal;
+    }
+    //Step completed, re-estimate speed.
+    qint64 dTime = currentTime - startTime;
+    if (dTime > INTERVAL)
+    {
+        speed = (bytesPatched_ - prevBytesPatched) / dTime;
+        startTime = currentTime;
+        DBG << "New patching speed estimation:" << speed << "bytes per second.";
+    }
+    increment = 0;
+    prevBytesPatched = bytesPatched_;
+    return std::min(bytesPatched_, totalBytes_);
+}
+
+qint64 DeltaPatcher::totalBytes(const QString& modName) const
+{
+    if (patchingMod_.toLower() == modName.toLower())
+        return totalBytes_;
+
+    return 0;
+}
+
+bool DeltaPatcher::notPatching()
+{
+    return patchingMod_.size() == 0;
+}
+
 //Synchronous patch function
 bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
 {
@@ -145,10 +203,7 @@ bool DeltaPatcher::runCmd(const QString& cmd)
     DBG << "Running command:" << cmd;
 
     process_->start(cmd);
-    if (!waitFinished(process_))
-        return false;
-
-    return true;
+    return waitFinished(process_);
 }
 
 
@@ -187,9 +242,10 @@ void DeltaPatcher::cleanUp(QDir& deltaDir, QDir& tmpDir)
 bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& targetPath)
 {
     QDir deltaDir = QDir(extractedPath);
+    totalBytes_ = FileUtils::dirSize(extractedPath);
     QDir tmpDir = QDir(extractedPath + "_tmp");
 
-    if (!createDir(tmpDir))
+    if (!createEmptyDir(tmpDir))
     {
         cleanUp(deltaDir, tmpDir);
         return false;
@@ -197,7 +253,6 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
 
     DBG << "extractedPath" << extractedPath;
     QDirIterator it(extractedPath, QDir::Files, QDirIterator::Subdirectories);
-    bool pat = false; //True if something was patched
     if (!it.hasNext())
     {
         DBG << "ERROR: Nothing to patch in" << extractedPath;
@@ -216,8 +271,8 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
         QDir().mkpath(QFileInfo(patchedPath).absolutePath());
         if (!diffPath.endsWith(DELTA_EXTENSION))
         {
-            DBG << "Copying" << diffPath << "to" << patchedPath;
-            QFile::copy(diffPath, patchedPath);
+            DBG << "Moving" << diffPath << "to" << patchedPath;
+            QFile::rename(diffPath, patchedPath);
             continue;
         }
         QString targetFilePath = targetPath + relPath;
@@ -233,12 +288,12 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
             cleanUp(deltaDir, tmpDir);
             return false;
         }
-        pat = true;
+        bytesPatched_ += patchFile.size();
     }
-    FileUtils::copy(tmpDir.absolutePath(), targetPath);
+    FileUtils::move(tmpDir.absolutePath(), targetPath);
     cleanUp(deltaDir, tmpDir);
     DBG << "Delta patching succesfull!";
-    return pat;
+    return true;
 }
 
 bool DeltaPatcher::delta(const QString& oldDir, QString laterPath)
@@ -339,25 +394,26 @@ void DeltaPatcher::compress(const QString& dir, const QString& archivePath)
     //-mfb=64 number of fast bytes for LZMA = 64
     //-md=32m dictionary size = 32 megabytes
     //-ms=on solid archive = on
-    //TODO: mx->9
-    runCmd(SZIP_EXECUTABLE + " a -r -y -t7z -m0=lzma2 -mx=0 -mfb=64 -md=32m -ms=on "
+    //-mx=9 compression level
+    runCmd(SZIP_EXECUTABLE + " a -r -y -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on "
            + QDir::toNativeSeparators(dir) + " "
            + QDir::toNativeSeparators(archivePath));
 }
 
-bool DeltaPatcher::createDir(const QDir& dir) const
+//Creates clean empty directory
+bool DeltaPatcher::createEmptyDir(QDir dir) const
 {
     if (dir.exists())
     {
         DBG << "ERROR:" << dir.absolutePath() << "already exists! Deleting..";
-        //if (dir.removeRecursively())
-        //{ TODO Uncomment
-        //    DBG << "ERROR: Unable to remove directory:" << dir.absolutePath();
-        //    return false;
-        //}
+        if (dir.removeRecursively())
+        {
+            DBG << "ERROR: Unable to remove directory:" << dir.absolutePath();
+            return false;
+        }
     }
-    DBG << "Creating tmp directory:" << dir.absolutePath();
-    if (!dir.mkpath(SEPARATOR))
+    DBG << "Creating directory:" << dir.absolutePath();
+    if (!dir.mkpath("."))
     {
         DBG << "ERROR: Unable to create tmp dir:" << dir.absolutePath();
         return false;

@@ -212,6 +212,10 @@ void Repository::updateEtaAndStatus()
         setStatus(SyncStatus::DOWNLOADING);
         ready_ = false;
     }
+    else if (modStatuses.contains(SyncStatus::PATCHING))
+    {
+        setStatus(SyncStatus::PATCHING);
+    }
     else if (modStatuses.contains(SyncStatus::CHECKING))
     {
         setStatus(SyncStatus::CHECKING);
