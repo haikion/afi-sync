@@ -25,7 +25,8 @@ bool LogManager::rotateLogs()
 
     patchArchives.sort();
     DBG << patchArchives.size();
-    for (int i = 0; i < 2; ++i)
+    int max = patchArchives.size() > 2 ? 2 : 0;
+    for (int i = 0; i < max; ++i)
     {
         QString deleteThis = patchArchives.at(i);
         DBG << "Deleting old log file" << deleteThis;
