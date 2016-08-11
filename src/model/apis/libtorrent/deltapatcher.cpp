@@ -8,6 +8,7 @@
 #include "../../fileutils.h"
 #include "../../debug.h"
 #include "../../runningtime.h"
+#include "../../global.h"
 #include "ahasher.h"
 #include "deltapatcher.h"
 
@@ -28,6 +29,7 @@ const QString DeltaPatcher::PATCH_DIR = "delta_patch";
 
 
 DeltaPatcher::DeltaPatcher(const QString& patchesPath):
+    QObject(nullptr),
     bytesPatched_(0),
     totalBytes_(0),
     thread_(new QThread(this))
@@ -45,15 +47,13 @@ void DeltaPatcher::threadConstructor(const QString& patchesPath)
     process_ = new QProcess(this);
 }
 
-DeltaPatcher::~DeltaPatcher()
+void DeltaPatcher::stop()
 {
-    process_->kill();
-    thread_->quit();
-    thread_->wait(5000);
-    thread_->terminate();
-    thread_->wait(1000);
-    delete thread_;
-    delete patchesFi_;
+    if (thread_ && thread_->isRunning())
+    {
+        thread_->terminate();
+        delete thread_;
+    }
 }
 
 void DeltaPatcher::patch(const QString& modPath)
@@ -203,10 +203,8 @@ bool DeltaPatcher::runCmd(const QString& cmd)
     DBG << "Running command:" << cmd;
 
     process_->start(cmd);
-    return waitFinished(process_);
+    return process_->waitForFinished(TIMEOUT);
 }
-
-
 
 bool DeltaPatcher::waitFinished(QProcess* process) const
 {
@@ -371,7 +369,7 @@ bool DeltaPatcher::delta(const QString& oldDir, QString laterPath)
                               Q_ARG(QString, patchPath), Q_ARG(QString, deltaPath));
 
     DBG << "Deleting directory" << deltaPath;
-    deltaDir.removeRecursively(); //ToDo: uncomment
+    deltaDir.removeRecursively();
 
     return true;
 }

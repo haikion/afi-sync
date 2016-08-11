@@ -19,7 +19,6 @@ class DeltaPatcher: public QObject
 
 public:
     DeltaPatcher(const QString& patchesPath);
-    ~DeltaPatcher();
 
     //Patches dir to latest version.
     void patch(const QString& modPath);
@@ -33,6 +32,7 @@ public:
     //Returns zero otherwise.
     qint64 totalBytes(const QString& modName = "") const;
     bool notPatching();
+    void stop();
 
 signals:
     void patched(QString modPath, bool success);

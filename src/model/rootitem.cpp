@@ -61,7 +61,7 @@ RootItem::~RootItem()
     stopUpdates();
     Global::workerThread->quit();
     Global::workerThread->wait(3000);
-    DBG << "Shutdown2";
+    DBG << "Shutdown";
     sync_->shutdown();
     DBG << "Shutdown done";
     //Causes chrashes if BtSync connection is unestablished.

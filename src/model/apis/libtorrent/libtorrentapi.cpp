@@ -459,9 +459,10 @@ void LibTorrentApi::shutdown()
     {
         saveTorrentFile(handle);
     }
-    if (deltaManager_ && deltaManager_->handle().is_valid())
+    if (deltaManager_)
     {
         saveTorrentFile(deltaManager_->handle());
+        delete deltaManager_;
         DBG << "Delta Download torrent saved.";
     }
     generateResumeData();
@@ -801,7 +802,7 @@ bool LibTorrentApi::saveTorrentFile(const lt::torrent_handle& handle) const
     QString torrentFilePath = filePrefix + ".torrent";
     QString urlFilePath = filePrefix + ".link";
     QByteArray url = keyHash_.key(handle).toLocal8Bit();
-    if (deltaManager_ && deltaManager_->handle() == handle)
+    if (deltaManager_  && deltaManager_->handle() == handle)
         url = deltaUpdatesKey_.toLocal8Bit();
 
     return writeFile(torrentBytes, torrentFilePath) && writeFile(url, urlFilePath);

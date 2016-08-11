@@ -25,7 +25,24 @@ DeltaManager::DeltaManager(lt::torrent_handle handle, QObject* parent):
 
 DeltaManager::~DeltaManager()
 {
-    delete patcher_; //Cannot be automanaged due to threads
+    //Cannot be automanaged due to threads
+    //delete causes segfault. Simple stop will suffice as this is run on
+    //program shutdown anyway.
+    patcher_->stop();
+    //Remove tmp dirs if patching was interrupted
+    QDirIterator it(QString::fromStdString(handle_.status().save_path) + "/" + Constants::DELTA_PATCHES_NAME,
+                    QDir::Dirs | QDir::NoDotAndDotDot);
+    while (it.hasNext())
+    {
+        QString path = it.next();
+        QDir dir(path);
+        for (int a = 0; a < 15 && !dir.removeRecursively(); ++a)
+        {
+            QThread::sleep(1);
+            DBG << "Failure to delete" << path << ". Retrying...";
+        }
+        DBG << (dir.exists() ? "Failure to delete " + path : path + " deleted.");
+    }
 }
 
 bool DeltaManager::patchAvailable(const QString& modName)
@@ -35,12 +52,13 @@ bool DeltaManager::patchAvailable(const QString& modName)
 
 void DeltaManager::update()
 {
-    for (QString modName : inDownload_)
+    QSet<QString> inDownload = inDownload_; //Prevents crash because loop edits itself.
+    for (const QString& modName : inDownload)
     {
         if (patcher_->notPatching() && downloader_->patchDownloaded(modName))
         {
-            inDownload_.remove(modName);
             patcher_->patch(SettingsModel::modDownloadPath() + "/" + modName);
+            inDownload_.remove(modName);
         }
     }
 }
