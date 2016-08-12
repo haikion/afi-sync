@@ -51,6 +51,7 @@ void DeltaPatcher::stop()
 {
     if (thread_ && thread_->isRunning())
     {
+        process_->kill();
         thread_->terminate();
         delete thread_;
     }

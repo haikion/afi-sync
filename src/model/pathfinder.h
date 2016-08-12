@@ -14,6 +14,7 @@ public:
 private:
     //static const QString DEFAULT_PATH;
     static QString readRegPath(const QString& path, const QString& key);
+    static void checkPath(const QString& path, const QString& name);
 };
 
 #endif // PATHFINDER_H

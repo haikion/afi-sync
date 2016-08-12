@@ -19,7 +19,7 @@ QString PathFinder::arma3Path()
         QSettings settings2("HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410", QSettings::NativeFormat);
         path = settings2.value( "InstallLocation", QCoreApplication::applicationDirPath()).toString();
     }
-    //QDir dir(path);
+    checkPath(path, "arma 3");
     return QDir::toNativeSeparators(path);
 }
 
@@ -37,6 +37,7 @@ QString PathFinder::teamspeak3Path()
         path.replace("\\ts3client_win64.exe", "");
         path.remove("\"");
     }
+    checkPath(path, "TeamSpeak 3");
     return QDir::toNativeSeparators(path);
 }
 
@@ -47,6 +48,7 @@ QString PathFinder::steamPath()
     {
         path = readRegPath("HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam", "InstallLocation");
     }
+    checkPath(path, "Steam");
     return path;
 }
 
@@ -60,5 +62,17 @@ QString PathFinder::readRegPath(const QString& path, const QString& key)
 QString PathFinder::arma3MyDocuments()
 {
     QString path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/Arma 3";
+    checkPath(path, "My Documents\Arma3");
     return QDir::toNativeSeparators(path);
+}
+
+//Prints error if path is default which means it wasn't found from regs.
+void PathFinder::checkPath(const QString& path, const QString& name)
+{
+    if (path == QCoreApplication::applicationDirPath()
+            && !Global::guiless)
+    {
+        DBG << "ERROR: Unable to find path for" << name << "."
+            << "Using default:" << path;
+    }
 }
