@@ -62,7 +62,7 @@ QString PathFinder::readRegPath(const QString& path, const QString& key)
 QString PathFinder::arma3MyDocuments()
 {
     QString path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/Arma 3";
-    checkPath(path, "My Documents\Arma3");
+    checkPath(path, "My Documents\\Arma3");
     return QDir::toNativeSeparators(path);
 }
 
