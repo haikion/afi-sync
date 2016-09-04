@@ -66,14 +66,17 @@ bool LibTorrentApi::createSession()
     settings.set_bool(lt::settings_pack::enable_outgoing_tcp, true);
     settings.set_bool(lt::settings_pack::enable_incoming_utp, false);
     settings.set_bool(lt::settings_pack::enable_outgoing_utp, false);
-    //Disable DHT
-    settings.set_bool(lt::settings_pack::enable_dht, false);
+    //Increase number of connections
+    settings.set_int(lt::settings_pack::connections_limit, 500);
 
     //Change user agent
     std::string userAgent = "AFISync";
     if (Global::guiless)
     {
         userAgent = "AFISync_Mirror";
+        //Try to maximize upload speed
+        settings.set_int(lt::settings_pack::connections_limit, 1000);
+        settings.set_int(lt::settings_pack::seed_choking_algorithm, lt::settings_pack::fastest_upload);
     }
     settings.set_str(lt::settings_pack::user_agent, userAgent + "/" + Constants::VERSION_STRING.toStdString());
     //Load port setting
