@@ -166,24 +166,26 @@ void Repository::generalLaunch(const QStringList& extraParams)
 
 QString Repository::createParFile(const QString& parameters)
 {
-    QString fileName = "afiSyncParameters.txt";
-    QString path = SettingsModel::arma3Path() + "/" + fileName;
+    static const QString FILE_NAME = "afiSyncParameters.txt";
+
+    QString path = SettingsModel::arma3Path() + "/" + FILE_NAME;
     DBG << path;
     QFile file(path);
     file.remove();
     file.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream fileStream(&file);
+    fileStream.setCodec("UTF-8");
     fileStream << parameters;
     file.close();
-    return fileName;
+    return FILE_NAME;
 }
 
 void Repository::updateEtaAndStatus()
 {
-    //Eta = max(active_folders) + sum(queued_folders)
     int maxEta = 0;
     int sumEta = 0;
     QSet<QString> modStatuses;
+
     for (Mod* item : mods())
     {
         if (item->status() == SyncStatus::QUEUED)
