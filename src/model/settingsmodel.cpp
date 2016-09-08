@@ -105,9 +105,6 @@ void SettingsModel::setMaxDownloadEnabled(bool value)
 {
     if (!value)
         Global::sync->setMaxDownload(0); //Disable limit
-
-    return settings()->setValue("maxDownloadEnabled", value);
-
 }
 
 bool SettingsModel::maxDownloadEnabled()
@@ -163,9 +160,8 @@ void SettingsModel::setMaxUpload(const QString& value)
 {
     DBG;
     if (Global::sync == nullptr)
-    {
         return;
-    }
+
     Global::sync->setMaxUpload(value.toInt());
     settings()->setValue("maxUpload", value);
 }

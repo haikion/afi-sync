@@ -3,6 +3,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
 import org.AFISync 0.1
+import "." //Enable Global.qml
 
 Item {
     id: afiSyncWindow
@@ -33,8 +34,16 @@ Item {
         onTriggered: {
             downloadStr = TreeModel.getDownload()
             uploadStr = TreeModel.getUpload()
-            if (parseInt(downloadStr) > 0 && ProcessMonitor.arma3Running())
+            if (Global.armaStarted) {
+                //ArmA 3 was started by AFISync.
+                if (!ProcessMonitor.arma3Running())
+                    Global.armaStarted = false
+            }
+            else if (parseInt(downloadStr) > 0 && ProcessMonitor.arma3Running()) {
+                //ArmA 3 was not started by AFISync. Uncertain if mods being downloaded
+                //are in use.
                 arma3RunningDlg.visible = true
+            }
         }
     }
 

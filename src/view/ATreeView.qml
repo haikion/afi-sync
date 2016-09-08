@@ -4,6 +4,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 import org.AFISync 0.1
+import "." //Enables Global.qml
 
 TreeView {
     property string defaultColor: "LightGrey"
@@ -107,7 +108,10 @@ TreeView {
         id: startButtonDelegate
         TreeViewButton {
             text: "Start Game"
-            onClicked: TreeModel.launch(styleData.index)
+            onClicked: {
+                Global.armaStarted = true
+                TreeModel.launch(styleData.index)
+            }
             color: defaultColor
         }
     }
@@ -125,7 +129,10 @@ TreeView {
         id: joinButtonDelegate
         TreeViewButton {
             text: "Join Server"
-            onClicked: TreeModel.join(styleData.index)
+            onClicked: {
+                Global.armaStarted = true
+                TreeModel.join(styleData.index)
+            }
             color: defaultColor
         }
     }

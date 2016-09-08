@@ -3,4 +3,5 @@ import QtQuick 2.0
 
 QtObject  {
     property bool buttonsEnabled: false
+    property bool armaStarted: true
 }

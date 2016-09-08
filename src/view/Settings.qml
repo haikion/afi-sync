@@ -208,7 +208,6 @@ Column {
             onFieldChanged: {
                 console.log("upload set: " + getFieldText())
                 SettingsModel.setMaxUpload(getFieldText())
-                SettingsModel.setMaxUploadEnabled(checked)
             }
         }
 
@@ -225,7 +224,6 @@ Column {
             onFieldChanged: {
                 console.log("Download set: " + getFieldText())
                 SettingsModel.setMaxDownload(getFieldText())
-                SettingsModel.setMaxDownloadEnabled(checked)
             }
         }
 
