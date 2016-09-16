@@ -74,9 +74,7 @@ bool LibTorrentApi::createSession()
     if (Global::guiless)
     {
         userAgent = "AFISync_Mirror";
-        //Try to maximize upload speed
-        settings.set_int(lt::settings_pack::connections_limit, 1000);
-        settings.set_int(lt::settings_pack::seed_choking_algorithm, lt::settings_pack::fastest_upload);
+        lt::high_performance_seed(settings);
     }
     settings.set_str(lt::settings_pack::user_agent, userAgent + "/" + Constants::VERSION_STRING.toStdString());
     //Load port setting
