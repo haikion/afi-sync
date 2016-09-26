@@ -12,7 +12,6 @@ public:
     Console(QObject* parent = nullptr);
     ~Console();
 
-    bool runCmdAsync(const QString& cmd);
     bool runCmd(const QString& cmd);
 
 private:

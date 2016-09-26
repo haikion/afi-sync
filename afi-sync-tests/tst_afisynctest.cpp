@@ -18,6 +18,7 @@
 #include "../src/model/apis/libtorrent/deltadownloader.h"
 #include "../src/model/apis/libtorrent/deltapatcher.h"
 #include "../src/model/apis/libtorrent/deltamanager.h"
+#include "../src/model/console.h"
 
 //Delta patching consts
 static const QString FILES_PATH = "files";
@@ -89,6 +90,9 @@ private Q_SLOTS:
     void copyDeep();
     void noSuchDir();
     void copyDeepOverwrite();
+
+    //Console
+    void simpleCmd();
 
 private:
     LibTorrentApi* sync_;
@@ -595,6 +599,12 @@ void AfiSyncTest::noSuchDir()
     QVERIFY(!QFileInfo(DST_PATH).exists());
 }
 
+void AfiSyncTest::simpleCmd()
+{
+    Console* cmd = new Console();
+    QVERIFY(!cmd->runCmd("cd \"no such dir\""));
+    delete cmd;
+}
 
 QTEST_MAIN(AfiSyncTest)
 

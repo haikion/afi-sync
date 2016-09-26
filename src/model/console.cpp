@@ -17,7 +17,7 @@ Console::~Console()
 
 bool Console::runCmd(const QString& cmd)
 {
-    DBG << "Running command:" << cmd;
+    DBG << "Running command:" << cmd.toStdString().c_str();
 
     process_->start(cmd);
 

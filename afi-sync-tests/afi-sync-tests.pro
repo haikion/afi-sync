@@ -48,7 +48,8 @@ SOURCES += tst_afisynctest.cpp \
     ../src/model/apis/libtorrent/deltadownloader.cpp \
     ../src/model/apis/libtorrent/deltamanager.cpp \
     ../src/model/apis/libtorrent/deltapatcher.cpp \
-    ../src/model/fileutils.cpp
+    ../src/model/fileutils.cpp \
+    ../src/model/console.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \
@@ -77,4 +78,5 @@ HEADERS += \
     ../src/model/apis/libtorrent/deltadownloader.h \
     ../src/model/apis/libtorrent/deltamanager.h \
     ../src/model/apis/libtorrent/deltapatcher.h \
-    ../src/model/fileutils.h
+    ../src/model/fileutils.h \
+    ../src/model/console.h
