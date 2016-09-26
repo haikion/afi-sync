@@ -133,7 +133,8 @@ int DeltaManager::patchingEta(const QString& key)
 
     qint64 bytesPatched = patcher_->bytesPatched(modName);
     qint64 bytesReq = totalBytes - bytesPatched;
-    DBG <<  totalBytes << bytesReq << bytesPatched;
+    DBG << modName << "total =" << totalBytes << "reg =" << bytesReq
+        << "patched =" << bytesPatched;
     return bytesReq/SPEED;
 }
 
