@@ -83,7 +83,6 @@ bool DeltaManager::patch(const QString& modName, const QString& key)
         return true;
     }
     downloader_->downloadPatch(modName);
-    DBG << handle_.status().save_path.c_str();
     return true;
     //Patch will be recalled once download is completed.
 }

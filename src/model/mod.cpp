@@ -71,6 +71,28 @@ void Mod::update()
     }
 }
 
+//Removes mod which has same name but different key.
+void Mod::removeConflicting() const
+{
+    for (const QString& syncKey : sync_->folderKeys())
+    {
+        QString syncPath = sync_->folderPath(syncKey);
+
+        if (path().toLower() == syncPath.toLower() && syncKey.toLower() != key_.toLower())
+        {
+            //Downloading into same folder but the key is different!
+            DBG << "Removing conflicting (" << syncKey << "," << syncPath << ") for (" << key_ << "," << path() << ").";
+            sync_->removeFolder(syncKey);
+            return;
+        }
+    }
+}
+
+QString Mod::path() const
+{
+    return QDir::fromNativeSeparators(SettingsModel::modDownloadPath() + "/" + name());
+}
+
 //Starts sync directory. If directory does not exist
 //folder will be created. If path is incorrect
 //folder will be re-created correctly.
@@ -83,18 +105,19 @@ void Mod::start()
 
     if (!sync_->folderExists(key_))
     {
+        removeConflicting();
         //Add folder
         DBG << "Adding" << name() << "to sync.";
         sync_->addFolder(key_, dir, name());
     }
 
     //Sanity checks
-    QString syncPath = QDir::toNativeSeparators(sync_->folderPath(key_));
+    QString syncPath = sync_->folderPath(key_);
     QString error = sync_->folderError(key_);
-    if (syncPath.toUpper() != dir.toUpper() || error != "")
+    if (syncPath.toUpper() != path().toUpper() || error != "")
     {
         DBG << "name =" << name() << "Re-adding directory. syncPath ="
-            << syncPath << "dir =" << dir
+            << syncPath << "path() =" << path()
             << "error =" << error;
         //Disagreement between Sync and AfiSync
         sync_->removeFolder(key_);

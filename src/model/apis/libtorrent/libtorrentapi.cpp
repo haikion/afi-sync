@@ -449,8 +449,8 @@ QString LibTorrentApi::folderPath(const QString& key)
     if (!handle.is_valid())
         return "";
 
-    lt::torrent_status status = handle.status(lt::torrent_handle::query_save_path);
-    QString rVal = QString::fromStdString(status.save_path);
+    lt::torrent_status status = handle.status();
+    QString rVal = QDir::fromNativeSeparators(QString::fromStdString(status.save_path)) + "/" + QString::fromStdString(status.name);
     DBG << "key =" << key << "rVal =" << rVal;
     return rVal;
 }

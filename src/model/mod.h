@@ -60,6 +60,8 @@ private:
     bool reposInactive() const;
     void start();
     bool stop();
+    void removeConflicting() const;
+    QString path() const;
 
 private slots:
     void update();
