@@ -55,7 +55,7 @@ void DeltaDownloader::createFilePaths()
         QString name = QString::fromStdString(fileStorage_.file_name(i));
         QString pathQ = QDir::fromNativeSeparators(name);
         DBG << "Appending" << pathQ;
-        filePaths_.append(pathQ);
+        patches_.append(pathQ);
     }
 }
 
@@ -117,12 +117,13 @@ boost::int64_t DeltaDownloader::totalWantedDone(const QString& modName) const
     std::vector<boost::int64_t> progresses;
     handle_.file_progress(progresses, lt::torrent_handle::piece_granularity);
 
+    QVector<int> filePriorities;
     for (int i : patchIndexes(modName))
     {
-        lt::torrent_status status = handle_.status();
-        DBG << progresses.at(i) << handle_.file_priority(i);
+        filePriorities.push_back(handle_.file_priorities().at(i));
         downloaded += progresses.at(i);
     }
+    DBG << "Downloaded" << downloaded << "bytes for" << modName << "patches.";
     return downloaded;
 }
 
@@ -145,21 +146,25 @@ QVector<int> DeltaDownloader::patchIndexes(const QString& modName) const
 
     //No cache found. Build one.
     QVector<int> indexes;
-    QStringList patchPaths = patches(modName);
-    for (int i = 0; i < filePaths_.size(); ++i)
+    QStringList modPatches = patches(modName);
+    for (QString patchName : modPatches)
     {
-        //Filter patch indexes
-        if (patchPaths.contains(filePaths_.at(i)))
-            indexes.append(i);
-
+        int i = patches_.indexOf(patchName);
+        if (i == -1) //Fail safe
+        {
+            DBG << "ERROR: Index == -1 for" << patchName;
+            continue;
+        }
+        indexes.append(i);
     }
+    DBG << "Returning" << indexes << "modPatches =" << modPatches;
     return indexes;
 }
 
 QStringList DeltaDownloader::patches(const QString& modName) const
 {
     return DeltaPatcher::filterPatches(
-                SettingsModel::modDownloadPath() + "/" + modName, filePaths_);
+                SettingsModel::modDownloadPath() + "/" + modName, patches_);
 }
 
 QString DeltaDownloader::hash(const QString& modName) const

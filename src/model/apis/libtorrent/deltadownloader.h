@@ -34,7 +34,7 @@ public:
 private:
     libtorrent::torrent_handle handle_;
     libtorrent::file_storage fileStorage_;
-    QStringList filePaths_;
+    QStringList patches_;
     QHash<QString, QVector<int>> fileIndexCache_;
 
     QStringList patches(const QString& modName) const;
