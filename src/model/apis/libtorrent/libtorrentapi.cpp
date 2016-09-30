@@ -450,7 +450,15 @@ QString LibTorrentApi::folderPath(const QString& key)
         return "";
 
     lt::torrent_status status = handle.status();
-    QString rVal = QDir::fromNativeSeparators(QString::fromStdString(status.save_path)) + "/" + QString::fromStdString(status.name);
+    QString rVal = QDir::fromNativeSeparators(QString::fromStdString(status.save_path)) + "/";
+    if (deltaManager_ && deltaManager_->contains(key))
+    {
+        rVal += deltaManager_->name(key);
+    }
+    else
+    {
+        rVal += QString::fromStdString(status.name);
+    }
     DBG << "key =" << key << "rVal =" << rVal;
     return rVal;
 }

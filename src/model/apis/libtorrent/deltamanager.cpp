@@ -92,6 +92,11 @@ bool DeltaManager::contains(const QString& key)
     return keyHash_.contains(key);
 }
 
+QString DeltaManager::name(const QString& key)
+{
+    return keyHash_.value(key, "");
+}
+
 libtorrent::torrent_handle DeltaManager::handle() const
 {
     return handle_;

@@ -32,6 +32,8 @@ public:
     int patchingEta(const QString& key);
     QStringList folderKeys();
     CiHash<QString> keyHash() const;
+    //Helper function to get a mod name.
+    QString name(const QString& key);
 
 signals:
     void patched(QString key, QString modName, bool success);
