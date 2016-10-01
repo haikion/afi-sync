@@ -239,11 +239,11 @@ QString Repository::modsParameter() const
         return "";
     }
     QString rVal = "-mod=";
-    for (const Mod* mod : mods())
+    for (const ModAdapter* modAdapter : modAdapters())
     {
-        if (mod->ticked())
+        if (modAdapter->ticked())
         {
-            QDir modDir(SettingsModel::modDownloadPath() + "/" + mod->name());
+            QDir modDir(SettingsModel::modDownloadPath() + "/" + modAdapter->name());
             rVal += modDir.absolutePath() + ";";
         }
     }

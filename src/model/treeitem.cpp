@@ -73,3 +73,10 @@ int TreeItem::row() const
 
     return rVal;
 }
+
+QVariant TreeItem::data(int column) const
+{
+    //TODO: Figure out why this is called.
+    DBG << "column =" << column << "name =" << name_;
+    return QVariant();
+}

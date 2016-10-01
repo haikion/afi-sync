@@ -24,7 +24,11 @@ ModAdapter::~ModAdapter()
 
 QString ModAdapter::checkText()
 {
-    return mod_->checkText();
+    if (!isOptional())
+        return "disabled";
+
+    QString rVal = ticked() ? "true" : "false";
+    return rVal;
 }
 
 QString ModAdapter::startText()

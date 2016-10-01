@@ -171,13 +171,13 @@ void TreeModel::updateView(TreeItem* item, int row)
 
 QVariant TreeModel::data(const QModelIndex& index, int role = Qt::DisplayRole) const
 {
-   //DBG << "role = " << role;
    SyncItem* item = static_cast<SyncItem*>(index.internalPointer());
 
    if (!index.isValid() && item == nullptr)
         return QVariant();
 
     switch (role) {
+        case Qt::DisplayRole: return item->data(index.column());
         case Check: return item->checkText();
         case Name: return item->nameText();
         case Status: return item->statusText();
@@ -185,7 +185,7 @@ QVariant TreeModel::data(const QModelIndex& index, int role = Qt::DisplayRole) c
         case Start: return item->startText();
         case Join: return item->joinText();
     }
-    Q_ASSERT(false);
+    Q_ASSERT_X(false, "TreeModel::data","Incorrect role = " + QString::number(role).toLatin1());
     return QVariant();
 }
 

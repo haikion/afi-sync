@@ -19,6 +19,7 @@ public:
     int childCount() const;
     int columnCount() const;
     int row() const;
+    QVariant data(int column) const;
     TreeItem* parentItem();
     void setParentItem(TreeItem* parentItem);
     QList<TreeItem*> childItems() const;
