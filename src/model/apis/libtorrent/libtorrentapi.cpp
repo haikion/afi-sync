@@ -948,8 +948,11 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         QString name = QString::fromStdString(params.ti->name());
         if (name == Constants::DELTA_PATCHES_NAME)
         {
-            DBG << "Loading delta patches torrent.";
-            createDeltaManager(handle, url);
+            if (SettingsModel::deltaPatchingEnabled())
+            {
+                DBG << "Loading delta patches torrent.";
+                createDeltaManager(handle, url);
+            }
         }
         else
         {

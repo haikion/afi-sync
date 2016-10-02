@@ -12,6 +12,7 @@
 #include "jsonreader.h"
 #include "debug.h"
 #include "modadapter.h"
+#include "settingsmodel.h"
 
 const QString JsonReader::FILE_PATH = "settings/repositories.json";
 const QString JsonReader::DOWNLOADED_PATH = FILE_PATH + "_new";
@@ -42,7 +43,8 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
     }
     //Delta update
     QString newDeltaUpdateUrl = jsonMap_.value("deltaUpdates").toString();
-    if (newDeltaUpdateUrl.size() != 0 && root->deltaUpdatesKey() != newDeltaUpdateUrl)
+    if (SettingsModel::deltaPatchingEnabled()
+            && newDeltaUpdateUrl.size() != 0 && root->deltaUpdatesKey() != newDeltaUpdateUrl)
     {
         DBG << "Updating delta update url";
         root->setDeltaUpdatesKey(newDeltaUpdateUrl);
