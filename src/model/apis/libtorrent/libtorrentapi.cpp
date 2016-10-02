@@ -68,8 +68,7 @@ bool LibTorrentApi::createSession()
     settings.set_bool(lt::settings_pack::enable_outgoing_tcp, true);
     settings.set_bool(lt::settings_pack::enable_incoming_utp, false);
     settings.set_bool(lt::settings_pack::enable_outgoing_utp, false);
-    //Increase number of connections
-    settings.set_int(lt::settings_pack::connections_limit, 500);
+    //Attempt to fix the issue in which only one peer is propelly connected.
     settings.set_int(lt::settings_pack::unchoke_slots_limit, 100);
 
     //Change user agent
