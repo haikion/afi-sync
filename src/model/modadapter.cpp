@@ -54,7 +54,7 @@ void ModAdapter::checkboxClicked()
 
 bool ModAdapter::ticked() const
 {
-    if (!mod_->isOptional())
+    if (!isOptional_)
         return true;
 
     return settings()->value(tickedKey_, false).toBool();

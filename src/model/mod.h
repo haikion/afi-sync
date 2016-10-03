@@ -25,7 +25,6 @@ public:
     //void handleDirError(BtsFolderActivity folder);
     void appendRepository(Repository* repository);
     virtual void checkboxClicked();
-    virtual QString checkText();
     virtual QString startText();
     virtual QString joinText();
     QSet<Repository*> repositories() const;
@@ -38,7 +37,6 @@ public:
     void stopUpdates();
     void startUpdates();
     void updateStatus();
-    bool isOptional() const;
 
 public slots:
     void repositoryChanged(bool offline = false);
@@ -62,6 +60,7 @@ private:
     bool stop();
     void removeConflicting() const;
     QString path() const;
+    bool isOptional() const;
 
 private slots:
     void update();

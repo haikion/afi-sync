@@ -199,15 +199,6 @@ bool Mod::ticked() const
     return false;
 }
 
-QString Mod::checkText()
-{
-    if (!isOptional())
-    {
-        return "disabled";
-    }
-    return SyncItem::checkText();
-}
-
 QString Mod::startText()
 {
     return "hidden";
