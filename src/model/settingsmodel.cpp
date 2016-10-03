@@ -178,7 +178,7 @@ void SettingsModel::setDeltaPatchingEnabled(bool enabled)
 
 bool SettingsModel::deltaPatchingEnabled()
 {
-    return settings()->value("deltaPatchingEnabled", true).toBool();
+    return settings()->value("deltaPatchingEnabled", false).toBool();
 }
 
 void SettingsModel::setBattlEyeEnabled(bool enabled)
