@@ -5,6 +5,11 @@
 #include <QDirIterator>
 #include "debug.h"
 #include "fileutils.h"
+#include "settingsmodel.h"
+
+//Fail safe variable. Only allow editing files if they are contained in this folder.
+//TODO: Use collection of savePrefixes.
+QString FileUtils::savePrefix_ = "///"; //Prevent editing until this is set.
 
 //https://qt.gitorious.org/qt-creator/qt-creator/source/1a37da73abb60ad06b7e33983ca51b266be5910e:src/app/main.cpp#L13-189
 // taken from utils/fileutils.cpp. We can not use utils here since that depends app_version.h.
@@ -37,7 +42,7 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
     {
         QFile dstFile(dstPath);
         DBG << "Copying" << srcPath << "to" << dstPath;
-        dstFile.remove();
+        dstFile.remove(); //Cannot be safe due to installer.
         if (dstFile.exists())
         {
             DBG << "Cannot overwrite file" << dstPath;
@@ -86,13 +91,13 @@ bool FileUtils::move(const QString& srcPath, const QString& dstPath)
     {
         QFile dstFile(dstPath);
         DBG << "Moving" << srcPath << "to" << dstPath;
-        dstFile.remove();
+        FileUtils::safeRemove(dstFile);
         if (dstFile.exists())
         {
             DBG << "Cannot overwrite file" << dstPath;
             return false;
         }
-        if (!QFile::rename(srcPath, dstPath))
+        if (!safeRename(srcPath, dstPath))
         {
             DBG << "Failure to copy " << srcPath << "to" << dstPath;
             return false;
@@ -119,12 +124,18 @@ qint64 FileUtils::dirSize(const QString& path)
     return rVal;
 }
 
+void FileUtils::setSavePrefix(const QString& value)
+{
+    savePrefix_ = value.toUpper();
+}
+
 bool FileUtils::rmCi(QString path)
 {
     path.replace("\\", "/");
     if (!path.startsWith("/"))
     {
         DBG << "ERROR: Only absolute paths are supported";
+        return false;
     }
     //Construct case sentive path by comparing dirs in case insentive mode.
     QStringList dirNames = path.split("/");
@@ -145,5 +156,48 @@ bool FileUtils::rmCi(QString path)
         }
     }
     casedPath.replace("//", "/");
-    return QFile(casedPath).remove();
+    return safeRemove(QFile(casedPath));
+}
+
+//Failsafe functions. These assure that the file being handeled is in mods directory.
+//Prevents nasty programming errors from deleting important files from users PC.
+
+bool FileUtils::safeRename(const QString& srcPath, const QString& dstPath)
+{
+    if (!pathIsSave(srcPath))
+        return false;
+
+    DBG << "Fake rename" << srcPath << "to"  << dstPath;
+    return true;
+}
+
+bool FileUtils::safeRemove(const QFile& file)
+{
+    QString path = QFileInfo(file).absoluteFilePath();
+    if (!pathIsSave(path))
+        return false;
+
+    DBG << "Removing" << path;
+    return true;//file.remove();
+}
+
+bool FileUtils::safeRemoveRecursively(const QDir& dir)
+{
+    QString path = dir.absolutePath();
+    if (!pathIsSave(path))
+        return false;
+
+    DBG << "Removing" << path;
+    return true;//dir.removeRecursively();
+}
+
+bool FileUtils::pathIsSave(const QString& path)
+{
+    QString pathUpper = path.toUpper();
+    //Shortest possible save path: C:/d/f (6 characters)
+    if (savePrefix_.length() >= 6 && pathUpper.startsWith(savePrefix_))
+        return true;
+
+    DBG << "ERROR: " << pathUpper << "not in save prefix" << savePrefix_ << ". Remove aborted!";
+    return true;
 }

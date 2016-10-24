@@ -36,7 +36,7 @@ DeltaManager::~DeltaManager()
     {
         QString path = it.next();
         QDir dir(path);
-        for (int a = 0; a < 15 && !dir.removeRecursively(); ++a)
+        for (int a = 0; a < 15 && !FileUtils::safeRemoveRecursively(dir); ++a)
         {
             QThread::sleep(1);
             DBG << "Failure to delete" << path << ". Retrying...";

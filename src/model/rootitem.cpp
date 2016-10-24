@@ -192,11 +192,11 @@ void RootItem::resetSyncSettings()
         dir.removeRecursively();
         //It's rape time.
         DBG << "Warning: Failure to delete Sync Storage... retrying path ="
-            << dir.currentPath() << "attempts =" << attempts;
+            << dir.absolutePath() << "attempts =" << attempts;
         QThread::sleep(1);
         ++attempts;
     }
-    DBG << "Sync storage deleted. path =" << dir.currentPath();
+    DBG << "Sync storage deleted. path =" << dir.absolutePath();
     dir.mkpath(".");
     sync_->start();
 }

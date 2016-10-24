@@ -3,6 +3,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QEventLoop>
 #include <QDirIterator>
+#include "fileutils.h"
 #include "global.h"
 #include "settingsmodel.h"
 #include "mod.h"
@@ -180,7 +181,7 @@ void Mod::deleteExtraFiles()
     for (QString file : extraFiles)
     {
         DBG << "Deleting extra file" << file << "from mod" << name();
-        QFile(file).remove();
+        FileUtils::safeRemove(QFile(file));
     }
     DBG << "Completed name =" << name();
 }

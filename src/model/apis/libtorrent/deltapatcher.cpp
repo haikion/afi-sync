@@ -233,9 +233,10 @@ bool DeltaPatcher::waitFinished(QProcess* process) const
 void DeltaPatcher::cleanUp(QDir& deltaDir, QDir& tmpDir)
 {
     DBG << "Deleting dir" << deltaDir.absolutePath();
+    FileUtils::safeRemoveRecursively(deltaDir);
     deltaDir.removeRecursively();
     DBG << "Deleting dir" << tmpDir.absolutePath();
-    tmpDir.removeRecursively();
+    FileUtils::safeRemoveRecursively(tmpDir);
 }
 
 bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& targetPath)
@@ -405,7 +406,7 @@ bool DeltaPatcher::createEmptyDir(QDir dir) const
     if (dir.exists())
     {
         DBG << "ERROR:" << dir.absolutePath() << "already exists! Deleting..";
-        if (dir.removeRecursively())
+        if (!FileUtils::safeRemoveRecursively(dir))
         {
             DBG << "ERROR: Unable to remove directory:" << dir.absolutePath();
             return false;

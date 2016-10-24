@@ -15,6 +15,7 @@
 #include "debug.h"
 #include "processmonitor.h"
 #include "logmanager.h"
+#include "fileutils.h"
 
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
 
@@ -172,6 +173,7 @@ int main(int argc, char* argv[])
     QCoreApplication::setApplicationName("AFISync");
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, Constants::SETTINGS_PATH);
     QSettings::setDefaultFormat(QSettings::IniFormat);
+    FileUtils::setSavePrefix(QFileInfo(SettingsModel::modDownloadPath()).absoluteFilePath());
     if (argc > 1)
     {
         return cli(argc, argv);

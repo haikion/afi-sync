@@ -10,8 +10,17 @@ public:
     static bool copy(const QString& srcPath, const QString& dstPath);
     static bool move(const QString& srcPath, const QString& dstPath);
     static qint64 dirSize(const QString& path);
+    static void setSavePrefix(const QString& value);
     //Case insensitive removal
     static bool rmCi(QString path);
+    static bool safeRemove(const QFile& file);
+    static bool safeRemoveRecursively(const QDir& dir);
+    static bool safeRename(const QString& srcPath, const QString& dstPath);
+
+private:
+    static QString savePrefix_;
+
+    static bool pathIsSave(const QString& path);
 };
 
 #endif // FILEUTILS_H
