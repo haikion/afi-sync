@@ -137,6 +137,7 @@ bool FileUtils::rmCi(QString path)
         DBG << "ERROR: Only absolute paths are supported";
         return false;
     }
+    //FIXME: Does not work.
     //Construct case sentive path by comparing dirs in case insentive mode.
     QStringList dirNames = path.split("/");
     dirNames.removeFirst();
