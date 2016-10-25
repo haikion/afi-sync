@@ -234,7 +234,6 @@ void DeltaPatcher::cleanUp(QDir& deltaDir, QDir& tmpDir)
 {
     DBG << "Deleting dir" << deltaDir.absolutePath();
     FileUtils::safeRemoveRecursively(deltaDir);
-    deltaDir.removeRecursively();
     DBG << "Deleting dir" << tmpDir.absolutePath();
     FileUtils::safeRemoveRecursively(tmpDir);
 }
@@ -334,7 +333,7 @@ bool DeltaPatcher::delta(const QString& oldDir, QString laterPath)
     if (deltaDir.exists())
     {
         DBG << "ERROR: Directory" << deltaPath << "already exists. Deleting...";
-        deltaDir.removeRecursively();
+        FileUtils::safeRemoveRecursively(deltaDir);
     }
 
     QDir().mkpath(deltaPath);
@@ -371,7 +370,7 @@ bool DeltaPatcher::delta(const QString& oldDir, QString laterPath)
                               Q_ARG(QString, patchPath), Q_ARG(QString, deltaPath));
 
     DBG << "Deleting directory" << deltaPath;
-    deltaDir.removeRecursively();
+    FileUtils::safeRemoveRecursively(deltaDir);
 
     return true;
 }
