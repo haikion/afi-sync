@@ -7,10 +7,6 @@
 #include "fileutils.h"
 #include "settingsmodel.h"
 
-//Fail safe variable. Only allow editing files if they are contained in this folder.
-//TODO: Use collection of savePrefixes.
-QString FileUtils::savePrefix_ = "///"; //Prevent editing until this is set.
-
 //https://qt.gitorious.org/qt-creator/qt-creator/source/1a37da73abb60ad06b7e33983ca51b266be5910e:src/app/main.cpp#L13-189
 // taken from utils/fileutils.cpp. We can not use utils here since that depends app_version.h.
 bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
@@ -124,11 +120,6 @@ qint64 FileUtils::dirSize(const QString& path)
     return rVal;
 }
 
-void FileUtils::setSavePrefix(const QString& value)
-{
-    savePrefix_ = value.toUpper();
-}
-
 bool FileUtils::rmCi(QString path)
 {
     path.replace("\\", "/");
@@ -161,11 +152,11 @@ bool FileUtils::rmCi(QString path)
 }
 
 //Failsafe functions. These assure that the file being handeled is in mods directory.
-//Prevents nasty programming errors from deleting important files from users PC.
+//Prevents nasty programming errors from deleting important files.
 
 bool FileUtils::safeRename(const QString& srcPath, const QString& dstPath)
 {
-    if (!pathIsSave(srcPath))
+    if (!pathIsSafe(srcPath))
         return false;
 
     DBG << "Fake rename" << srcPath << "to"  << dstPath;
@@ -175,7 +166,7 @@ bool FileUtils::safeRename(const QString& srcPath, const QString& dstPath)
 bool FileUtils::safeRemove(const QFile& file)
 {
     QString path = QFileInfo(file).absoluteFilePath();
-    if (!pathIsSave(path))
+    if (!pathIsSafe(path))
         return false;
 
     DBG << "Removing" << path;
@@ -185,20 +176,23 @@ bool FileUtils::safeRemove(const QFile& file)
 bool FileUtils::safeRemoveRecursively(const QDir& dir)
 {
     QString path = dir.absolutePath();
-    if (!pathIsSave(path))
+    if (!pathIsSafe(path))
         return false;
 
     DBG << "Removing" << path;
     return true;//dir.removeRecursively();
 }
 
-bool FileUtils::pathIsSave(const QString& path)
+bool FileUtils::pathIsSafe(const QString& path)
 {
+    //TODO: Use collection of savePrefixes.
+    QString safePrefix = QFileInfo(SettingsModel::modDownloadPath()).absoluteFilePath().toUpper();
+
     QString pathUpper = path.toUpper();
     //Shortest possible save path: C:/d/f (6 characters)
-    if (savePrefix_.length() >= 6 && pathUpper.startsWith(savePrefix_))
+    if (safePrefix.length() >= 6 && pathUpper.startsWith(safePrefix))
         return true;
 
-    DBG << "ERROR: " << pathUpper << "not in save prefix" << savePrefix_ << ". Remove aborted!";
+    DBG << "ERROR: " << pathUpper << "not in safe prefix" << safePrefix << ". Remove aborted!";
     return true;
 }

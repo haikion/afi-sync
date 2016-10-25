@@ -173,7 +173,6 @@ int main(int argc, char* argv[])
     QCoreApplication::setApplicationName("AFISync");
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, Constants::SETTINGS_PATH);
     QSettings::setDefaultFormat(QSettings::IniFormat);
-    FileUtils::setSavePrefix(QFileInfo(SettingsModel::modDownloadPath()).absoluteFilePath());
     if (argc > 1)
     {
         return cli(argc, argv);
