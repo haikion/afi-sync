@@ -12,7 +12,7 @@
     const QString LogManager::SZIP_EXECUTABLE = "bin\\7za.exe";
 #endif
 
-const int MAX_LOGS_SIZE = 10;
+const int MAX_LOG_FILES = 3;
 
 bool LogManager::rotateLogs()
 {
@@ -24,9 +24,7 @@ bool LogManager::rotateLogs()
             QDir(".").entryList(QDir::Files).filter(QRegExp(Constants::LOG_FILE + ".*7z" ));
 
     patchArchives.sort();
-    DBG << patchArchives.size();
-    int max = patchArchives.size() > 2 ? 2 : 0;
-    for (int i = 0; i < max; ++i)
+    for (int i = 0; i <= (patchArchives.size() - MAX_LOG_FILES); ++i)
     {
         QString deleteThis = patchArchives.at(i);
         DBG << "Deleting old log file" << deleteThis;
