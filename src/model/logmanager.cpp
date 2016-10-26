@@ -5,6 +5,7 @@
 #include "global.h"
 #include "logmanager.h"
 #include "debug.h"
+#include "fileutils.h"
 
 #ifdef Q_OS_LINUX
     const QString LogManager::SZIP_EXECUTABLE = "7za";
@@ -28,7 +29,7 @@ bool LogManager::rotateLogs()
     {
         QString deleteThis = patchArchives.at(i);
         DBG << "Deleting old log file" << deleteThis;
-        QFile(deleteThis).remove();
+        FileUtils::safeRemove(deleteThis);
     }
     return szip_.compress(Constants::LOG_FILE, QString(Constants::LOG_FILE).append("_" +
              QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss") + ".7z"));

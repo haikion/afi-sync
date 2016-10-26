@@ -9,6 +9,7 @@
 #include "repository.h"
 #include "installer.h"
 #include "modadapter.h"
+#include "fileutils.h"
 
 Repository::Repository(const QString& name, const QString& serverAddress, unsigned port,
                       QString password, RootItem* parent):
@@ -74,7 +75,8 @@ void Repository::processCompletion()
     ready_ = true;
     for (Mod* mod : mods())
     {
-        mod->processCompletion();
+        if (mod->ticked())
+            mod->processCompletion();
     }
     SettingsModel::setInstallDate(name(), QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
 }
@@ -171,7 +173,7 @@ QString Repository::createParFile(const QString& parameters)
     QString path = SettingsModel::arma3Path() + "/" + FILE_NAME;
     DBG << path;
     QFile file(path);
-    file.remove();
+    FileUtils::safeRemove(file);
     file.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream fileStream(&file);
     fileStream.setCodec("UTF-8");

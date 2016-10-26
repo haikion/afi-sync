@@ -107,7 +107,6 @@ private:
     std::vector<char> loadResumeData(const QString& path) const;
     boost::shared_ptr<const libtorrent::torrent_info> getTorrentFile(const libtorrent::torrent_handle& getHandle) const;
     QString getHashString(const libtorrent::torrent_handle& getHandle) const;
-    QByteArray readFile(const QString& path) const;
     int64_t bytesToCheck(const libtorrent::torrent_status& status) const;
     bool createSession();
     libtorrent::torrent_handle addFolderGeneric(const QString& key, const QString path);

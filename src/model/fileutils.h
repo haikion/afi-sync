@@ -10,10 +10,12 @@ public:
     static bool copy(const QString& srcPath, const QString& dstPath);
     static bool move(const QString& srcPath, const QString& dstPath);
     static qint64 dirSize(const QString& path);
+    static QByteArray readFile(const QString& path);
     //Case insensitive removal
     static bool rmCi(QString path);
-    static bool safeRemove(const QFile& file);
-    static bool safeRemoveRecursively(const QDir& dir);
+    static bool safeRemove(QFile& file);
+    static bool safeRemove(const QString& filePath);
+    static bool safeRemoveRecursively(QDir& dir);
     static bool safeRename(const QString& srcPath, const QString& dstPath);
 
 private:

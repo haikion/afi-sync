@@ -178,10 +178,10 @@ void Mod::deleteExtraFiles()
              << "\n\n localFiles =" << localFiles;
 
     QSet<QString> extraFiles = localFiles - remoteFiles;
-    for (QString file : extraFiles)
+    for (QString path : extraFiles)
     {
-        DBG << "Deleting extra file" << file << "from mod" << name();
-        FileUtils::safeRemove(QFile(file));
+        DBG << "Deleting extra file" << path << "from mod" << name();
+        FileUtils::safeRemove(path);
     }
     DBG << "Completed name =" << name();
 }

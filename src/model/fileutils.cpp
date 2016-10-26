@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QStringList>
 #include <QDirIterator>
+#include <QCoreApplication>
 #include "debug.h"
 #include "fileutils.h"
 #include "settingsmodel.h"
@@ -38,7 +39,7 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
     {
         QFile dstFile(dstPath);
         DBG << "Copying" << srcPath << "to" << dstPath;
-        dstFile.remove(); //Cannot be safe due to installer.
+        FileUtils::safeRemove(dstFile);
         if (dstFile.exists())
         {
             DBG << "Cannot overwrite file" << dstPath;
@@ -148,8 +149,26 @@ bool FileUtils::rmCi(QString path)
         }
     }
     casedPath.replace("//", "/");
-    return safeRemove(QFile(casedPath));
+    return safeRemove(casedPath);
 }
+
+QByteArray FileUtils::readFile(const QString& path)
+{
+    QByteArray rVal;
+    QFile file(path);
+
+    file.open(QFile::ReadOnly);
+    if (!file.isReadable())
+    {
+        DBG << "Warning: unable to read file" << path;
+        return rVal;
+    }
+
+    rVal = file.readAll();
+    file.close();
+    return rVal;
+}
+
 
 //Failsafe functions. These assure that the file being handeled is in mods directory.
 //Prevents nasty programming errors from deleting important files.
@@ -159,40 +178,53 @@ bool FileUtils::safeRename(const QString& srcPath, const QString& dstPath)
     if (!pathIsSafe(srcPath))
         return false;
 
-    DBG << "Fake rename" << srcPath << "to"  << dstPath;
-    return true;
+    DBG << "Rename" << srcPath << "to"  << dstPath;
+    return QFile::rename(srcPath, dstPath);
 }
 
-bool FileUtils::safeRemove(const QFile& file)
+bool FileUtils::safeRemove(const QString& filePath)
+{
+    QFile file(filePath);
+    return safeRemove(file);
+}
+
+bool FileUtils::safeRemove(QFile& file)
 {
     QString path = QFileInfo(file).absoluteFilePath();
     if (!pathIsSafe(path))
         return false;
 
     DBG << "Removing" << path;
-    return true;//file.remove();
+    return file.remove();
 }
 
-bool FileUtils::safeRemoveRecursively(const QDir& dir)
+bool FileUtils::safeRemoveRecursively(QDir& dir)
 {
     QString path = dir.absolutePath();
     if (!pathIsSafe(path))
         return false;
 
     DBG << "Removing" << path;
-    return true;//dir.removeRecursively();
+    return dir.removeRecursively();
 }
 
 bool FileUtils::pathIsSafe(const QString& path)
 {
-    //TODO: Use collection of savePrefixes.
-    QString safePrefix = QFileInfo(SettingsModel::modDownloadPath()).absoluteFilePath().toUpper();
-
     QString pathUpper = path.toUpper();
-    //Shortest possible save path: C:/d/f (6 characters)
-    if (safePrefix.length() >= 6 && pathUpper.startsWith(safePrefix))
-        return true;
+    QStringList safeSubpaths;
+    safeSubpaths.append(SettingsModel::modDownloadPath());
+    safeSubpaths.append(SettingsModel::arma3Path());
+    safeSubpaths.append(SettingsModel::teamSpeak3Path());
+    safeSubpaths.append(QCoreApplication::applicationDirPath());
 
-    DBG << "ERROR: " << pathUpper << "not in safe prefix" << safePrefix << ". Remove aborted!";
-    return true;
+    for (QString safeSubpath : safeSubpaths)
+    {
+        QString safeUpper = QFileInfo(safeSubpath).absoluteFilePath().toUpper();
+        //Shortest possible save path: C:/d (4 characters)
+        if (safeUpper.length() >= 4 && pathUpper.startsWith(safeUpper))
+            return true;
+    }
+
+    DBG << "ERROR: " << path << "not in safe subpaths" << safeSubpaths << ". Operation aborted!";
+    return false;
 }

@@ -14,6 +14,7 @@
 #include "jsonreader.h"
 #include "settingsmodel.h"
 #include "processmonitor.h"
+#include "fileutils.h"
 
 const int RootItem::REPO_UPDATE_DELAY = 60000; //ms
 
@@ -189,7 +190,7 @@ void RootItem::resetSyncSettings()
     int attempts = 0;
     while ( dir.exists() && attempts < 100 )
     {
-        dir.removeRecursively();
+        FileUtils::safeRemoveRecursively(dir);
         //It's rape time.
         DBG << "Warning: Failure to delete Sync Storage... retrying path ="
             << dir.absolutePath() << "attempts =" << attempts;

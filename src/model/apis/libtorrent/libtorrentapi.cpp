@@ -19,6 +19,7 @@
 #include "../../settingsmodel.h"
 #include "../../global.h"
 #include "../../debug.h"
+#include "../../fileutils.h"
 #include "libtorrentapi.h"
 
 namespace lt = libtorrent;
@@ -139,7 +140,7 @@ bool LibTorrentApi::loadLtSettings()
     if (!session_)
         return false;
 
-    QByteArray bytes = readFile(SETTINGS_PATH);
+    QByteArray bytes = FileUtils::readFile(SETTINGS_PATH);
     if (bytes.size() == 0)
         return false;
     lt::bdecode_node fast;
@@ -154,23 +155,6 @@ bool LibTorrentApi::loadLtSettings()
     session_->load_state(fast);
     DBG << "Data loaded";
     return true;
-}
-
-QByteArray LibTorrentApi::readFile(const QString& path) const
-{
-    QByteArray rVal;
-    QFile file(path);
-
-    file.open(QFile::ReadOnly);
-    if (!file.isReadable())
-    {
-        DBG << "Warning: unable to read file" << path;
-        return rVal;
-    }
-
-    rVal = file.readAll();
-    file.close();
-    return rVal;
 }
 
 QList<QString> LibTorrentApi::folderKeys()
@@ -619,17 +603,17 @@ bool LibTorrentApi::removeFolder(const QString& key)
     session_->remove_torrent(handle);
     keyHash_.remove(key);
     //Delete saved data
-    QString urlFile = filePrefix + ".link";
-    DBG << MSG_DELETING_FILE << urlFile;
-    QFile(urlFile).remove();
-    QString torrentFile = filePrefix + ".torrent";
-    DBG << MSG_DELETING_FILE << torrentFile;
-    QFile(torrentFile).remove();
+    QString urlPath = filePrefix + ".link";
+    DBG << MSG_DELETING_FILE << urlPath;
+    FileUtils::safeRemove(urlPath);
+    QString torrentPath = filePrefix + ".torrent";
+    DBG << MSG_DELETING_FILE << torrentPath;
+    FileUtils::safeRemove(torrentPath);
 
     std::vector<lt::alert*>* alerts = new std::vector<lt::alert*>();
-    QString fastresumeFile = filePrefix + ".fastresume";
-    DBG << MSG_DELETING_FILE << fastresumeFile;
-    QFile(fastresumeFile).remove();
+    QString fastresumePath = filePrefix + ".fastresume";
+    DBG << MSG_DELETING_FILE << fastresumePath;
+    FileUtils::safeRemove(fastresumePath);
     //Wait for removed alert (5s)
     //50 alert chunks may be received before torrent removed alert.
     for (int i = 0; i < 50; ++i)
@@ -887,7 +871,7 @@ bool LibTorrentApi::writeFile(const QByteArray& data, const QString& path) const
     QFile file(path);
     QDir parentDir = QFileInfo(path).dir();
     parentDir.mkpath(".");
-    file.remove();
+    FileUtils::safeRemove(file);
     file.open(QFile::WriteOnly);
 
     if (!file.isWritable())
@@ -934,7 +918,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         params.ti = loadFromFile(pathPrefix + ".torrent");
         params.save_path = SettingsModel::modDownloadPath().toStdString();
         params.resume_data = loadResumeData(pathPrefix + ".fastresume");
-        QString url = QString::fromLocal8Bit(readFile(pathPrefix + ".link"));
+        QString url = QString::fromLocal8Bit(FileUtils::readFile(pathPrefix + ".link"));
         DBG << url << (params.ti == 0) << params.resume_data.size();
         if (params.ti == 0 || url.isEmpty() || !params.ti->is_valid())
         {
@@ -965,7 +949,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
 
 std::vector<char> LibTorrentApi::loadResumeData(const QString& path) const
 {
-    QByteArray bytes = readFile(path);
+    QByteArray bytes = FileUtils::readFile(path);
     std::vector<char> buf(bytes.constData(), bytes.constData() + bytes.size());
     return buf;
 }
