@@ -124,6 +124,9 @@ qint64 FileUtils::dirSize(const QString& path)
 bool FileUtils::rmCi(QString path)
 {
     QString cPath = casedPath(path);
+    if (cPath.length() <= 3) //D:/
+        return false;
+
     return safeRemove(cPath);
 }
 
