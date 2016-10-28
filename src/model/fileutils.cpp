@@ -123,33 +123,8 @@ qint64 FileUtils::dirSize(const QString& path)
 
 bool FileUtils::rmCi(QString path)
 {
-    path.replace("\\", "/");
-    if (!path.startsWith("/"))
-    {
-        DBG << "ERROR: Only absolute paths are supported";
-        return false;
-    }
-    //FIXME: Does not work.
-    //Construct case sentive path by comparing dirs in case insentive mode.
-    QStringList dirNames = path.split("/");
-    dirNames.removeFirst();
-    QString casedPath = "/";
-    for (QString dirName : dirNames)
-    {
-        QDirIterator it(casedPath);
-        while (it.hasNext())
-        {
-            QFileInfo fi = it.next();
-            DBG << fi.fileName() << dirName;
-            if (fi.fileName().toUpper() == dirName.toUpper())
-            {
-                casedPath += "/" + fi.fileName();
-                DBG << casedPath;
-            }
-        }
-    }
-    casedPath.replace("//", "/");
-    return safeRemove(casedPath);
+    QString cPath = casedPath(path);
+    return safeRemove(cPath);
 }
 
 QByteArray FileUtils::readFile(const QString& path)
@@ -169,6 +144,38 @@ QByteArray FileUtils::readFile(const QString& path)
     return rVal;
 }
 
+QString FileUtils::casedPath(const QString& path)
+{
+    DBG << "Input:" << path;
+    QString pathCi = QFileInfo(path).absoluteFilePath();
+    //Construct case sentive path by comparing file or dir names to case sentive ones.
+    QStringList ciNames = pathCi.split("/");
+    QString casedPath = ciNames.first().endsWith(":") ? ciNames.first() + "/" : "/";
+    ciNames.removeFirst(); //Drive letter on windows or "" on linux.
+
+    for (const QString& ciName : ciNames)
+    {
+        bool failed = true;
+        QDirIterator it(casedPath);
+        while (it.hasNext())
+        {
+            QFileInfo fi = it.next();
+            if (fi.fileName().toUpper() == ciName.toUpper())
+            {
+                casedPath += (casedPath.endsWith("/") ? "" : "/") + fi.fileName();
+                DBG << casedPath;
+                failed = false;
+            }
+        }
+        if (failed)
+        {
+            DBG << "ERROR: Unable to construct case sensitive path from" << path;
+            return QString();
+        }
+    }
+    DBG << "Output:" << casedPath;
+    return casedPath;
+}
 
 //Failsafe functions. These assure that the file being handeled is in mods directory.
 //Prevents nasty programming errors from deleting important files.

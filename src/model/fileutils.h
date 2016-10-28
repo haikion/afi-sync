@@ -20,6 +20,7 @@ public:
 
 private:
     static bool pathIsSafe(const QString& path);
+    static QString casedPath(const QString& path);
 };
 
 #endif // FILEUTILS_H
