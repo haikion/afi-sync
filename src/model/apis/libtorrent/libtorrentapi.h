@@ -101,7 +101,6 @@ private:
     void saveSettings();
     boost::shared_ptr<libtorrent::torrent_info> loadFromFile(const QString& path) const;
     void loadTorrentFiles(const QDir& dir);
-    bool writeFile(const QByteArray& data, const QString& path) const;
     bool saveTorrentFile(const libtorrent::torrent_handle& getHandle) const;
     void generateResumeData() const;
     std::vector<char> loadResumeData(const QString& path) const;

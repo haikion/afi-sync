@@ -147,6 +147,26 @@ QByteArray FileUtils::readFile(const QString& path)
     return rVal;
 }
 
+//Writes a new file
+bool FileUtils::writeFile(const QByteArray& data, const QString& path)
+{
+    QFile file(path);
+    QDir parentDir = QFileInfo(path).dir();
+    parentDir.mkpath(".");
+    safeRemove(file);
+    file.open(QFile::WriteOnly);
+
+    if (!file.isWritable())
+    {
+        DBG << "ERROR: file" << path << " is not writable.";
+        return false;
+    }
+    DBG << "Writing file:" << path;
+    file.write(data);
+    file.close();
+    return true;
+}
+
 QString FileUtils::casedPath(const QString& path)
 {
     DBG << "Input:" << path;
@@ -179,9 +199,6 @@ QString FileUtils::casedPath(const QString& path)
     DBG << "Output:" << casedPath;
     return casedPath;
 }
-
-//Failsafe functions. These assure that the file being handeled is in mods directory.
-//Prevents nasty programming errors from deleting important files.
 
 bool FileUtils::safeRename(const QString& srcPath, const QString& dstPath)
 {

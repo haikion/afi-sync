@@ -129,7 +129,7 @@ void LibTorrentApi::saveSettings()
     std::map<std::string, lt::entry> map = e.dict();
     QByteArray bytes;
     lt::bencode(std::back_inserter(bytes), e);
-    writeFile(bytes, SETTINGS_PATH);
+    FileUtils::writeFile(bytes, SETTINGS_PATH);
     DBG << "Data saved." << bytes.size() << "bytes written.";
 }
 
@@ -803,7 +803,7 @@ bool LibTorrentApi::saveTorrentFile(const lt::torrent_handle& handle) const
     if (deltaManager_  && deltaManager_->handle() == handle)
         url = deltaUpdatesKey_.toLocal8Bit();
 
-    return writeFile(torrentBytes, torrentFilePath) && writeFile(url, urlFilePath);
+    return FileUtils::writeFile(torrentBytes, torrentFilePath) && FileUtils::writeFile(url, urlFilePath);
 }
 
 void LibTorrentApi::generateResumeData() const
@@ -863,26 +863,6 @@ void LibTorrentApi::generateResumeData() const
         DBG << "Deleting alerts";
         delete alerts;
     }
-}
-
-//Writes a new file
-bool LibTorrentApi::writeFile(const QByteArray& data, const QString& path) const
-{
-    QFile file(path);
-    QDir parentDir = QFileInfo(path).dir();
-    parentDir.mkpath(".");
-    FileUtils::safeRemove(file);
-    file.open(QFile::WriteOnly);
-
-    if (!file.isWritable())
-    {
-        DBG << "ERROR: file" << path << " is not writable.";
-        return false;
-    }
-    DBG << "Writing file:" << path;
-    file.write(data);
-    file.close();
-    return true;
 }
 
 void LibTorrentApi::createDeltaManager(lt::torrent_handle handle, const QString& key)
