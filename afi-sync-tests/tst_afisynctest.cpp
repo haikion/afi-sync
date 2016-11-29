@@ -54,18 +54,18 @@ public:
     AfiSyncTest();
 
 private Q_SLOTS:
-    void startTestCase();
-    void cleanupTestCase();
+    //Helper functions
+    void startTest();
+    void cleanupTest();
 
-    //JsonReader Tests
-    void jsonReaderBasic();
-    void jsonReader2Repos();
-    void jsonReaderModUpdate();
-    void jsonReaderModRemove();
-    void jsonReaderRepoRename();
-    void jsonReaderAddRepo();
-    void jsonReaderRemoveRepo();
-    void jsonReaderMoveMod();
+    //Console
+    void simpleCmd();
+
+    //FileUtils tests
+    void copy();
+    void copyDeep();
+    void noSuchDir();
+    void copyDeepOverwrite();
 
     //LibTorrent tests
     void saveAndLoad();
@@ -94,14 +94,15 @@ private Q_SLOTS:
     void managerPatchNeg();
     void deltaDownloadDownloader();
 
-    //FileUtils tests
-    void copy();
-    void copyDeep();
-    void noSuchDir();
-    void copyDeepOverwrite();
-
-    //Console
-    void simpleCmd();
+    //JsonReader Tests
+    void jsonReaderBasic();
+    void jsonReader2Repos();
+    void jsonReaderModUpdate();
+    void jsonReaderModRemove();
+    void jsonReaderRepoRename();
+    void jsonReaderAddRepo();
+    void jsonReaderRemoveRepo();
+    void jsonReaderMoveMod();
 
 private:
     ISync* sync_;
@@ -116,7 +117,6 @@ private:
     libtorrent::torrent_handle createHandle(const QString& url = QString(), const QString& modDownloadPath = TMP_PATH);
 };
 
-//Helper functions
 
 AfiSyncTest::AfiSyncTest():
    sync_(nullptr),
@@ -130,18 +130,21 @@ AfiSyncTest::AfiSyncTest():
    FileUtils::appendSafePath(".");
 }
 
-void AfiSyncTest::startTestCase()
-{
-    cleanupTestCase();
+//Helper functions
 
-    QDir(Constants::SYNC_SETTINGS_PATH).removeRecursively();
-    model_ = new TreeModel();
-    root_ = model_->rootItem();
-    sync_ = root_->sync();
+void AfiSyncTest::startTest()
+{
+    if (!model_)
+    {
+        QDir(Constants::SYNC_SETTINGS_PATH).removeRecursively();
+        model_ = new TreeModel();
+        root_ = model_->rootItem();
+        sync_ = root_->sync();
+    }
     qDebug() << "END OF INIT TEST CASE";
 }
 
-void AfiSyncTest::cleanupTestCase()
+void AfiSyncTest::cleanupTest()
 {
     QEventLoop loop;
     DBG << "Main thread event process status:" << loop.processEvents();
@@ -205,171 +208,6 @@ libtorrent::torrent_handle AfiSyncTest::createHandle(const QString& url, const Q
     return handle;
 }
 
-//JsonReader Tests
-
-void AfiSyncTest::jsonReaderBasic()
-{
-    startTestCase();
-
-    reader_.fillEverything(root_, "repoBasic.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
-
-    cleanupTestCase();
-}
-
-void AfiSyncTest::jsonReader2Repos()
-{
-    startTestCase();
-
-    reader_.fillEverything(root_, "2repos1.json");
-    QCOMPARE(root_->childItems().size(), 2);
-
-    cleanupTestCase();
-}
-
-void AfiSyncTest::jsonReaderModUpdate()
-{
-    startTestCase();
-
-    reader_.fillEverything(root_, "repoBasic.json");
-    reader_.fillEverything(root_, "repoUp1.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
-    QCOMPARE(root_->childItems().at(0)->mods().at(1)->name(), QString("@st_nametags"));
-
-    cleanupTestCase();
-}
-
-void AfiSyncTest::jsonReaderModRemove()
-{
-    startTestCase();
-
-    reader_.fillEverything(root_, "repoUp1.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
-    reader_.fillEverything(root_, "repoBasic.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
-
-    cleanupTestCase();
-}
-
-void AfiSyncTest::jsonReaderRepoRename()
-{
-    startTestCase();
-
-    reader_.fillEverything(root_, "repoBasic.json");
-    reader_.fillEverything(root_, "repoRename.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary 2"));
-}
-
-void AfiSyncTest::jsonReaderAddRepo()
-{
-    startTestCase();
-
-    reader_.fillEverything(root_, "repoBasic.json");
-    reader_.fillEverything(root_, "2repos1.json");
-    QCOMPARE(root_->childItems().size(), 2);
-
-    cleanupTestCase();
-}
-
-void AfiSyncTest::jsonReaderRemoveRepo()
-{
-    startTestCase();
-
-    reader_.fillEverything(root_, "2repos1.json");
-    //Produces getHandle error because fake torrents cannot be downloaded!
-    reader_.fillEverything(root_, "repoBasic.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary"));
-
-    cleanupTestCase();
-}
-
-void AfiSyncTest::jsonReaderMoveMod()
-{
-    startTestCase();
-
-    reader_.fillEverything(root_, "2repos1.json");
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
-    QCOMPARE(root_->childItems().at(1)->mods().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().at(1)->name(), QString("@st_nametags"));
-    reader_.fillEverything(root_, "2repos2.json");
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
-    QCOMPARE(root_->childItems().at(1)->mods().size(), 2);
-    QCOMPARE(root_->childItems().at(1)->mods().at(1)->name(), QString("@st_nametags"));
-
-    cleanupTestCase();
-}
-
-void AfiSyncTest::addRemoveFolder()
-{
-    startTestCase();
-
-    sync_->addFolder(TORRENT_1, "/home/niko/Downloads/ltTest", "@vt5");
-    bool exists = sync_->folderExists(TORRENT_1);
-    QCOMPARE(exists, true);
-    bool rVal = sync_->removeFolder(TORRENT_1);
-    QCOMPARE(rVal, true);
-    exists = sync_->folderExists(TORRENT_1);
-    QCOMPARE(exists, false);
-
-    cleanupTestCase();
-}
-
-void AfiSyncTest::getFilesUpper()
-{
-    startTestCase();
-
-    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
-    QSet<QString> files = sync_->folderFilesUpper(TORRENT_1);
-    QCOMPARE(files.size(), 3);
-    sync_->removeFolder(TORRENT_1);
-
-    cleanupTestCase();
-}
-
-void AfiSyncTest::getFolderKeys()
-{
-    startTestCase();
-
-    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
-    QCOMPARE(sync_->folderKeys().size(), 1);
-    QCOMPARE(sync_->folderKeys().at(0), TORRENT_1.toLower());
-    sync_->removeFolder(TORRENT_1);
-
-    cleanupTestCase();
-}
-
-void AfiSyncTest::setFolderPaused()
-{
-    startTestCase();
-
-    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
-    sync_->setFolderPaused(TORRENT_1, true);
-    QCOMPARE(sync_->folderPaused(TORRENT_1), true);
-    sync_->removeFolder(TORRENT_1);
-
-    cleanupTestCase();
-}
-
-void AfiSyncTest::getEta()
-{
-    startTestCase();
-
-    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
-    int eta = sync_->folderEta(TORRENT_1);
-    qDebug() << "eta =" << eta;
-    QVERIFY(eta > 0);
-    sync_->removeFolder(TORRENT_1);
-    cleanupTestCase();
-}
-
 //Creates model, adds folder, deletes model, creates model again. Added folder should still exist.
 void AfiSyncTest::saveAndLoad()
 {
@@ -398,7 +236,7 @@ void AfiSyncTest::saveAndLoad()
 //Creates clean directory and file stucture for delta patch tests.
 void AfiSyncTest::beforeDelta()
 {
-    cleanupTestCase();
+    cleanupTest();
 
     FileUtils::copy(PATCHING_FILES_PATH, TMP_PATH);
     FileUtils::copy(PATCHES_PATH, TMP_PATH + "/1/" + DELTA_PATCH_NAME);
@@ -649,6 +487,177 @@ void AfiSyncTest::simpleCmd()
     Console* cmd = new Console();
     QVERIFY(!cmd->runCmd("cd \"no such dir\""));
     delete cmd;
+}
+
+
+//JsonReader Tests
+
+void AfiSyncTest::jsonReaderBasic()
+{
+    startTest();
+
+    reader_.fillEverything(root_, "repoBasic.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
+
+    //cleanupTest();
+}
+
+void AfiSyncTest::jsonReader2Repos()
+{
+    startTest();
+
+    reader_.fillEverything(root_, "2repos1.json");
+    QCOMPARE(root_->childItems().size(), 2);
+
+    //cleanupTest();
+}
+
+void AfiSyncTest::jsonReaderModUpdate()
+{
+    startTest();
+
+    reader_.fillEverything(root_, "repoBasic.json");
+    reader_.fillEverything(root_, "repoUp1.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
+    QCOMPARE(root_->childItems().at(0)->mods().at(1)->name(), QString("@st_nametags"));
+
+    //cleanupTest();
+}
+
+void AfiSyncTest::jsonReaderModRemove()
+{
+    startTest();
+
+    reader_.fillEverything(root_, "repoUp1.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
+    reader_.fillEverything(root_, "repoBasic.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
+
+    //cleanupTest();
+}
+
+void AfiSyncTest::jsonReaderRepoRename()
+{
+    startTest();
+
+    reader_.fillEverything(root_, "repoBasic.json");
+    reader_.fillEverything(root_, "repoRename.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary 2"));
+
+    //cleanupTest();
+}
+
+void AfiSyncTest::jsonReaderAddRepo()
+{
+    startTest();
+
+    reader_.fillEverything(root_, "repoBasic.json");
+    reader_.fillEverything(root_, "2repos1.json");
+    QCOMPARE(root_->childItems().size(), 2);
+
+    //cleanupTest();
+}
+
+void AfiSyncTest::jsonReaderRemoveRepo()
+{
+    startTest();
+
+    reader_.fillEverything(root_, "2repos1.json");
+    //Produces getHandle error because fake torrents cannot be downloaded!
+    reader_.fillEverything(root_, "repoBasic.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary"));
+
+    //cleanupTest();
+}
+
+void AfiSyncTest::jsonReaderMoveMod()
+{
+    startTest();
+
+    reader_.fillEverything(root_, "2repos1.json");
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
+    QCOMPARE(root_->childItems().at(1)->mods().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().at(1)->name(), QString("@st_nametags"));
+    reader_.fillEverything(root_, "2repos2.json");
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
+    QCOMPARE(root_->childItems().at(1)->mods().size(), 2);
+    QCOMPARE(root_->childItems().at(1)->mods().at(1)->name(), QString("@st_nametags"));
+
+   //cleanupTest();
+}
+
+//Sync tests
+
+void AfiSyncTest::addRemoveFolder()
+{
+    startTest();
+
+    sync_->addFolder(TORRENT_1, "/home/niko/Downloads/ltTest", "@vt5");
+    bool exists = sync_->folderExists(TORRENT_1);
+    QCOMPARE(exists, true);
+    bool rVal = sync_->removeFolder(TORRENT_1);
+    QCOMPARE(rVal, true);
+    exists = sync_->folderExists(TORRENT_1);
+    QCOMPARE(exists, false);
+
+    //cleanupTest();
+}
+
+void AfiSyncTest::getFilesUpper()
+{
+    startTest();
+
+    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
+    QSet<QString> files = sync_->folderFilesUpper(TORRENT_1);
+    QCOMPARE(files.size(), 3);
+    sync_->removeFolder(TORRENT_1);
+
+    //cleanupTest();
+}
+
+void AfiSyncTest::getFolderKeys()
+{
+    startTest();
+
+    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
+    QCOMPARE(sync_->folderKeys().size(), 1);
+    QCOMPARE(sync_->folderKeys().at(0), TORRENT_1.toLower());
+    sync_->removeFolder(TORRENT_1);
+
+    //cleanupTest();
+}
+
+void AfiSyncTest::setFolderPaused()
+{
+    startTest();
+
+    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
+    sync_->setFolderPaused(TORRENT_1, true);
+    QCOMPARE(sync_->folderPaused(TORRENT_1), true);
+    sync_->removeFolder(TORRENT_1);
+
+    //cleanupTest();
+}
+
+void AfiSyncTest::getEta()
+{
+    startTest();
+
+    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
+    int eta = sync_->folderEta(TORRENT_1);
+    qDebug() << "eta =" << eta;
+    QVERIFY(eta > 0);
+    sync_->removeFolder(TORRENT_1);
+
+    //cleanupTest();
 }
 
 QTEST_MAIN(AfiSyncTest)
