@@ -1,0 +1,20 @@
+{
+	"repositories": [{
+		"name": "armafinland.fi Primary",
+		"serverAddress": "a3.armafinland.fi",
+		"serverPort": 2302,
+		"password": "kotka",
+		"mods":  [
+			{
+				"name": "@cz75_nochain_a3",
+				"key": "http://armafinland.fi/afisync/torrents/@cz75_nochain_a3_7.torrent",
+				"optional": true
+			},
+			{
+				"name": "@st_nametags",
+				"key": "http://armafinland.fi/afisync/torrents/@st_nametags_7.torrent",
+				"optional": true
+			}
+		]
+	}]
+}
