@@ -44,6 +44,7 @@ public:
     void reset();
     void enableRepositories();
     void setHaltGui(bool halt);
+    RootItem* rootItem() const;
 
 signals:
     void uploadChanged(QString newVal);

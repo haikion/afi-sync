@@ -52,8 +52,8 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
 
     QList<QVariant> repositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
     DBG << "repositories size =" << repositories.size() << "updateurl =" << updateUrlStr;
-    QHash<QString, Mod*> modHash;
-    QSet<QString> jsonMods; //Holds mod + repo listing of mods that are in repositories.json document.
+    QHash<QString, Mod*> modHash = createModHash(root);
+    QHash<Repository*, QSet<QString>> jsonMods; //Holds mod + repo listing of mods that are in repositories.json document.
     QSet<QString> jsonRepos;
     QHash<QString, Repository*> adRepos = addedRepos(root);
     for (const QVariant& repoVar : repositories)
@@ -81,6 +81,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
         }
         bool battlEyeEnabled = qvariant_cast<bool>(repository.value("battlEyeEnabled", true));
         repo->setBattlEyeEnabled(battlEyeEnabled);
+        QSet<QString> jsonMods1;
         QList<QVariant> mods = qvariant_cast<QList<QVariant>>(repository.value("mods"));
         for (int i = 0; i < mods.size(); ++i)
         {
@@ -89,7 +90,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             QString key = qvariant_cast<QString>(mod.value("key")).toLower();
             DBG << "key parsed. key =" << key;
             //Do not add same mod to same repo twice.
-            jsonMods.insert(key);
+            jsonMods1.insert(key);
             if (repo->contains(key))
             {
                 DBG << "Key" << key << "already in" << repoName;
@@ -116,32 +117,18 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             DBG << "appending mod name =" << newMod->name() << " key =" << newMod->key();
             new ModAdapter(newMod, repo, isOptional, i);
         }
+        jsonMods.insert(repo, jsonMods1);
     }
 
-    DBG << "Checking deprecated mods...";
-    QSet<QString> adMods = addedMods(root);
-    QSet<QString> depreMod = adMods - jsonMods;
-    for (const QString& dm : depreMod)
-    {
-        DBG << "Removing deprecated mod:" << dm << root->childCount();
-        for (Repository* repo : root->childItems())
-        {
-            repo->removeMod(dm);
-        }
-    }
-    QSet<QString> depreRepos = adRepos.keys().toSet() - jsonRepos;
-    for (const QString& dr : depreRepos)
-    {
-        DBG << "Removing deprecated repo:" << dr;
-        Repository* repo = adRepos.value(dr);
-        root->removeChild(repo);
-        delete repo;
-    }
+    removeDeprecatedRepos(root, jsonRepos);
+
+    for (Repository* repo : root->childItems())
+        removeDeprecatedMods(repo, jsonMods.value(repo));
+
     DBG << "Starting UI updates.";
     if (updateRunning)
-    {
         root->startUpdates();
-    }
+
 }
 
 QHash<QString, Repository*> JsonReader::addedRepos(const RootItem* root) const
@@ -154,17 +141,54 @@ QHash<QString, Repository*> JsonReader::addedRepos(const RootItem* root) const
     return rVal;
 }
 
-QSet<QString> JsonReader::addedMods(const RootItem* root) const
+QSet<QString> JsonReader::addedMods(const Repository* repo) const
 {
     QSet<QString> rVal;
+    for (Mod* mod : repo->mods())
+    {
+        rVal.insert(mod->key().toLower());
+    }
+
+    return rVal;
+}
+
+//Creates data struture for added mods.
+QHash<QString, Mod*> JsonReader::createModHash(const RootItem* root) const
+{
+    QHash<QString, Mod*> rVal;
     for (Repository* repo : root->childItems())
     {
         for (Mod* mod : repo->mods())
         {
-            rVal.insert(mod->key().toLower());
+            rVal.insert(mod->key().toLower(), mod);
         }
     }
     return rVal;
+}
+
+void JsonReader::removeDeprecatedMods(Repository* repo, const QSet<QString> jsonMods)
+{
+    QSet<QString> deprecatedMods = addedMods(repo) - jsonMods;
+    for (const QString& key : deprecatedMods)
+    {
+        repo->removeMod(key);
+    }
+}
+
+void JsonReader::removeDeprecatedRepos(RootItem* root, const QSet<QString> jsonRepos)
+{
+    //FixMe: What happens if mod is moved from one repo to another?
+    DBG << "Checking deprecated mods...";
+
+    QHash<QString, Repository*> adRepos = addedRepos(root);
+    QSet<QString> depreRepos = adRepos.keys().toSet() - jsonRepos;
+    for (const QString& repoName : depreRepos)
+    {
+        DBG << "Removing deprecated repo:" << repoName;
+        Repository* repo = adRepos.value(repoName);
+        root->removeChild(repo);
+        delete repo;
+    }
 }
 
 QString JsonReader::updateUrl(const QVariantMap& jsonMap) const

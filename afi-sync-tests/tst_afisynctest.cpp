@@ -1,3 +1,8 @@
+/*
+ * Unit tests for AFISync
+ * Make sure workingDirectory is defined as working directory.
+ */
+
 #include <QString>
 #include <QtTest>
 #include <QCoreApplication>
@@ -19,22 +24,24 @@
 #include "../src/model/apis/libtorrent/deltapatcher.h"
 #include "../src/model/apis/libtorrent/deltamanager.h"
 #include "../src/model/console.h"
+#include "../src/model/jsonreader.h"
+#include "../src/model/fileutils.h"
+#include "../src/model/debug.h"
 
 //Delta patching consts
-static const QString FILES_PATH = "files";
+static const QString PATCHING_FILES_PATH = "patching";
 static const QString TMP_PATH = "temp";
 static const QString TORRENT_1 = "http://88.193.244.18/torrents/@vt5_1.torrent";
-static const QString TORRENT_2 = FILES_PATH  + "/afisync_patches_1.torrent";
-static const QString TORRENT_3 = "http://88.193.244.18/torrents/@mod1_1.torrent";
+static const QString TORRENT_2 = PATCHING_FILES_PATH  + "/afisync_patches_1.torrent";
 static const QString TORRENT_4 = "http://88.193.244.18/torrents/afisync_patches_1.torrent";
 static const QString MOD_NAME_1 = "@mod1";
 static const QString MOD_PATH_1 = TMP_PATH + "/1/" + MOD_NAME_1;
 static const QString MOD_PATH_2 = TMP_PATH + "/2/" + MOD_NAME_1;
 static const QString MOD_PATH_3 = TMP_PATH + "/3/" + MOD_NAME_1;
 static const QString DELTA_PATCH_NAME = "afisync_patches";
-static const QString PATCHES_DIR = TMP_PATH + "/" + DELTA_PATCH_NAME;
+static const QString PATCHES_PATH = TMP_PATH + "/" + DELTA_PATCH_NAME;
 //file copy tests
-static const QString SRC_PATH = FILES_PATH;
+static const QString SRC_PATH = PATCHING_FILES_PATH;
 static const QString DST_PATH = TMP_PATH;
 static const QString DEEP_PATH = TMP_PATH + "/deeper";
 
@@ -47,15 +54,19 @@ public:
     AfiSyncTest();
 
 private Q_SLOTS:
-    void initTestCase();
+    void startTestCase();
     void cleanupTestCase();
+
     //JsonReader Tests
     void jsonReaderBasic();
+    void jsonReader2Repos();
     void jsonReaderModUpdate();
     void jsonReaderModRemove();
     void jsonReaderRepoRename();
     void jsonReaderAddRepo();
     void jsonReaderRemoveRepo();
+    void jsonReaderMoveMod();
+
     //LibTorrent tests
     void saveAndLoad();
     void getEta();
@@ -63,15 +74,14 @@ private Q_SLOTS:
     void getFolderKeys();
     void getFilesUpper();
     void addRemoveFolder();
+
     //Delta patch tests
     void beforeDelta();
     void afterDelta();
-
     void hash();
     void delta();
     void chainDelta();
     void patch();
-    void chainPatch();
     void torrentName();
     void patchAvailable();
     void patchAvailableNegativeName();
@@ -82,9 +92,8 @@ private Q_SLOTS:
     void managerContainsNeg();
     void managerPatch();
     void managerPatchNeg();
-    void deltaExtraFileDeletion();
     void deltaDownloadDownloader();
-    void deltaDownload();
+
     //FileUtils tests
     void copy();
     void copyDeep();
@@ -95,12 +104,11 @@ private Q_SLOTS:
     void simpleCmd();
 
 private:
-    LibTorrentApi* sync_;
+    ISync* sync_;
     TreeModel* model_;
     JsonReader reader_;
     RootItem* root_;
     //Delta patching
-    DeltaPatcher* patcher_;
     libtorrent::torrent_handle handle_;
     libtorrent::session* session_;
     SettingsModel* settings_;
@@ -108,256 +116,42 @@ private:
     libtorrent::torrent_handle createHandle(const QString& url = QString(), const QString& modDownloadPath = TMP_PATH);
 };
 
+//Helper functions
+
 AfiSyncTest::AfiSyncTest():
    sync_(nullptr),
    model_(nullptr),
    root_(nullptr),
-   patcher_(nullptr),
    session_(nullptr),
    settings_(new SettingsModel(this))
 {
    handle_ = createHandle();
    settings_->setModDownloadPath(TMP_PATH + "/1");
+   FileUtils::appendSafePath(".");
 }
 
-void AfiSyncTest::initTestCase()
+void AfiSyncTest::startTestCase()
 {
-    if (sync_)
-       delete sync_;
-    if (model_)
-       delete model_;
-    if (root_)
-       delete root_;
+    cleanupTestCase();
 
     QDir(Constants::SYNC_SETTINGS_PATH).removeRecursively();
-    sync_ = new LibTorrentApi();
     model_ = new TreeModel();
-    root_ = new RootItem(model_);
+    root_ = model_->rootItem();
+    sync_ = root_->sync();
     qDebug() << "END OF INIT TEST CASE";
 }
 
 void AfiSyncTest::cleanupTestCase()
 {
-    delete sync_;
-    delete model_;
-    delete root_;
-}
-
-void AfiSyncTest::jsonReaderBasic()
-{
-    reader_.fillEverything(root_, "repoBasic.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
-}
-
-void AfiSyncTest::jsonReaderModUpdate()
-{
-    reader_.fillEverything(root_, "repoBasic.json");
-    reader_.fillEverything(root_, "repoUp1.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
-    QCOMPARE(root_->childItems().at(0)->mods().at(1)->name(), QString("@update"));
-}
-
-void AfiSyncTest::jsonReaderModRemove()
-{
-    reader_.fillEverything(root_, "repoUp1.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
-    reader_.fillEverything(root_, "repoBasic.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
-}
-
-void AfiSyncTest::jsonReaderRepoRename()
-{
-    reader_.fillEverything(root_, "repoBasic.json");
-    reader_.fillEverything(root_, "repoRename.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary2"));
-}
-
-void AfiSyncTest::jsonReaderAddRepo()
-{
-    reader_.fillEverything(root_, "repoBasic.json");
-    reader_.fillEverything(root_, "repo2.json");
-    QCOMPARE(root_->childItems().size(), 2);
-}
-
-void AfiSyncTest::jsonReaderRemoveRepo()
-{
-    reader_.fillEverything(root_, "repo2.json");
-    //Produces getHandle error because fake torrents cannot be downloaded!
-    reader_.fillEverything(root_, "repoBasic.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary"));
-}
-
-void AfiSyncTest::addRemoveFolder()
-{
-    sync_->addFolder(TORRENT_1, "/home/niko/Downloads/ltTest", "@vt5");
-    bool exists = sync_->folderExists(TORRENT_1);
-    QCOMPARE(exists, true);
-    bool rVal = sync_->removeFolder(TORRENT_1);
-    QCOMPARE(rVal, true);
-    exists = sync_->folderExists(TORRENT_1);
-    QCOMPARE(exists, false);
-}
-
-void AfiSyncTest::getFilesUpper()
-{
-    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
-    QSet<QString> files = sync_->folderFilesUpper(TORRENT_1);
-    QCOMPARE(files.size(), 3);
-    sync_->removeFolder(TORRENT_1);
-}
-
-void AfiSyncTest::getFolderKeys()
-{
-    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
-    QCOMPARE(sync_->folderKeys().size(), 1);
-    QCOMPARE(sync_->folderKeys().at(0), TORRENT_1.toLower());
-    sync_->removeFolder(TORRENT_1);
-}
-
-void AfiSyncTest::setFolderPaused()
-{
-    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
-    sync_->setFolderPaused(TORRENT_1, true);
-    QCOMPARE(sync_->folderPaused(TORRENT_1), true);
-    sync_->removeFolder(TORRENT_1);
-}
-
-void AfiSyncTest::getEta()
-{
-    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
-    int eta = sync_->folderEta(TORRENT_1);
-    qDebug() << "eta =" << eta;
-    QVERIFY(eta > 0);
-    sync_->removeFolder(TORRENT_1);
-}
-
-//Creates sync, adds folder, deletes sync, creates sync again. Added folder should still exist.
-void AfiSyncTest::saveAndLoad()
-{
-    QDir().mkpath(TMP_PATH);
-    settings_->setModDownloadPath(TMP_PATH);
-    sync_->addFolder(TORRENT_1, QFileInfo(TMP_PATH).absoluteFilePath(), "@vt5");
-    delete sync_;
-    QThread::sleep(10);
-    sync_ = new LibTorrentApi();
-    bool exists = sync_->folderExists(TORRENT_1);
-    bool rVal = sync_->removeFolder(TORRENT_1);
-    bool existsAfterDelete = sync_->folderExists(TORRENT_1);
-    QDir(TMP_PATH).removeRecursively();
-    QVERIFY(exists);
-    QVERIFY(rVal);
-    QVERIFY(!existsAfterDelete);
-}
-
-//LibTorrent Delta Patching Tests
-
-//Creates clean directory and file stucture for delta patch tests.
-void AfiSyncTest::beforeDelta()
-{
-    FileUtils::copy(FILES_PATH, TMP_PATH);
-    FileUtils::copy(PATCHES_DIR, TMP_PATH + "/1/" + DELTA_PATCH_NAME);
-    FileUtils::copy(PATCHES_DIR, TMP_PATH + "/2/" + DELTA_PATCH_NAME);
-    FileUtils::copy(PATCHES_DIR, TMP_PATH + "/3/" + DELTA_PATCH_NAME);
-    QDir().mkpath(PATCHES_DIR);
-    QDir().mkpath(TMP_PATH);
-    patcher_ = new DeltaPatcher(PATCHES_DIR);
-}
-
-void AfiSyncTest::afterDelta()
-{
-    QDir(TMP_PATH).removeRecursively();
-    delete patcher_;
-}
-
-void AfiSyncTest::hash()
-{
-    beforeDelta();
-    QList<QFileInfo> files;
-    QDirIterator it("/home/niko/QTProjects/archiver/tests/@ace350",
-                    QDir::Files, QDirIterator::Subdirectories);
-    while (it.hasNext())
+    QEventLoop loop;
+    DBG << "Main thread event process status:" << loop.processEvents();
+    if (model_)
     {
-        QFileInfo file = it.next();
-        if (!file.fileName().endsWith(".pbo"))
-            continue;
-
-        files.append(it.next());
+        delete model_;
+        model_ = nullptr;
     }
-    qDebug() << files.size();
-    afterDelta();
-    QCOMPARE(AHasher::hash(files), QString("BDKZ"));
-}
-
-void AfiSyncTest::delta()
-{
-    beforeDelta();
-    QDir patchesDir(PATCHES_DIR);
-    patchesDir.removeRecursively();
-    patchesDir.mkpath(".");
-    bool rVal = patcher_->delta(MOD_PATH_1, MOD_PATH_2);
-    afterDelta();
-    QVERIFY(rVal);
-}
-
-void AfiSyncTest::chainDelta()
-{
-    beforeDelta();
-    QDir patchesDir(PATCHES_DIR);
-    patchesDir.removeRecursively();
-    patchesDir.mkpath(".");
-    bool rVal1 = patcher_->delta(MOD_PATH_1, MOD_PATH_2);
-    bool rVal2 = patcher_->delta(MOD_PATH_2, MOD_PATH_3);
-    afterDelta();
-    QVERIFY(rVal1);
-    QVERIFY(rVal2);
-}
-
-void AfiSyncTest::chainPatch()
-{
-    beforeDelta();
-    QEventLoop loop;
-    QObject::connect(patcher_, SIGNAL(patched(QString, bool)), &loop, SLOT(quit()));
-    patcher_->patch(MOD_PATH_1);
-    qDebug() << "Waiting.. patched signal";
-    loop.exec();
-    qDebug() << "Patched signal received";
-    QString hash1 = AHasher::hash(MOD_PATH_1);
-    QString hash2 = AHasher::hash(MOD_PATH_3);
-    afterDelta();
-    QCOMPARE(hash1, hash2);
-}
-
-void AfiSyncTest::torrentName()
-{
-    beforeDelta();
-    handle_ = createHandle();
-    QVERIFY(handle_.torrent_file() != nullptr);
-    QString name = QString::fromStdString(handle_.torrent_file()->name());
-    afterDelta();
-    QCOMPARE(name, DELTA_PATCH_NAME);
-}
-
-void AfiSyncTest::patch()
-{
-    beforeDelta();
-    QEventLoop loop;
-    QObject::connect(patcher_, SIGNAL(patched(QString, bool)), &loop, SLOT(quit()));
-    patcher_->patch(MOD_PATH_1);
-    qDebug() << "Waiting.. patched signal";
-    loop.exec();
-    qDebug() << "Patched signal received";
-    QString hash1 = AHasher::hash(MOD_PATH_1);
-    QString hash2 = AHasher::hash(MOD_PATH_3);
-    afterDelta();
-    QCOMPARE(hash1, hash2);
+    //Wait for worker thread to finish.
+    DBG << "Worker thread wait status:" << Global::workerThread->wait();
 }
 
 libtorrent::torrent_handle AfiSyncTest::createHandle(const QString& url, const QString& modDownloadPath)
@@ -411,6 +205,292 @@ libtorrent::torrent_handle AfiSyncTest::createHandle(const QString& url, const Q
     return handle;
 }
 
+//JsonReader Tests
+
+void AfiSyncTest::jsonReaderBasic()
+{
+    startTestCase();
+
+    reader_.fillEverything(root_, "repoBasic.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
+
+    cleanupTestCase();
+}
+
+void AfiSyncTest::jsonReader2Repos()
+{
+    startTestCase();
+
+    reader_.fillEverything(root_, "2repos1.json");
+    QCOMPARE(root_->childItems().size(), 2);
+
+    cleanupTestCase();
+}
+
+void AfiSyncTest::jsonReaderModUpdate()
+{
+    startTestCase();
+
+    reader_.fillEverything(root_, "repoBasic.json");
+    reader_.fillEverything(root_, "repoUp1.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
+    QCOMPARE(root_->childItems().at(0)->mods().at(1)->name(), QString("@st_nametags"));
+
+    cleanupTestCase();
+}
+
+void AfiSyncTest::jsonReaderModRemove()
+{
+    startTestCase();
+
+    reader_.fillEverything(root_, "repoUp1.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
+    reader_.fillEverything(root_, "repoBasic.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
+
+    cleanupTestCase();
+}
+
+void AfiSyncTest::jsonReaderRepoRename()
+{
+    startTestCase();
+
+    reader_.fillEverything(root_, "repoBasic.json");
+    reader_.fillEverything(root_, "repoRename.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary 2"));
+}
+
+void AfiSyncTest::jsonReaderAddRepo()
+{
+    startTestCase();
+
+    reader_.fillEverything(root_, "repoBasic.json");
+    reader_.fillEverything(root_, "2repos1.json");
+    QCOMPARE(root_->childItems().size(), 2);
+
+    cleanupTestCase();
+}
+
+void AfiSyncTest::jsonReaderRemoveRepo()
+{
+    startTestCase();
+
+    reader_.fillEverything(root_, "2repos1.json");
+    //Produces getHandle error because fake torrents cannot be downloaded!
+    reader_.fillEverything(root_, "repoBasic.json");
+    QCOMPARE(root_->childItems().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary"));
+
+    cleanupTestCase();
+}
+
+void AfiSyncTest::jsonReaderMoveMod()
+{
+    startTestCase();
+
+    reader_.fillEverything(root_, "2repos1.json");
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
+    QCOMPARE(root_->childItems().at(1)->mods().size(), 1);
+    QCOMPARE(root_->childItems().at(0)->mods().at(1)->name(), QString("@st_nametags"));
+    reader_.fillEverything(root_, "2repos2.json");
+    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
+    QCOMPARE(root_->childItems().at(1)->mods().size(), 2);
+    QCOMPARE(root_->childItems().at(1)->mods().at(1)->name(), QString("@st_nametags"));
+
+    cleanupTestCase();
+}
+
+void AfiSyncTest::addRemoveFolder()
+{
+    startTestCase();
+
+    sync_->addFolder(TORRENT_1, "/home/niko/Downloads/ltTest", "@vt5");
+    bool exists = sync_->folderExists(TORRENT_1);
+    QCOMPARE(exists, true);
+    bool rVal = sync_->removeFolder(TORRENT_1);
+    QCOMPARE(rVal, true);
+    exists = sync_->folderExists(TORRENT_1);
+    QCOMPARE(exists, false);
+
+    cleanupTestCase();
+}
+
+void AfiSyncTest::getFilesUpper()
+{
+    startTestCase();
+
+    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
+    QSet<QString> files = sync_->folderFilesUpper(TORRENT_1);
+    QCOMPARE(files.size(), 3);
+    sync_->removeFolder(TORRENT_1);
+
+    cleanupTestCase();
+}
+
+void AfiSyncTest::getFolderKeys()
+{
+    startTestCase();
+
+    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
+    QCOMPARE(sync_->folderKeys().size(), 1);
+    QCOMPARE(sync_->folderKeys().at(0), TORRENT_1.toLower());
+    sync_->removeFolder(TORRENT_1);
+
+    cleanupTestCase();
+}
+
+void AfiSyncTest::setFolderPaused()
+{
+    startTestCase();
+
+    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
+    sync_->setFolderPaused(TORRENT_1, true);
+    QCOMPARE(sync_->folderPaused(TORRENT_1), true);
+    sync_->removeFolder(TORRENT_1);
+
+    cleanupTestCase();
+}
+
+void AfiSyncTest::getEta()
+{
+    startTestCase();
+
+    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
+    int eta = sync_->folderEta(TORRENT_1);
+    qDebug() << "eta =" << eta;
+    QVERIFY(eta > 0);
+    sync_->removeFolder(TORRENT_1);
+    cleanupTestCase();
+}
+
+//Creates model, adds folder, deletes model, creates model again. Added folder should still exist.
+void AfiSyncTest::saveAndLoad()
+{
+    QSKIP("Delay");
+
+    ISync* sync = new LibTorrentApi();
+
+    QDir().mkpath(TMP_PATH);
+    settings_->setModDownloadPath(TMP_PATH);
+    sync->addFolder(TORRENT_1, QFileInfo(TMP_PATH).absoluteFilePath(), "@vt5");
+    delete sync;
+    QThread::sleep(10);
+    sync = new LibTorrentApi();
+
+    bool exists = sync->folderExists(TORRENT_1);
+    bool rVal = sync->removeFolder(TORRENT_1);
+    bool existsAfterDelete = sync->folderExists(TORRENT_1);
+    QDir(TMP_PATH).removeRecursively();
+    QVERIFY(exists);
+    QVERIFY(rVal);
+    QVERIFY(!existsAfterDelete);
+}
+
+//LibTorrent Delta Patching Tests
+
+//Creates clean directory and file stucture for delta patch tests.
+void AfiSyncTest::beforeDelta()
+{
+    cleanupTestCase();
+
+    FileUtils::copy(PATCHING_FILES_PATH, TMP_PATH);
+    FileUtils::copy(PATCHES_PATH, TMP_PATH + "/1/" + DELTA_PATCH_NAME);
+    FileUtils::copy(PATCHES_PATH, TMP_PATH + "/2/" + DELTA_PATCH_NAME);
+    FileUtils::copy(PATCHES_PATH, TMP_PATH + "/3/" + DELTA_PATCH_NAME);
+}
+
+void AfiSyncTest::afterDelta()
+{
+    QDir tmpDir = QDir(TMP_PATH);
+    FileUtils::safeRemoveRecursively(tmpDir);
+}
+
+void AfiSyncTest::hash()
+{
+    beforeDelta();
+    QList<QFileInfo> files;
+    QDirIterator it("/home/niko/QTProjects/archiver/tests/@ace350",
+                    QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext())
+    {
+        QFileInfo file = it.next();
+        if (!file.fileName().endsWith(".pbo"))
+            continue;
+
+        files.append(it.next());
+    }
+    qDebug() << files.size();
+    afterDelta();
+    QCOMPARE(AHasher::hash(files), QString("BDKZ"));
+}
+
+void AfiSyncTest::delta()
+{
+    beforeDelta();
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
+
+    QDir patchesDir(PATCHES_PATH);
+    patchesDir.removeRecursively();
+    patchesDir.mkpath(".");
+    bool rVal = patcher->delta(MOD_PATH_1, MOD_PATH_2);
+    delete patcher;
+    afterDelta();
+    QVERIFY(rVal);
+}
+
+void AfiSyncTest::chainDelta()
+{
+    beforeDelta();
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
+
+    QDir patchesDir(PATCHES_PATH);
+    patchesDir.removeRecursively();
+    patchesDir.mkpath(".");
+    bool rVal1 = patcher->delta(MOD_PATH_1, MOD_PATH_2);
+    bool rVal2 = patcher->delta(MOD_PATH_2, MOD_PATH_3);
+    delete patcher;
+    afterDelta();
+    QVERIFY(rVal1);
+    QVERIFY(rVal2);
+}
+
+void AfiSyncTest::patch()
+{
+    //QSKIP("Fatal error when ran with other tests");
+
+    beforeDelta();
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
+
+    QEventLoop loop;
+    QObject::connect(patcher, SIGNAL(patched(QString, bool)), &loop, SLOT(quit()));
+    patcher->patch(MOD_PATH_1);
+    qDebug() << "Waiting... patched signal";
+    loop.exec();
+    qDebug() << "Patched signal received";
+    QString hash1 = AHasher::hash(MOD_PATH_1);
+    QString hash2 = AHasher::hash(MOD_PATH_3);
+    delete patcher;
+    afterDelta();
+    QCOMPARE(hash1, hash2);
+}
+
+void AfiSyncTest::torrentName()
+{
+    beforeDelta();
+    handle_ = createHandle();
+    QVERIFY(handle_.torrent_file() != nullptr);
+    QString name = QString::fromStdString(handle_.torrent_file()->name());
+    afterDelta();
+    QCOMPARE(name, DELTA_PATCH_NAME);
+}
+
 void AfiSyncTest::patchAvailable()
 {
     beforeDelta();
@@ -446,8 +526,9 @@ void AfiSyncTest::managerPatchAvailable()
 {
     beforeDelta();
     settings_->setModDownloadPath(TMP_PATH + "/1");
-    DeltaManager manager(handle_);
-    bool rVal = manager.patchAvailable(MOD_NAME_1);
+    DeltaManager* manager = new DeltaManager(handle_);
+    bool rVal = manager->patchAvailable(MOD_NAME_1);
+    delete manager;
     afterDelta();
     QVERIFY(rVal);
 }
@@ -456,8 +537,9 @@ void AfiSyncTest::managerPatchAvailableNeg()
 {
     beforeDelta();
     settings_->setModDownloadPath(TMP_PATH + "/1");
-    DeltaManager manager(handle_);
-    bool rVal = manager.patchAvailable("@doesnotexist");
+    DeltaManager* manager = new DeltaManager(handle_);
+    bool rVal = manager->patchAvailable("@doesnotexist");
+    delete manager;
     afterDelta();
     QVERIFY(!rVal);
 }
@@ -478,11 +560,13 @@ void AfiSyncTest::managerContainsNeg()
 {
     beforeDelta();
     settings_->setModDownloadPath(TMP_PATH + "/1");
-    DeltaManager manager(handle_);
-    bool rVal = manager.contains("http://doesnotexist.org/no.torrent");
+    DeltaManager* manager = new DeltaManager(handle_);
+    bool rVal = manager->contains("http://doesnotexist.org/no.torrent");
+    delete manager;
     afterDelta();
     QVERIFY(!rVal);
 }
+
 
 void AfiSyncTest::managerPatch()
 {
@@ -502,60 +586,21 @@ void AfiSyncTest::managerPatchNeg()
     afterDelta();
 }
 
-void AfiSyncTest::deltaExtraFileDeletion()
+void AfiSyncTest::deltaDownloadDownloader()
 {
     beforeDelta();
     QString modsPath = TMP_PATH + "/1";
-    handle_ = createHandle("", modsPath);
-    QString tmpTorrent = modsPath + "/afisync_patches/afisync_patches_1.torrent";
+    QDir patchesDir = QDir(modsPath + "/" + DELTA_PATCH_NAME);
+    patchesDir.removeRecursively();
 
-    settings_->setModDownloadPath(modsPath);
-    FileUtils::copy(TORRENT_2, tmpTorrent);
-    DeltaManager manager(handle_);
-    QEventLoop loop;
-    manager.patch("@mod1", "http://fakeurl.com/@mod1_3.torrent");
-    connect(&manager, SIGNAL(patched(QString, QString, bool)), &loop, SLOT(quit()));
-    loop.exec();
-    bool exists = QFile(tmpTorrent).exists();
-    afterDelta();
-    QVERIFY(!exists);
-}
-
-void AfiSyncTest::deltaDownloadDownloader()
-{
-   beforeDelta();
-   QString modsPath = TMP_PATH + "/1";
-   QDir patchesDir = QDir(modsPath + "/" + DELTA_PATCH_NAME);
-   patchesDir.removeRecursively();
-
-   handle_ = createHandle(TORRENT_4, modsPath);
-   DeltaDownloader downloader(handle_);
-   downloader.downloadPatch("@mod1");
-   while (downloader.patchDownloaded("@mod1"))
-   {
-      QThread::sleep(5);
-      qDebug() << "Waiting...";
-   }
-}
-
-void AfiSyncTest::deltaDownload()
-{
-   beforeDelta();
-   QString modsPath = TMP_PATH + "/1";
-   QDir patchesDir = QDir(modsPath + "/" + DELTA_PATCH_NAME);
-   patchesDir.removeRecursively();
-
-   handle_ = createHandle(TORRENT_4, modsPath);
-   settings_->setModDownloadPath(modsPath);
-   DeltaManager manager(handle_);
-
-   QEventLoop loop;
-   QObject::connect(&manager, SIGNAL(patched(QString, QString, bool)), &loop, SLOT(quit()));
-   manager.patch("@mod1", TORRENT_3);
-   qDebug() << "Waiting for patched signal...";
-   loop.exec();
-   qDebug() << "Patched signal received";
-   afterDelta();
+    handle_ = createHandle(TORRENT_4, modsPath);
+    DeltaDownloader downloader(handle_);
+    downloader.downloadPatch("@mod1");
+    while (downloader.patchDownloaded("@mod1"))
+    {
+        QThread::sleep(5);
+        qDebug() << "Waiting...";
+    }
 }
 
 //FileUtils tests
@@ -566,7 +611,7 @@ void AfiSyncTest::copy()
     QDir dstDir(DST_PATH);
     bool rVal = dstDir.exists();
     bool childDirExists = QFileInfo(DST_PATH + "/1").isDir();
-    dstDir.removeRecursively(); //cleanup
+    FileUtils::safeRemoveRecursively(dstDir); //Cleanup
     QVERIFY(rVal);
     QVERIFY(childDirExists);
 }

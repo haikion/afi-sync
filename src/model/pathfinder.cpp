@@ -69,10 +69,12 @@ QString PathFinder::arma3MyDocuments()
 //Prints error if path is default which means it wasn't found from regs.
 void PathFinder::checkPath(const QString& path, const QString& name)
 {
+    #ifndef Q_OS_LINUX
     if (path == QCoreApplication::applicationDirPath()
             && !Global::guiless)
     {
         DBG << "ERROR: Unable to find path for" << name << "."
             << "Using default:" << path;
     }
+    #endif
 }

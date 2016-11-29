@@ -135,6 +135,12 @@ void TreeModel::updateSpeed(qint64 download, qint64 upload)
     }
 }
 
+//For testability
+RootItem* TreeModel::rootItem() const
+{
+    return rootItem_;
+}
+
 bool TreeModel::isRepository(const QModelIndex& index) const
 {
     TreeItem* item = static_cast<TreeItem*>(index.internalPointer());
@@ -156,6 +162,12 @@ int TreeModel::columnCount(const QModelIndex& parent) const
 
 void TreeModel::updateView(TreeItem* item, int row)
 {
+    if (haltGui_)
+    {
+        DBG << "UI updates halted.";
+        return;
+    }
+
     if (row == -1)
         row = item->row();
 

@@ -31,11 +31,10 @@ const QString DeltaPatcher::PATCH_DIR = "delta_patch";
 DeltaPatcher::DeltaPatcher(const QString& patchesPath):
     QObject(nullptr),
     bytesPatched_(0),
-    totalBytes_(0),
-    thread_(new QThread(this))
+    totalBytes_(0)
 {
-    moveToThread(thread_);
-    thread_->start();
+    moveToThread(&thread_);
+    thread_.start();
     QMetaObject::invokeMethod(this, "threadConstructor", Qt::BlockingQueuedConnection,
                               Q_ARG(QString, patchesPath));
 }
@@ -45,15 +44,15 @@ void DeltaPatcher::threadConstructor(const QString& patchesPath)
 {
     patchesFi_ = new QFileInfo(patchesPath);
     process_ = new QProcess(this);
+    console_ = new Console(this);
 }
 
 void DeltaPatcher::stop()
 {
-    if (thread_ && thread_->isRunning())
+    if (thread_.isRunning())
     {
         process_->kill();
-        thread_->terminate();
-        delete thread_;
+        thread_.terminate();
     }
 }
 
@@ -198,15 +197,6 @@ bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
     return patchExtracted(extractedPath, modPath);
 }
 
-//ToDo: Figure out what to do with paths.
-bool DeltaPatcher::runCmd(const QString& cmd)
-{
-    DBG << "Running command:" << cmd;
-
-    process_->start(cmd);
-    return process_->waitForFinished(TIMEOUT);
-}
-
 bool DeltaPatcher::waitFinished(QProcess* process) const
 {
     if (process->state() == QProcess::ProcessState::NotRunning)
@@ -276,7 +266,7 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
         }
         QString targetFilePath = targetPath + relPath;
 
-        bool rVal = runCmd(XDELTA_EXECUTABLE + " -d -s " + " \""
+        bool rVal = console_->runCmd(XDELTA_EXECUTABLE + " -d -s " + " \""
                            + QDir::toNativeSeparators(targetFilePath) + "\" \""
                            + QDir::toNativeSeparators(diffPath) + "\" \""
                            + QDir::toNativeSeparators(patchedPath)) + "\"";
@@ -361,7 +351,7 @@ bool DeltaPatcher::delta(const QString& oldDir, QString laterPath)
         QString oldPath = QDir::toNativeSeparators(oldFile.absoluteFilePath());
         QString laterPath = QDir::toNativeSeparators(newPath);
         //Creates uncompressed delta patch file
-        QMetaObject::invokeMethod(this, "runCmd", Qt::BlockingQueuedConnection,
+        QMetaObject::invokeMethod(console_, "runCmd", Qt::BlockingQueuedConnection,
                                   Q_ARG(QString, XDELTA_EXECUTABLE + " -e -S none -s \""
                                         + oldPath + "\" \"" + laterPath + "\" \"" + outputPath + "\""));
     }
@@ -379,7 +369,7 @@ bool DeltaPatcher::extract(const QString& zipPath)
 {
     DBG << "Extracting" << zipPath;
     QFileInfo fi = QFileInfo(zipPath);
-    return runCmd(SZIP_EXECUTABLE + " -y x \""
+    return console_->runCmd(SZIP_EXECUTABLE + " -y x \""
            + QDir::toNativeSeparators(zipPath)
            + "\" -o\"" + QDir::toNativeSeparators(fi.absolutePath()) + "\"");
 }
@@ -394,7 +384,7 @@ void DeltaPatcher::compress(const QString& dir, const QString& archivePath)
     //-md=32m dictionary size = 32 megabytes
     //-ms=on solid archive = on
     //-mx=9 compression level
-    runCmd(SZIP_EXECUTABLE + " a -r -y -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on "
+    console_->runCmd(SZIP_EXECUTABLE + " a -r -y -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on "
            + QDir::toNativeSeparators(dir) + " "
            + QDir::toNativeSeparators(archivePath));
 }

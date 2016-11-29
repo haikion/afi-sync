@@ -76,7 +76,7 @@ bool DeltaManager::patch(const QString& modName, const QString& key)
     keyHash_.insert(key, modName);
     inDownload_.insert(modName);
     DBG << "Starting updates";
-    QMetaObject::invokeMethod(updateTimer_, "start", Qt::BlockingQueuedConnection);
+    QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
     if (downloader_->patchDownloaded(modName))
     {
         patcher_->patch(SettingsModel::modDownloadPath() + "/" + modName);

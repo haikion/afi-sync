@@ -21,6 +21,7 @@ void TreeItem::appendChild(TreeItem* item, int index)
 
 bool TreeItem::removeChild(TreeItem* child)
 {
+    //return true;
     return m_childItems.removeAll(child) > 0;
 }
 
@@ -47,6 +48,8 @@ TreeItem* TreeItem::parentItem()
 
 QList<TreeItem*> TreeItem::childItems() const
 {
+    //Crashes here beause m_childItems.d == nullptr
+    DBG << m_childItems.size();
     return m_childItems;
 }
 

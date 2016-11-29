@@ -36,8 +36,11 @@ private:
     QJsonDocument readJsonFile(const QString& path) const;
     QVariantMap updateJson(const QString& url);
     QString updateUrl(const QVariantMap& jsonMap) const;
-    QSet<QString> addedMods(const RootItem* root) const;
     QHash<QString, Repository*> addedRepos(const RootItem* root) const;
+    QSet<QString> addedMods(const Repository* repo) const;
+    void removeDeprecatedRepos(RootItem* root, const QSet<QString> jsonRepos);
+    void removeDeprecatedMods(Repository* repo, const QSet<QString> jsonMods);
+    QHash<QString, Mod*> createModHash(const RootItem* root) const;
 };
 
 #endif // JSONREADER_H

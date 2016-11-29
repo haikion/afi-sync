@@ -125,10 +125,8 @@ bool RootItem::stopUpdates()
     updateTimer_.stop();
     repoTimer_.stop();
     for (Repository* repo : childItems())
-    {
         repo->stopUpdates();
-    }
-    parent_->setHaltGui(false);
+
     return rVal;
 }
 
@@ -214,7 +212,7 @@ QList<Repository*> RootItem::childItems() const
 
 void RootItem::updateView(TreeItem* item, int row)
 {
-    if (initializing_)
+    if (initializing_ || parent_ == nullptr)
     {
         //Wait for repos to load
         return;

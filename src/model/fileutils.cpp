@@ -8,6 +8,8 @@
 #include "fileutils.h"
 #include "settingsmodel.h"
 
+QStringList FileUtils::safeSubpaths_;
+
 //https://qt.gitorious.org/qt-creator/qt-creator/source/1a37da73abb60ad06b7e33983ca51b266be5910e:src/app/main.cpp#L13-189
 // taken from utils/fileutils.cpp. We can not use utils here since that depends app_version.h.
 bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
@@ -243,6 +245,7 @@ bool FileUtils::pathIsSafe(const QString& path)
     safeSubpaths.append(SettingsModel::arma3Path());
     safeSubpaths.append(SettingsModel::teamSpeak3Path());
     safeSubpaths.append(QCoreApplication::applicationDirPath());
+    safeSubpaths.append(safeSubpaths_);
 
     for (QString safeSubpath : safeSubpaths)
     {
@@ -254,4 +257,9 @@ bool FileUtils::pathIsSafe(const QString& path)
 
     DBG << "ERROR: " << path << "not in safe subpaths" << safeSubpaths << ". Operation aborted!";
     return false;
+}
+
+void FileUtils::appendSafePath(const QString& path)
+{
+    safeSubpaths_.append(path);
 }

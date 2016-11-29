@@ -3,6 +3,7 @@
 
 #include <QDir>
 #include <QString>
+#include <QStringList>
 
 class FileUtils
 {
@@ -20,8 +21,12 @@ public:
     static bool safeRemove(const QString& filePath);
     static bool safeRemoveRecursively(QDir& dir);
     static bool safeRename(const QString& srcPath, const QString& dstPath);
+    //For testability
+    static void appendSafePath(const QString& path);
 
 private:
+    static QStringList safeSubpaths_;
+
     static bool pathIsSafe(const QString& path);
     static QString casedPath(const QString& path);
 };

@@ -12,6 +12,7 @@ public:
     Console(QObject* parent = nullptr);
     ~Console();
 
+public slots:
     bool runCmd(const QString& cmd);
 
 private:

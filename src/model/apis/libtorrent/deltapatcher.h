@@ -12,6 +12,7 @@
 #include <QThread>
 #include <QDir>
 #include <QQueue>
+#include "../../console.h"
 
 class DeltaPatcher: public QObject
 {
@@ -50,8 +51,9 @@ private:
     qint64 totalBytes_;
     QProcess* process_;
     QFileInfo* patchesFi_;
-    QThread* thread_;
+    QThread thread_;
     QString patchingMod_;
+    Console* console_;
 
     bool extract(const QString& zipPath);
     bool createEmptyDir(QDir dir) const;
@@ -66,8 +68,6 @@ private slots:
     void threadConstructor(const QString& patchesPath);
     void patchDirSync(const QString& modPath);
     void compress(const QString& dir, const QString& archivePath);
-    bool runCmd(const QString& cmd);
-
 };
 
 #endif // DELTAPATCHER_H
