@@ -48,8 +48,8 @@ TreeItem* TreeItem::parentItem()
 
 QList<TreeItem*> TreeItem::childItems() const
 {
-    //Crashes here beause m_childItems.d == nullptr
-    DBG << m_childItems.size();
+    //FIXME (Difficulty: High, Priority: medium):
+    //Unit tests crash here beause m_childItems.d == nullptr
     return m_childItems;
 }
 

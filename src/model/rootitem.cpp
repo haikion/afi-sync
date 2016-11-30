@@ -48,6 +48,7 @@ RootItem::RootItem(unsigned port,
     Global::workerThread->setObjectName("workerThread");
     Global::workerThread->start();
     DBG << "Worker thread started";
+    startUpdates();
 }
 
 RootItem::~RootItem()
@@ -167,6 +168,7 @@ void RootItem::startUpdates()
 
         repo->startUpdates();
     }
+    parent_->setHaltGui(false);
 }
 
 void RootItem::resetSyncSettings()
