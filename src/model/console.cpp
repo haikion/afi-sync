@@ -1,4 +1,3 @@
-#include <QEventLoop>
 #include <QTimer>
 #include "console.h"
 #include "debug.h"

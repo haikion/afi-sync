@@ -1,7 +1,6 @@
 #include "debug.h"
 #include <QTimer>
 #include <QtConcurrent/QtConcurrent>
-#include <QEventLoop>
 #include <QDirIterator>
 #include "fileutils.h"
 #include "global.h"

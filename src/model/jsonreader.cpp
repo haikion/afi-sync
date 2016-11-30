@@ -2,7 +2,6 @@
 #include <QFileInfo> //Debug prints
 #include <QNetworkReply>
 #include <QVariantMap>
-#include <QEventLoop>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QJsonArray>
