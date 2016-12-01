@@ -1,5 +1,6 @@
 #include <QFileInfo>
 #include <QDirIterator>
+#include <QThread>
 #include "libtorrent/torrent_info.hpp"
 #include "../../debug.h"
 #include "../../global.h"

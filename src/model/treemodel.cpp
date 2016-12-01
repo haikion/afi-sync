@@ -10,7 +10,6 @@
 #include "debug.h"
 #include <QDir>
 #include <QStringList>
-#include <QThread>
 #include <QFile>
 #include <QCoreApplication>
 #include "treeitem.h"

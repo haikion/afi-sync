@@ -1,7 +1,6 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 #include <QString>
-#include <QThread>
 #include <QTextStream>
 #include "treemodel.h"
 #include "version.h"

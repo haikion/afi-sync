@@ -35,9 +35,6 @@ Mod::~Mod()
 
 void Mod::init()
 {
-    DBG << "name =" << name() << "current thread:" << QThread::currentThread();
-        //<< "Worker thread:" << Global::workerThread;
-
     if (!isOptional())
         setTicked(true);
 
@@ -206,9 +203,6 @@ QString Mod::joinText()
 //download.
 void Mod::repositoryChanged(bool offline)
 {
-    DBG << "name =" << name() << "current thread:" << QThread::currentThread();
-        //<< "Worker thread:" << Global::workerThread;
-
     //just in case
     if (!sync_)
     {

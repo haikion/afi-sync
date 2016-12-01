@@ -1,5 +1,6 @@
 #include <map>
 #include <fstream>
+
 #include <libtorrent/alert_manager.hpp>
 #include <libtorrent/time.hpp>
 #include <libtorrent/torrent_info.hpp>
@@ -13,9 +14,12 @@
 #include <libtorrent/session.hpp>
 #include <libtorrent/bdecode.hpp>
 #include <libtorrent/create_torrent.hpp>
+
 #include <QFile>
 #include <QFileInfo>
 #include <QDirIterator>
+#include <QThread>
+
 #include "../../settingsmodel.h"
 #include "../../global.h"
 #include "../../debug.h"

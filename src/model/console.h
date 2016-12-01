@@ -2,7 +2,6 @@
 #define CONSOLE_H
 
 #include <QObject>
-#include <QThread>
 #include <QString>
 #include <QProcess>
 
@@ -18,7 +17,6 @@ public slots:
 
 private:
     QProcess* process_;
-    QThread thread_;
 
     bool waitFinished(QProcess* process) const;
 };

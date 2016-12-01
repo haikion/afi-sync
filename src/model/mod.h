@@ -1,7 +1,6 @@
 #ifndef MODITEM_H
 #define MODITEM_H
 
-#include <QThread>
 #include <QObject>
 #include <QTimer>
 #include <QSet>
