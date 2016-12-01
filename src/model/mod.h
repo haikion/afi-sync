@@ -40,7 +40,6 @@ public:
 
 public slots:
     void repositoryChanged(bool offline = false);
-    void threadDestructor();
     bool removeRepository(Repository* repository);
 
 private:
@@ -48,7 +47,7 @@ private:
 
     QString key_;
     ISync* sync_;
-    QTimer* updateTimer_;
+    QTimer updateTimer_;
     QSet<Repository*> repositories_;
     unsigned waitTime_;
     QVector<ModAdapter*> adapters_;

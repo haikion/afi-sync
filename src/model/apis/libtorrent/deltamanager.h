@@ -48,7 +48,7 @@ private:
     CiHash<QString> keyHash_;
     QSet<QString> inDownload_;
     libtorrent::torrent_handle handle_;
-    QTimer* updateTimer_;
+    QTimer updateTimer_;
     QSet<QString> torrentFilesUpper();
     void deleteExtraFiles();
 };

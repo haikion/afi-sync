@@ -24,3 +24,12 @@ bool Console::runCmd(const QString& cmd)
     DBG << process_->readAll().toStdString().c_str();
     return rVal;
 }
+
+void Console::terminate()
+{
+    if (process_->state() == QProcess::ProcessState::Running)
+    {
+        DBG << "Terminating process" << process_->program();
+        process_->terminate();
+    }
+}

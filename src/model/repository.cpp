@@ -90,8 +90,7 @@ void Repository::changed(bool offline)
 {
     for (Mod* mod : mods())
     {
-        QMetaObject::invokeMethod(mod, "repositoryChanged",
-                                  Qt::QueuedConnection, Q_ARG(bool, offline));
+        mod->repositoryChanged(offline);
     }
 }
 

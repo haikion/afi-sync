@@ -14,10 +14,12 @@ public:
 
 public slots:
     bool runCmd(const QString& cmd);
+    void terminate();
 
 private:
     QProcess* process_;
     QThread thread_;
+
     bool waitFinished(QProcess* process) const;
 };
 

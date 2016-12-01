@@ -20,7 +20,6 @@ namespace Constants {
 
 namespace Global
 {
-    extern QThread* workerThread;
     extern TreeModel* model;
     extern QTextStream* logStream;
     extern ISync* sync;

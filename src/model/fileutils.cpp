@@ -245,6 +245,7 @@ bool FileUtils::pathIsSafe(const QString& path)
     safeSubpaths.append(SettingsModel::arma3Path());
     safeSubpaths.append(SettingsModel::teamSpeak3Path());
     safeSubpaths.append(QCoreApplication::applicationDirPath());
+    safeSubpaths.append(".");
     safeSubpaths.append(safeSubpaths_);
 
     for (QString safeSubpath : safeSubpaths)

@@ -127,7 +127,6 @@ AfiSyncTest::AfiSyncTest():
 {
    handle_ = createHandle();
    settings_->setModDownloadPath(TMP_PATH + "/1");
-   FileUtils::appendSafePath(".");
 }
 
 //Helper functions
@@ -153,8 +152,6 @@ void AfiSyncTest::cleanupTest()
         delete model_;
         model_ = nullptr;
     }
-    //Wait for worker thread to finish.
-    DBG << "Worker thread wait status:" << Global::workerThread->wait();
 }
 
 libtorrent::torrent_handle AfiSyncTest::createHandle(const QString& url, const QString& modDownloadPath)
@@ -501,7 +498,7 @@ void AfiSyncTest::jsonReaderBasic()
     QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
     QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
 
-    //cleanupTest();
+    cleanupTest();
 }
 
 void AfiSyncTest::jsonReader2Repos()
@@ -511,7 +508,7 @@ void AfiSyncTest::jsonReader2Repos()
     reader_.fillEverything(root_, "2repos1.json");
     QCOMPARE(root_->childItems().size(), 2);
 
-    //cleanupTest();
+    cleanupTest();
 }
 
 void AfiSyncTest::jsonReaderModUpdate()
@@ -524,7 +521,7 @@ void AfiSyncTest::jsonReaderModUpdate()
     QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
     QCOMPARE(root_->childItems().at(0)->mods().at(1)->name(), QString("@st_nametags"));
 
-    //cleanupTest();
+    cleanupTest();
 }
 
 void AfiSyncTest::jsonReaderModRemove()
@@ -539,7 +536,7 @@ void AfiSyncTest::jsonReaderModRemove()
     QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
     QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
 
-    //cleanupTest();
+    cleanupTest();
 }
 
 void AfiSyncTest::jsonReaderRepoRename()
@@ -551,7 +548,7 @@ void AfiSyncTest::jsonReaderRepoRename()
     QCOMPARE(root_->childItems().size(), 1);
     QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary 2"));
 
-    //cleanupTest();
+    cleanupTest();
 }
 
 void AfiSyncTest::jsonReaderAddRepo()
@@ -562,7 +559,7 @@ void AfiSyncTest::jsonReaderAddRepo()
     reader_.fillEverything(root_, "2repos1.json");
     QCOMPARE(root_->childItems().size(), 2);
 
-    //cleanupTest();
+    cleanupTest();
 }
 
 void AfiSyncTest::jsonReaderRemoveRepo()
@@ -575,7 +572,7 @@ void AfiSyncTest::jsonReaderRemoveRepo()
     QCOMPARE(root_->childItems().size(), 1);
     QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary"));
 
-    //cleanupTest();
+    cleanupTest();
 }
 
 void AfiSyncTest::jsonReaderMoveMod()
@@ -591,7 +588,7 @@ void AfiSyncTest::jsonReaderMoveMod()
     QCOMPARE(root_->childItems().at(1)->mods().size(), 2);
     QCOMPARE(root_->childItems().at(1)->mods().at(1)->name(), QString("@st_nametags"));
 
-   //cleanupTest();
+    cleanupTest();
 }
 
 //Sync tests
@@ -600,7 +597,7 @@ void AfiSyncTest::addRemoveFolder()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, "/home/niko/Downloads/ltTest", "@vt5");
+    sync_->addFolder(TORRENT_1, TMP_PATH, "@vt5");
     bool exists = sync_->folderExists(TORRENT_1);
     QCOMPARE(exists, true);
     bool rVal = sync_->removeFolder(TORRENT_1);
@@ -608,56 +605,56 @@ void AfiSyncTest::addRemoveFolder()
     exists = sync_->folderExists(TORRENT_1);
     QCOMPARE(exists, false);
 
-    //cleanupTest();
+    cleanupTest();
 }
 
 void AfiSyncTest::getFilesUpper()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
+    sync_->addFolder(TORRENT_1, TMP_PATH, "@vt5");
     QSet<QString> files = sync_->folderFilesUpper(TORRENT_1);
     QCOMPARE(files.size(), 3);
     sync_->removeFolder(TORRENT_1);
 
-    //cleanupTest();
+    cleanupTest();
 }
 
 void AfiSyncTest::getFolderKeys()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
+    sync_->addFolder(TORRENT_1, TMP_PATH, "@vt5");
     QCOMPARE(sync_->folderKeys().size(), 1);
     QCOMPARE(sync_->folderKeys().at(0), TORRENT_1.toLower());
     sync_->removeFolder(TORRENT_1);
 
-    //cleanupTest();
+    cleanupTest();
 }
 
 void AfiSyncTest::setFolderPaused()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
+    sync_->addFolder(TORRENT_1, TMP_PATH, "@vt5");
     sync_->setFolderPaused(TORRENT_1, true);
     QCOMPARE(sync_->folderPaused(TORRENT_1), true);
     sync_->removeFolder(TORRENT_1);
 
-    //cleanupTest();
+    cleanupTest();
 }
 
 void AfiSyncTest::getEta()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, "/home/niko/Download/ltTest", "@vt5");
+    sync_->addFolder(TORRENT_1, TMP_PATH, "@vt5");
     int eta = sync_->folderEta(TORRENT_1);
     qDebug() << "eta =" << eta;
     QVERIFY(eta > 0);
     sync_->removeFolder(TORRENT_1);
 
-    //cleanupTest();
+    cleanupTest();
 }
 
 QTEST_MAIN(AfiSyncTest)

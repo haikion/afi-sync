@@ -1,4 +1,3 @@
-#include <QEventLoop>
 #include <QFileInfo>
 #include <QTimer>
 #include <QStringList>
@@ -33,17 +32,26 @@ DeltaPatcher::DeltaPatcher(const QString& patchesPath):
     bytesPatched_(0),
     totalBytes_(0)
 {
+    //Required because patching process is ran
+    //synchronously but still needs to be shutdownable.
     moveToThread(&thread_);
+    thread_.setObjectName("DeltaPatcher Thread");
     thread_.start();
     QMetaObject::invokeMethod(this, "threadConstructor", Qt::BlockingQueuedConnection,
                               Q_ARG(QString, patchesPath));
 }
 
+DeltaPatcher::~DeltaPatcher()
+{
+    thread_.quit();
+    thread_.wait(1000);
+    thread_.terminate();
+    thread_.wait(1000);
+}
 
 void DeltaPatcher::threadConstructor(const QString& patchesPath)
 {
     patchesFi_ = new QFileInfo(patchesPath);
-    process_ = new QProcess(this);
     console_ = new Console(this);
 }
 
@@ -51,7 +59,7 @@ void DeltaPatcher::stop()
 {
     if (thread_.isRunning())
     {
-        process_->kill();
+        console_->terminate();
         thread_.terminate();
     }
 }
@@ -195,28 +203,6 @@ bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
         return false;
     QString extractedPath = QFileInfo(patchPath).absolutePath() + "/" + PATCH_DIR;
     return patchExtracted(extractedPath, modPath);
-}
-
-bool DeltaPatcher::waitFinished(QProcess* process) const
-{
-    if (process->state() == QProcess::ProcessState::NotRunning)
-    {
-        DBG << "ERROR: Process is not running.";
-        return false;
-    }
-
-    QEventLoop loop;
-    QTimer::singleShot(TIMEOUT, &loop, SLOT(quit()));
-    connect(process, SIGNAL(finished(int)), &loop, SLOT(quit()));
-    loop.exec();
-    DBG << process->readAll().toStdString().c_str();
-
-    if (process->exitCode() != 0)
-    {
-        DBG << "ERROR: Execution failed. Exit code =" << process->exitCode();
-        return false;
-    }
-    return true;
 }
 
 //ToDo: Use static dirs

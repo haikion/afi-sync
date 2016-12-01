@@ -9,7 +9,7 @@ SyncNetworkAccessManager::SyncNetworkAccessManager(QObject* parent):
     QNetworkAccessManager(parent)
 {
     moveToThread(&thread_);
-    thread_.setObjectName("SyncNetworkManager thread");
+    thread_.setObjectName("SyncNetworkManager Thread");
     thread_.start();
     DBG << "Thread =" << &thread_ << "id" << thread_.currentThreadId();
 }

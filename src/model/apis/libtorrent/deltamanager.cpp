@@ -14,13 +14,11 @@ DeltaManager::DeltaManager(lt::torrent_handle handle, QObject* parent):
     downloader_(new DeltaDownloader(handle, this)),
     patcher_(new DeltaPatcher(SettingsModel::modDownloadPath()
                               + "/" + Constants::DELTA_PATCHES_NAME)),
-    handle_(handle),
-    updateTimer_(nullptr)
+    handle_(handle)
 {
     connect(patcher_, SIGNAL(patched(QString, bool)), this, SLOT(handlePatched(QString, bool)));
-    updateTimer_ = new QTimer(this);
-    updateTimer_->setInterval(1000);
-    connect(updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
+    updateTimer_.setInterval(1000);
+    connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
 }
 
 DeltaManager::~DeltaManager()
@@ -76,7 +74,7 @@ bool DeltaManager::patch(const QString& modName, const QString& key)
     keyHash_.insert(key, modName);
     inDownload_.insert(modName);
     DBG << "Starting updates";
-    QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
+    updateTimer_.start();
     if (downloader_->patchDownloaded(modName))
     {
         patcher_->patch(SettingsModel::modDownloadPath() + "/" + modName);
@@ -156,12 +154,7 @@ void DeltaManager::handlePatched(const QString& modPath, bool success)
     if (keyHash_.empty())
     {
         deleteExtraFiles(); //Cleanup residue from older delta patches torrent.
-        //Stop updates
-        if (updateTimer_)
-        {
-            delete updateTimer_;
-            updateTimer_ = nullptr;
-        }
+        updateTimer_.stop();
     }
 
     emit patched(key, modName, success);

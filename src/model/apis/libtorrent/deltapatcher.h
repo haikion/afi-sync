@@ -20,6 +20,7 @@ class DeltaPatcher: public QObject
 
 public:
     DeltaPatcher(const QString& patchesPath);
+    ~DeltaPatcher();
 
     //Patches dir to latest version.
     void patch(const QString& modPath);
@@ -49,7 +50,6 @@ private:
 
     qint64 bytesPatched_;
     qint64 totalBytes_;
-    QProcess* process_;
     QFileInfo* patchesFi_;
     QThread thread_;
     QString patchingMod_;
@@ -57,7 +57,6 @@ private:
 
     bool extract(const QString& zipPath);
     bool createEmptyDir(QDir dir) const;
-    bool waitFinished(QProcess* process) const;
     bool patchExtracted(const QString& extractedPath, const QString& targetPath);
     void cleanUp(QDir& deltaDir, QDir& tmpDir);
     int latestVersion(const QString& modName) const;

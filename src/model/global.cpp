@@ -4,7 +4,6 @@
 
 namespace Global
 {
-    QThread* workerThread = new QThread();
     TreeModel* model = nullptr;
     QTextStream* logStream = nullptr;
     ISync* sync = nullptr;

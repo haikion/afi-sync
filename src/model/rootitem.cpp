@@ -45,8 +45,6 @@ RootItem::RootItem(unsigned port,
         connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(removeOrphans()));
     }
     initializing_ = false;
-    Global::workerThread->setObjectName("workerThread");
-    Global::workerThread->start();
     DBG << "Worker thread started";
     startUpdates();
 }
@@ -61,8 +59,6 @@ RootItem::~RootItem()
     //    delete repo;
     //}
     stopUpdates();
-    Global::workerThread->quit();
-    Global::workerThread->wait(3000);
     DBG << "Shutdown";
     sync_->shutdown();
     DBG << "Shutdown done";
@@ -116,7 +112,7 @@ void RootItem::processCompletion()
 void RootItem::rowsChanged()
 {
     //Run only in GUI thread.
-    QMetaObject::invokeMethod(parent_, "rowsChanged", Qt::QueuedConnection);
+    parent_->rowsChanged();
 }
 
 bool RootItem::stopUpdates()
