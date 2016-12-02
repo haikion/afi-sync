@@ -1,7 +1,7 @@
 #include "debug.h"
 #include <QTimer>
-#include <QtConcurrent/QtConcurrent>
 #include <QDirIterator>
+#include <QCoreApplication>
 #include "fileutils.h"
 #include "global.h"
 #include "settingsmodel.h"
@@ -16,11 +16,15 @@ Mod::Mod(const QString& name, const QString& key):
     SyncItem(name, 0),
     key_(key),
     sync_(0),
+    updateTimer_(nullptr),
     waitTime_(0)
 {
     DBG;
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
+    //Enables non lagging UI
+    moveToThread(Global::workerThread);
     qRegisterMetaType<QVector<int>>("QVector<int>");
+    QMetaObject::invokeMethod(this, "threadConstructor", Qt::QueuedConnection);
 }
 
 Mod::~Mod()
@@ -33,17 +37,19 @@ Mod::~Mod()
     }
 }
 
+void Mod::threadConstructor()
+{
+    updateTimer_ = new QTimer(this);
+    updateTimer_->setTimerType(Qt::VeryCoarseTimer);
+    updateTimer_->setInterval(1000);
+    connect(updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
+}
+
 void Mod::init()
 {
     if (!isOptional())
         setTicked(true);
 
-    //Periodically check mod progress
-    //if (!updateTimer_)
-    //    updateTimer_ = new QTimer();
-
-    updateTimer_.setInterval(1000);
-    connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
     repositoryChanged();
     update();
     DBG << "name =" << name() << "key =" << key() << "Completed";
@@ -53,10 +59,15 @@ void Mod::update()
 {
     updateStatus();
     fetchEta();
+    updateView();
+}
+
+void Mod::updateView()
+{
     for (ModAdapter* adp : adapters_)
     {
         //Run in main (UI) thread.
-        adp->updateView();
+        QMetaObject::invokeMethod(adp, "updateView", Qt::QueuedConnection);
     }
 }
 
@@ -129,7 +140,7 @@ bool Mod::stop()
 
     DBG << "Stopping mod transfer. name =" << name();
     sync_->setFolderPaused(key_, true);
-    stopUpdates();
+    stopUpdatesSlot();
     update();
 
     return true;
@@ -242,13 +253,26 @@ QString Mod::key() const
 void Mod::startUpdates()
 {
     DBG << name();
-    updateTimer_.start();
+    QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
 }
 
+//This should always be run in UI Thread
 void Mod::stopUpdates()
 {
     DBG << name();
-    updateTimer_.stop();
+    DBG << Global::workerThread->isRunning();
+    //Updates need to be stopped before object destruction, hence blocking.
+    QMetaObject::invokeMethod(this, "stopUpdatesSlot", Qt::BlockingQueuedConnection);
+    //Process pending updateView request in UI Thread. (Prevents segfault)
+    QCoreApplication::processEvents();
+}
+
+//This should always be run in workerThread
+void Mod::stopUpdatesSlot()
+{
+    updateTimer_->stop();
+    //Process pending update() calls. (Prevents segfault)
+    QCoreApplication::processEvents();
 }
 
 void Mod::appendRepository(Repository* repository)
@@ -263,7 +287,7 @@ void Mod::appendRepository(Repository* repository)
         if (sync_->ready())
         {
             DBG << "name =" << name() << "Calling init directly";
-            init();
+            QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
         }
         else
         {
@@ -271,7 +295,7 @@ void Mod::appendRepository(Repository* repository)
             DBG << "name =" << name() << "initCompleted connection created";
         }
     }
-    repositoryChanged();
+    QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
 }
 
 bool Mod::removeRepository(Repository* repository)
@@ -409,7 +433,7 @@ void Mod::checkboxClicked()
     setTicked(allDisabled);
     DBG << name() << "checked state set to" << ticked();
     //Below cmd will start the download if repository is active.
-    repositoryChanged();
+    QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
 }
 
 bool Mod::reposInactive() const

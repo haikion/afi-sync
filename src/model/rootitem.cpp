@@ -31,6 +31,12 @@ RootItem::RootItem(unsigned port,
     parent_(parentModel),
     port_(port)
 {
+    //Create worker thread
+    Global::workerThread = new QThread();
+    Global::workerThread->setObjectName("workerThread");
+    Global::workerThread->start();
+    DBG << "Worker thread started";
+
     initSync();
     Global::sync = sync_;
     DBG << "initSync completed";
@@ -45,25 +51,33 @@ RootItem::RootItem(unsigned port,
         connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(removeOrphans()));
     }
     initializing_ = false;
-    DBG << "Worker thread started";
     startUpdates();
 }
 
 RootItem::~RootItem()
 {
     DBG;
+    stopUpdates();
     //Causes segfaults (because of workerThread->quit()?) and there is no need for this anyway
     //if destructor is only used during program shutdown.
-    //for (Repository* repo : childItems())
-    //{
-    //    delete repo;
-    //}
-    stopUpdates();
-    DBG << "Shutdown";
+    for (Repository* repo : childItems())
+    {
+        delete repo;
+    }
+    DBG << "Updates stopped";
     sync_->shutdown();
-    DBG << "Shutdown done";
-    //Causes chrashes if BtSync connection is unestablished.
-    //delete sync_;
+    DBG << "Sync shutdown";
+    //Stop worker thread
+    Global::workerThread->quit();
+    Global::workerThread->wait(1000);
+    Global::workerThread->terminate();
+    Global::workerThread->wait(1000);
+    DBG << "Worker thread shutdown. isFinished() =" << Global::workerThread->isFinished();
+    delete Global::workerThread;
+    Global::workerThread = nullptr;
+    DBG << "Worker thread deleted";
+    delete sync_;
+    DBG << "Sync destroyed";
 }
 
 //Removes btsync dirs which

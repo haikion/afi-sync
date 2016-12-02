@@ -49,6 +49,7 @@ private:
     static QSettings* settings_;
     static bool saveDir(const QString& key, const QString& path);
     static QSettings* settings();
+    static QString setting(const QString& key, const QString& defaultValue);
 };
 
 #endif // SETTINGSMODEL_H

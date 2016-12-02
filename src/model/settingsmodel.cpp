@@ -36,9 +36,22 @@ QSettings* SettingsModel::settings()
     return settings_;
 }
 
+//Sets default value for performance reasons.
+QString SettingsModel::setting(const QString& key, const QString& defaultValue)
+{
+   QString set = settings()->value(key, defaultValue).toString();
+   if (set == defaultValue)
+   {
+      DBG << "Setting default value" << set << "for" << key;
+      settings()->setValue(key, set);
+   }
+   return set;
+}
+
 QString SettingsModel::arma3Path()
 {
-    return settings()->value("arma3Dir", PathFinder::arma3Path()).toString();
+   return setting("arma3Dir", PathFinder::arma3Path());
+    //return settings()->value("arma3Dir", PathFinder::arma3Path()).toString();
 }
 
 void SettingsModel::setArma3Path(const QString& path)
@@ -53,7 +66,8 @@ void SettingsModel::resetArma3Path()
 
 QString SettingsModel::teamSpeak3Path()
 {
-    return settings()->value("teamSpeak3Path", PathFinder::teamspeak3Path()).toString();
+   return setting("teamSpeak3Path", PathFinder::teamspeak3Path());
+    //return settings()->value("teamSpeak3Path", PathFinder::teamspeak3Path()).toString();
 }
 
 void SettingsModel::setTeamSpeak3Path(const QString& path)

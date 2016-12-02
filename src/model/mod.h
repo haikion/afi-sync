@@ -21,13 +21,11 @@ public:
 
     QString key() const;
     virtual Repository* parentItem();
-    //void handleDirError(BtsFolderActivity folder);
     void appendRepository(Repository* repository);
     virtual void checkboxClicked();
     virtual QString startText();
     virtual QString joinText();
     QSet<Repository*> repositories() const;
-    //int lastModified();
     void deleteExtraFiles();
     virtual bool ticked() const;
     void processCompletion();
@@ -46,13 +44,14 @@ private:
 
     QString key_;
     ISync* sync_;
-    QTimer updateTimer_;
+    QTimer* updateTimer_;
     QSet<Repository*> repositories_;
     unsigned waitTime_;
     QVector<ModAdapter*> adapters_;
 
     void buildPathHash();
     void fetchEta();
+    void updateView();
     bool reposInactive() const;
     void start();
     bool stop();
@@ -63,6 +62,8 @@ private:
 private slots:
     void update();
     void init();
+    void threadConstructor();
+    void stopUpdatesSlot();
 };
 
 #endif // MODITEM_H

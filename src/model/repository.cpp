@@ -96,10 +96,9 @@ void Repository::changed(bool offline)
 
 void Repository::checkboxClicked(bool offline)
 {
+    stopUpdates();
     SyncItem::checkboxClicked();
-    //FIXME: Is this a crash risk?
-    //updateTimer_.stop();
-    setStatus("Processing new mods...");
+    updateEtaAndStatus();
     changed(offline);
     DBG << "checked()=" << ticked();
     update();

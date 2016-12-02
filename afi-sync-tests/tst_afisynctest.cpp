@@ -145,8 +145,7 @@ void AfiSyncTest::startTest()
 
 void AfiSyncTest::cleanupTest()
 {
-    QEventLoop loop;
-    DBG << "Main thread event process status:" << loop.processEvents();
+    QCoreApplication::processEvents();
     if (model_)
     {
         delete model_;

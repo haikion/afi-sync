@@ -8,6 +8,7 @@ const int SyncNetworkAccessManager::DEFAULT_TIMEOUT = 3000;
 SyncNetworkAccessManager::SyncNetworkAccessManager(QObject* parent):
     QNetworkAccessManager(parent)
 {
+    //Required for true blocking
     moveToThread(&thread_);
     thread_.setObjectName("SyncNetworkManager Thread");
     thread_.start();

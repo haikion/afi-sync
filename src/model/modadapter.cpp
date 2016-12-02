@@ -19,7 +19,8 @@ ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index):
 
 ModAdapter::~ModAdapter()
 {
-    parentItem()->removeChild(this);
+    //FIXME: Segfault
+    //parentItem()->removeChild(this);
 }
 
 QString ModAdapter::checkText()
@@ -85,5 +86,8 @@ Mod* ModAdapter::mod() const
 void ModAdapter::updateView()
 {
     setEta(mod_->eta());
+    QObject* sender = QObject::sender();
+    QThread* thread = Global::workerThread;
+    bool workerRunning = Global::workerThread->isRunning();
     repo_->updateView(this, repo_->childItems().indexOf(this));
 }
