@@ -237,6 +237,12 @@ bool FileUtils::safeRemoveRecursively(QDir& dir)
     return dir.removeRecursively();
 }
 
+bool FileUtils::safeRemoveRecursively(const QString& path)
+{
+    QDir dir = QDir(path);
+    return safeRemoveRecursively(dir);
+}
+
 bool FileUtils::pathIsSafe(const QString& path)
 {
     QString pathUpper = path.toUpper();

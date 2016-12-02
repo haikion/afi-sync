@@ -269,15 +269,15 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
     return true;
 }
 
-bool DeltaPatcher::delta(const QString& oldDir, QString laterPath)
+bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
 {
 
     QString patchesPath = patchesFi_->absoluteFilePath();
     QDir patchesDir(patchesPath);
     QString deltaPath = patchesPath + "/" + PATCH_DIR;
     QDir deltaDir(deltaPath);
-    QString oldHash = AHasher::hash(oldDir);
-    QString modName = QFileInfo(oldDir).fileName();
+    QString oldHash = AHasher::hash(oldPath);
+    QString modName = QFileInfo(oldPath).fileName();
     QString patchName = modName + SEPARATOR
             + QString::number(latestVersion(modName) + 1) + SEPARATOR + oldHash + ".7z";
     QString patchPath = patchesFi_->absoluteFilePath() + "/" + patchName;
@@ -312,13 +312,14 @@ bool DeltaPatcher::delta(const QString& oldDir, QString laterPath)
 
     QDir().mkpath(deltaPath);
     QDirIterator it(laterPath, QDir::Files, QDirIterator::Subdirectories);
+    bool rVal = false;
     while (it.hasNext())
     {
         QFileInfo newFile = it.next();
 
         QString relPath = newFile.absoluteFilePath().remove(laterPath);
         DBG << relPath << laterPath;
-        QFileInfo oldFile = QFileInfo(oldDir + "/" + relPath);
+        QFileInfo oldFile = QFileInfo(oldPath + "/" + relPath);
         QString outputPath = deltaPath + relPath;
         QString parentPath = QFileInfo(outputPath).absolutePath();
         QString newPath = newFile.absoluteFilePath();
@@ -328,6 +329,7 @@ bool DeltaPatcher::delta(const QString& oldDir, QString laterPath)
         {
             DBG << "Copying" << newPath << "to" << outputPath;
             QFile::copy(newPath, outputPath);
+            rVal = true;
             continue;
         }
 
@@ -344,6 +346,15 @@ bool DeltaPatcher::delta(const QString& oldDir, QString laterPath)
                                   Q_ARG(QString, XDELTA_EXECUTABLE + " -e -S none -s \""
                                         + oldPath + "\" \"" + laterPath + "\" \"" + outputPath + "\""));
         DBG << "New delta patch file generated" << outputPath;
+        rVal = true;
+    }
+
+    if (!rVal)
+    {
+        FileUtils::safeRemoveRecursively(deltaDir);
+        DBG << "ERROR: Directories" << oldPath << "and" << laterPath << "are identical."
+            << "Patch generation aborted.";
+        return false;
     }
 
     QMetaObject::invokeMethod(this, "compress", Qt::BlockingQueuedConnection,
@@ -352,7 +363,7 @@ bool DeltaPatcher::delta(const QString& oldDir, QString laterPath)
     DBG << "Deleting directory" << deltaPath;
     FileUtils::safeRemoveRecursively(deltaDir);
 
-    return true;
+    return rVal;
 }
 
 bool DeltaPatcher::extract(const QString& zipPath)

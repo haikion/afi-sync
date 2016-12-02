@@ -1,6 +1,8 @@
 /*
  * Unit tests for AFISync
  * Make sure workingDirectory is defined as working directory.
+ *
+ * TODO: Create tests for delta patch generation when files are identical
  */
 
 #include <QString>
@@ -80,6 +82,7 @@ private Q_SLOTS:
     void afterDelta();
     void hash();
     void delta();
+    void deltaIdentical();
     void chainDelta();
     void patch();
     void torrentName();
@@ -268,8 +271,8 @@ void AfiSyncTest::hash()
 void AfiSyncTest::delta()
 {
     beforeDelta();
-    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
 
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
     QDir patchesDir(PATCHES_PATH);
     patchesDir.removeRecursively();
     patchesDir.mkpath(".");
@@ -279,11 +282,26 @@ void AfiSyncTest::delta()
     QVERIFY(rVal);
 }
 
+void AfiSyncTest::deltaIdentical()
+{
+    beforeDelta();
+
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
+    QDir modDir2(MOD_PATH_2);
+    FileUtils::safeRemoveRecursively(modDir2);
+    modDir2.mkpath(".");
+    FileUtils::copy(MOD_PATH_1, MOD_PATH_1);
+    bool rVal = patcher->delta(MOD_PATH_1, MOD_PATH_2);
+    delete patcher;
+    afterDelta();
+    QVERIFY(!rVal);
+}
+
 void AfiSyncTest::chainDelta()
 {
     beforeDelta();
-    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
 
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
     QDir patchesDir(PATCHES_PATH);
     patchesDir.removeRecursively();
     patchesDir.mkpath(".");
@@ -297,11 +315,9 @@ void AfiSyncTest::chainDelta()
 
 void AfiSyncTest::patch()
 {
-    //QSKIP("Fatal error when ran with other tests");
-
     beforeDelta();
-    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
 
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
     QEventLoop loop;
     QObject::connect(patcher, SIGNAL(patched(QString, bool)), &loop, SLOT(quit()));
     patcher->patch(MOD_PATH_1);
@@ -318,6 +334,7 @@ void AfiSyncTest::patch()
 void AfiSyncTest::torrentName()
 {
     beforeDelta();
+
     handle_ = createHandle();
     QVERIFY(handle_.torrent_file() != nullptr);
     QString name = QString::fromStdString(handle_.torrent_file()->name());
@@ -328,6 +345,7 @@ void AfiSyncTest::torrentName()
 void AfiSyncTest::patchAvailable()
 {
     beforeDelta();
+
     QString modPath = TMP_PATH + "/1";
     settings_->setModDownloadPath(modPath);
     DeltaDownloader upd(handle_);
@@ -339,6 +357,7 @@ void AfiSyncTest::patchAvailable()
 void AfiSyncTest::patchAvailableNegativeName()
 {
     beforeDelta();
+
     settings_->setModDownloadPath(TMP_PATH + "/1");
     DeltaDownloader upd(handle_);
     bool rVal = upd.patchAvailable("@mod5");
@@ -349,6 +368,7 @@ void AfiSyncTest::patchAvailableNegativeName()
 void AfiSyncTest::patchAvailableNegativeVer()
 {
     beforeDelta();
+
     settings_->setModDownloadPath(TMP_PATH + "/3");
     DeltaDownloader upd(handle_);
     bool rVal = upd.patchAvailable(MOD_NAME_1);

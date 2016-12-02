@@ -20,6 +20,7 @@ public:
     static bool safeRemove(QFile& file);
     static bool safeRemove(const QString& filePath);
     static bool safeRemoveRecursively(QDir& dir);
+    static bool safeRemoveRecursively(const QString& path);
     static bool safeRename(const QString& srcPath, const QString& dstPath);
     //For testability
     static void appendSafePath(const QString& path);
