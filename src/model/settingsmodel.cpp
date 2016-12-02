@@ -39,13 +39,14 @@ QSettings* SettingsModel::settings()
 //Sets default value for performance reasons.
 QString SettingsModel::setting(const QString& key, const QString& defaultValue)
 {
-   QString set = settings()->value(key, defaultValue).toString();
-   if (set == defaultValue)
-   {
-      DBG << "Setting default value" << set << "for" << key;
-      settings()->setValue(key, set);
-   }
-   return set;
+    QString set = settings()->value(key).toString();
+    if (set == QString())
+    {
+        DBG << "Setting default value" << defaultValue << "for" << key;
+        settings()->setValue(key, defaultValue);
+        set = defaultValue;
+    }
+    return set;
 }
 
 QString SettingsModel::arma3Path()

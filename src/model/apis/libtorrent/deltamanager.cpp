@@ -75,6 +75,7 @@ bool DeltaManager::patch(const QString& modName, const QString& key)
     keyHash_.insert(key, modName);
     inDownload_.insert(modName);
     DBG << "Starting updates";
+    QMetaObject::invokeMethod(&updateTimer_, "start", Qt::QueuedConnection);
     updateTimer_.start();
     if (downloader_->patchDownloaded(modName))
     {
@@ -136,7 +137,7 @@ int DeltaManager::patchingEta(const QString& key)
 
     qint64 bytesPatched = patcher_->bytesPatched(modName);
     qint64 bytesReq = totalBytes - bytesPatched;
-    DBG << modName << "total =" << totalBytes << "reg =" << bytesReq
+    DBG << modName << "total =" << totalBytes << "Req =" << bytesReq
         << "patched =" << bytesPatched;
     return bytesReq/SPEED;
 }

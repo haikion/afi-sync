@@ -58,16 +58,15 @@ RootItem::~RootItem()
 {
     DBG;
     stopUpdates();
+    DBG << "Updates stopped";
     //Causes segfaults (because of workerThread->quit()?) and there is no need for this anyway
     //if destructor is only used during program shutdown.
     for (Repository* repo : childItems())
     {
+        DBG << "Deleting repository" << repo->name();
         delete repo;
     }
-    DBG << "Updates stopped";
-    sync_->shutdown();
-    DBG << "Sync shutdown";
-    //Stop worker thread
+    DBG << "Repositories deleted";
     Global::workerThread->quit();
     Global::workerThread->wait(1000);
     Global::workerThread->terminate();
@@ -77,7 +76,8 @@ RootItem::~RootItem()
     Global::workerThread = nullptr;
     DBG << "Worker thread deleted";
     delete sync_;
-    DBG << "Sync destroyed";
+    sync_ = nullptr;
+    DBG << "Sync deleted";
 }
 
 //Removes btsync dirs which

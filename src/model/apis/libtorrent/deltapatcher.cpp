@@ -112,7 +112,7 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
     int ltstVersion = latestVersion(modName, allPatches);
     if (ltstVersion == -1)
     {
-        DBG << ERROR_NO_PATCHES << modName << "from" << allPatches;
+        //Function used for patchAvailable() so no error is printed here.
         return QStringList();
     }
     QStringList patches;
@@ -121,8 +121,6 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
     QStringList matches = allPatches.filter(regEx);
     if (matches.size() != 1)
     {
-        DBG << "ERROR: Incorrect number (" << matches.size()
-                 << ") of suitable patches. Aborting...1";
         return QStringList();
     }
     QString patchName = matches.at(0);
@@ -336,10 +334,16 @@ bool DeltaPatcher::delta(const QString& oldDir, QString laterPath)
         outputPath = outputPath + DELTA_EXTENSION;
         QString oldPath = QDir::toNativeSeparators(oldFile.absoluteFilePath());
         QString laterPath = QDir::toNativeSeparators(newPath);
+        if (oldFile.size() == QFileInfo(laterPath).size())
+        {
+            DBG << "Files" << oldPath << "and file" << laterPath << "are (size) identical. Delta patch generation aborted.";
+            continue;
+        }
         //Creates uncompressed delta patch file
         QMetaObject::invokeMethod(console_, "runCmd", Qt::BlockingQueuedConnection,
                                   Q_ARG(QString, XDELTA_EXECUTABLE + " -e -S none -s \""
                                         + oldPath + "\" \"" + laterPath + "\" \"" + outputPath + "\""));
+        DBG << "New delta patch file generated" << outputPath;
     }
 
     QMetaObject::invokeMethod(this, "compress", Qt::BlockingQueuedConnection,

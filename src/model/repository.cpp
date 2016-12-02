@@ -98,6 +98,7 @@ void Repository::checkboxClicked(bool offline)
 {
     stopUpdates();
     SyncItem::checkboxClicked();
+    setStatus("Processing new mods...");
     updateEtaAndStatus();
     changed(offline);
     DBG << "checked()=" << ticked();

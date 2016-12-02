@@ -163,8 +163,8 @@ QVector<int> DeltaDownloader::patchIndexes(const QString& modName) const
 
 QStringList DeltaDownloader::patches(const QString& modName) const
 {
-    return DeltaPatcher::filterPatches(
-                SettingsModel::modDownloadPath() + "/" + modName, patches_);
+    QString modPath = QFileInfo(SettingsModel::modDownloadPath()).absoluteFilePath() + "/" + modName;
+    return DeltaPatcher::filterPatches(modPath, patches_);
 }
 
 QString DeltaDownloader::hash(const QString& modName) const
