@@ -203,7 +203,6 @@ bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
     return patchExtracted(extractedPath, modPath);
 }
 
-//ToDo: Use static dirs
 void DeltaPatcher::cleanUp(QDir& deltaDir, QDir& tmpDir)
 {
     DBG << "Deleting dir" << deltaDir.absolutePath();
@@ -366,7 +365,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
     //Verify that the latest version doesn't get delta patched
     //due to hash collision.
     QStringList deletedFiles = removePatchesFromLatest(laterPath, patchesPath);
-    DBG << deletedFiles << patchName;
+
     return rVal && !deletedFiles.contains(patchName);
 }
 

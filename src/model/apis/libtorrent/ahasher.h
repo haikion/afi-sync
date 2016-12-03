@@ -12,9 +12,9 @@ class AHasher
 public:
     //Returns combined size or overflowed value if MAX_VALUE is exceeded
     //in base36 format.
-     static QString hash(QList<QFileInfo> files);
-     static QString hash(const QString& dirPath);
-     static QString baseEncode(qint64 input);
+    static QString hash(QList<QFileInfo> files);
+    static QString hash(const QString& dirPath);
+    static QString baseEncode(qint64 input);
 
 private:
     static const unsigned BASE;

@@ -176,7 +176,6 @@ void JsonReader::removeDeprecatedMods(Repository* repo, const QSet<QString> json
 
 void JsonReader::removeDeprecatedRepos(RootItem* root, const QSet<QString> jsonRepos)
 {
-    //FixMe: What happens if mod is moved from one repo to another?
     DBG << "Checking deprecated mods...";
 
     QHash<QString, Repository*> adRepos = addedRepos(root);
@@ -196,7 +195,7 @@ QString JsonReader::updateUrl(const QVariantMap& jsonMap) const
     return updateUrl;
 }
 
-bool JsonReader::updateAvaible()
+bool JsonReader::updateAvailable()
 {
     QVariantMap jsonMapUp = updateJson(updateUrl(jsonMap_));
     if (jsonMapUp != QVariantMap() && jsonMapUp != jsonMap_)

@@ -1,3 +1,8 @@
+/*
+ * Repository is a collection of mods which
+ * are loaded into the game simultaniously.
+ */
+
 #ifndef REPOSITORYITEM_H
 #define REPOSITORYITEM_H
 

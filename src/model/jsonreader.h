@@ -20,7 +20,7 @@ public:
     void fillEverything(RootItem* root);
     //Enables better testability.
     void fillEverything(RootItem *root, const QString& jsonFilePath);
-    bool updateAvaible();
+    bool updateAvailable();
 
 signals:
     void modAppend(Mod* mod);

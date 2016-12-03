@@ -286,7 +286,7 @@ void RootItem::periodicRepoUpdate()
         DBG << "Ignored because Arma 3 is running";
         return;
     }
-    if (jsonReader_.updateAvaible())
+    if (jsonReader_.updateAvailable())
     {
         DBG << "Updating repo...";
         jsonReader_.fillEverything(this);
