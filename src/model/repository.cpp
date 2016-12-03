@@ -63,7 +63,9 @@ Repository::~Repository()
     DBG << "name =" << name();
     for (Mod* mod : mods())
     {
-        removeMod(mod->key());
+        //Remove mod object from repository but keep
+        //mod settings.
+        removeMod(mod, false);
     }
     RootItem* parent = parentItem();
     parent->removeChild(this);
@@ -183,6 +185,9 @@ QString Repository::createParFile(const QString& parameters)
 
 void Repository::updateEtaAndStatus()
 {
+    //FIXME: Should be 00:00:00 when repo is inactive
+    //even if another repo is running.
+
     int maxEta = 0;
     int sumEta = 0;
     QSet<QString> modStatuses;
@@ -327,7 +332,7 @@ bool Repository::removeMod(const QString& key)
     return false;
 }
 
-bool Repository::removeMod(Mod* mod)
+bool Repository::removeMod(Mod* mod, bool removeFromSync)
 {
     //Removes mod view adapter.
     if (!mod->removeRepository(this))
@@ -336,7 +341,7 @@ bool Repository::removeMod(Mod* mod)
         return false;
     }
     parentItem()->rowsChanged();
-    if (mod->repositories().size() == 0)
+    if (mod->repositories().size() == 0 && removeFromSync)
     {
         //Mod may not exist if it doesn't belong to any repo.
         sync_->removeFolder(mod->key());

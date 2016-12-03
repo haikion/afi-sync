@@ -33,7 +33,7 @@ public:
     void processCompletion();
     void enableMods();
     bool removeMod(const QString& key);
-    bool removeMod(Mod* mod);
+    bool removeMod(Mod* mod, bool removeFromSync = true);
     bool contains(const QString& key) const;
     void update();
     void startUpdates();
