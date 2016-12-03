@@ -363,6 +363,27 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
     DBG << "Deleting directory" << deltaPath;
     FileUtils::safeRemoveRecursively(deltaDir);
 
+    //Verify that the latest version doesn't get delta patched
+    //due to hash collision.
+    QStringList deletedFiles = removePatchesFromLatest(laterPath, patchesPath);
+    DBG << deletedFiles << patchName;
+    return rVal && !deletedFiles.contains(patchName);
+}
+
+QStringList DeltaPatcher::removePatchesFromLatest(const QString& latestPath, const QString& patchesPath) const
+{
+    QString hash = AHasher::hash(latestPath);
+    QString modName = QFileInfo(latestPath).fileName();
+    QRegExp regEx(modName + ".*" + hash + ".*\\.7z");
+    QStringList matches = QDir(patchesPath).entryList().filter(regEx);
+    QStringList rVal;
+    for (const QString& name : matches)
+    {
+        FileUtils::safeRemove(patchesPath + "/" + name);
+        DBG << "ERROR: Found patch from latest version. Patch" << name << "removed.";
+        rVal.append(name);
+    }
+
     return rVal;
 }
 

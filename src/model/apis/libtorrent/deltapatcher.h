@@ -62,6 +62,7 @@ private:
     int latestVersion(const QString& modName) const;
     //Applies single patch to mod dir
     bool patch(const QString& patch, const QString& modPath);
+    QStringList removePatchesFromLatest(const QString& latestPath, const QString& deltaPath) const;
 
 private slots:
     void threadConstructor(const QString& patchesPath);

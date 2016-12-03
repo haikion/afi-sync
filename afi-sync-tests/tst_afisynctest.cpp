@@ -40,6 +40,7 @@ static const QString MOD_NAME_1 = "@mod1";
 static const QString MOD_PATH_1 = TMP_PATH + "/1/" + MOD_NAME_1;
 static const QString MOD_PATH_2 = TMP_PATH + "/2/" + MOD_NAME_1;
 static const QString MOD_PATH_3 = TMP_PATH + "/3/" + MOD_NAME_1;
+static const QString MOD_PATH_4 = TMP_PATH + "/sameHash3/" + MOD_NAME_1;
 static const QString DELTA_PATCH_NAME = "afisync_patches";
 static const QString PATCHES_PATH = TMP_PATH + "/" + DELTA_PATCH_NAME;
 //file copy tests
@@ -83,6 +84,7 @@ private Q_SLOTS:
     void hash();
     void delta();
     void deltaIdentical();
+    void deltaHashCollision();
     void chainDelta();
     void patch();
     void torrentName();
@@ -292,6 +294,20 @@ void AfiSyncTest::deltaIdentical()
     modDir2.mkpath(".");
     FileUtils::copy(MOD_PATH_1, MOD_PATH_1);
     bool rVal = patcher->delta(MOD_PATH_1, MOD_PATH_2);
+    delete patcher;
+    afterDelta();
+    QVERIFY(!rVal);
+}
+
+void AfiSyncTest::deltaHashCollision()
+{
+    beforeDelta();
+
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
+    QDir modDir2(MOD_PATH_2);
+    FileUtils::safeRemoveRecursively(modDir2);
+    modDir2.mkpath(".");
+    bool rVal = patcher->delta(MOD_PATH_3, MOD_PATH_4);
     delete patcher;
     afterDelta();
     QVERIFY(!rVal);
