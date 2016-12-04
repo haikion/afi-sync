@@ -183,28 +183,37 @@ QString Repository::createParFile(const QString& parameters)
     return FILE_NAME;
 }
 
-void Repository::updateEtaAndStatus()
+int Repository::calculateEta() const
 {
-    //FIXME: Should be 00:00:00 when repo is inactive
-    //even if another repo is running.
-
     int maxEta = 0;
-    int sumEta = 0;
-    QSet<QString> modStatuses;
+    int queuedEtasSum = 0;
 
     for (Mod* item : mods())
     {
         if (item->status() == SyncStatus::QUEUED)
         {
-            sumEta += item->eta();
+            //Sum queued etas as they are run
+            //one after another.
+            queuedEtasSum += item->eta();
         }
         else
         {
+            //These are run simulteniously so only use
+            //longest eta.
             maxEta = std::max(item->eta(), maxEta);
         }
+    }
+    return maxEta + queuedEtasSum;
+}
+
+void Repository::updateEtaAndStatus()
+{
+    QSet<QString> modStatuses;
+
+    for (const Mod* item : mods())
+    {
         modStatuses.insert(item->status());
     }
-    setEta(maxEta + sumEta);
     //Status
     QSet<QString> readyStatuses;
     readyStatuses.insert(SyncStatus::READY);
@@ -213,6 +222,9 @@ void Repository::updateEtaAndStatus()
     if (!ticked())
     {
         setStatus(SyncStatus::INACTIVE);
+        //If repository is not activated then
+        //set eta to 00:00:00
+        setEta(0);
     }
     else if ((modStatuses - readyStatuses).size() == 0)
     {
@@ -222,19 +234,23 @@ void Repository::updateEtaAndStatus()
     else if (modStatuses.contains(SyncStatus::DOWNLOADING))
     {
         setStatus(SyncStatus::DOWNLOADING);
+        setEta(calculateEta());
         ready_ = false;
     }
     else if (modStatuses.contains(SyncStatus::PATCHING))
     {
         setStatus(SyncStatus::PATCHING);
+        setEta(calculateEta());
     }
     else if (modStatuses.contains(SyncStatus::CHECKING))
     {
         setStatus(SyncStatus::CHECKING);
+        setEta(calculateEta());
     }
     else
     {
         setStatus(SyncStatus::WAITING);
+        setEta(calculateEta());
     }
 }
 

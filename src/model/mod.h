@@ -50,7 +50,7 @@ private:
     QVector<ModAdapter*> adapters_;
 
     void buildPathHash();
-    void fetchEta();
+    void updateEta();
     void updateView();
     bool reposInactive() const;
     void start();

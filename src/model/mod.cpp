@@ -58,7 +58,7 @@ void Mod::init()
 void Mod::update()
 {
     updateStatus();
-    fetchEta();
+    updateEta();
     updateView();
 }
 
@@ -446,7 +446,7 @@ bool Mod::reposInactive() const
     return true;
 }
 
-void Mod::fetchEta()
+void Mod::updateEta()
 {
     if (status() == SyncStatus::INACTIVE || status() == SyncStatus::NOT_IN_SYNC)
     {

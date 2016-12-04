@@ -58,6 +58,7 @@ private:
     void updateEtaAndStatus();
     void changed(bool offline = false);
     QList<ModAdapter*> modAdapters() const;
+    int calculateEta() const;
 };
 
 #endif // REPOSITORYITEM_H

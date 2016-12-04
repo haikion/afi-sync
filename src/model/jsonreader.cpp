@@ -110,10 +110,12 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
                 newMod = new Mod(modName, key.toLower());
                 DBG << "New mod object created:" << modName;
                 modHash.insert(key, newMod);
-                DBG << modName << "added to modhash";
+                DBG << modName << "added to modhash.";
             }
             bool isOptional = mod.value("optional", false).toBool();
-            DBG << "appending mod name =" << newMod->name() << " key =" << newMod->key();
+            DBG << "Appending mod (name =" << newMod->name()
+                << " key =" << newMod->key()
+                << ") to repository" << repoName;
             new ModAdapter(newMod, repo, isOptional, i);
         }
         jsonMods.insert(repo, jsonMods1);
