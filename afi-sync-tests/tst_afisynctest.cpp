@@ -36,6 +36,7 @@ static const QString TMP_PATH = "temp";
 static const QString TORRENT_1 = "http://88.193.244.18/torrents/@vt5_1.torrent";
 static const QString TORRENT_2 = PATCHING_FILES_PATH  + "/afisync_patches_1.torrent";
 static const QString TORRENT_4 = "http://88.193.244.18/torrents/afisync_patches_1.torrent";
+static const QString TORRENT_PATH_1 = "torrents/@vt5_1.torrent";
 static const QString MOD_NAME_1 = "@mod1";
 static const QString MOD_PATH_1 = TMP_PATH + "/1/" + MOD_NAME_1;
 static const QString MOD_PATH_2 = TMP_PATH + "/2/" + MOD_NAME_1;
@@ -77,6 +78,7 @@ private Q_SLOTS:
     void getFolderKeys();
     void getFilesUpper();
     void addRemoveFolder();
+    void addRemoveFolderKey();
 
     //Delta patch tests
     void beforeDelta();
@@ -641,6 +643,21 @@ void AfiSyncTest::addRemoveFolder()
     QCOMPARE(exists, false);
 
     cleanupTest();
+}
+
+void AfiSyncTest::addRemoveFolderKey()
+{
+    ISync* sync = new LibTorrentApi();
+
+    sync->addFolder(TORRENT_PATH_1, TMP_PATH, "@vt5");
+    bool exists = sync->folderExists(TORRENT_PATH_1);
+    QCOMPARE(exists, true);
+    bool rVal = sync->removeFolder(TORRENT_PATH_1);
+    QCOMPARE(rVal, true);
+    exists = sync->folderExists(TORRENT_PATH_1);
+    QCOMPARE(exists, false);
+
+    delete sync;
 }
 
 void AfiSyncTest::getFilesUpper()

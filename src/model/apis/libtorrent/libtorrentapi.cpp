@@ -690,7 +690,15 @@ lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key, const QSt
         return lt::torrent_handle();
     }
     lt::add_torrent_params atp;
-    atp.url = lowerKey.toStdString();
+    //Check if key is path or url
+    if (QFileInfo(lowerKey).exists())
+    {
+        atp.ti = loadFromFile(lowerKey);
+    }
+    else
+    {
+        atp.url = lowerKey.toStdString();
+    }
     atp.save_path = QDir::toNativeSeparators(fi.absoluteFilePath()).toStdString();
     atp.paused = true;
     DBG << "url =" << QString::fromStdString(atp.url)
