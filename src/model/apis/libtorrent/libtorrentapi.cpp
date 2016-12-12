@@ -404,7 +404,15 @@ QSet<QString> LibTorrentApi::folderFilesUpper(const QString& key)
 
 bool LibTorrentApi::folderExists(const QString& key)
 {
-    return getHandleSilent(key).is_valid();
+    lt::torrent_handle handle = getHandleSilent(key);
+    if (!handle.is_valid())
+        return false;
+
+    lt::torrent_status status = handle.status();
+    if (status.state == lt::torrent_status::downloading_metadata)
+        return false; //Torrent file has not been downloaded yet.
+
+    return true;
 }
 
 
@@ -453,12 +461,26 @@ QString LibTorrentApi::folderPath(const QString& key)
 //Shutdowns libtorrent session and saves settings.
 void LibTorrentApi::shutdown()
 {
+    bool deleteSession = true;
+
     alertTimer_.stop();
     DBG << "Alert timer stopped";
     saveSettings();
-    for (const lt::torrent_handle& handle : keyHash_.values())
+    for (const QString& key : keyHash_.keys())
     {
-        saveTorrentFile(handle);
+        lt::torrent_handle handle = keyHash_.value(key);
+        if (folderExists(key))
+        {
+            saveTorrentFile(handle);
+        }
+        else
+        {
+            //Still downloading meta-data. Propably incorrect URL.
+            //Work-a-round: Hangs in delete so don't delete...
+            //FIXME: Find better solution.
+            deleteSession = false;
+        }
+        session_->remove_torrent(handle);
     }
     if (deltaManager_)
     {
@@ -468,14 +490,15 @@ void LibTorrentApi::shutdown()
     }
     generateResumeData();
     DBG << "Settings saved";
-    if (session_)
+    if (session_ && deleteSession)
     {
+        //FIXME: Hangs here if downloading metadata.
         delete session_;
         session_ = nullptr;
         DBG << "Session deleted";
+        keyHash_.clear();
+        DBG << "keyHash_ cleared";
     }
-    keyHash_.clear();
-    DBG << "keyHash_ cleared";
 }
 
 qint64 LibTorrentApi::upload()
@@ -668,6 +691,25 @@ void LibTorrentApi::setDeltaUpdatesFolder(const QString& key, const QString& pat
 
 lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key, const QString path)
 {
+    lt::torrent_handle handle = addFolderGenericAsync(key, path);
+    lt::torrent_status status = handle.status();
+    for (int a = 0; a < 100 && status.state == lt::torrent_status::downloading_metadata; ++a)
+    {
+        QThread::msleep(100);
+        status = handle.status();
+    }
+    if (status.state == lt::torrent_status::downloading_metadata)
+    {
+        DBG << "ERROR: Failure downloading torrent from" << key << ":" << status.error.c_str();
+        return lt::torrent_handle();
+    }
+
+    return handle;
+}
+
+//Does not wait for torrent-file download to finish.
+lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key, const QString path)
+{
     DBG << "path =" << path << "key =" << key;
 
     if (!session_)
@@ -708,18 +750,6 @@ lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key, const QSt
     if (ec)
     {
         DBG << "ERROR: Adding torrent failed:" << ec.message().c_str();
-        return lt::torrent_handle();
-    }
-    //Wait for torrent file to download.
-    lt::torrent_status status = handle.status();
-    for (int a = 0; a < 100 && status.state == lt::torrent_status::downloading_metadata; ++a)
-    {
-        QThread::msleep(100);
-        status = handle.status();
-    }
-    if (status.state == lt::torrent_status::downloading_metadata)
-    {
-        DBG << "ERROR: Failure downloading torrent from" << key << ":" << status.error.c_str();
         return lt::torrent_handle();
     }
 
@@ -763,7 +793,7 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& path, const QSt
         deltaManager_->patch(name, lowerKey);
         return true;
     }
-    lt::torrent_handle handle = addFolderGeneric(lowerKey, path);
+    lt::torrent_handle handle = addFolderGenericAsync(lowerKey, path);
     keyHash_.insert(lowerKey, handle);
     handle.resume();
 
@@ -994,6 +1024,14 @@ void LibTorrentApi::handleMetadataReceivedAlert(const lt::metadata_received_aler
     DBG << "Metadata received for torrent:" << name;
 }
 
+void LibTorrentApi::handleMetadataFailedAlert(const libtorrent::metadata_failed_alert* a) const
+{
+    lt::torrent_handle h = a->handle;
+    lt::torrent_status s = h.status(lt::torrent_handle::query_name);
+    QString name = QString::fromStdString(s.name);
+    DBG << "Metadata failed for torrent:" << name;
+}
+
 void LibTorrentApi::handlePortmapErrorAlert(const lt::portmap_error_alert* a) const
 {
     DBG << "Port map error alert received:" << a->message().c_str();
@@ -1043,6 +1081,9 @@ void LibTorrentApi::handleAlert(lt::alert* a)
                 break;
             case lt::metadata_received_alert::alert_type:
                 handleMetadataReceivedAlert(static_cast<lt::metadata_received_alert*>(a));
+                break;
+            case lt::metadata_failed_alert::alert_type:
+                handleMetadataFailedAlert(static_cast<lt::metadata_failed_alert*>(a));
                 break;
             case lt::state_update_alert::alert_type:
                 break;

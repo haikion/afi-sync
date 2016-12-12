@@ -109,6 +109,7 @@ private:
     int64_t bytesToCheck(const libtorrent::torrent_status& status) const;
     bool createSession();
     libtorrent::torrent_handle addFolderGeneric(const QString& key, const QString path);
+    libtorrent::torrent_handle addFolderGenericAsync(const QString& key, const QString path);
     int folderEta(libtorrent::torrent_handle getHandle);
     libtorrent::torrent_handle getHandle(const QString& key);
     bool addFolder(const QString& key, const QString& path, const QString& name, bool patchingEnabled);
@@ -120,6 +121,7 @@ private:
     void handleListenSucceededAlert(const libtorrent::listen_succeeded_alert* a) const;
     void handleFastresumeRejectedAlert(const libtorrent::fastresume_rejected_alert* a) const;
     void handleMetadataReceivedAlert(const libtorrent::metadata_received_alert* a) const;
+    void handleMetadataFailedAlert(const libtorrent::metadata_failed_alert* a) const;
     void handlePortmapErrorAlert(const libtorrent::portmap_error_alert* a) const;
     void handlePortmapAlert(const libtorrent::portmap_alert* a) const;
     libtorrent::torrent_handle getHandleSilent(const QString& key);
