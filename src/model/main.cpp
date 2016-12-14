@@ -41,6 +41,9 @@ static QObject* getTreeModel(QQmlEngine* engine, QJSEngine* scriptEngine)
     Q_UNUSED(scriptEngine)
     Global::model = new TreeModel(engine);
 
+    //This variable is used to locate afisync_header.png
+    engine->rootContext()->setContextProperty("applicationDirPath", QGuiApplication::applicationDirPath());
+
     return Global::model;
 }
 

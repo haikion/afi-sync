@@ -64,7 +64,7 @@ Item {
         anchors.leftMargin: 0
         Image {
             id: name
-            source: "qrc:/afisync_header.png"
+            source: "file:///" + applicationDirPath + "/afisync_header.png"
             Component.onCompleted: {
                 var origW = width
                 width = Qt.binding(function () {return Math.min(origW, parent.width)})

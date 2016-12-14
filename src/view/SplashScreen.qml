@@ -14,8 +14,7 @@ Window {
 
     Image {
         id: image
-        source: "qrc:/afisync_header.png"
-        //anchors.fill: parent
+        source: "file:///" + applicationDirPath + "/afisync_header.png"
     }
 
     Text {
