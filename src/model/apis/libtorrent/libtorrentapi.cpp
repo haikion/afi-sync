@@ -296,6 +296,7 @@ int LibTorrentApi::folderEta(const QString& key)
 
     lt::torrent_status status = handle.status();
 
+    bool queued = folderQueued(torrentKey);
     if (folderChecking(torrentKey))
     {
         int64_t bc = bytesToCheck(status);
@@ -303,7 +304,7 @@ int LibTorrentApi::folderEta(const QString& key)
             return NOT_FOUND;
 
         int64_t checkingSpeed;
-        if (folderQueued(torrentKey))
+        if (queued)
         {
             checkingSpeed = speedEstimator_.estimation();
         }
@@ -319,9 +320,7 @@ int LibTorrentApi::folderEta(const QString& key)
     if (status.is_finished)
         return increment;
 
-    int download = status.download_rate;
-    if (folderQueued(torrentKey)) //Use approx
-        download = session_->status().payload_download_rate;
+    int download = queued ? session_->status().payload_download_rate : status.download_rate;
 
     if (download == 0)
         return MAX_ETA;
