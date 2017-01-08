@@ -320,6 +320,9 @@ int LibTorrentApi::folderEta(const QString& key)
         return increment;
 
     int download = status.download_rate;
+    if (folderQueued(torrentKey)) //Use approx
+        download = session_->status().payload_download_rate;
+
     if (download == 0)
         return MAX_ETA;
 
