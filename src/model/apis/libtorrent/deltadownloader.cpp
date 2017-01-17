@@ -35,8 +35,8 @@ DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle, QObje
     createFilePaths();
     for (int i = 0; i < fileStorage_.num_files(); ++i)
     {
-        if (QFileInfo(fileStorage_.file_path(i,
-                 handle_.status().save_path).c_str()).exists())
+        if (QFileInfo(fileStorage_.file_path(i, handle_.status().save_path).c_str()).exists()
+                || Global::guiless) //Seed everything in mirror mode.
         {
                 continue;
         }

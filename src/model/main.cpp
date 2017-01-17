@@ -167,6 +167,8 @@ int cli(int argc, char* argv[])
     SettingsModel::setPort(QString::number(port));
 
     Global::guiless = true;
+    SettingsModel::setDeltaPatchingEnabled(true);
+    DBG << "Delta updates enabled due to the mirror mode.";
     TreeModel* model = new TreeModel(port, &app);
     DBG << "model created";
     model->enableRepositories();
