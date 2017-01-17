@@ -44,6 +44,9 @@ public:
     virtual bool ticked() const;
     void setTicked(bool ticked);
     virtual void checkboxClicked();
+    unsigned fileSize() const;
+    void setFileSize(const unsigned& size);
+    QString fileSizeString() const;
 
 protected:
     QSettings* settings() const;
@@ -53,6 +56,7 @@ private:
     QString name_;
     QString status_;
     int eta_;
+    unsigned fileSize_;
 };
 
 #endif // ABSTRACTITEM_H

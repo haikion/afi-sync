@@ -57,7 +57,6 @@ void Repository::startUpdates()
     parentItem()->startUpdateTimers();
 }
 
-
 Repository::~Repository()
 {
     DBG << "name =" << name();
@@ -287,6 +286,8 @@ QStringList Repository::joinParameters() const
 
 void Repository::appendModAdapter(ModAdapter* adp, int index)
 {
+    setFileSize(fileSize() + adp->mod()->fileSize());
+
     TreeItem::appendChild(adp, index);
 }
 

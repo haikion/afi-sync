@@ -29,6 +29,7 @@
 #include "../src/model/jsonreader.h"
 #include "../src/model/fileutils.h"
 #include "../src/model/debug.h"
+#include "../src/model/modadapter.h"
 
 //Delta patching consts
 static const QString PATCHING_FILES_PATH = "patching";
@@ -79,6 +80,18 @@ private Q_SLOTS:
     void getFilesUpper();
     void addRemoveFolder();
     void addRemoveFolderKey();
+
+    //Size tests
+    void sizeBasic();
+    void repoSize();
+    void noSize();
+    void jsonSize();
+    void sizeStringB();
+    void sizeStringMB();
+    void sizeStringGB();
+    void sizeStringGB2();
+    void sizeString0();
+
 
     //Delta patch tests
     void beforeDelta();
@@ -636,6 +649,15 @@ void AfiSyncTest::addRemoveFolder()
 
     sync_->addFolder(TORRENT_1, TMP_PATH, "@vt5");
     bool exists = sync_->folderExists(TORRENT_1);
+    int counter = 0;
+    //Wait 1 sec for async call to finish
+    while (!exists && counter < 10)
+    {
+        ++counter;
+        exists = sync_->folderExists(TORRENT_1);
+        QThread::msleep(100);
+    }
+
     QCOMPARE(exists, true);
     bool rVal = sync_->removeFolder(TORRENT_1);
     QCOMPARE(rVal, true);
@@ -658,6 +680,98 @@ void AfiSyncTest::addRemoveFolderKey()
     QCOMPARE(exists, false);
 
     delete sync;
+}
+
+//Size tests
+
+void AfiSyncTest::sizeBasic()
+{
+    Mod* mod = new Mod("@vt5", TORRENT_1);
+    mod->setFileSize(1000);
+    QVERIFY(mod->fileSize() == 1000);
+    delete mod;
+}
+
+void AfiSyncTest::repoSize()
+{
+    startTest();
+
+    Repository* repo = new Repository("name", "address", 1234, "password", root_);
+    Mod* mod1 = new Mod("@vt5", TORRENT_1);
+    mod1->setFileSize(1000);
+    Mod* mod2 = new Mod("@vt5", TORRENT_1);
+    mod2->setFileSize(3000);
+    new ModAdapter(mod1, repo, false, 0);
+    new ModAdapter(mod2, repo, false, 1);
+
+    QVERIFY(repo->fileSize() == 4000);
+
+    cleanupTest();
+}
+
+void AfiSyncTest::noSize()
+{
+    Mod* mod = new Mod("@vt5", TORRENT_1);
+    QVERIFY(mod->fileSize() == 0);
+    delete mod;
+}
+
+void AfiSyncTest::jsonSize()
+{
+    startTest();
+
+    reader_.fillEverything(root_, "repoBasic.json");
+    QVERIFY(root_->childItems().at(0)->mods().at(0)->fileSize() == 1000);
+
+    cleanupTest();
+}
+
+void AfiSyncTest::sizeStringB()
+{
+
+    Mod* mod = new Mod("@vt5", TORRENT_1);
+    mod->setFileSize(1000);
+    QCOMPARE(mod->fileSizeString(), QString("1000.00 B"));
+
+    delete mod;
+}
+
+void AfiSyncTest::sizeStringMB()
+{
+
+    Mod* mod = new Mod("@vt5", TORRENT_1);
+    mod->setFileSize(21309);
+    QCOMPARE(mod->fileSizeString(), QString("20.81 MB"));
+
+    delete mod;
+}
+
+void AfiSyncTest::sizeStringGB()
+{
+
+    Mod* mod = new Mod("@vt5", TORRENT_1);
+    mod->setFileSize(3376414);
+    QCOMPARE(mod->fileSizeString(), QString("3.22 GB"));
+
+    delete mod;
+}
+
+void AfiSyncTest::sizeStringGB2()
+{
+
+    Mod* mod = new Mod("@vt5", TORRENT_1);
+    mod->setFileSize(33764140);
+    QCOMPARE(mod->fileSizeString(), QString("32.20 GB"));
+
+    delete mod;
+}
+
+void AfiSyncTest::sizeString0()
+{
+    Mod* mod = new Mod("@vt5", TORRENT_1);
+    QCOMPARE(mod->fileSizeString(), QString("??.?? MB"));
+
+    delete mod;
 }
 
 void AfiSyncTest::getFilesUpper()

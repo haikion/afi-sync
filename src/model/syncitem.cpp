@@ -9,7 +9,8 @@ SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
     TreeItem(name, parentItem),
     name_(name),
     status_(SyncStatus::NO_SYNC_CONNECTION),
-    eta_(std::numeric_limits<int>::max())
+    eta_(std::numeric_limits<int>::max()),
+    fileSize_(0)
 {
     if (settings_ == nullptr)
     {
@@ -77,6 +78,32 @@ void SyncItem::setTicked(bool checked)
 void SyncItem::checkboxClicked()
 {
     setTicked(!ticked());
+}
+
+unsigned SyncItem::fileSize() const
+{
+    return fileSize_;
+}
+
+void SyncItem::setFileSize(const unsigned& size)
+{
+    fileSize_ = size;
+}
+
+QString SyncItem::fileSizeString() const
+{
+    if (fileSize_ == 0)
+        return QString("??.?? MB");
+
+    double size = fileSize_;
+    int i = 0;
+    QStringList list;
+    list << "B" << "MB" << "GB";
+
+    for (i = 0; i < list.size() && size > 1024; ++i)
+        size = size / 1024;
+
+    return QString::number(size, 'f', 2) + " " + list.at(i);
 }
 
 QSettings* SyncItem::settings() const

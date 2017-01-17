@@ -8,7 +8,8 @@
 			{
 				"name": "@cz75_nochain_a3",
 				"key": "http://armafinland.fi/afisync/torrents/@cz75_nochain_a3_7.torrent",
-				"optional": true
+				"optional": true,
+				"fileSize": 1000
 			}
 		]
 	}]
