@@ -46,7 +46,7 @@ public:
     virtual void checkboxClicked();
     unsigned fileSize() const;
     void setFileSize(const unsigned& size);
-    QString fileSizeString() const;
+    QString fileSizeText() const;
 
 protected:
     QSettings* settings() const;

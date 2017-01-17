@@ -64,7 +64,7 @@ TreeView {
         role: "name"
         resizable : false
         width: repositoryList.width - checkColumn.width - statusColumn.width - progressColumn.width - startColumn.width -
-               joinColumn.width - 15;
+               joinColumn.width - fileSizeColumn.width - 15;
         delegate: Rectangle {
             color: defaultColor
 
@@ -99,6 +99,15 @@ TreeView {
         id: progressColumn
         title: "ETA"
         role: "progress"
+        width: 60
+        movable: false
+        resizable: false
+    }
+
+    TableViewColumn {
+        id: fileSizeColumn
+        title: "Size"
+        role: "fileSize"
         width: 60
         movable: false
         resizable: false

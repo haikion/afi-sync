@@ -24,7 +24,8 @@ public:
         Status = Qt::UserRole + 3,
         Progress = Qt::UserRole + 4,
         Start = Qt::UserRole + 5,
-        Join = Qt::UserRole + 6
+        Join = Qt::UserRole + 6,
+        FileSize = Qt::UserRole + 7
     };
 
     explicit TreeModel(const QString& data, QObject* parent = 0);

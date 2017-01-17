@@ -34,6 +34,22 @@ QString SyncItem::statusText()
     return status();
 }
 
+QString SyncItem::fileSizeText() const
+{
+    if (fileSize_ == 0)
+        return QString("??.?? MB");
+
+    double size = fileSize_;
+    int i = 0;
+    QStringList list;
+    list << "B" << "MB" << "GB";
+
+    for (i = 0; i < list.size() && size > 1024; ++i)
+        size = size / 1024;
+
+    return QString::number(size, 'f', 2) + " " + list.at(i);
+}
+
 QString SyncItem::progressText()
 {
     QString rVal = QTime(0,0,0).addSecs(eta_).toString();
@@ -88,22 +104,6 @@ unsigned SyncItem::fileSize() const
 void SyncItem::setFileSize(const unsigned& size)
 {
     fileSize_ = size;
-}
-
-QString SyncItem::fileSizeString() const
-{
-    if (fileSize_ == 0)
-        return QString("??.?? MB");
-
-    double size = fileSize_;
-    int i = 0;
-    QStringList list;
-    list << "B" << "MB" << "GB";
-
-    for (i = 0; i < list.size() && size > 1024; ++i)
-        size = size / 1024;
-
-    return QString::number(size, 'f', 2) + " " + list.at(i);
 }
 
 QSettings* SyncItem::settings() const

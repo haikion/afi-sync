@@ -12,6 +12,7 @@ ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index):
     QString repoStr = repo_->name().replace("/| ","_");
     tickedKey_ = name() + "/" + repoStr + "ticked";
     //Connect everything
+    setFileSize(mod->fileSize());
     repo->appendModAdapter(this, index);
     mod->appendModAdapter(this);
     mod->appendRepository(repo);

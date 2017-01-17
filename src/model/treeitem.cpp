@@ -38,7 +38,7 @@ int TreeItem::childCount() const
 int TreeItem::columnCount() const
 {
     //TODO: Print amount of roles
-    return 6;
+    return 7;
 }
 
 TreeItem* TreeItem::parentItem()

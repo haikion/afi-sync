@@ -195,6 +195,7 @@ QVariant TreeModel::data(const QModelIndex& index, int role = Qt::DisplayRole) c
         case Progress: return item->progressText();
         case Start: return item->startText();
         case Join: return item->joinText();
+        case FileSize: return item->fileSizeText();
     }
     Q_ASSERT_X(false, "TreeModel::data","Incorrect role = " + QString::number(role).toLatin1());
     return QVariant();
@@ -222,6 +223,8 @@ QHash<int,QByteArray> TreeModel::roleNames() const
     result.insert(Progress, QByteArrayLiteral("progress"));
     result.insert(Start, QByteArrayLiteral("start"));
     result.insert(Join, QByteArrayLiteral("join"));
+    result.insert(FileSize, QByteArrayLiteral("fileSize"));
+
     return result;
 }
 
