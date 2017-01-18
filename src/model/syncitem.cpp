@@ -9,7 +9,7 @@ SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
     TreeItem(name, parentItem),
     name_(name),
     status_(SyncStatus::NO_SYNC_CONNECTION),
-    eta_(std::numeric_limits<int>::max()),
+    eta_(Constants::MAX_ETA),
     fileSize_(0)
 {
     if (settings_ == nullptr)
@@ -52,6 +52,10 @@ QString SyncItem::fileSizeText() const
 
 QString SyncItem::progressText()
 {
+    //In repository multiple MAX_ETA maybe summed so we use >=.
+    if (eta_ >= Constants::MAX_ETA)
+        return "??:??:??";
+
     QString rVal = QTime(0,0,0).addSecs(eta_).toString();
     return rVal;
 }

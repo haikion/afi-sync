@@ -28,8 +28,8 @@ public:
     virtual bool ticked() const;
     void setTicked(bool ticked);
     bool isOptional() const;
-
     Mod* mod() const;
+    Repository* repo() const;
 
 public slots:
     void updateView();

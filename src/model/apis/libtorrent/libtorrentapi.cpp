@@ -28,8 +28,6 @@
 
 namespace lt = libtorrent;
 
-//At least 100 max etas can be summed without overflow
-const int LibTorrentApi::MAX_ETA = std::numeric_limits<int>::max()/100;
 const QString LibTorrentApi::SETTINGS_PATH = Constants::SYNC_SETTINGS_PATH + "/libtorrent.dat";
 const int LibTorrentApi::NOT_FOUND = -404;
 const QString LibTorrentApi::ERROR_KEY_NOT_FOUND = "ERROR: not found. key =";
@@ -291,7 +289,7 @@ int LibTorrentApi::folderEta(const QString& key)
     if (!handle.is_valid())
     {
         DBG << ERROR_KEY_NOT_FOUND << key;
-        return MAX_ETA;
+        return Constants::MAX_ETA;
     }
 
     lt::torrent_status status = handle.status();
@@ -323,7 +321,7 @@ int LibTorrentApi::folderEta(const QString& key)
     int download = queued ? session_->status().payload_download_rate : status.download_rate;
 
     if (download == 0)
-        return MAX_ETA;
+        return Constants::MAX_ETA;
 
     if (status.total_wanted == 0)
     {

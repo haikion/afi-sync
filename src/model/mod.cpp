@@ -55,19 +55,23 @@ void Mod::init()
     DBG << "name =" << name() << "key =" << key() << "Completed";
 }
 
-void Mod::update()
+void Mod::update(bool force)
 {
     updateStatus();
     updateEta();
-    updateView();
+    updateView(force);
 }
 
-void Mod::updateView()
+void Mod::updateView(bool force)
 {
     for (ModAdapter* adp : adapters_)
     {
-        //Run in main (UI) thread.
-        QMetaObject::invokeMethod(adp, "updateView", Qt::QueuedConnection);
+        //Only update if mod and its repo is active or when force == true
+        if ((adp->ticked() && adp->repo()->ticked()) || force)
+        {
+            //Run in main (UI) thread.
+            QMetaObject::invokeMethod(adp, "updateView", Qt::QueuedConnection);
+        }
     }
 }
 
@@ -141,7 +145,7 @@ bool Mod::stop()
     DBG << "Stopping mod transfer. name =" << name();
     sync_->setFolderPaused(key_, true);
     stopUpdatesSlot();
-    update();
+    update(true);
 
     return true;
 }

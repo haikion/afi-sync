@@ -300,8 +300,9 @@ void RootItem::update()
     updateSpeed();
     for (Repository* repo : childItems())
     {
-        repo->update();
-    }
+        if (repo->ticked())
+            repo->update();
+     }
 }
 
 void RootItem::initSync()

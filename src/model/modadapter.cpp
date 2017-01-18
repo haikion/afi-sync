@@ -89,3 +89,8 @@ void ModAdapter::updateView()
     setEta(mod_->eta());
     repo_->updateView(this, repo_->childItems().indexOf(this));
 }
+
+Repository* ModAdapter::repo() const
+{
+    return repo_;
+}

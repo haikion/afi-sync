@@ -51,7 +51,7 @@ private:
 
     void buildPathHash();
     void updateEta();
-    void updateView();
+    void updateView(bool force = false);
     bool reposInactive() const;
     void start();
     bool stop();
@@ -60,7 +60,7 @@ private:
     bool isOptional() const;
 
 private slots:
-    void update();
+    void update(bool force = false);
     void init();
     void threadConstructor();
     void stopUpdatesSlot();

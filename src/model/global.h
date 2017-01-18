@@ -15,6 +15,8 @@ namespace Constants {
     const QString VERSION_STRING = VERSION_CHARS;
     const QString DELTA_PATCHES_NAME = "afisync_patches";
     static const QString LOG_FILE = "afisync.log";
+    //At least 100 max etas can be summed without overflow
+    const int MAX_ETA = std::numeric_limits<int>::max()/100;
 }
 
 namespace Global

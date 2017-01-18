@@ -81,7 +81,6 @@ signals:
     void initCompleted();
 
 private:
-    static const int MAX_ETA;
     static const QString SETTINGS_PATH;
     static const int NOT_FOUND; //Unable to fetch eta
     static const QString ERROR_KEY_NOT_FOUND;

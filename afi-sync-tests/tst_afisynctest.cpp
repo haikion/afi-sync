@@ -731,7 +731,7 @@ void AfiSyncTest::sizeStringB()
 
     Mod* mod = new Mod("@vt5", TORRENT_1);
     mod->setFileSize(1000);
-    QCOMPARE(mod->fileSizeString(), QString("1000.00 B"));
+    QCOMPARE(mod->fileSizeText(), QString("1000.00 B"));
 
     delete mod;
 }
@@ -741,7 +741,7 @@ void AfiSyncTest::sizeStringMB()
 
     Mod* mod = new Mod("@vt5", TORRENT_1);
     mod->setFileSize(21309);
-    QCOMPARE(mod->fileSizeString(), QString("20.81 MB"));
+    QCOMPARE(mod->fileSizeText(), QString("20.81 MB"));
 
     delete mod;
 }
@@ -751,7 +751,7 @@ void AfiSyncTest::sizeStringGB()
 
     Mod* mod = new Mod("@vt5", TORRENT_1);
     mod->setFileSize(3376414);
-    QCOMPARE(mod->fileSizeString(), QString("3.22 GB"));
+    QCOMPARE(mod->fileSizeText(), QString("3.22 GB"));
 
     delete mod;
 }
@@ -761,7 +761,7 @@ void AfiSyncTest::sizeStringGB2()
 
     Mod* mod = new Mod("@vt5", TORRENT_1);
     mod->setFileSize(33764140);
-    QCOMPARE(mod->fileSizeString(), QString("32.20 GB"));
+    QCOMPARE(mod->fileSizeText(), QString("32.20 GB"));
 
     delete mod;
 }
@@ -769,7 +769,7 @@ void AfiSyncTest::sizeStringGB2()
 void AfiSyncTest::sizeString0()
 {
     Mod* mod = new Mod("@vt5", TORRENT_1);
-    QCOMPARE(mod->fileSizeString(), QString("??.?? MB"));
+    QCOMPARE(mod->fileSizeText(), QString("??.?? MB"));
 
     delete mod;
 }
