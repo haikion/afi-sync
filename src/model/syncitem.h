@@ -44,8 +44,8 @@ public:
     virtual bool ticked() const;
     void setTicked(bool ticked);
     virtual void checkboxClicked();
-    unsigned fileSize() const;
-    void setFileSize(const unsigned& size);
+    quint64 fileSize() const;
+    void setFileSize(const quint64 size);
     QString fileSizeText() const;
 
 protected:
@@ -56,7 +56,7 @@ private:
     QString name_;
     QString status_;
     int eta_;
-    unsigned fileSize_;
+    quint64 fileSize_;
 };
 
 #endif // ABSTRACTITEM_H

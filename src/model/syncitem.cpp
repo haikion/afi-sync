@@ -42,7 +42,7 @@ QString SyncItem::fileSizeText() const
     double size = fileSize_;
     int i = 0;
     QStringList list;
-    list << "B" << "MB" << "GB";
+    list << "B" << "kB" << "MB" << "GB";
 
     for (i = 0; i < list.size() && size > 1024; ++i)
         size = size / 1024;
@@ -100,12 +100,12 @@ void SyncItem::checkboxClicked()
     setTicked(!ticked());
 }
 
-unsigned SyncItem::fileSize() const
+quint64 SyncItem::fileSize() const
 {
     return fileSize_;
 }
 
-void SyncItem::setFileSize(const unsigned& size)
+void SyncItem::setFileSize(const quint64 size)
 {
     fileSize_ = size;
 }

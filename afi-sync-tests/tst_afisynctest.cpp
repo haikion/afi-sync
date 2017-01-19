@@ -91,7 +91,7 @@ private Q_SLOTS:
     void sizeStringGB();
     void sizeStringGB2();
     void sizeString0();
-
+    void sizeOverflow();
 
     //Delta patch tests
     void beforeDelta();
@@ -687,8 +687,8 @@ void AfiSyncTest::addRemoveFolderKey()
 void AfiSyncTest::sizeBasic()
 {
     Mod* mod = new Mod("@vt5", TORRENT_1);
-    mod->setFileSize(1000);
-    QVERIFY(mod->fileSize() == 1000);
+    mod->setFileSize(quint64(1000));
+    QVERIFY(mod->fileSize() == quint64(1000));
     delete mod;
 }
 
@@ -698,13 +698,13 @@ void AfiSyncTest::repoSize()
 
     Repository* repo = new Repository("name", "address", 1234, "password", root_);
     Mod* mod1 = new Mod("@vt5", TORRENT_1);
-    mod1->setFileSize(1000);
+    mod1->setFileSize(quint64(1000));
     Mod* mod2 = new Mod("@vt5", TORRENT_1);
-    mod2->setFileSize(3000);
+    mod2->setFileSize(quint64(3000));
     new ModAdapter(mod1, repo, false, 0);
     new ModAdapter(mod2, repo, false, 1);
 
-    QVERIFY(repo->fileSize() == 4000);
+    QVERIFY(repo->fileSize() == quint64(4000));
 
     cleanupTest();
 }
@@ -730,7 +730,7 @@ void AfiSyncTest::sizeStringB()
 {
 
     Mod* mod = new Mod("@vt5", TORRENT_1);
-    mod->setFileSize(1000);
+    mod->setFileSize(quint64(1000));
     QCOMPARE(mod->fileSizeText(), QString("1000.00 B"));
 
     delete mod;
@@ -740,8 +740,8 @@ void AfiSyncTest::sizeStringMB()
 {
 
     Mod* mod = new Mod("@vt5", TORRENT_1);
-    mod->setFileSize(21309);
-    QCOMPARE(mod->fileSizeText(), QString("20.81 MB"));
+    mod->setFileSize(quint64(21309));
+    QCOMPARE(mod->fileSizeText(), QString("20.81 kB"));
 
     delete mod;
 }
@@ -750,18 +750,17 @@ void AfiSyncTest::sizeStringGB()
 {
 
     Mod* mod = new Mod("@vt5", TORRENT_1);
-    mod->setFileSize(3376414);
-    QCOMPARE(mod->fileSizeText(), QString("3.22 GB"));
+    mod->setFileSize(quint64(3376414));
+    QCOMPARE(mod->fileSizeText(), QString("3.22 MB"));
 
     delete mod;
 }
 
 void AfiSyncTest::sizeStringGB2()
 {
-
     Mod* mod = new Mod("@vt5", TORRENT_1);
-    mod->setFileSize(33764140);
-    QCOMPARE(mod->fileSizeText(), QString("32.20 GB"));
+    mod->setFileSize(quint64(33764140));
+    QCOMPARE(mod->fileSizeText(), QString("32.20 MB"));
 
     delete mod;
 }
@@ -770,6 +769,15 @@ void AfiSyncTest::sizeString0()
 {
     Mod* mod = new Mod("@vt5", TORRENT_1);
     QCOMPARE(mod->fileSizeText(), QString("??.?? MB"));
+
+    delete mod;
+}
+
+void AfiSyncTest::sizeOverflow()
+{
+    Mod* mod = new Mod("@vt5", TORRENT_1);
+    mod->setFileSize(quint64(13770848165));
+    QCOMPARE(mod->fileSizeText(), QString("12.83 GB"));
 
     delete mod;
 }
