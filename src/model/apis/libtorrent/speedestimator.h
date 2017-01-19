@@ -19,8 +19,8 @@ public:
 private:
     static const int64_t AVG_CHECKING_SPEED;
 
-    int64_t dX_;
-    int64_t dT_; //ms
+    int64_t dX_; //Total bytes checked
+    int64_t dT_; //Total summed time in ms
     //Contains x and timestamp
     QHash<QString, std::pair<int64_t, int64_t>> progresses_;
 };
