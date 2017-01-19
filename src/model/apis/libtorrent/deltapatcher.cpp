@@ -359,7 +359,6 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
     QMetaObject::invokeMethod(this, "compress", Qt::BlockingQueuedConnection,
                               Q_ARG(QString, patchPath), Q_ARG(QString, deltaPath));
 
-    DBG << "Deleting directory" << deltaPath;
     FileUtils::safeRemoveRecursively(deltaDir);
 
     //Verify that the latest version doesn't get delta patched
