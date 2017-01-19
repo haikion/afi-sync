@@ -405,9 +405,9 @@ void DeltaPatcher::compress(const QString& dir, const QString& archivePath)
     //-md=32m dictionary size = 32 megabytes
     //-ms=on solid archive = on
     //-mx=9 compression level
-    console_->runCmd(SZIP_EXECUTABLE + " a -r -y -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on "
-           + QDir::toNativeSeparators(dir) + " "
-           + QDir::toNativeSeparators(archivePath));
+    console_->runCmd(SZIP_EXECUTABLE + " a -r -y -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on \""
+           + QDir::toNativeSeparators(dir) + "\" \""
+           + QDir::toNativeSeparators(archivePath) + "\"");
 }
 
 //Creates clean empty directory

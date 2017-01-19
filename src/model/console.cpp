@@ -20,9 +20,12 @@ bool Console::runCmd(const QString& cmd)
 
     process_->start(cmd);
 
-    bool rVal = process_->waitForFinished();
-    DBG << process_->readAll().toStdString().c_str();
-    return rVal;
+    while (process_->state() != QProcess::NotRunning)
+    {
+        process_->waitForReadyRead();
+        DBG << process_->readAll().toStdString().c_str();
+    }
+    return process_->exitStatus() == 0;
 }
 
 void Console::terminate()
