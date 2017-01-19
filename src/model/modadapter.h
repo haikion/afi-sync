@@ -39,6 +39,7 @@ private:
     Repository* repo_;
     QString tickedKey_;
     bool isOptional_;
+    QString guiData_;
 };
 
 #endif // MODVIEWADAPTER_H

@@ -48,8 +48,6 @@ TreeItem* TreeItem::parentItem()
 
 QList<TreeItem*> TreeItem::childItems() const
 {
-    //FIXME (Difficulty: High, Priority: medium):
-    //Unit tests crash here beause m_childItems.d == nullptr
     return m_childItems;
 }
 

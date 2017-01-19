@@ -161,6 +161,9 @@ int TreeModel::columnCount(const QModelIndex& parent) const
 
 void TreeModel::updateView(TreeItem* item, int row)
 {
+    //Only update dynamic columns
+    static const QVector<int> roles({Check, Progress, Status, Start, Join});
+
     if (haltGui_)
     {
         DBG << "UI updates halted.";
@@ -177,7 +180,7 @@ void TreeModel::updateView(TreeItem* item, int row)
         return;
     }
 
-    emit dataChanged(idx, idx);
+    emit dataChanged(idx, idx, roles);
 }
 
 QVariant TreeModel::data(const QModelIndex& index, int role = Qt::DisplayRole) const
@@ -187,7 +190,8 @@ QVariant TreeModel::data(const QModelIndex& index, int role = Qt::DisplayRole) c
    if (!index.isValid() && item == nullptr)
         return QVariant();
 
-    switch (role) {
+    switch (role)
+    {
         case Qt::DisplayRole: return item->data(index.column());
         case Check: return item->checkText();
         case Name: return item->nameText();

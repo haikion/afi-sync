@@ -87,7 +87,12 @@ Mod* ModAdapter::mod() const
 void ModAdapter::updateView()
 {
     setEta(mod_->eta());
+    QString guiData = checkText() + progressText() + status();
+    if (guiData == guiData_)
+        return; //Avoid heavy UI updates when data has not been changed.
+
     repo_->updateView(this, repo_->childItems().indexOf(this));
+    guiData_ = guiData;
 }
 
 Repository* ModAdapter::repo() const
