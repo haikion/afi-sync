@@ -466,6 +466,7 @@ void LibTorrentApi::shutdown()
     alertTimer_.stop();
     DBG << "Alert timer stopped";
     saveSettings();
+    generateResumeData();
     for (const QString& key : keyHash_.keys())
     {
         lt::torrent_handle handle = keyHash_.value(key);
@@ -488,7 +489,6 @@ void LibTorrentApi::shutdown()
         delete deltaManager_;
         DBG << "Delta Download torrent saved.";
     }
-    generateResumeData();
     DBG << "Settings saved";
     if (session_ && deleteSession)
     {
@@ -604,7 +604,6 @@ QString LibTorrentApi::deltaUpdatesKey()
     return deltaUpdatesKey_;
 }
 
-
 bool LibTorrentApi::removeFolder(const QString& key)
 {
     static const QString MSG_DELETING_FILE = "Deleting file:";
@@ -664,6 +663,7 @@ bool LibTorrentApi::removeFolder(const QString& key)
 void LibTorrentApi::setDeltaUpdatesFolder(const QString& key, const QString& path)
 {
     DBG << "path =" << path << "key =" << key;
+    /*
     CiHash<QString> keyHash;
     if (deltaManager_)
     {
@@ -671,7 +671,7 @@ void LibTorrentApi::setDeltaUpdatesFolder(const QString& key, const QString& pat
         keyHash = deltaManager_->keyHash();
         delete deltaManager_;
         deltaManager_ = nullptr;
-    }
+    }*/
 
     lt::torrent_handle handle = addFolderGeneric(key, path);
     if (!handle.is_valid())
@@ -680,13 +680,6 @@ void LibTorrentApi::setDeltaUpdatesFolder(const QString& key, const QString& pat
         return;
     }
     createDeltaManager(handle, key);
-    for (QString key : keyHash)
-    {
-        QString name = keyHash.value(key);
-        DBG << "Retrying patching for" << name << key;
-        //Re-apply pending patches.
-        deltaManager_->patch(name, key);
-    }
 }
 
 lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key, const QString path)
@@ -909,8 +902,26 @@ void LibTorrentApi::generateResumeData() const
 
 void LibTorrentApi::createDeltaManager(lt::torrent_handle handle, const QString& key)
 {
+    if (deltaManager_)
+    {
+        DBG << "Replacing old deltaManager " << deltaUpdatesKey_
+            << " with " << key;
+
+        removeFolder(deltaUpdatesKey_);
+        delete deltaManager_;
+    }
+
     deltaManager_ = new DeltaManager(handle, this);
     deltaUpdatesKey_ = key.toLower();
+
+    CiHash<QString> keyHash = deltaManager_->keyHash();
+    for (QString key : keyHash)
+    {
+        QString name = keyHash.value(key);
+        DBG << "Retrying patching for" << name << key;
+        //Re-apply pending patches.
+        deltaManager_->patch(name, key);
+    }
     connect(deltaManager_, SIGNAL(patched(QString, QString, bool)),
             this, SLOT(handlePatched(QString, QString, bool)));
 }
@@ -993,7 +1004,6 @@ boost::shared_ptr<lt::torrent_info> LibTorrentApi::loadFromFile(const QString& p
 
 void LibTorrentApi::handleTorrentFinishedAlert(const lt::torrent_finished_alert* a)
 {
-
     lt::torrent_handle h = a->handle;
     lt::torrent_status s = h.status(lt::torrent_handle::query_name);
     QString name = QString::fromStdString(s.name);

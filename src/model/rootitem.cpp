@@ -80,8 +80,8 @@ RootItem::~RootItem()
     DBG << "Sync deleted";
 }
 
-//Removes btsync dirs which
-//are not represented in this program.
+//Removes sync dirs which
+//are not active in any repository in this program.
 void RootItem::removeOrphans()
 {
     QSet<QString> keys;

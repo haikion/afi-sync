@@ -43,6 +43,8 @@ DeltaPatcher::DeltaPatcher(const QString& patchesPath):
 
 DeltaPatcher::~DeltaPatcher()
 {
+    QString path = patchesFi_->absoluteFilePath() + "/" + PATCH_DIR;
+    DBG << path;
     thread_.quit();
     thread_.wait(1000);
     thread_.terminate();
@@ -199,7 +201,7 @@ bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
     QString patchPath = patchesFi_->absoluteFilePath() + "/" + patch;
     if (!extract(patchPath))
         return false;
-    QString extractedPath = QFileInfo(patchPath).absolutePath() + "/" + PATCH_DIR;
+    QString extractedPath = patchesFi_->absoluteFilePath() + "/" + PATCH_DIR;
     return patchExtracted(extractedPath, modPath);
 }
 

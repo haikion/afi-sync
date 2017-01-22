@@ -27,8 +27,11 @@ DeltaManager::~DeltaManager()
     //Cannot be automanaged due to threads
     //delete causes segfault. Simple stop will suffice as this is run on
     //program shutdown anyway.
-    patcher_->stop();
+    //patcher_->stop();
+    delete patcher_;
+    delete downloader_;
     //Remove tmp dirs if patching was interrupted
+    /*
     QDirIterator it(QString::fromStdString(handle_.status().save_path) + "/" + Constants::DELTA_PATCHES_NAME,
                     QDir::Dirs | QDir::NoDotAndDotDot);
     while (it.hasNext())
@@ -42,6 +45,7 @@ DeltaManager::~DeltaManager()
         }
         DBG << (dir.exists() ? "Failure to delete " + path : path + " deleted.");
     }
+    */
 }
 
 bool DeltaManager::patchAvailable(const QString& modName)

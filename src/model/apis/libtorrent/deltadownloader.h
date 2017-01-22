@@ -23,13 +23,13 @@ public:
     DeltaDownloader(const libtorrent::torrent_handle& handle, QObject* parent = nullptr);
 
     bool patchAvailable(const QString& modName);
-    bool patchDownloaded(const QString& modName) const;
+    bool patchDownloaded(const QString& modName);
     bool downloadPatch(const QString& modName);
     bool noPeers() const;
     void setPaused(bool value);
     libtorrent::torrent_handle handle();
-    boost::int64_t totalWanted(const QString& modName) const;
-    boost::int64_t totalWantedDone(const QString& modName) const;
+    boost::int64_t totalWanted(const QString& modName);
+    boost::int64_t totalWantedDone(const QString& modName);
 
 private:
     libtorrent::torrent_handle handle_;
@@ -40,7 +40,7 @@ private:
     QStringList patches(const QString& modName) const;
     void createFilePaths();
     QString hash(const QString& modName) const;
-    QVector<int> patchIndexes(const QString& modName) const;
+    QVector<int> patchIndexes(const QString& modName);
 };
 
 #endif // DELTADOWNLOADER_H

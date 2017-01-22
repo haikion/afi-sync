@@ -69,7 +69,7 @@ bool DeltaDownloader::patchAvailable(const QString& modName)
     return false;
 }
 
-bool DeltaDownloader::patchDownloaded(const QString& modName) const
+bool DeltaDownloader::patchDownloaded(const QString& modName)
 {
     boost::int64_t done = totalWantedDone(modName);
     boost::int64_t wanted = totalWanted(modName);
@@ -111,7 +111,7 @@ libtorrent::torrent_handle DeltaDownloader::handle()
     return handle_;
 }
 
-boost::int64_t DeltaDownloader::totalWantedDone(const QString& modName) const
+boost::int64_t DeltaDownloader::totalWantedDone(const QString& modName)
 {
     boost::int64_t downloaded = 0;
     std::vector<boost::int64_t> progresses;
@@ -127,7 +127,7 @@ boost::int64_t DeltaDownloader::totalWantedDone(const QString& modName) const
     return downloaded;
 }
 
-boost::int64_t DeltaDownloader::totalWanted(const QString& modName) const
+boost::int64_t DeltaDownloader::totalWanted(const QString& modName)
 {
     boost::int64_t bytesWanted = 0;
     for (int i : patchIndexes(modName))
@@ -137,7 +137,7 @@ boost::int64_t DeltaDownloader::totalWanted(const QString& modName) const
 }
 
 //Returns list of patch file indexes that are applyable.
-QVector<int> DeltaDownloader::patchIndexes(const QString& modName) const
+QVector<int> DeltaDownloader::patchIndexes(const QString& modName)
 {
     //Try to return cached value
     auto it = fileIndexCache_.find(modName);
@@ -158,6 +158,7 @@ QVector<int> DeltaDownloader::patchIndexes(const QString& modName) const
         indexes.append(i);
     }
     DBG << "Returning" << indexes << "modPatches =" << modPatches;
+    fileIndexCache_.insert(modName, indexes);
     return indexes;
 }
 
