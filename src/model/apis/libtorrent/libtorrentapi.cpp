@@ -960,12 +960,12 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
             it.next();
             continue;
         }
-        lt::torrent_handle handle = session_->add_torrent(params);
         QString name = QString::fromStdString(params.ti->name());
         if (name == Constants::DELTA_PATCHES_NAME)
         {
             if (SettingsModel::deltaPatchingEnabled())
             {
+                lt::torrent_handle handle = session_->add_torrent(params);
                 DBG << "Loading delta patches torrent.";
                 createDeltaManager(handle, url);
             }
@@ -973,6 +973,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         else
         {
             DBG << "Appending" << name;
+            lt::torrent_handle handle = session_->add_torrent(params);
             keyHash_.insert(url, handle);
         }
 
