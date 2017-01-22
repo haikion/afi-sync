@@ -2,14 +2,17 @@ TEMPLATE = app
 
 QT += qml quick widgets
 CONFIG += c++11
-CONFIG += console
 
 win32 {
     release:!console: RC_FILE = AFISync.rc
-    INCLUDEPATH += D:\AfiSync\sources\libtorrent-rasterbar-1.1.0\include
-    INCLUDEPATH += D:\AfiSync\sources\boost_1_61_0
-    LIBS += -LD:\AfiSync\sources\boost_1_61_0\stage\lib -llibboost_system-mgw49-mt-1_61 -lws2_32
-    LIBS += -LD:\AfiSync\sources\libtorrent-rasterbar-1.1.0\bin\gcc-mingw-4.9.2\release\threading-multi -llibtorrent.dll
+    equals(CONFIG, console) {
+        message("Generating console application.")
+        RC_FILE -= AFISync.rc
+    }
+    INCLUDEPATH += D:\AfiSync\sources\libtorrent-rasterbar-1.1.1\include
+    INCLUDEPATH += D:\AfiSync\sources\boost_1_63_0
+    LIBS += -LD:\AfiSync\sources\boost_1_63_0\stage\lib -llibboost_system-mgw53-mt-1_63 -lws2_32
+    LIBS += -LD:\AfiSync\sources\libtorrent-rasterbar-1.1.1\bin\gcc-mingw-5.3.0\release\threading-multi -llibtorrent.dll
     #Remove warning from libTorrent src
     QMAKE_CXXFLAGS += -Wno-missing-field-initializers
 }
