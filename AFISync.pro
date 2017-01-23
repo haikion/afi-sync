@@ -4,7 +4,7 @@ QT += qml quick widgets
 CONFIG += c++11
 
 win32 {
-    release:!console: RC_FILE = AFISync.rc
+    Release: RC_FILE = AFISync.rc
     equals(CONFIG, console) {
         message("Generating console application.")
         RC_FILE -= AFISync.rc
