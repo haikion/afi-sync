@@ -4,10 +4,8 @@ QT += qml quick widgets
 CONFIG += c++11
 
 win32 {
-    Release: RC_FILE = AFISync.rc
-    equals(CONFIG, console) {
-        message("Generating console application.")
-        RC_FILE -= AFISync.rc
+    Release:!console {
+        RC_FILE = AFISync.rc
     }
     INCLUDEPATH += D:\AfiSync\sources\libtorrent-rasterbar-1.1.1\include
     INCLUDEPATH += D:\AfiSync\sources\boost_1_63_0
