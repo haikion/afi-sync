@@ -5,37 +5,33 @@ import org.AFISync 0.1
 import "."
 
 Rectangle {
+    id: rect
     property string text
+    property variant buttonVar
+    property bool isRepo: false
     signal clicked()
+    property string value2: parent != null ? parent.styleData.value : "hidden"
 
-    Component {
+    /*
+        Created on every line but only visible on repository because:
+        Note: For performance reasons, created delegates can be recycled across
+        multiple table rows. This implies that when you make use of implicit properties
+        such as styleData.row or model, these values can change after the delegate has been
+        constructed. This means that you should not assume that content is fixed when
+        Component.onCompleted is called, but instead rely on bindings to such properties."
+    */
+    Button {
         id: button
 
-        Button {
-            property string value: parent.parent != null ? parent.parent.styleData.value : "disabled"
+        property string value: parent.parent != null ? parent.parent.styleData.value : "disabled"
 
-            text: parent.text
-            anchors.centerIn: parent
-            width: parent.width - 10
-            height: parent.height - 5
-            //TODO: return bool through model
-            enabled: value === "Join" || value === "Start"  || Global.buttonsEnabled
-            onClicked: parent.clicked()
-        }
-    }
-
-    property variant buttonVar
-    Component.onCompleted: {
-        if (TreeModel.isRepository(styleData.index)) {
-            console.log("Create")
-            buttonVar = button.createObject(this)
-        }
-    }
-    Component.onDestruction: {
-        if (typeof buttonVar != "undefined" && buttonVar !== null)
-        {
-            console.log("Destroy")
-            button.destroy()
-        }
+        visible: styleData.hasChildren //Only repositories have children
+        text: parent.text
+        anchors.centerIn: parent
+        width: parent.width - 10
+        height: parent.height - 5
+        //TODO: return bool through model
+        enabled: value === "Join" || value === "Start"  || Global.buttonsEnabled
+        onClicked: parent.clicked()
     }
 }
