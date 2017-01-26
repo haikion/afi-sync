@@ -95,6 +95,9 @@ int gui(int argc, char* argv[])
     QApplication app(argc, argv);
     DBG << "QGuiApplication created";
     QQmlApplicationEngine engine;
+    #ifdef STATIC_BUILD
+    engine.setImportPathList(QStringList(QStringLiteral("qrc:/qml")));
+    #endif
     engine.load(QUrl(QStringLiteral("qrc:/SplashScreen.qml")));
     DBG << "QML Engine loaded";
 

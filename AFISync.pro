@@ -1,12 +1,20 @@
 TEMPLATE = app
 
 QT += qml quick widgets
-CONFIG += c++11
+CONFIG += c++1z
+
+
 
 win32 {
     Release:!console {
-        RC_FILE = AFISync.rc
+        !contains(QMAKE_PRL_CONFIG, shared) {
+            DEFINES += STATIC_BUILD=1
+        }
+        RC_ICONS = src/view/armafin-logo-64px2.ico
+        #Require administrator
+        QMAKE_POST_LINK += D:\Microsoft SDKs\Windows\v7.1\Bin\mt.exe -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$${TARGET}.exe
     }
+
     INCLUDEPATH += D:\AfiSync\sources\libtorrent-rasterbar-1.1.1\include
     INCLUDEPATH += D:\AfiSync\sources\boost_1_63_0
     LIBS += -LD:\AfiSync\sources\boost_1_63_0\stage\lib -llibboost_system-mgw53-mt-1_63 -lws2_32
