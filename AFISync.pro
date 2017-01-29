@@ -3,31 +3,26 @@ TEMPLATE = app
 QT += qml quick widgets
 CONFIG += c++1z
 
-
-
 win32 {
-    Release:!console {
-        !contains(QMAKE_PRL_CONFIG, shared) {
-            DEFINES += STATIC_BUILD=1
-        }
-        RC_ICONS = src/view/armafin-logo-64px2.ico
-        #Require administrator
-        QMAKE_POST_LINK += D:\Microsoft SDKs\Windows\v7.1\Bin\mt.exe -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$${TARGET}.exe
-    }
-
+    DEFINES += _WIN32_WINNT=0x0501
     INCLUDEPATH += D:\AfiSync\sources\libtorrent-rasterbar-1.1.1\include
     INCLUDEPATH += D:\AfiSync\sources\boost_1_63_0
-    LIBS += -LD:\AfiSync\sources\boost_1_63_0\stage\lib -llibboost_system-mgw53-mt-1_63 -lws2_32
-    LIBS += -LD:\AfiSync\sources\libtorrent-rasterbar-1.1.1\bin\gcc-mingw-5.3.0\release\threading-multi -llibtorrent.dll
-    #Remove warning from libTorrent src
-    QMAKE_CXXFLAGS += -Wno-missing-field-initializers
+
+    LIBS += -LD:\AfiSync\lib -llibboost_atomic-vc140-mt-s-1_63 -llibboost_random-vc140-mt-s-1_63 -lws2_32 -ltorrent
+    Release {
+        LIBS -= -ltorrent
+        LIBS += -llibtorrent
+        DEFINES += STATIC_BUILD=1
+        !console {
+            QMAKE_POST_LINK += mt.exe -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$${TARGET}.exe
+            RC_ICONS = src/view/armafin-logo-64px2.ico
+        }
+    }
 }
 
 unix {
     LIBS += -ltorrent-rasterbar -lboost_system
 }
-
-DEFINES += _HAS_ITERATOR_DEBUGGING=0 _SECURE_SCL=0
 
 SOURCES += src/model/main.cpp \
     src/model/treeitem.cpp \
