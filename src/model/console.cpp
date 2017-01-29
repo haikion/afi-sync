@@ -6,6 +6,7 @@ Console::Console(QObject* parent):
     QObject(parent)
 {
     process_ = new QProcess();
+    connect(process_, SIGNAL(readyRead()), this, SLOT(printOutput()));
 }
 
 Console::~Console()
@@ -14,18 +15,27 @@ Console::~Console()
     delete process_;
 }
 
-bool Console::runCmd(const QString& cmd)
+bool Console::runCmd(const QString& cmd) const
 {
     DBG << "Running command:" << cmd.toStdString().c_str();
 
     process_->start(cmd);
+    process_->waitForFinished();
 
-    while (process_->state() != QProcess::NotRunning)
-    {
-        process_->waitForReadyRead();
-        DBG << process_->readAll().toStdString().c_str();
-    }
     return process_->exitStatus() == 0;
+}
+
+QProcess* Console::runCmdAsync(const QString& cmd)
+{
+    DBG << "Running command:" << cmd.toStdString().c_str();
+
+    process_->start(cmd);
+    return process_;
+}
+
+void Console::printOutput()
+{
+    DBG << process_->readAll().toStdString().c_str();
 }
 
 void Console::terminate()

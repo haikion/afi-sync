@@ -5,6 +5,7 @@
 #include "treemodel.h"
 #include "version.h"
 #include "apis/isync.h"
+#include "logmanager.h"
 
 namespace Constants {
     const QString SETTINGS_PATH = "settings";
@@ -25,6 +26,7 @@ namespace Global
     extern TreeModel* model;
     extern QTextStream* logStream;
     extern ISync* sync;
+    extern LogManager* logManager;
     extern bool guiless;
 }
 

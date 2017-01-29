@@ -9,5 +9,6 @@ namespace Global
     TreeModel* model = nullptr;
     QTextStream* logStream = nullptr;
     ISync* sync = nullptr;
+    LogManager* logManager = nullptr;
     bool guiless = false;
 }

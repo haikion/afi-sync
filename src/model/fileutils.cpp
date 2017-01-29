@@ -245,7 +245,8 @@ bool FileUtils::safeRemoveRecursively(const QString& path)
 
 bool FileUtils::pathIsSafe(const QString& path)
 {
-    QString pathUpper = path.toUpper();
+    QString pathFull = QFileInfo(path).absoluteFilePath();
+    QString pathUpper = pathFull.toUpper();
     QStringList safeSubpaths;
     safeSubpaths.append(SettingsModel::modDownloadPath());
     safeSubpaths.append(SettingsModel::arma3Path());
@@ -262,7 +263,7 @@ bool FileUtils::pathIsSafe(const QString& path)
             return true;
     }
 
-    DBG << "ERROR: " << path << "not in safe subpaths" << safeSubpaths << ". Operation aborted!";
+    DBG << "ERROR: " << pathFull << "not in safe subpaths" << safeSubpaths << ". Operation aborted!";
     return false;
 }
 

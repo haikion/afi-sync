@@ -13,18 +13,23 @@
 
 class Console: public QObject
 {
+    Q_OBJECT
+
 public:
     Console(QObject* parent = nullptr);
     ~Console();
 
+    QProcess*runCmdAsync(const QString& cmd);
+
 public slots:
-    bool runCmd(const QString& cmd);
+    bool runCmd(const QString& cmd) const;
     void terminate();
+
+private slots:
+    void printOutput();
 
 private:
     QProcess* process_;
-
-    bool waitFinished(QProcess* process) const;
 };
 
 #endif // CONSOLE_H

@@ -31,6 +31,8 @@ bool LogManager::rotateLogs()
         DBG << "Deleting old log file" << deleteThis;
         FileUtils::safeRemove(deleteThis);
     }
-    return szip_.compress(Constants::LOG_FILE, QString(Constants::LOG_FILE).append("_" +
-             QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss") + ".7z"));
+    QString filePrefix = QString(Constants::LOG_FILE) + "_" + QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss");
+    QString logName =  filePrefix + ".log";
+    FileUtils::move(Constants::LOG_FILE, logName);
+    return szip_.compressAsync(logName, filePrefix + ".7z");
 }

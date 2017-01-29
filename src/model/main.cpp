@@ -75,7 +75,10 @@ void messageHandler(QtMsgType type, const QMessageLogContext& context, const QSt
 
 void createLogFile()
 {
-    LogManager().rotateLogs();
+    if (!Global::logManager)
+        Global::logManager = new LogManager();
+
+    Global::logManager->rotateLogs();
     QFile* file = new QFile(Constants::LOG_FILE);
     file->open(QIODevice::WriteOnly | QIODevice::Append);
     Global::logStream = new QTextStream(file);
@@ -83,6 +86,7 @@ void createLogFile()
 
 int gui(int argc, char* argv[])
 {
+    QApplication app(argc, argv);
     #ifndef QT_DEBUG
         createLogFile();
         qInstallMessageHandler(messageHandler);
@@ -92,11 +96,10 @@ int gui(int argc, char* argv[])
     qmlRegisterSingletonType<SettingsModel>("org.AFISync", 0, 1, "SettingsModel", getSettingsModel);
     qmlRegisterSingletonType<ProcessMonitor>("org.AFISync", 0, 1, "ProcessMonitor", getProcessMonitor);
     DBG << "QML Singletons registered";
-    QApplication app(argc, argv);
     DBG << "QGuiApplication created";
     QQmlApplicationEngine engine;
     #ifdef STATIC_BUILD
-    engine.setImportPathList(QStringList(QStringLiteral("qrc:/qml")));
+        engine.setImportPathList(QStringList(QStringLiteral("qrc:/qml")));
     #endif
     engine.load(QUrl(QStringLiteral("qrc:/SplashScreen.qml")));
     DBG << "QML Engine loaded";
