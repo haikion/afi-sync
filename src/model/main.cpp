@@ -111,6 +111,8 @@ int gui(int argc, char* argv[])
 
 int cli(int argc, char* argv[])
 {
+    QCoreApplication app(argc, argv);
+
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
@@ -126,8 +128,6 @@ int cli(int argc, char* argv[])
     //Linux ctrl+c compatability
     CleanExit cleanExit;
     Q_UNUSED(cleanExit);
-
-    QCoreApplication app(argc, argv);
 
     QStringList args;
     for (int i = 0; i < argc; ++i)

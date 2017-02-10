@@ -42,7 +42,6 @@ void Mod::threadConstructor()
     updateTimer_ = new QTimer(this);
     updateTimer_->setTimerType(Qt::VeryCoarseTimer);
     updateTimer_->setInterval(1000);
-    connect(updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
 }
 
 void Mod::init()
@@ -257,6 +256,7 @@ QString Mod::key() const
 void Mod::startUpdates()
 {
     DBG << name();
+    connect(updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
     QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
 }
 
@@ -275,8 +275,7 @@ void Mod::stopUpdates()
 void Mod::stopUpdatesSlot()
 {
     updateTimer_->stop();
-    //Process pending update() calls. (Prevents segfault)
-    QCoreApplication::processEvents();
+    updateTimer_->disconnect();
 }
 
 void Mod::appendRepository(Repository* repository)

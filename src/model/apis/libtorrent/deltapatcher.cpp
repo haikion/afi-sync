@@ -325,11 +325,11 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
         QString parentPath = QFileInfo(outputPath).absolutePath();
         QString newPath = newFile.absoluteFilePath();
 
-        QDir().mkpath(parentPath);
         if (!oldFile.exists())
         {
             DBG << "Copying" << newPath << "to" << outputPath;
             QFile::copy(newPath, outputPath);
+            QDir().mkpath(parentPath);
             rVal = true;
             continue;
         }
@@ -342,6 +342,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
             DBG << "Files" << oldPath << "and file" << laterPath << "are (size) identical. Delta patch generation aborted.";
             continue;
         }
+        QDir().mkpath(parentPath);
         //Creates uncompressed delta patch file
         QMetaObject::invokeMethod(console_, "runCmd", Qt::BlockingQueuedConnection,
                                   Q_ARG(QString, XDELTA_EXECUTABLE + " -e -S none -s \""
