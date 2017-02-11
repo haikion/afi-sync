@@ -33,6 +33,7 @@ DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle, QObje
     handle_.pause();
     fileStorage_ = torrent->files();
     createFilePaths();
+    handle.set_sequential_download(true); //Download patches one by one
     for (int i = 0; i < fileStorage_.num_files(); ++i)
     {
         if (QFileInfo(fileStorage_.file_path(i, handle_.status().save_path).c_str()).exists()
@@ -41,7 +42,7 @@ DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle, QObje
                 continue;
         }
         //Do not download anything. Sets priority to 0 whenever file does not exist.
-        handle_.file_priority(i, 0);
+        handle_.file_priority(i, DownloadPriority::NO_DOWNLOAD);
     }
     handle_.resume();
 }
@@ -81,14 +82,10 @@ bool DeltaDownloader::patchDownloaded(const QString& modName)
 //Downloads patches one by one.
 bool DeltaDownloader::downloadPatch(const QString& modName)
 {
-    static int priority = handle_.file_priorities().size();
-
     QVector<int> indexes = patchIndexes(modName);
     for (int i : indexes)
     {
-        priority = std::max(1, priority); //Fail Safe
-        handle_.file_priority(i, priority);
-        --priority;
+        handle_.file_priority(i, DownloadPriority::NORMAL);
     }
     handle_.resume();
     return indexes.size() > 0;
@@ -117,10 +114,8 @@ boost::int64_t DeltaDownloader::totalWantedDone(const QString& modName)
     std::vector<boost::int64_t> progresses;
     handle_.file_progress(progresses, lt::torrent_handle::piece_granularity);
 
-    QVector<int> filePriorities;
     for (int i : patchIndexes(modName))
     {
-        filePriorities.push_back(handle_.file_priorities().at(i));
         downloaded += progresses.at(i);
     }
     DBG << "Downloaded" << downloaded << "bytes for" << modName << "patches.";

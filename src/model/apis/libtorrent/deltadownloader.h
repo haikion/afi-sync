@@ -15,6 +15,22 @@
 #include "../../cihash.h"
 #include "deltapatcher.h"
 
+/*
+ 0. piece is not downloaded at all
+ 1. normal priority. Download order is dependent on availability
+ 2. higher than normal priority. Pieces are preferred over pieces with the same availability, but not over pieces with lower availability
+ 3. pieces are as likely to be picked as partial pieces.
+ 4. pieces are preferred over partial pieces, but not over pieces with lower availability
+ 5  currently the same as 4
+ 6. piece is as likely to be picked as any piece with availability 1
+ 7. maximum priority, availability is disregarded, the piece is preferred over any other piece with lower priority
+ */
+enum DownloadPriority
+{
+    NO_DOWNLOAD = 0,
+    NORMAL = 1
+};
+
 class DeltaDownloader: public QObject
 {
     Q_OBJECT
