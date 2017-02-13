@@ -28,7 +28,6 @@
 
 namespace lt = libtorrent;
 
-const QString LibTorrentApi::SETTINGS_PATH = Constants::SYNC_SETTINGS_PATH + "/libtorrent.dat";
 const int LibTorrentApi::NOT_FOUND = -404;
 const QString LibTorrentApi::ERROR_KEY_NOT_FOUND = "ERROR: not found. key =";
 const QString LibTorrentApi::ERROR_SESSION_NULL = "ERROR: session is null.";
@@ -37,7 +36,8 @@ LibTorrentApi::LibTorrentApi(QObject *parent) :
     QObject(parent),
     session_(nullptr),
     deltaManager_(nullptr),
-    numResumeData_(0)
+    numResumeData_(0),
+    settingsPath_(SettingsModel::syncSettingsPath() + "/libtorrent.dat")
 {
     init();
     emit initCompleted();
@@ -102,7 +102,7 @@ bool LibTorrentApi::createSession()
     }
     session_ = new lt::session(settings);
     bool rVal = loadLtSettings();
-    loadTorrentFiles(Constants::SYNC_SETTINGS_PATH);
+    loadTorrentFiles(SettingsModel::syncSettingsPath());
     return rVal;
 }
 
@@ -131,7 +131,7 @@ void LibTorrentApi::saveSettings()
     std::map<std::string, lt::entry> map = e.dict();
     QByteArray bytes;
     lt::bencode(std::back_inserter(bytes), e);
-    FileUtils::writeFile(bytes, SETTINGS_PATH);
+    FileUtils::writeFile(bytes, settingsPath_);
     DBG << "Data saved." << bytes.size() << "bytes written.";
 }
 
@@ -142,7 +142,7 @@ bool LibTorrentApi::loadLtSettings()
     if (!session_)
         return false;
 
-    QByteArray bytes = FileUtils::readFile(SETTINGS_PATH);
+    QByteArray bytes = FileUtils::readFile(settingsPath_);
     if (bytes.size() == 0)
         return false;
     lt::bdecode_node fast;
@@ -625,7 +625,7 @@ bool LibTorrentApi::removeFolder(const QString& key)
 
         return false;
     }
-    QString filePrefix = Constants::SYNC_SETTINGS_PATH + "/" + getHashString(handle);
+    QString filePrefix = SettingsModel::syncSettingsPath() + "/" + getHashString(handle);
     session_->remove_torrent(handle);
     keyHash_.remove(key);
     //Delete saved data
@@ -815,7 +815,7 @@ QString LibTorrentApi::getHashString(const lt::torrent_handle& handle) const
 
 bool LibTorrentApi::saveTorrentFile(const lt::torrent_handle& handle) const
 {
-    QString filePrefix = Constants::SYNC_SETTINGS_PATH + "/" + getHashString(handle);
+    QString filePrefix = SettingsModel::syncSettingsPath() + "/" + getHashString(handle);
     //Torrent file
     boost::shared_ptr<lt::torrent_info const> ti = getTorrentFile(handle);
     DBG << "name =" << QString::fromStdString(handle.status(lt::torrent_handle::query_name).name);
@@ -887,7 +887,7 @@ void LibTorrentApi::generateResumeData() const
 
             lt::torrent_handle h = rd->handle;
 
-            std::ofstream out((Constants::SYNC_SETTINGS_PATH.toStdString()
+            std::ofstream out((SettingsModel::syncSettingsPath().toStdString()
                                + "/" + getHashString(h).toStdString() + ".fastresume").c_str()
                     , std::ios_base::binary);
             out.unsetf(std::ios_base::skipws);

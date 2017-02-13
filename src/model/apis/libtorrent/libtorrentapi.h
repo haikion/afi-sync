@@ -81,7 +81,6 @@ signals:
     void initCompleted();
 
 private:
-    static const QString SETTINGS_PATH;
     static const int NOT_FOUND; //Unable to fetch eta
     static const QString ERROR_KEY_NOT_FOUND;
     static const QString ERROR_SESSION_NULL;
@@ -94,6 +93,7 @@ private:
     std::vector<libtorrent::alert*>* alerts_;
     SpeedEstimator speedEstimator_;
     QString deltaUpdatesKey_;
+    QString settingsPath_;
 
     void init();
     bool loadLtSettings();

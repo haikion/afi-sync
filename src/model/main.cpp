@@ -87,6 +87,10 @@ void createLogFile()
 int gui(int argc, char* argv[])
 {
     QApplication app(argc, argv);
+
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, SettingsModel::settingsPath());
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+
     #ifndef QT_DEBUG
         createLogFile();
         qInstallMessageHandler(messageHandler);
@@ -112,6 +116,9 @@ int gui(int argc, char* argv[])
 int cli(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
+
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, SettingsModel::settingsPath());
+    QSettings::setDefaultFormat(QSettings::IniFormat);
 
     QCommandLineParser parser;
     parser.addHelpOption();
@@ -186,8 +193,7 @@ int main(int argc, char* argv[])
     QCoreApplication::setOrganizationName("AFISync");
     QCoreApplication::setOrganizationDomain("armafinland.fi");
     QCoreApplication::setApplicationName("AFISync");
-    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, Constants::SETTINGS_PATH);
-    QSettings::setDefaultFormat(QSettings::IniFormat);
+
     if (argc > 1)
     {
         return cli(argc, argv);

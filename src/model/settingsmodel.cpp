@@ -171,6 +171,16 @@ void SettingsModel::resetPort()
     settings()->setValue("port", QString::number(Constants::DEFAULT_PORT));
 }
 
+QString SettingsModel::settingsPath()
+{
+    return QCoreApplication::applicationDirPath() + "/settings";
+}
+
+QString SettingsModel::syncSettingsPath()
+{
+    return settingsPath() + "/sync";
+}
+
 void SettingsModel::setMaxUpload(const QString& value)
 {
     DBG;

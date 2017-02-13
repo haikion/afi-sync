@@ -196,7 +196,7 @@ void RootItem::resetSyncSettings()
     }
     sync_->shutdown();
     //Brute way to avoid "file in use" while sync is shutting down.
-    QDir dir(Constants::SYNC_SETTINGS_PATH);
+    QDir dir(SettingsModel::syncSettingsPath());
     int attempts = 0;
     while ( dir.exists() && attempts < 100 )
     {

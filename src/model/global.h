@@ -7,9 +7,8 @@
 #include "apis/isync.h"
 #include "logmanager.h"
 
-namespace Constants {
-    const QString SETTINGS_PATH = "settings";
-    const QString SYNC_SETTINGS_PATH = SETTINGS_PATH + "/sync";
+namespace Constants
+{
     const QString DEFAULT_USERNAME = "user";
     const QString DEFAULT_PASSWORD = "password";
     const unsigned DEFAULT_PORT = 41000;
