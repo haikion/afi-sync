@@ -229,6 +229,7 @@ void Repository::updateEtaAndStatus()
     {
         //All mods are ready so repo is ready.
         setStatus(SyncStatus::READY);
+        setEta(0);
     }
     else if (modStatuses.contains(SyncStatus::DOWNLOADING))
     {
