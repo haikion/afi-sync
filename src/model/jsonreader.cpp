@@ -5,6 +5,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QJsonArray>
+#include <QCoreApplication>
 #include "mod.h"
 #include "repository.h"
 #include "rootitem.h"
@@ -13,14 +14,17 @@
 #include "modadapter.h"
 #include "settingsmodel.h"
 
-const QString JsonReader::FILE_PATH = "settings/repositories.json";
-const QString JsonReader::DOWNLOADED_PATH = FILE_PATH + "_new";
 const QString JsonReader::SEPARATOR = "|||";
 
 //Fastest
+JsonReader::JsonReader():
+    repositoriesPath_(QCoreApplication::applicationDirPath() + "/settings/repositories.json"),
+    downloadedPath_(repositoriesPath_ + "_new")
+{}
+
 void JsonReader::fillEverything(RootItem* root)
 {
-    fillEverything(root, FILE_PATH);
+    fillEverything(root, repositoriesPath_);
 }
 
 void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
@@ -231,7 +235,7 @@ QJsonDocument JsonReader::readJsonFile(const QString& path) const
 QVariantMap JsonReader::updateJson(const QString& url)
 {
     QNetworkReply* reply = nam_.syncGet(QNetworkRequest(url));
-    QFile file(DOWNLOADED_PATH);
+    QFile file(downloadedPath_);
     if (reply->bytesAvailable() == 0 || !file.open(QIODevice::WriteOnly))
     {
         DBG << "failed. url =" << url;
@@ -242,14 +246,14 @@ QVariantMap JsonReader::updateJson(const QString& url)
     reply->deleteLater();
 
     //Read updated (shutdowns if invalid json file)
-    QJsonDocument docElement = readJsonFile(DOWNLOADED_PATH);
+    QJsonDocument docElement = readJsonFile(downloadedPath_);
     if (docElement == QJsonDocument())
     {
         return QVariantMap();
     }
-    QFile::remove(FILE_PATH);
+    QFile::remove(repositoriesPath_);
     //Valid json, replace old one.
-    QFile::rename(DOWNLOADED_PATH, FILE_PATH);
+    QFile::rename(downloadedPath_, repositoriesPath_);
     QVariantMap jsonMap = qvariant_cast<QVariantMap>(docElement.toVariant());
     return jsonMap;
 }

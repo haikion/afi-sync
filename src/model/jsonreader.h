@@ -11,27 +11,24 @@
 class RootItem;
 class Repository;
 
-class JsonReader: public QObject
+class JsonReader
 {
-    Q_OBJECT
-
 public:
+    JsonReader();
+
     //Fills rootItem according to XML file
     void fillEverything(RootItem* root);
     //Enables better testability.
     void fillEverything(RootItem *root, const QString& jsonFilePath);
     bool updateAvailable();
 
-signals:
-    void modAppend(Mod* mod);
-
 private:
-    static const QString FILE_PATH;
-    static const QString DOWNLOADED_PATH;
     static const QString SEPARATOR;
 
     QVariantMap jsonMap_;
     SyncNetworkAccessManager nam_;
+    QString repositoriesPath_; //Holds path to validated repositories.json
+    QString downloadedPath_; //Holds path to downloaded but not validated repositories.json
 
     QJsonDocument readJsonFile(const QString& path) const;
     QVariantMap updateJson(const QString& url);
