@@ -24,7 +24,8 @@ Mod::Mod(const QString& name, const QString& key):
     //Enables non lagging UI
     moveToThread(Global::workerThread);
     qRegisterMetaType<QVector<int>>("QVector<int>");
-    QMetaObject::invokeMethod(this, "threadConstructor", Qt::QueuedConnection);
+    //Blocking is required, because otherwise startUpdates might be called before updateTimer_ is initialzied.
+    QMetaObject::invokeMethod(this, "threadConstructor", Qt::BlockingQueuedConnection);
 }
 
 Mod::~Mod()
