@@ -85,8 +85,8 @@ void DeltaPatcher::patchDirSync(const QString& modPath)
     QStringList patches = filterPatches(modPath, allPatches);
     if (patches.size() == 0)
     {
-        DBG << ERROR_NO_PATCHES << modName << "from"
-            << allPatches << "hash =" << AHasher::hash(modPath);
+        DBG << ERROR_NO_PATCHES << modName << " from "
+            << allPatches << " hash = " << AHasher::hash(modPath);
         emit patched(modPath, false);
         return;
     }
@@ -121,10 +121,9 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
     QString hash = AHasher::hash(modPath);
     QRegExp regEx(modName + ".*" + hash + "\\" + SEPARATOR + "7z");
     QStringList matches = allPatches.filter(regEx);
-    if (matches.size() != 1)
-    {
+    if (matches.size() == 0)
         return QStringList();
-    }
+
     QString patchName = matches.at(0);
     //First version.
     int version = patchName.split(SEPARATOR).at(1).toInt();
@@ -198,9 +197,19 @@ bool DeltaPatcher::notPatching()
 //Synchronous patch function
 bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
 {
+    const int MAX_ATTEMPTS = 10;
+
     QString patchPath = patchesFi_->absoluteFilePath() + "/" + patch;
-    if (!extract(patchPath))
+    int i = 0;
+    //libTorrent may report downloaded bytes early.
+    //Which means AFISync may try apply the patch before it is actually downloaded
+    //Give libTorrent some time to actually finish the download.
+    for (i = 0; i < MAX_ATTEMPTS && !extract(patchPath); ++i)
+        QThread::sleep(5);
+
+    if (i >= MAX_ATTEMPTS)
         return false;
+
     QString extractedPath = patchesFi_->absoluteFilePath() + "/" + PATCH_DIR;
     return patchExtracted(extractedPath, modPath);
 }
@@ -392,9 +401,12 @@ bool DeltaPatcher::extract(const QString& zipPath)
 {
     DBG << "Extracting" << zipPath;
     QFileInfo fi = QFileInfo(zipPath);
-    return console_->runCmd(SZIP_EXECUTABLE + " -y x \""
+    console_->runCmd(SZIP_EXECUTABLE + " -y x \""
            + QDir::toNativeSeparators(zipPath)
            + "\" -o\"" + QDir::toNativeSeparators(fi.absolutePath()) + "\"");
+    if (QDir(fi.absolutePath() + "/" + PATCH_DIR).exists()) //7z exits with 0 regardless
+        return true;
+    return false;
 }
 
 void DeltaPatcher::compress(const QString& dir, const QString& archivePath)

@@ -12,7 +12,7 @@ namespace lt = libtorrent;
 
 DeltaManager::DeltaManager(lt::torrent_handle handle, QObject* parent):
     QObject(parent),
-    downloader_(new DeltaDownloader(handle, this)),
+    downloader_(new DeltaDownloader(handle)),
     patcher_(new DeltaPatcher(SettingsModel::modDownloadPath()
                               + "/" + Constants::DELTA_PATCHES_NAME)),
     handle_(handle)
@@ -24,28 +24,8 @@ DeltaManager::DeltaManager(lt::torrent_handle handle, QObject* parent):
 
 DeltaManager::~DeltaManager()
 {
-    //Cannot be automanaged due to threads
-    //delete causes segfault. Simple stop will suffice as this is run on
-    //program shutdown anyway.
-    //patcher_->stop();
     delete patcher_;
     delete downloader_;
-    //Remove tmp dirs if patching was interrupted
-    /*
-    QDirIterator it(QString::fromStdString(handle_.status().save_path) + "/" + Constants::DELTA_PATCHES_NAME,
-                    QDir::Dirs | QDir::NoDotAndDotDot);
-    while (it.hasNext())
-    {
-        QString path = it.next();
-        QDir dir(path);
-        for (int a = 0; a < 15 && !FileUtils::safeRemoveRecursively(dir); ++a)
-        {
-            QThread::sleep(1);
-            DBG << "Failure to delete" << path << ". Retrying...";
-        }
-        DBG << (dir.exists() ? "Failure to delete " + path : path + " deleted.");
-    }
-    */
 }
 
 bool DeltaManager::patchAvailable(const QString& modName)
@@ -133,6 +113,7 @@ int DeltaManager::patchingEta(const QString& key)
 {
     static const qint64 SPEED =  600000;
     QString modName = keyHash_.value(key);
+
     //Returns extracted if being patched (more accurate)
     qint64 totalBytes = patcher_->totalBytes(modName);
     if (totalBytes == 0) //If downloading, return 7z size
@@ -140,8 +121,6 @@ int DeltaManager::patchingEta(const QString& key)
 
     qint64 bytesPatched = patcher_->bytesPatched(modName);
     qint64 bytesReq = totalBytes - bytesPatched;
-    DBG << modName << "total =" << totalBytes << "Req =" << bytesReq
-        << "patched =" << bytesPatched;
     return bytesReq/SPEED;
 }
 

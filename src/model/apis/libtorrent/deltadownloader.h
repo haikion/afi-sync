@@ -31,12 +31,10 @@ enum DownloadPriority
     NORMAL = 1
 };
 
-class DeltaDownloader: public QObject
+class DeltaDownloader
 {
-    Q_OBJECT
-
 public:
-    DeltaDownloader(const libtorrent::torrent_handle& handle, QObject* parent = nullptr);
+    DeltaDownloader(const libtorrent::torrent_handle& handle);
 
     bool patchAvailable(const QString& modName);
     bool patchDownloaded(const QString& modName);
@@ -57,6 +55,8 @@ private:
     void createFilePaths();
     QString hash(const QString& modName) const;
     QVector<int> patchIndexes(const QString& modName);
+    boost::int64_t totalWantedDone(const QVector<int>& indexes);
+    boost::int64_t totalWanted(const QVector<int>& indexes);
 };
 
 #endif // DELTADOWNLOADER_H

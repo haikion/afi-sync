@@ -18,8 +18,7 @@
 
 namespace lt = libtorrent;
 
-DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle, QObject* parent):
-    QObject(parent),
+DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle):
     handle_(handle)
 {
     boost::shared_ptr<const lt::torrent_info> torrent = handle_.torrent_file();
@@ -72,9 +71,11 @@ bool DeltaDownloader::patchAvailable(const QString& modName)
 
 bool DeltaDownloader::patchDownloaded(const QString& modName)
 {
-    boost::int64_t done = totalWantedDone(modName);
-    boost::int64_t wanted = totalWanted(modName);
+    QVector<int> indexes = patchIndexes(modName);
+    boost::int64_t done = totalWantedDone(indexes);
+    boost::int64_t wanted = totalWanted(indexes);
 
+    DBG << modName << " download process: " << done << "/" << wanted;
     return done >= wanted;
 }
 
@@ -108,27 +109,35 @@ libtorrent::torrent_handle DeltaDownloader::handle()
     return handle_;
 }
 
-boost::int64_t DeltaDownloader::totalWantedDone(const QString& modName)
+boost::int64_t DeltaDownloader::totalWantedDone(const QVector<int>& indexes)
 {
     boost::int64_t downloaded = 0;
     std::vector<boost::int64_t> progresses;
-    handle_.file_progress(progresses, lt::torrent_handle::piece_granularity);
 
-    for (int i : patchIndexes(modName))
-    {
+    handle_.file_progress(progresses, lt::torrent_handle::piece_granularity);
+    for (int i : indexes)
         downloaded += progresses.at(i);
-    }
-    DBG << "Downloaded" << downloaded << "bytes for" << modName << "patches.";
+
     return downloaded;
+}
+
+boost::int64_t DeltaDownloader::totalWantedDone(const QString& modName)
+{
+    return totalWantedDone(patchIndexes(modName));
+}
+
+boost::int64_t DeltaDownloader::totalWanted(const QVector<int>& indexes)
+{
+    boost::int64_t bytesWanted = 0;
+    for (int i : indexes)
+        bytesWanted += fileStorage_.file_size(i);
+
+    return bytesWanted;
 }
 
 boost::int64_t DeltaDownloader::totalWanted(const QString& modName)
 {
-    boost::int64_t bytesWanted = 0;
-    for (int i : patchIndexes(modName))
-        bytesWanted += fileStorage_.file_size(i);
-
-    return bytesWanted;
+    return totalWanted(patchIndexes(modName));
 }
 
 //Returns list of patch file indexes that are applyable.
@@ -142,7 +151,7 @@ QVector<int> DeltaDownloader::patchIndexes(const QString& modName)
     //No cache found. Build one.
     QVector<int> indexes;
     QStringList modPatches = patches(modName);
-    for (QString patchName : modPatches)
+    for (const QString& patchName : modPatches)
     {
         int i = patches_.indexOf(patchName);
         if (i == -1) //Fail safe
