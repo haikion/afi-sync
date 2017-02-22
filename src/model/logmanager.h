@@ -1,3 +1,6 @@
+/*
+ * Handles log rotation
+ */
 #ifndef LOGMANAGER_H
 #define LOGMANAGER_H
 

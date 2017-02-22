@@ -267,7 +267,7 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
 
         if (!rVal)
         {
-            DBG << "Warning: Delta patching failed.";
+            DBG << "Warning: Delta patching failed. targetPath =" << targetPath;
             cleanUp(deltaDir, tmpDir);
             return false;
         }
@@ -275,7 +275,7 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
     }
     FileUtils::move(tmpDir.absolutePath(), targetPath);
     cleanUp(deltaDir, tmpDir);
-    DBG << "Delta patching succesfull!";
+    DBG << "Delta patching successful! targetPath =" << targetPath;
     return true;
 }
 

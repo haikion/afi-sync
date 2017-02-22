@@ -1,5 +1,6 @@
 /*
- * Case insensite hash table. Converts all inserted values to lower case.
+ * Case insensite hash table. Matches regardless of the case.
+ * TODO: Move to  hoxlib
  */
 #ifndef CIHASH_H
 #define CIHASH_H
