@@ -43,12 +43,10 @@ DeltaPatcher::DeltaPatcher(const QString& patchesPath):
 
 DeltaPatcher::~DeltaPatcher()
 {
-    QString path = patchesFi_->absoluteFilePath() + "/" + PATCH_DIR;
-    DBG << path;
     thread_.quit();
     thread_.wait(1000);
     thread_.terminate();
-    thread_.wait(1000);
+    thread_.wait();
 }
 
 void DeltaPatcher::threadConstructor(const QString& patchesPath)

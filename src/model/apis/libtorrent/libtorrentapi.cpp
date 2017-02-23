@@ -487,6 +487,7 @@ void LibTorrentApi::shutdown()
     {
         saveTorrentFile(deltaManager_->handle());
         delete deltaManager_;
+        deltaManager_ = nullptr;
         DBG << "Delta Download torrent saved.";
     }
     DBG << "Settings saved";
@@ -578,6 +579,12 @@ void LibTorrentApi::start()
         shutdown();
     }
     createSession();
+    if (SettingsModel::deltaPatchingEnabled() && deltaUpdatesKey_ != "" && !deltaManager_)
+    {
+        setDeltaUpdatesFolder(deltaUpdatesKey_, SettingsModel::modDownloadPath());
+        DBG << "Delta manager restored.";
+    }
+
     alertTimer_.start();
 }
 

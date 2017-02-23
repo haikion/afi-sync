@@ -94,7 +94,7 @@ void Mod::removeConflicting() const
 
 QString Mod::path() const
 {
-    return QDir::fromNativeSeparators(SettingsModel::modDownloadPath() + "/" + name());
+    return SettingsModel::modDownloadPath() + "/" + name();
 }
 
 //Starts sync directory. If directory does not exist

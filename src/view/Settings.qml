@@ -115,7 +115,7 @@ Column {
             TextField {
                 id: pathField1
 
-                text: SettingsModel.modDownloadPath();
+                text: SettingsModel.modDownloadPath().replace(/\//g, "\\");
                 //onTextChanged: SettingsModel.setModDownloadPath(text);
                 width: parent.width
                 height: defaultHeight
@@ -139,7 +139,7 @@ Column {
                     height: parent.height
                     onClicked: {
                         SettingsModel.resetModDownloadPath();
-                        pathField1.text = SettingsModel.modDownloadPath();
+                        pathField1.text = SettingsModel.modDownloadPath().replace(/\//g, "\\");
                         apply();
                     }
                 }

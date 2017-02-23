@@ -1,5 +1,6 @@
 #include "debug.h"
 #include <QFileInfo>
+#include <QDir>
 #include <QCoreApplication>
 #include "pathfinder.h"
 #include "settingsmodel.h"
@@ -213,12 +214,13 @@ void SettingsModel::setBattlEyeEnabled(bool enabled)
 
 QString SettingsModel::modDownloadPath()
 {
-    return settings()->value("modDownloadPath", PathFinder::arma3Path()).toString();
+    return QDir::fromNativeSeparators(settings()->value("modDownloadPath", PathFinder::arma3Path()).toString());
 }
 
-void SettingsModel::setModDownloadPath(const QString& path)
+void SettingsModel::setModDownloadPath(QString path)
 {
     DBG << "path =" << path;
+    path = QDir::fromNativeSeparators(path);
     if (!saveDir("modDownloadPath", path))
     {
         DBG << "Warning: failed to set mod download path. modDownloadPath() ="
@@ -227,9 +229,7 @@ void SettingsModel::setModDownloadPath(const QString& path)
     }
     settings()->setValue("modDownloadPath", path);
     if (Global::model != nullptr)
-    {
         Global::model->reset();
-    }
 }
 
 void SettingsModel::resetModDownloadPath()

@@ -20,7 +20,7 @@ public slots:
     static bool deltaPatchingEnabled();
     static void setDeltaPatchingEnabled(bool enabled);
     static QString modDownloadPath();
-    static void setModDownloadPath(const QString& path);
+    static void setModDownloadPath(QString path);
     void resetModDownloadPath();
     static QString arma3Path();
     void setArma3Path(const QString& path);
