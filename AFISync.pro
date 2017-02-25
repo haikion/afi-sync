@@ -1,22 +1,25 @@
 TEMPLATE = app
 
 QT += qml quick widgets
-CONFIG += c++1z
+CONFIG += c++14
 
 win32 {
     DEFINES += _WIN32_WINNT=0x0501
-    INCLUDEPATH += D:\AfiSync\sources\libtorrent-rasterbar-1.1.1\include
-    INCLUDEPATH += D:\AfiSync\sources\boost_1_63_0
-
-    LIBS += -LD:\AfiSync\lib -llibboost_atomic-vc140-mt-s-1_63 -llibboost_random-vc140-mt-s-1_63 -lws2_32 -ltorrent
+    INCLUDEPATH += ..\src\libtorrent-rasterbar-1.1.1\include
+    INCLUDEPATH += ..\src\boost_1_63_0
+    RC_ICONS = src/view/armafin-logo-64px2.ico
+    LIBS += -L..\lib
+    !Release {
+        #Dynamic build
+        DEFINES += BOOST_ALL_NO_LIB
+        LIBS += -lboost_system-vc140-mt-gd-1_63 -lboost_atomic-vc140-mt-gd-1_63 -lboost_random-vc140-mt-gd-1_63 -lws2_32 -ltorrent
+    }
     Release {
-        LIBS -= -ltorrent
-        LIBS += -llibtorrent
+        #Static build
+        LIBS += -llibboost_system-vc140-mt-s-1_63 -llibboost_atomic-vc140-mt-s-1_63 -llibboost_random-vc140-mt-s-1_63 -lws2_32 -llibtorrent
         DEFINES += STATIC_BUILD=1
-        !console {
-            QMAKE_POST_LINK += mt.exe -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$${TARGET}.exe
-            RC_ICONS = src/view/armafin-logo-64px2.ico
-        }
+        #Ask administrator permissions during startup
+        !console: QMAKE_POST_LINK += mt.exe -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$${TARGET}.exe
     }
 }
 

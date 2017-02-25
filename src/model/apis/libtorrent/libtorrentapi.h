@@ -27,8 +27,12 @@ public:
     explicit LibTorrentApi(QObject *parent = 0);
     ~LibTorrentApi();
 
-    virtual void setDeltaUpdatesFolder(const QString& key, const QString& path);
+    virtual void setDeltaUpdatesFolder(const QString& key);
     virtual QString deltaUpdatesKey();
+    virtual bool disableDeltaUpdates();
+    bool disableDeltaUpdatesNoTorrents();
+    virtual bool enableDeltaUpdates();
+
     virtual void checkFolder(const QString& key);
     //Returns true if there are no peers.
     virtual bool folderNoPeers(const QString& key);
@@ -42,7 +46,7 @@ public:
     virtual int folderEta(const QString& key);
     virtual bool folderPatching(const QString& key);
     //Adds folder, path is local system directory, key is source.
-    virtual bool addFolder(const QString& key, const QString& path, const QString& name);
+    virtual bool addFolder(const QString& key, const QString& name);
     //Removes folder with specific key.
     virtual bool removeFolder(const QString& key);
     //Returns list of files in folder in upper case format.
@@ -107,11 +111,11 @@ private:
     QString getHashString(const libtorrent::torrent_handle& getHandle) const;
     int64_t bytesToCheck(const libtorrent::torrent_status& status) const;
     bool createSession();
-    libtorrent::torrent_handle addFolderGeneric(const QString& key, const QString path);
-    libtorrent::torrent_handle addFolderGenericAsync(const QString& key, const QString path);
+    libtorrent::torrent_handle addFolderGeneric(const QString& key);
+    libtorrent::torrent_handle addFolderGenericAsync(const QString& key);
     int folderEta(libtorrent::torrent_handle getHandle);
     libtorrent::torrent_handle getHandle(const QString& key);
-    bool addFolder(const QString& key, const QString& path, const QString& name, bool patchingEnabled);
+    bool addFolder(const QString& key, const QString& name, bool patchingEnabled);
     void createDeltaManager(libtorrent::torrent_handle handle, const QString& key);
     void handleAlert(libtorrent::alert* a);
     void handleListenFailedAlert(const libtorrent::listen_failed_alert* a) const;

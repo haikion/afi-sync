@@ -104,15 +104,13 @@ QString Mod::path() const
 void Mod::start()
 {
     DBG << "name =" << name();
-    QString modPath = SettingsModel::modDownloadPath();
-    QString dir = QDir::toNativeSeparators(modPath);
 
     if (!sync_->folderExists(key_))
     {
         removeConflicting();
         //Add folder
         DBG << "Adding" << name() << "to sync.";
-        sync_->addFolder(key_, dir, name());
+        sync_->addFolder(key_, name());
     }
 
     //Sanity checks
@@ -125,7 +123,7 @@ void Mod::start()
             << "error =" << error;
         //Disagreement between Sync and AfiSync
         sync_->removeFolder(key_);
-        sync_->addFolder(key_, dir, name());
+        sync_->addFolder(key_, name());
     }
 
     //Do the actual starting

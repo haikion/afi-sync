@@ -157,17 +157,6 @@ void RootItem::startUpdateTimers()
     }
 }
 
-void RootItem::setDeltaUpdatesKey(const QString& key)
-{
-    sync_->setDeltaUpdatesFolder(key, SettingsModel::modDownloadPath());
-    deltaUpdateKey_ = key;
-}
-
-QString RootItem::deltaUpdatesKey() const
-{
-    return sync_->deltaUpdatesKey();
-}
-
 void RootItem::startUpdates()
 {
     //startUpdateTimers(); Called by repo if needed
@@ -253,10 +242,9 @@ void RootItem::enableRepositories()
 
 QString RootItem::defaultter(const QString& value, const QString& defaultValue)
 {
-    if (value == "")
-    {
+    if (value.isEmpty())
         return defaultValue;
-    }
+
     return value;
 }
 
@@ -302,7 +290,7 @@ void RootItem::update()
     {
         if (repo->ticked())
             repo->update();
-     }
+    }
 }
 
 void RootItem::initSync()

@@ -11,8 +11,11 @@ class ISync
 public:
     virtual ~ISync() {}
 
-    virtual void setDeltaUpdatesFolder(const QString& key, const QString& path) = 0;
+    virtual void setDeltaUpdatesFolder(const QString& key) = 0;
     virtual QString deltaUpdatesKey() = 0;
+    virtual bool disableDeltaUpdates() = 0;
+    virtual bool enableDeltaUpdates() = 0;
+
     //Rechecks folder
     virtual void checkFolder(const QString& key) = 0;
     //Returns list of keys of added folders.
@@ -58,8 +61,8 @@ public:
     virtual bool ready() = 0;
     //Sets outgoing port.
     virtual void setPort(int port) = 0;
-    //Adds folder, path is local system directory, key is source.
-    virtual bool addFolder(const QString& key, const QString& path, const QString& name) = 0;
+    //Adds folder, key is source.
+    virtual bool addFolder(const QString& key, const QString& name) = 0;
     //Restarts sync
     virtual void start() = 0;
 

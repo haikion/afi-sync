@@ -31,8 +31,6 @@ public:
     bool stopUpdates();
     void startUpdates();
     void startUpdateTimers();
-    void setDeltaUpdatesKey(const QString& key);
-    QString deltaUpdatesKey() const;
 
 private slots:
     void removeOrphans();
@@ -50,7 +48,6 @@ private:
     QTimer repoTimer_;
     unsigned port_;
     JsonReader jsonReader_;
-    QString deltaUpdateKey_;
 
     void initSync();
     QString defaultter(const QString& value, const QString& defaultValue);
