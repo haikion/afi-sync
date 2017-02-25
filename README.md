@@ -36,18 +36,20 @@ AFISync is a simple tool for downloading and distributing Arma 3 mod sets (aka r
 ## Qt Creator set-up in Windows
 
 AFISync requires following: MSVC-14, libTorrent 1.1.1 or later and Boost 1.63.0 or later. For simplicity you may use makeDynamicDeps.bat script inside build-scripts directory which compiles all the required DLL's. libtorrent-rasterbar-1.1.1.7z and boost_1_63_0.7z need to placed inside ..\src directory in order for it to work.
-Example directory structure:
-> afisync\afi-sync (files pulled from git)
-> afisync\src (sources for libraries)
-> afisync\src\libtorrent-rasterbar-1.1.1.7z
-> afisync\src\boost_1_63_0.7z
-> afisync\lib (compiled dll files)
-> afisync\personal (Developer's AFISync installation)
-> afisync\zip.exe
+Example directory structure: 
+```
+afisync\afi-sync (files pulled from git)
+afisync\src (sources for libraries)
+afisync\src\libtorrent-rasterbar-1.1.1.7z
+afisync\src\boost_1_63_0.7z
+afisync\lib (compiled dll files)
+afisync\personal (Developer's AFISync installation)
+afisync\zip.exe
+afisync\bzip2.dll
+```
+After setting up files, build DLL's: `build-scripts\makeDynamicDeps.bat`
 
-After setting up files, build DLL's by running: `build-scripts\makeDynamicDeps.bat`
-
-This should copy required dll-files into lib directory and AFISync should now compile inside Qt Creator
+This should copy required DLL files into lib directory and AFISync should now compile inside Qt Creator
 
 
 ## Linux mirror set-up
