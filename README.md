@@ -45,8 +45,8 @@ Example directory structure:
 > afisync\personal (Developer's AFISync installation)
 > afisync\zip.exe
 
-After file set-up script can be run
-```build-scripts\makeDynamicDeps.bat```
+After setting up files, build DLL's by running: `build-scripts\makeDynamicDeps.bat`
+
 This should copy required dll-files into lib directory and AFISync should now compile inside Qt Creator
 
 
