@@ -63,6 +63,6 @@ For Linux mirror set-up AFISync needs to be compiled first.
 ## Delta patching
 
 Delta patches can be generated with afisync_cmd.exe.
-Example: ```afisync_cmd.exe --old-path D:\mods\@cba --new-path D:\update\@cba --output-path D:\mods\afisync_patches```
-Patches torrent needs to be re-created. It should be named:```afisync_patches_<version>.torrent```, example ```afisync_patches_1.torrent```
+Example: `afisync_cmd.exe --old-path D:\mods\@cba --new-path D:\update\@cba --output-path D:\mods\afisync_patches`
+Patches torrent should be named:`afisync_patches_<version>.torrent`, example `afisync_patches_1.torrent`
 deltaUpdates-setting inside repositories.json defines the HTTP url to the patches torrent.
