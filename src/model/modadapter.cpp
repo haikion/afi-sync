@@ -18,6 +18,12 @@ ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index):
     mod->appendRepository(repo);
 }
 
+ModAdapter::~ModAdapter()
+{
+    //FIXME: Segfault
+    //parentItem()->removeChild(this);
+}
+
 QString ModAdapter::checkText()
 {
     if (!isOptional())

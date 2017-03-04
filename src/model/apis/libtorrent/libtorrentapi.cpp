@@ -452,7 +452,6 @@ QString LibTorrentApi::folderPath(const QString& key)
     }
     else
     {
-        //FIXME: Returns url sometimes O_o
         rVal += QString::fromStdString(status.name);
     }
     DBG << "key =" << key << "rVal =" << rVal;
@@ -480,7 +479,6 @@ void LibTorrentApi::shutdown()
             //Still downloading meta-data. Propably incorrect URL.
             //Work-a-round: Hangs in delete so don't delete...
             //FIXME: Find better solution.
-            DBG << "ERROR:" << key << "not found. Not deleting session due to hang bug.";
             deleteSession = false;
         }
         session_->remove_torrent(handle);

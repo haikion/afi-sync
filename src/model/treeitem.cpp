@@ -21,6 +21,7 @@ void TreeItem::appendChild(TreeItem* item, int index)
 
 bool TreeItem::removeChild(TreeItem* child)
 {
+    //return true;
     return m_childItems.removeAll(child) > 0;
 }
 
@@ -36,7 +37,8 @@ int TreeItem::childCount() const
 
 int TreeItem::columnCount() const
 {
-    return TreeModel::ROLE_NAMES.size();
+    //TODO: Print amount of roles
+    return 7;
 }
 
 TreeItem* TreeItem::parentItem()

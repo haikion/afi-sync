@@ -27,7 +27,6 @@ public:
         Join = Qt::UserRole + 6,
         FileSize = Qt::UserRole + 7
     };
-    static const QHash<int, QByteArray> ROLE_NAMES;
 
     explicit TreeModel(const QString& data, QObject* parent = 0);
     explicit TreeModel(unsigned port, QObject* parent = 0);

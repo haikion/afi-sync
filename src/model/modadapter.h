@@ -18,7 +18,7 @@ class ModAdapter : public SyncItem
 
 public:
     ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index);
-    ~ModAdapter() = default;
+    ~ModAdapter();
 
     virtual QString checkText();
     virtual QString startText();
