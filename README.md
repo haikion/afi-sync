@@ -35,20 +35,21 @@ AFISync is a simple tool for downloading and distributing Arma 3 mod sets (aka r
 
 ## Qt Creator set-up in Windows
 
-AFISync requires following: MSVC-14, libTorrent 1.1.1 or later and Boost 1.63.0 or later. For simplicity you may use makeDynamicDeps.bat script inside make-scripts directory which compiles all the required DLL's. libtorrent-rasterbar-1.1.1.7z and boost_1_63_0.7z need to placed inside ..\src directory in order for it to work.
-Example directory structure:
-> afisync\afi-sync (files pulled from git)
-> afisync\src (sources for libraries)
-> afisync\src\libtorrent-rasterbar-1.1.1.7z
-> afisync\src\boost_1_63_0.7z
-> afisync\lib (compiled dll files)
-> afisync\personal (Developer's AFISync installation)
-> afisync\zip.exe
+AFISync requires following: MSVC-14, libTorrent 1.1.1 or later and Boost 1.63.0 or later. For simplicity you may use makeDynamicDeps.bat script inside build-scripts directory which compiles all the required DLL's. libtorrent-rasterbar-1.1.1.7z and boost_1_63_0.7z need to placed inside ..\src directory in order for it to work.
+Example directory structure: 
+```
+afisync\afi-sync (files pulled from git)
+afisync\src (sources for libraries)
+afisync\src\libtorrent-rasterbar-1.1.1.7z
+afisync\src\boost_1_63_0.7z
+afisync\lib (compiled dll files)
+afisync\personal (Developer's AFISync installation)
+afisync\zip.exe
+afisync\bzip2.dll
+```
+After setting up files, build DLL's: `build-scripts\makeDynamicDeps.bat`
 
-After file set-up script can be run
-```make-scripts\makeDynamicDeps.bat```
-This should copy required dll-files into lib directory and AFISync should now compile inside Qt Creator
-
+This should copy required DLL files into lib directory and AFISync should now compile inside Qt Creator
 
 ## Linux mirror set-up
 
@@ -61,6 +62,6 @@ For Linux mirror set-up AFISync needs to be compiled first.
 ## Delta patching
 
 Delta patches can be generated with afisync_cmd.exe.
-Example: ```afisync_cmd.exe --old-path D:\mods\@cba --new-path D:\update\@cba --output-path D:\mods\afisync_patches```
-Patches torrent needs to be re-created. It should be named:```afisync_patches_<version>.torrent```, example ```afisync_patches_1.torrent```
+Example: `afisync_cmd.exe --old-path D:\mods\@cba --new-path D:\update\@cba --output-path D:\mods\afisync_patches`
+Patches torrent should be named:`afisync_patches_<version>.torrent`, example `afisync_patches_1.torrent`
 deltaUpdates-setting inside repositories.json defines the HTTP url to the patches torrent.
