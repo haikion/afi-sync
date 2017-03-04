@@ -69,7 +69,6 @@ void messageHandler(QtMsgType type, const QMessageLogContext& context, const QSt
     static QMutex mutex;
     QMutexLocker locker(&mutex);
 
-    //FIXME: Crashes here
     *Global::logStream << msg << "\n";
 }
 
