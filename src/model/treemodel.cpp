@@ -19,6 +19,16 @@
 #include "rootitem.h"
 #include "global.h"
 
+const QHash<int, QByteArray> TreeModel::ROLE_NAMES({
+                                   {TreeModel::Check, QByteArrayLiteral("check")},
+                                   {TreeModel::Name, QByteArrayLiteral("name")},
+                                   {TreeModel::Status, QByteArrayLiteral("status")},
+                                   {TreeModel::Progress, QByteArrayLiteral("progress")},
+                                   {TreeModel::Start, QByteArrayLiteral("start")},
+                                   {TreeModel::Join, QByteArrayLiteral("join")},
+                                   {TreeModel::FileSize, QByteArrayLiteral("fileSize")}
+                               });
+
 TreeModel::TreeModel(unsigned port, QObject* parent) :
     QAbstractItemModel(parent),
     rootItem_(new RootItem(port, this)),
@@ -216,20 +226,9 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex& index) const
     return QAbstractItemModel::flags(index);
 }
 
-QHash<int,QByteArray> TreeModel::roleNames() const
+QHash<int, QByteArray> TreeModel::roleNames() const
 {
-    //DBG;
-
-    QHash<int, QByteArray> result;
-    result.insert(Check, QByteArrayLiteral("check"));
-    result.insert(Name, QByteArrayLiteral("name"));
-    result.insert(Status, QByteArrayLiteral("status"));
-    result.insert(Progress, QByteArrayLiteral("progress"));
-    result.insert(Start, QByteArrayLiteral("start"));
-    result.insert(Join, QByteArrayLiteral("join"));
-    result.insert(FileSize, QByteArrayLiteral("fileSize"));
-
-    return result;
+    return ROLE_NAMES;
 }
 
 QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent)

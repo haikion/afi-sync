@@ -30,7 +30,6 @@ Rectangle {
         anchors.centerIn: parent
         width: parent.width - 10
         height: parent.height - 5
-        //TODO: return bool through model
         enabled: value === "Join" || value === "Start"  || Global.buttonsEnabled
         onClicked: parent.clicked()
     }
