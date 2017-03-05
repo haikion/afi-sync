@@ -112,20 +112,15 @@ void Mod::start()
         DBG << "Adding" << name() << "to sync.";
         sync_->addFolder(key_, name());
     }
-
     //Sanity checks
-    QString syncPath = sync_->folderPath(key_);
     QString error = sync_->folderError(key_);
-    if (syncPath.toUpper() != path().toUpper() || error != "")
+    if (!error.isEmpty())
     {
-        DBG << "name =" << name() << "Re-adding directory. syncPath ="
-            << syncPath << "path() =" << path()
-            << "error =" << error;
-        //Disagreement between Sync and AfiSync
+        DBG << "name =" << name() << "Re-adding directory. error =" << error;
+        //Disagreement between Sync and AFISync
         sync_->removeFolder(key_);
         sync_->addFolder(key_, name());
     }
-
     //Do the actual starting
     sync_->setFolderPaused(key_, false);
     startUpdates();

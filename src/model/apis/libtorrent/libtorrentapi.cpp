@@ -399,7 +399,6 @@ QSet<QString> LibTorrentApi::folderFilesUpper(const QString& key)
         rVal.insert(value);
     }
     return rVal;
-
 }
 
 bool LibTorrentApi::folderExists(const QString& key)
