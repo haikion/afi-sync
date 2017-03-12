@@ -279,6 +279,7 @@ void Mod::appendRepository(Repository* repository)
     repositories_.insert(repository);
     if (repositories().size() == 1)
     {
+        //First repository added -> initialize mod.
         Repository* repo = *repositories_.begin();
         sync_ = repo->sync();
         if (sync_->ready())

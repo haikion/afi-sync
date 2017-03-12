@@ -19,7 +19,7 @@ int64_t SpeedEstimator::estimate(const QString& key, const int64_t toCheck)
     int64_t t_2 = runningTimeMs();
     int64_t rVal = estimation();
 
-    if (toCheck <= 0)
+    if (toCheck <= 0) //Sanity check
     {
         DBG << "ERROR: toCheck is negative or zero. toCheck =" << toCheck;
         return rVal;
@@ -30,14 +30,16 @@ int64_t SpeedEstimator::estimate(const QString& key, const int64_t toCheck)
         int64_t x_1 = val.first;
         int64_t t_1 = val.second;
 
-        if (x_1 <= toCheck)
+        if (x_1 < toCheck) //Sanity check
         {
-            //DBG << "ERROR: x_1 <= toCheck. x_1 =" << x_1 << "toCheck =" << toCheck;
+            DBG << "ERROR: x_1 < toCheck. x_1 =" << x_1 << "toCheck =" << toCheck;
             return rVal;
         }
-        if (t_2 <= t_1)
+        //t_1 == t_2, might happen because of the VeryCoarseTimer?
+        if (t_1 >= t_2)
         {
-            DBG << "ERROR: t_2 <= t_2  t_1 =" << t_2 << "t_1 =" << t_1;
+            if (t_1 > t_2) //Sanity check, this should never happen.
+                DBG << "ERROR: t_1 > t_2, t_1 =" << t_1 << " t_2 =" << t_2;
             return rVal;
         }
 
@@ -48,7 +50,6 @@ int64_t SpeedEstimator::estimate(const QString& key, const int64_t toCheck)
     }
     std::pair<int64_t, int64_t> newVal(toCheck, t_2);
     progresses_[key] = newVal;
-    //DBG  << "dT =" << dT_ << "dX =" << dX_ << "rVal =" << rVal;
     return rVal;
 }
 

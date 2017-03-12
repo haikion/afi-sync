@@ -128,6 +128,8 @@ private:
     void handlePortmapErrorAlert(const libtorrent::portmap_error_alert* a) const;
     void handlePortmapAlert(const libtorrent::portmap_alert* a) const;
     libtorrent::torrent_handle getHandleSilent(const QString& key);
+    bool folderChecking(const libtorrent::torrent_status& status) const;
+    bool folderQueued(const libtorrent::torrent_status& status) const;
 };
 
 #endif // LIBTORRENTAPI_H

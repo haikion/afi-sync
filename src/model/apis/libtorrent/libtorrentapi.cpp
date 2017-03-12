@@ -108,6 +108,7 @@ bool LibTorrentApi::createSession()
 
 void LibTorrentApi::checkFolder(const QString& key)
 {
+    DBG << "Checking torrent with key" << key;
     if (deltaManager_ && deltaManager_->contains(key))
     {
         DBG << "ERROR: Torrent is being delta patched. Recheck refused.";
@@ -117,7 +118,6 @@ void LibTorrentApi::checkFolder(const QString& key)
     if (!h.is_valid())
         return;
 
-    DBG << "Checking torrent with key" << key;
     h.force_recheck();
 }
 
@@ -191,13 +191,8 @@ bool LibTorrentApi::folderReady(const QString& key)
     return status.is_finished;
 }
 
-bool LibTorrentApi::folderChecking(const QString& key)
+bool LibTorrentApi::folderChecking(const lt::torrent_status& status) const
 {
-    lt::torrent_handle handle = getHandle(key);
-    if (!handle.is_valid())
-        return false;
-
-    lt::torrent_status status = handle.status();
     lt::torrent_status::state_t state = status.state;
     //DBG << "key =" << key << "state =" << state << "active time =" << handle.name().c_str()
     //    << "\n allocating =" << lt::torrent_status::state_t::allocating
@@ -209,15 +204,18 @@ bool LibTorrentApi::folderChecking(const QString& key)
          || state == lt::torrent_status::state_t::allocating);
 }
 
-//Overly complicated function which returns true if folder is queued for anything.
-//libTorrent does not seem to have a proper way to query this...
-bool LibTorrentApi::folderQueued(const QString& key)
+bool LibTorrentApi::folderChecking(const QString& key)
 {
-    if (deltaManager_ && deltaManager_->contains(key))
+    lt::torrent_handle handle = getHandle(key);
+    if (!handle.is_valid())
         return false;
 
-    lt::torrent_handle handle = keyHash_.value(key.toLower());
     lt::torrent_status status = handle.status();
+    return folderChecking(status);
+}
+
+bool LibTorrentApi::folderQueued(const lt::torrent_status& status) const
+{
     lt::torrent_status::state_t state = status.state;
 
     //Torrent is always paused when queued
@@ -233,11 +231,23 @@ bool LibTorrentApi::folderQueued(const QString& key)
     //    << "\n pos =" << status.queue_position;
     //Auto manager pauses torrent when queued. status.queue_position cannot be used
     //as activation threshold may change for arbitary reasons.
-    bool checkingQueued = folderChecking(key)
+    bool checkingQueued = folderChecking(status) //Torrent is paused+checking
             //This state is usually not set when queued for checking...
             || state == lt::torrent_status::state_t::queued_for_checking;
     bool downloadQueued = state == lt::torrent_status::downloading;
     return checkingQueued || downloadQueued;
+}
+
+//Overly complicated function which returns true if folder is queued for anything.
+//libTorrent does not seem to have a proper way to query this...
+bool LibTorrentApi::folderQueued(const QString& key)
+{
+    if (deltaManager_ && deltaManager_->contains(key))
+        return false;
+
+    lt::torrent_handle handle = keyHash_.value(key.toLower());
+    lt::torrent_status status = handle.status();
+    return folderQueued(status);
 }
 
 void LibTorrentApi::setFolderPaused(const QString& key, bool value)
@@ -294,8 +304,8 @@ int LibTorrentApi::folderEta(const QString& key)
 
     lt::torrent_status status = handle.status();
 
-    bool queued = folderQueued(torrentKey);
-    if (folderChecking(torrentKey))
+    bool queued = folderQueued(status);
+    if (folderChecking(status))
     {
         int64_t bc = bytesToCheck(status);
         if (bc == NOT_FOUND)
