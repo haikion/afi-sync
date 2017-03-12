@@ -16,6 +16,7 @@
 #include "processmonitor.h"
 #include "logmanager.h"
 #include "fileutils.h"
+#include "crashhandler/crash_handler.h"
 
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
 
@@ -91,6 +92,7 @@ int gui(int argc, char* argv[])
     QSettings::setDefaultFormat(QSettings::IniFormat);
 
     #ifndef QT_DEBUG
+        Breakpad::CrashHandler::instance()->Init(QStringLiteral("."));
         createLogFile();
         qInstallMessageHandler(messageHandler);
     #endif

@@ -4,6 +4,9 @@ QT += qml quick widgets
 CONFIG += c++14
 
 win32 {
+    #Google Crashpad crash reporting
+    include(src\model\crashhandler\crashhandler.pri)
+
     DEFINES += _WIN32_WINNT=0x0501
     INCLUDEPATH += ..\src\libtorrent-rasterbar-1.1.1\include
     INCLUDEPATH += ..\src\boost_1_63_0
@@ -18,6 +21,9 @@ win32 {
         #Static build
         LIBS += -llibboost_system-vc140-mt-s-1_63 -llibboost_atomic-vc140-mt-s-1_63 -llibboost_random-vc140-mt-s-1_63 -lws2_32 -llibtorrent
         DEFINES += STATIC_BUILD=1
+        #Generate pdb debug symbols for crash dumps
+        QMAKE_CXXFLAGS+=/Zi
+        QMAKE_LFLAGS+= /INCREMENTAL:NO /Debug
         #Ask administrator permissions during startup
         !console: QMAKE_POST_LINK += mt.exe -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$${TARGET}.exe
     }
