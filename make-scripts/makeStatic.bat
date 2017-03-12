@@ -53,8 +53,8 @@ zip -r %RC_ZIP% AFISync
 
 :copy-personal
 copy %BUILD_DIR%\release\AFISync.exe %PERSONAL_DIR%\
+copy %BUILD_DIR%\release\AFISync.pdb %PERSONAL_DIR%\
 copy %BUILD_DIR%\release\afisync_cmd.exe %PERSONAL_DIR%\
-
 goto end
 
 :end

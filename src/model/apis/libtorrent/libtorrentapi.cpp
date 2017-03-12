@@ -320,6 +320,8 @@ int LibTorrentApi::folderEta(const QString& key)
         {
             checkingSpeed = speedEstimator_.estimate(torrentKey, bc);
         }
+        if (checkingSpeed == 0)
+            return Constants::MAX_ETA;
         int64_t rVal = bc/checkingSpeed;
         return rVal + increment;
     }

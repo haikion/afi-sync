@@ -16,7 +16,7 @@
 #include "processmonitor.h"
 #include "logmanager.h"
 #include "fileutils.h"
-#include "crashhandler/crash_handler.h"
+#include "crashhandler/crashhandler.h"
 
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
 
