@@ -92,7 +92,9 @@ int gui(int argc, char* argv[])
     QSettings::setDefaultFormat(QSettings::IniFormat);
 
     #ifndef QT_DEBUG
-        Breakpad::CrashHandler::instance()->Init(QStringLiteral("."));
+        #ifdef Q_OS_WIN
+            Breakpad::CrashHandler::instance()->Init(QStringLiteral("."));
+        #endif
         createLogFile();
         qInstallMessageHandler(messageHandler);
     #endif
