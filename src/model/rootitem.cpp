@@ -77,6 +77,7 @@ RootItem::~RootItem()
     DBG << "Worker thread deleted";
     delete sync_;
     sync_ = nullptr;
+    Global::sync = nullptr;
     DBG << "Sync deleted";
 }
 

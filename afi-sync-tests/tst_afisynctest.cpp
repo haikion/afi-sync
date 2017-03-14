@@ -65,6 +65,7 @@ private Q_SLOTS:
 
     //Console
     void simpleCmd();
+    void simpleCmdNeg();
 
     //FileUtils tests
     void copy();
@@ -100,7 +101,6 @@ private Q_SLOTS:
     //Delta patch tests
     void beforeDelta();
     void afterDelta();
-    void hash();
     void delta();
     void deltaIdentical();
     void deltaHashCollision();
@@ -117,7 +117,6 @@ private Q_SLOTS:
     void managerPatch();
     void managerPatchNeg();
     void deltaNoPeers();
-    void deltaDownloadDownloader();
 
     //JsonReader Tests
     void jsonReaderBasic();
@@ -232,21 +231,19 @@ libtorrent::torrent_handle AfiSyncTest::createHandle(const QString& url, const Q
 //Creates model, adds folder, deletes model, creates model again. Added folder should still exist.
 void AfiSyncTest::saveAndLoad()
 {
-    QSKIP("Delay");
-
     ISync* sync = new LibTorrentApi();
 
     QDir().mkpath(TMP_PATH);
     settings_->setModDownloadPath(TMP_PATH);
-    sync->addFolder(TORRENT_1, "@vt5");
+    sync->addFolder(TORRENT_PATH_1, "@vt5");
     delete sync;
     QThread::sleep(10);
     sync = new LibTorrentApi();
 
-    bool exists = sync->folderExists(TORRENT_1);
-    bool rVal = sync->removeFolder(TORRENT_1);
-    bool existsAfterDelete = sync->folderExists(TORRENT_1);
-    QDir(TMP_PATH).removeRecursively();
+    bool exists = sync->folderExists(TORRENT_PATH_1);
+    bool rVal = sync->removeFolder(TORRENT_PATH_1);
+    bool existsAfterDelete = sync->folderExists(TORRENT_PATH_1);
+    FileUtils::safeRemoveRecursively(TMP_PATH);
     QVERIFY(exists);
     QVERIFY(rVal);
     QVERIFY(!existsAfterDelete);
@@ -269,25 +266,6 @@ void AfiSyncTest::afterDelta()
 {
     QDir tmpDir = QDir(TMP_PATH);
     FileUtils::safeRemoveRecursively(tmpDir);
-}
-
-void AfiSyncTest::hash()
-{
-    beforeDelta();
-    QList<QFileInfo> files;
-    QDirIterator it("/home/niko/QTProjects/archiver/tests/@ace350",
-                    QDir::Files, QDirIterator::Subdirectories);
-    while (it.hasNext())
-    {
-        QFileInfo file = it.next();
-        if (!file.fileName().endsWith(".pbo"))
-            continue;
-
-        files.append(it.next());
-    }
-    qDebug() << files.size();
-    afterDelta();
-    QCOMPARE(AHasher::hash(files), QString("BDKZ"));
 }
 
 void AfiSyncTest::delta()
@@ -493,31 +471,13 @@ void AfiSyncTest::deltaNoPeers()
     Repository* repo = new Repository("repo", "dummy", 21221, "", root_);
     Mod* mod = new Mod("@mod1", TMP_PATH + "/@mod1_1.torrent");
     repo->setTicked(true);
-    //mod->appendRepository(repo);
     new ModAdapter(mod, repo, false, 0);
-    QThread::sleep(10);
+    QThread::sleep(3); //Wait for workerThread to finish
     QCOMPARE(mod->status(), SyncStatus::NO_PEERS);
-    delete mod;
+    mod->deleteLater();
 
     cleanupTest();
     afterDelta();
-}
-
-void AfiSyncTest::deltaDownloadDownloader()
-{
-    beforeDelta();
-    QString modsPath = TMP_PATH + "/1";
-    QDir patchesDir = QDir(modsPath + "/" + DELTA_PATCH_NAME);
-    patchesDir.removeRecursively();
-
-    handle_ = createHandle(TORRENT_4, modsPath);
-    DeltaDownloader downloader(handle_);
-    downloader.downloadPatch("@mod1");
-    while (downloader.patchDownloaded("@mod1"))
-    {
-        QThread::sleep(5);
-        qDebug() << "Waiting...";
-    }
 }
 
 //FileUtils tests
@@ -564,8 +524,15 @@ void AfiSyncTest::noSuchDir()
 void AfiSyncTest::simpleCmd()
 {
     Console* cmd = new Console();
+    QVERIFY(!cmd->runCmd("cd .."));
+    cmd->deleteLater();
+}
+
+void AfiSyncTest::simpleCmdNeg()
+{
+    Console* cmd = new Console();
     QVERIFY(!cmd->runCmd("cd \"no such dir\""));
-    delete cmd;
+    cmd->deleteLater();
 }
 
 
@@ -718,9 +685,10 @@ void AfiSyncTest::addRemoveFolderKey()
 
 void AfiSyncTest::repoTickedFalseDefault()
 {
+    cleanupTest();
     startTest();
 
-    Repository* repo = new Repository("dummy", "address", 1234, "", root_);
+    Repository* repo = new Repository("dummy2", "address", 1234, "", root_);
     QVERIFY(!repo->ticked());
 
     cleanupTest();
@@ -741,10 +709,14 @@ void AfiSyncTest::repoSetTicked()
 
 void AfiSyncTest::sizeBasic()
 {
+    startTest();
+
     Mod* mod = new Mod("@vt5", TORRENT_1);
     mod->setFileSize(quint64(1000));
     QVERIFY(mod->fileSize() == quint64(1000));
-    delete mod;
+    mod->deleteLater();
+
+    cleanupTest();
 }
 
 void AfiSyncTest::repoSize()
@@ -766,9 +738,13 @@ void AfiSyncTest::repoSize()
 
 void AfiSyncTest::noSize()
 {
+    startTest();
+
     Mod* mod = new Mod("@vt5", TORRENT_1);
     QVERIFY(mod->fileSize() == 0);
-    delete mod;
+    mod->deleteLater();
+
+    cleanupTest();
 }
 
 void AfiSyncTest::jsonSize()
@@ -783,58 +759,73 @@ void AfiSyncTest::jsonSize()
 
 void AfiSyncTest::sizeStringB()
 {
+    startTest();
 
     Mod* mod = new Mod("@vt5", TORRENT_1);
     mod->setFileSize(quint64(1000));
     QCOMPARE(mod->fileSizeText(), QString("1000.00 B"));
+    mod->deleteLater();
 
-    delete mod;
+    cleanupTest();
 }
 
 void AfiSyncTest::sizeStringMB()
 {
+    startTest();
 
     Mod* mod = new Mod("@vt5", TORRENT_1);
     mod->setFileSize(quint64(21309));
     QCOMPARE(mod->fileSizeText(), QString("20.81 kB"));
+    mod->deleteLater();
 
-    delete mod;
+    cleanupTest();
 }
 
 void AfiSyncTest::sizeStringGB()
 {
+    startTest();
 
     Mod* mod = new Mod("@vt5", TORRENT_1);
     mod->setFileSize(quint64(3376414));
     QCOMPARE(mod->fileSizeText(), QString("3.22 MB"));
+    mod->deleteLater();
 
-    delete mod;
+    cleanupTest();
 }
 
 void AfiSyncTest::sizeStringGB2()
 {
+    startTest();
+
     Mod* mod = new Mod("@vt5", TORRENT_1);
     mod->setFileSize(quint64(33764140));
     QCOMPARE(mod->fileSizeText(), QString("32.20 MB"));
+    mod->deleteLater();
 
-    delete mod;
+    cleanupTest();
 }
 
 void AfiSyncTest::sizeString0()
 {
+    startTest();
+
     Mod* mod = new Mod("@vt5", TORRENT_1);
     QCOMPARE(mod->fileSizeText(), QString("??.?? MB"));
+    mod->deleteLater();
 
-    delete mod;
+    cleanupTest();
 }
 
 void AfiSyncTest::sizeOverflow()
 {
+    startTest();
+
     Mod* mod = new Mod("@vt5", TORRENT_1);
     mod->setFileSize(quint64(13770848165));
     QCOMPARE(mod->fileSizeText(), QString("12.83 GB"));
+    mod->deleteLater();
 
-    delete mod;
+    cleanupTest();
 }
 
 void AfiSyncTest::getFilesUpper()

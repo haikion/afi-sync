@@ -22,7 +22,7 @@ bool Console::runCmd(const QString& cmd) const
     process_->start(cmd);
     process_->waitForFinished();
 
-    return process_->exitStatus() == 0;
+    return process_->exitCode() == 0;
 }
 
 QProcess* Console::runCmdAsync(const QString& cmd)
