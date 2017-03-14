@@ -39,6 +39,7 @@ public:
     void startUpdates();
     void stopUpdates();
     void setBattlEyeEnabled(bool battlEyeEnabled);
+    virtual void setTicked(bool ticked);
 
 private:
     ISync* sync_;

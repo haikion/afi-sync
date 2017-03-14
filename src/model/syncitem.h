@@ -42,7 +42,7 @@ public:
     QString name() const;
     void setName(const QString& name);
     virtual bool ticked() const;
-    void setTicked(bool ticked);
+    virtual void setTicked(bool ticked);
     virtual void checkboxClicked();
     quint64 fileSize() const;
     void setFileSize(const quint64 size);

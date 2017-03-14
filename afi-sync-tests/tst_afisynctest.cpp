@@ -34,9 +34,9 @@
 //Delta patching consts
 static const QString PATCHING_FILES_PATH = "patching";
 static const QString TMP_PATH = "temp";
-static const QString TORRENT_1 = "http://88.193.244.18/torrents/@vt5_1.torrent";
+static const QString TORRENT_1 = "http://mythbox.pwnz.org/torrents/@vt5_1.torrent";
 static const QString TORRENT_2 = PATCHING_FILES_PATH  + "/afisync_patches_1.torrent";
-static const QString TORRENT_4 = "http://88.193.244.18/torrents/afisync_patches_1.torrent";
+static const QString TORRENT_4 = "http://mythbox.pwnz.org/torrents/afisync_patches_1.torrent";
 static const QString TORRENT_PATH_1 = "torrents/@vt5_1.torrent";
 static const QString MOD_NAME_1 = "@mod1";
 static const QString MOD_PATH_1 = TMP_PATH + "/1/" + MOD_NAME_1;
@@ -72,7 +72,7 @@ private Q_SLOTS:
     void noSuchDir();
     void copyDeepOverwrite();
 
-    //LibTorrent tests
+    //LibTorrent API tests
     void saveAndLoad();
     void getEta();
     void setFolderPaused();
@@ -80,6 +80,10 @@ private Q_SLOTS:
     void getFilesUpper();
     void addRemoveFolder();
     void addRemoveFolderKey();
+
+    //Repo tests
+    void repoTickedFalseDefault();
+    void repoSetTicked();
 
     //Size tests
     void sizeBasic();
@@ -112,6 +116,7 @@ private Q_SLOTS:
     void managerContainsNeg();
     void managerPatch();
     void managerPatchNeg();
+    void deltaNoPeers();
     void deltaDownloadDownloader();
 
     //JsonReader Tests
@@ -155,7 +160,7 @@ void AfiSyncTest::startTest()
 {
     if (!model_)
     {
-        QDir(Constants::SYNC_SETTINGS_PATH).removeRecursively();
+        QDir(SettingsModel::syncSettingsPath()).removeRecursively();
         model_ = new TreeModel();
         root_ = model_->rootItem();
         sync_ = root_->sync();
@@ -233,7 +238,7 @@ void AfiSyncTest::saveAndLoad()
 
     QDir().mkpath(TMP_PATH);
     settings_->setModDownloadPath(TMP_PATH);
-    sync->addFolder(TORRENT_1, QFileInfo(TMP_PATH).absoluteFilePath(), "@vt5");
+    sync->addFolder(TORRENT_1, "@vt5");
     delete sync;
     QThread::sleep(10);
     sync = new LibTorrentApi();
@@ -471,6 +476,33 @@ void AfiSyncTest::managerPatchNeg()
     afterDelta();
 }
 
+//Tests that the folder status is NO_PEERS
+//when there are no peers for afisync_patches torrent.
+void AfiSyncTest::deltaNoPeers()
+{
+    settings_->setDeltaPatchingEnabled(true);
+    beforeDelta();
+    startTest();
+    Global::sync->setDeltaUpdatesFolder(TMP_PATH + "/afisync_patches_nopeers.torrent");
+    Global::sync->enableDeltaUpdates();
+
+    QString modsPath = TMP_PATH + "/1";
+    settings_->setModDownloadPath(modsPath);
+    FileUtils::safeRemoveRecursively(modsPath + "/" + Constants::DELTA_PATCHES_NAME);
+
+    Repository* repo = new Repository("repo", "dummy", 21221, "", root_);
+    Mod* mod = new Mod("@mod1", TMP_PATH + "/@mod1_1.torrent");
+    repo->setTicked(true);
+    //mod->appendRepository(repo);
+    new ModAdapter(mod, repo, false, 0);
+    QThread::sleep(10);
+    QCOMPARE(mod->status(), SyncStatus::NO_PEERS);
+    delete mod;
+
+    cleanupTest();
+    afterDelta();
+}
+
 void AfiSyncTest::deltaDownloadDownloader()
 {
     beforeDelta();
@@ -647,7 +679,7 @@ void AfiSyncTest::addRemoveFolder()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, TMP_PATH, "@vt5");
+    sync_->addFolder(TORRENT_1, "@vt5");
     bool exists = sync_->folderExists(TORRENT_1);
     int counter = 0;
     //Wait 1 sec for async call to finish
@@ -671,7 +703,7 @@ void AfiSyncTest::addRemoveFolderKey()
 {
     ISync* sync = new LibTorrentApi();
 
-    sync->addFolder(TORRENT_PATH_1, TMP_PATH, "@vt5");
+    sync->addFolder(TORRENT_PATH_1, "@vt5");
     bool exists = sync->folderExists(TORRENT_PATH_1);
     QCOMPARE(exists, true);
     bool rVal = sync->removeFolder(TORRENT_PATH_1);
@@ -680,6 +712,29 @@ void AfiSyncTest::addRemoveFolderKey()
     QCOMPARE(exists, false);
 
     delete sync;
+}
+
+//Repository tests
+
+void AfiSyncTest::repoTickedFalseDefault()
+{
+    startTest();
+
+    Repository* repo = new Repository("dummy", "address", 1234, "", root_);
+    QVERIFY(!repo->ticked());
+
+    cleanupTest();
+}
+
+void AfiSyncTest::repoSetTicked()
+{
+    startTest();
+
+    Repository* repo = new Repository("dummy", "address", 1234, "", root_);
+    repo->setTicked(true);
+    QVERIFY(repo->ticked());
+
+    cleanupTest();
 }
 
 //Size tests
@@ -786,7 +841,7 @@ void AfiSyncTest::getFilesUpper()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, TMP_PATH, "@vt5");
+    sync_->addFolder(TORRENT_1, "@vt5");
     QSet<QString> files = sync_->folderFilesUpper(TORRENT_1);
     QCOMPARE(files.size(), 3);
     sync_->removeFolder(TORRENT_1);
@@ -798,7 +853,7 @@ void AfiSyncTest::getFolderKeys()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, TMP_PATH, "@vt5");
+    sync_->addFolder(TORRENT_1, "@vt5");
     QCOMPARE(sync_->folderKeys().size(), 1);
     QCOMPARE(sync_->folderKeys().at(0), TORRENT_1.toLower());
     sync_->removeFolder(TORRENT_1);
@@ -810,7 +865,7 @@ void AfiSyncTest::setFolderPaused()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, TMP_PATH, "@vt5");
+    sync_->addFolder(TORRENT_1, "@vt5");
     sync_->setFolderPaused(TORRENT_1, true);
     QCOMPARE(sync_->folderPaused(TORRENT_1), true);
     sync_->removeFolder(TORRENT_1);
@@ -822,7 +877,7 @@ void AfiSyncTest::getEta()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, TMP_PATH, "@vt5");
+    sync_->addFolder(TORRENT_1, "@vt5");
     int eta = sync_->folderEta(TORRENT_1);
     qDebug() << "eta =" << eta;
     QVERIFY(eta > 0);

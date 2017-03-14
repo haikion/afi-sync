@@ -47,6 +47,12 @@ void Repository::setBattlEyeEnabled(bool battleEyeEnabled)
     battlEyeEnabled_ = battleEyeEnabled;
 }
 
+void Repository::setTicked(bool ticked)
+{
+    SyncItem::setTicked(ticked);
+    update();
+}
+
 void Repository::startUpdates()
 {
     DBG;

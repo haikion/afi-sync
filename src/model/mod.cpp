@@ -355,13 +355,9 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::NOT_IN_SYNC);
     }
-    else if (sync_->folderQueued(key_))
+    else if (sync_->folderReady(key_))
     {
-        setStatus(SyncStatus::QUEUED);
-    }
-    else if (sync_->folderChecking(key_))
-    {
-        setStatus(SyncStatus::CHECKING);
+        setStatus(SyncStatus::WAITING);
     }
     //Hack to fix BtSync reporting ready when it's not... :D (oh my god...)
     else if (status() == SyncStatus::WAITING)
@@ -373,6 +369,14 @@ void Mod::updateStatus()
             setStatus(SyncStatus::READY);
         }
     }
+    else if (sync_->folderQueued(key_))
+    {
+        setStatus(SyncStatus::QUEUED);
+    }
+    else if (sync_->folderChecking(key_))
+    {
+        setStatus(SyncStatus::CHECKING);
+    }
     else if (status() == SyncStatus::READY || status() == SyncStatus::READY_PAUSED)
     {
         bool process = settings()->value(processKey, true).toBool();
@@ -382,14 +386,6 @@ void Mod::updateStatus()
             DBG << "Process set to false";
             settings()->setValue(processKey, false);
         }
-    }
-    else if (sync_->folderPatching(key_))
-    {
-        setStatus(SyncStatus::PATCHING);
-    }
-    else if (sync_->folderReady(key_))
-    {
-        setStatus(SyncStatus::WAITING);
     }
     else if (sync_->folderPaused(key_))
     {
@@ -405,6 +401,10 @@ void Mod::updateStatus()
     else if (sync_->folderNoPeers(key_))
     {
         setStatus(SyncStatus::NO_PEERS);
+    }
+    else if (sync_->folderPatching(key_))
+    {
+        setStatus(SyncStatus::PATCHING);
     }
     else if (eta() > 0)
     {
@@ -438,6 +438,7 @@ bool Mod::reposInactive() const
 {
     for (Repository* repo : repositories_)
     {
+        DBG << repo->status();
         if (repo->status() != SyncStatus::INACTIVE)
             return false;
     }
