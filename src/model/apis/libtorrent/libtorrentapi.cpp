@@ -357,6 +357,11 @@ bool LibTorrentApi::folderPatching(const QString& key)
     return deltaManager_ && deltaManager_->contains(key);
 }
 
+bool LibTorrentApi::folderDownloadingPatches(const QString& key)
+{
+    return deltaManager_ && deltaManager_->patchDownloading(key);
+}
+
 int64_t LibTorrentApi::bytesToCheck(const lt::torrent_status& status) const
 {
     if (!session_)

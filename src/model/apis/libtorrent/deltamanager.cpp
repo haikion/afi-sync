@@ -80,6 +80,16 @@ QString DeltaManager::name(const QString& key)
     return keyHash_.value(key, "");
 }
 
+bool DeltaManager::patchDownloading(const QString& key) const
+{
+    QString modName = keyHash_.value(key, "");
+    if (modName.isEmpty())
+        return false;
+
+    boost::int64_t totalWanted = downloader_->totalWanted(modName);
+    return totalWanted > 0 && downloader_->totalWantedDone(modName) < totalWanted;
+}
+
 libtorrent::torrent_handle DeltaManager::handle() const
 {
     return handle_;

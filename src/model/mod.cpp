@@ -406,11 +406,15 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::PATCHING);
     }
+    else if (sync_->folderDownloadingPatches(key_))
+    {
+        setStatus(SyncStatus::DOWNLOADING_PATCHES);
+    }
     else if (eta() > 0)
     {
         setStatus(SyncStatus::DOWNLOADING);
         settings()->setValue(processKey, true);
-}
+    }
 }
 
 void Mod::processCompletion()

@@ -34,6 +34,7 @@ public:
     CiHash<QString> keyHash() const;
     //Helper function to get a mod name.
     QString name(const QString& key);
+    bool patchDownloading(const QString& key) const;
 
 signals:
     void patched(QString key, QString modName, bool success);
@@ -52,5 +53,4 @@ private:
     QSet<QString> torrentFilesUpper();
     void deleteExtraFiles();
 };
-
 #endif // DELTAMANAGER_H

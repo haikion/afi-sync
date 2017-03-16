@@ -237,7 +237,7 @@ void Repository::updateEtaAndStatus()
         setStatus(SyncStatus::READY);
         setEta(0);
     }
-    else if (modStatuses.contains(SyncStatus::DOWNLOADING))
+    else if (modStatuses.contains(SyncStatus::DOWNLOADING) || modStatuses.contains(SyncStatus::DOWNLOADING_PATCHES))
     {
         setStatus(SyncStatus::DOWNLOADING);
         setEta(calculateEta());

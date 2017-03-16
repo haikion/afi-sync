@@ -75,7 +75,8 @@ public:
     //Sets outgoing port.
     virtual void setPort(int port);
     //Restarts sync
-    virtual void start();
+    virtual void start();    
+    virtual bool folderDownloadingPatches(const QString& key);
 
 private slots:
     void handleAlerts();

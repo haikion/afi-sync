@@ -33,6 +33,8 @@ public:
     //Fetches eta to ready state. Returns time in seconds.
     virtual int folderEta(const QString& key) = 0;
     virtual bool folderPatching(const QString& key) = 0;
+    //Returns true if downloading patches for specific folder.
+    virtual bool folderDownloadingPatches(const QString& key) = 0;
     //Removes folder with specific key.
     virtual bool removeFolder(const QString& key) = 0;
     //Returns list of files in folder in upper case unix (separator = /) format. Example: "C:/MODS/@MOD/FILE.PBO"
