@@ -1,15 +1,18 @@
 :Compiles Boost and libtorrent. Copies libs to lib folder.
 set OLD_DIR=%cd%
 cd %~dp0
-set BIN_PATH=%cd%\bin
 cd ..\..\
+set BIN_PATH=%cd%\afi-sync\bin
 set SRC_PATH=%cd%\src
 set LIB_PATH=%cd%\lib
 set BOOST_BUILD_PATH=%SRC_PATH%\boost_1_63_0
-set LIBTORRENT_BUILD_PATH=%SRC_PATH%\libtorrent-rasterbar-1.1.1
+set LIBTORRENT_BUILD_PATH=%SRC_PATH%\libtorrent-rasterbar-1.1.2
 set PARAMS=--with-system --with-date_time --with-atomic --with-random architecture=x86 address-model=64
+set MSVC_PARAMS_DYNAMIC=%PARAMS% link=shared runtime-link=shared toolset=msvc runtime-debugging=on variant=debug
+set MSVC_PARAMS_STATIC=%PARAMS% link=static runtime-link=static toolset=msvc variant=release %PARAMS%
 set PATH=C:\Qt\Tools\mingw530_32\bin;%BOOST_BUILD_PATH%;%PATH%;%BIN_PATH%
 
+call vcvarsall.bat x86_amd64
 cd %SRC_PATH%
 rmdir /s %BOOST_BUILD_PATH%
 rmdir /s %LIBTORRENT_BUILD_PATH%
@@ -20,13 +23,12 @@ mkdir ..\lib
 goto msvc-dynamic
 
 :msvc-dynamic
-set MSVC_PARAMS=%PARAMS% address-model=64 link=shared runtime-link=shared toolset=msvc runtime-debugging=on variant=debug 
 cd %BOOST_BUILD_PATH%
 call bootstrap.bat
-b2  %MSVC_PARAMS%
+b2  %MSVC_PARAMS_DYNAMIC%
 
 cd %LIBTORRENT_BUILD_PATH%
-b2 %MSVC_PARAMS%
+b2 %MSVC_PARAMS_DYNAMIC%
 
 :msvc-dynamic-install
 copy %BOOST_BUILD_PATH%\stage\lib\* %LIB_PATH%
@@ -36,14 +38,17 @@ copy %LIBTORRENT_BUILD_PATH%\bin\msvc-14.0\debug\address-model-64\architecture-x
 goto end
 
 :msvc-static
-set MSVC_PARAMS=%PARAMS% link=static runtime-link=static toolset=msvc %PARAMS%
 cd %BOOST_BUILD_PATH%
 call bootstrap.bat
-b2  %MSVC_PARAMS%
+b2  %MSVC_PARAMS_STATIC%
 
 :msvc-static-libtorrent
 cd %LIBTORRENT_BUILD_PATH%
-b2 %MSVC_PARAMS%
+b2 %MSVC_PARAMS_STATIC%
+
+:msvc-static-install
+copy %BOOST_BUILD_PATH%\stage\lib\* %LIB_PATH%
+copy %LIBTORRENT_BUILD_PATH%\bin\msvc-14.0\release\address-model-64\architecture-x86\link-static\runtime-link-static\threading-multi\libtorrent.lib %LIB_PATH%
 
 goto end
 

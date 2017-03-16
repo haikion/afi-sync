@@ -8,7 +8,7 @@ win32 {
     include(src\model\crashhandler\crashhandler.pri)
 
     DEFINES += _WIN32_WINNT=0x0501
-    INCLUDEPATH += ..\src\libtorrent-rasterbar-1.1.1\include
+    INCLUDEPATH += ..\src\libtorrent-rasterbar-1.1.2\include
     INCLUDEPATH += ..\src\boost_1_63_0
     RC_ICONS = src/view/armafin-logo-64px2.ico
     LIBS += -L..\lib
