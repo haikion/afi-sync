@@ -402,13 +402,13 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::NO_PEERS);
     }
-    else if (sync_->folderPatching(key_))
-    {
-        setStatus(SyncStatus::PATCHING);
-    }
     else if (sync_->folderDownloadingPatches(key_))
     {
         setStatus(SyncStatus::DOWNLOADING_PATCHES);
+    }
+    else if (sync_->folderPatching(key_))
+    {
+        setStatus(SyncStatus::PATCHING);
     }
     else if (eta() > 0)
     {
