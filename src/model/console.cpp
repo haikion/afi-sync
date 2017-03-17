@@ -20,7 +20,7 @@ bool Console::runCmd(const QString& cmd) const
     DBG << "Running command:" << cmd.toStdString().c_str();
 
     process_->start(cmd);
-    process_->waitForFinished();
+    process_->waitForFinished(-1);
 
     return process_->exitCode() == 0;
 }

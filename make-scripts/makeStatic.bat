@@ -23,9 +23,8 @@ mkdir %BUILD_DIR%
 call vcvarsall.bat x86_amd64
 
 cd %BUILD_DIR%
-:xcopy /E %SRC_DIR%
 qmake %SRC_DIR% "CONFIG += console"
-nmake %SRC_DIR%
+nmake
 move release\AFISync.exe release\afisync_cmd.exe
 nmake clean
 qmake %SRC_DIR%
