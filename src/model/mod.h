@@ -48,6 +48,8 @@ private:
     QSet<Repository*> repositories_;
     unsigned waitTime_;
     QVector<ModAdapter*> adapters_;
+    //QSettings key for process completion.
+    QString processCompletionKey_;
 
     void buildPathHash();
     void updateEta();
@@ -58,6 +60,8 @@ private:
     void removeConflicting() const;
     QString path() const;
     bool isOptional() const;
+    void setProcessCompletion(bool value);
+    bool getProcessCompletion() const;
 
 private slots:
     void update(bool force = false);

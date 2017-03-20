@@ -15,9 +15,10 @@ const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 Mod::Mod(const QString& name, const QString& key):
     SyncItem(name, 0),
     key_(key),
-    sync_(0),
+    sync_(nullptr),
     updateTimer_(nullptr),
-    waitTime_(0)
+    waitTime_(0),
+    processCompletionKey_(name + "/process")
 {
     DBG;
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
@@ -82,7 +83,7 @@ void Mod::removeConflicting() const
     {
         QString syncPath = sync_->folderPath(syncKey);
 
-        if (path().toLower() == syncPath.toLower() && syncKey.toLower() != key_.toLower())
+        if (path().toLower() == syncPath.toLower() && syncKey != key_)
         {
             //Downloading into same folder but the key is different!
             DBG << "Removing conflicting (" << syncKey << "," << syncPath << ") for (" << key_ << "," << path() << ").";
@@ -111,6 +112,7 @@ void Mod::start()
         //Add folder
         DBG << "Adding" << name() << "to sync.";
         sync_->addFolder(key_, name());
+        setProcessCompletion(true);
     }
     //Sanity checks
     QString error = sync_->folderError(key_);
@@ -120,10 +122,22 @@ void Mod::start()
         //Disagreement between Sync and AFISync
         sync_->removeFolder(key_);
         sync_->addFolder(key_, name());
+        setProcessCompletion(true);
     }
     //Do the actual starting
     sync_->setFolderPaused(key_, false);
     startUpdates();
+}
+
+void Mod::setProcessCompletion(bool value)
+{
+    settings()->setValue(processCompletionKey_, value);
+    DBG << "Process (completion) set to" << value << "for mod" << name();
+}
+
+bool Mod::getProcessCompletion() const
+{
+    return settings()->value(processCompletionKey_, true).toBool();
 }
 
 bool Mod::stop()
@@ -161,12 +175,10 @@ void Mod::deleteExtraFiles()
     {
         localFiles.insert(it.next().toUpper());
     }
-    //In case of incorrect configuration... or no peers (thx bts)
-    //or ..bts sends incorrect files list...
-    if (remoteFiles.size() == 0 || status() != SyncStatus::READY)
+    //Fail safe if there is torrent without files.
+    if (remoteFiles.size() == 0)
     {
-        DBG << "name =" << name()
-            << "Warning: Not deleting extra files because mod is not fully synced.";
+        DBG << "ERROR: Not deleting extra files because torrent contains 0 files.";
         return; //Would delete everything otherwise
     }
 
@@ -178,7 +190,7 @@ void Mod::deleteExtraFiles()
     for (QString path : extraFiles)
     {
         DBG << "Deleting extra file" << path << "from mod" << name();
-        FileUtils::safeRemove(path);
+        FileUtils::rmCi(path);
     }
     DBG << "Completed name =" << name();
 }
@@ -345,8 +357,6 @@ void Mod::appendModAdapter(ModAdapter* adapter)
 
 void Mod::updateStatus()
 {
-    QString processKey = name() + "/process";
-
     if (!ticked() || reposInactive())
     {
         setStatus(SyncStatus::INACTIVE);
@@ -370,17 +380,12 @@ void Mod::updateStatus()
         if (waitTime_ > COMPLETION_WAIT_DURATION)
         {
             waitTime_ = 0;
+            if (getProcessCompletion())
+            {
+                processCompletion();
+                setProcessCompletion(false);
+            }
             setStatus(SyncStatus::READY);
-        }
-    }
-    else if (status() == SyncStatus::READY || status() == SyncStatus::READY_PAUSED)
-    {
-        bool process = settings()->value(processKey, true).toBool();
-        if (process)
-        {
-            processCompletion();
-            DBG << "Process set to false";
-            settings()->setValue(processKey, false);
         }
     }
     else if (sync_->folderReady(key_))
@@ -413,7 +418,7 @@ void Mod::updateStatus()
     else if (eta() > 0)
     {
         setStatus(SyncStatus::DOWNLOADING);
-        settings()->setValue(processKey, true);
+        setProcessCompletion(true);
     }
 }
 

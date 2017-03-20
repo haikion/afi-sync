@@ -26,10 +26,12 @@ public:
     virtual QString status() const;
     virtual void checkboxClicked();
     virtual bool ticked() const;
-    void setTicked(bool ticked);
     bool isOptional() const;
     Mod* mod() const;
     Repository* repo() const;
+
+protected:
+    virtual void setTicked(bool ticked);
 
 public slots:
     void updateView();

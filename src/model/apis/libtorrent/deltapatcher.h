@@ -52,6 +52,7 @@ private:
     qint64 totalBytes_;
     QFileInfo* patchesFi_;
     QThread thread_;
+    //Contains the name of the mod being patched.
     QString patchingMod_;
     Console* console_;
 

@@ -60,7 +60,6 @@ bool LibTorrentApi::createSession()
 {
     DBG;
     lt::settings_pack settings;
-    //lt::high_performance_seed(settings);
 
     //Disable encryption
     settings.set_int(lt::settings_pack::allowed_enc_level, lt::settings_pack::enc_level::pe_plaintext);
@@ -180,7 +179,7 @@ bool LibTorrentApi::folderNoPeers(const QString& key)
 
 bool LibTorrentApi::folderReady(const QString& key)
 {
-    if (deltaManager_ && deltaManager_->contains(key.toLower()))
+    if (deltaManager_ && deltaManager_->contains(key))
         return false;
 
     lt::torrent_handle handle = getHandle(key);
@@ -245,7 +244,7 @@ bool LibTorrentApi::folderQueued(const QString& key)
     if (deltaManager_ && deltaManager_->contains(key))
         return false;
 
-    lt::torrent_handle handle = keyHash_.value(key.toLower());
+    lt::torrent_handle handle = keyHash_.value(key);
     lt::torrent_status status = handle.status();
     return folderQueued(status);
 }
@@ -687,7 +686,7 @@ bool LibTorrentApi::removeFolder(const QString& key)
 void LibTorrentApi::setDeltaUpdatesFolder(const QString& key)
 {
     disableDeltaUpdatesNoTorrents();
-    deltaUpdatesKey_ = key.toLower();
+    deltaUpdatesKey_ = key;
 }
 
 bool LibTorrentApi::disableDeltaUpdates()
@@ -777,21 +776,20 @@ lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key)
         DBG << "ERROR: Parent dir " << fi.absoluteFilePath() << "is not readable.";
         return lt::torrent_handle();
     }
-    QString lowerKey = key.toLower();
-    if (folderExists(lowerKey))
+    if (folderExists(key))
     {
         DBG << "ERROR: Torrent already added.";
         return lt::torrent_handle();
     }
     lt::add_torrent_params atp;
     //Check if key is path or url
-    if (QFileInfo(lowerKey).exists())
+    if (QFileInfo(key).exists())
     {
-        atp.ti = loadFromFile(lowerKey);
+        atp.ti = loadFromFile(key);
     }
     else
     {
-        atp.url = lowerKey.toStdString();
+        atp.url = key.toStdString();
     }
     atp.save_path = QDir::toNativeSeparators(fi.absoluteFilePath()).toStdString();
     atp.paused = true;
@@ -837,16 +835,14 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& name)
 
 bool LibTorrentApi::addFolder(const QString& key, const QString& name, bool patchingEnabled)
 {
-    QString lowerKey = key.toLower();
-
     if (SettingsModel::deltaPatchingEnabled() &&
             patchingEnabled && deltaManager_ && deltaManager_->patchAvailable(name))
     {
-        deltaManager_->patch(name, lowerKey);
+        deltaManager_->patch(name, key);
         return true;
     }
-    lt::torrent_handle handle = addFolderGenericAsync(lowerKey);
-    keyHash_.insert(lowerKey, handle);
+    lt::torrent_handle handle = addFolderGenericAsync(key);
+    keyHash_.insert(key, handle);
     handle.resume();
 
     return true;
@@ -971,7 +967,7 @@ void LibTorrentApi::createDeltaManager(lt::torrent_handle handle, const QString&
     }
 
     deltaManager_ = new DeltaManager(handle, this);
-    deltaUpdatesKey_ = key.toLower();
+    deltaUpdatesKey_ = key;
 
     CiHash<QString> keyHash = deltaManager_->keyHash();
     for (QString key : keyHash)
@@ -1010,7 +1006,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         params.ti = loadFromFile(pathPrefix + ".torrent");
         params.save_path = SettingsModel::modDownloadPath().toStdString();
         params.resume_data = loadResumeData(pathPrefix + ".fastresume");
-        QString url = QString::fromLocal8Bit(FileUtils::readFile(pathPrefix + ".link"));
+        QString url = QString::fromLocal8Bit(FileUtils::readFile(pathPrefix + ".link")).toLower();
         DBG << url << (params.ti == 0) << params.resume_data.size();
         if (params.ti == 0 || url.isEmpty() || !params.ti->is_valid())
         {

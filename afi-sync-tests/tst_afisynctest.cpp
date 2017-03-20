@@ -38,6 +38,7 @@ static const QString TORRENT_1 = "http://mythbox.pwnz.org/torrents/@vt5_1.torren
 static const QString TORRENT_2 = PATCHING_FILES_PATH  + "/afisync_patches_1.torrent";
 static const QString TORRENT_4 = "http://mythbox.pwnz.org/torrents/afisync_patches_1.torrent";
 static const QString TORRENT_PATH_1 = "torrents/@vt5_1.torrent";
+static const QString TORRENT_PATH_MOD1_3 = PATCHING_FILES_PATH + "/@mod1_3.torrent";
 static const QString MOD_NAME_1 = "@mod1";
 static const QString MOD_PATH_1 = TMP_PATH + "/1/" + MOD_NAME_1;
 static const QString MOD_PATH_2 = TMP_PATH + "/2/" + MOD_NAME_1;
@@ -82,9 +83,12 @@ private Q_SLOTS:
     void addRemoveFolder();
     void addRemoveFolderKey();
 
+    //Mod tests
+    void modFilesRemoved();
+
     //Repo tests
     void repoTickedFalseDefault();
-    void repoSetTicked();
+    void repoCheckboxClicked();
 
     //Size tests
     void sizeBasic();
@@ -470,7 +474,7 @@ void AfiSyncTest::deltaNoPeers()
 
     Repository* repo = new Repository("repo", "dummy", 21221, "", root_);
     Mod* mod = new Mod("@mod1", TMP_PATH + "/@mod1_1.torrent");
-    repo->setTicked(true);
+    repo->checkboxClicked();
     new ModAdapter(mod, repo, false, 0);
     QThread::sleep(3); //Wait for workerThread to finish
     QCOMPARE(mod->status(), SyncStatus::NO_PEERS);
@@ -681,6 +685,33 @@ void AfiSyncTest::addRemoveFolderKey()
     delete sync;
 }
 
+//Mod tests
+
+//Tests if files get removed from mod directory
+//if that was the only change done.
+void AfiSyncTest::modFilesRemoved()
+{
+    startTest();
+    FileUtils::copy("mods", TMP_PATH);
+    settings_->setModDownloadPath(TMP_PATH + "/1extraFile");
+    Repository* repo = new Repository("dummy2", "address", 1234, "", root_);
+    Mod* mod = new Mod("@mod1", TORRENT_PATH_MOD1_3);
+    ModAdapter* adp = new ModAdapter(mod, repo, false, 0);
+    Q_UNUSED(adp);
+    repo->checkboxClicked();
+    QSet<QString> readys;
+    readys.insert(SyncStatus::READY);
+    readys.insert(SyncStatus::READY_PAUSED);
+    while (!readys.contains(mod->status()))
+    {
+        DBG << "Wating... mod status =" << mod->status();
+        QThread::sleep(1); //Wait for check to finish
+    }
+    bool extraFileExists = QFileInfo(TMP_PATH + "/1extraFile/@mod1/extraFile.txt").exists();
+    FileUtils::safeRemoveRecursively(TMP_PATH);
+    QVERIFY(!extraFileExists);
+}
+
 //Repository tests
 
 void AfiSyncTest::repoTickedFalseDefault()
@@ -694,12 +725,12 @@ void AfiSyncTest::repoTickedFalseDefault()
     cleanupTest();
 }
 
-void AfiSyncTest::repoSetTicked()
+void AfiSyncTest::repoCheckboxClicked()
 {
     startTest();
 
     Repository* repo = new Repository("dummy", "address", 1234, "", root_);
-    repo->setTicked(true);
+    repo->checkboxClicked();
     QVERIFY(repo->ticked());
 
     cleanupTest();

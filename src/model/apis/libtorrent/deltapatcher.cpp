@@ -152,7 +152,7 @@ qint64 DeltaPatcher::bytesPatched(const QString& modName) const
     static qint64 startTime = runningTimeMs();
     static qint64 prevTime = runningTimeMs();
 
-    if (modName.toLower() != patchingMod_.toLower())
+    if (modName != patchingMod_)
         return 0;
 
     qint64 currentTime = runningTimeMs();
@@ -181,7 +181,7 @@ qint64 DeltaPatcher::bytesPatched(const QString& modName) const
 
 qint64 DeltaPatcher::totalBytes(const QString& modName) const
 {
-    if (patchingMod_.toLower() == modName.toLower())
+    if (patchingMod_ == modName)
         return totalBytes_;
 
     return 0;

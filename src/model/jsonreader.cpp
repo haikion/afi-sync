@@ -110,9 +110,9 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             }
             else
             {
-                QString modName = qvariant_cast<QString>(mod.value("name"));
+                QString modName = mod.value("name").toString().toLower();
                 DBG << "Parsed mod parameters for" << modName;
-                newMod = new Mod(modName, key.toLower());
+                newMod = new Mod(modName, key);
                 DBG << "New mod object created:" << modName;
                 newMod->setFileSize(qvariant_cast<quint64>(mod.value("fileSize", "0")));
                 modHash.insert(key, newMod);
@@ -153,7 +153,7 @@ QSet<QString> JsonReader::addedMods(const Repository* repo) const
     QSet<QString> rVal;
     for (Mod* mod : repo->mods())
     {
-        rVal.insert(mod->key().toLower());
+        rVal.insert(mod->key());
     }
 
     return rVal;
@@ -167,7 +167,7 @@ QHash<QString, Mod*> JsonReader::createModHash(const RootItem* root) const
     {
         for (Mod* mod : repo->mods())
         {
-            rVal.insert(mod->key().toLower(), mod);
+            rVal.insert(mod->key(), mod);
         }
     }
     return rVal;

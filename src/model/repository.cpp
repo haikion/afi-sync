@@ -345,7 +345,7 @@ bool Repository::removeMod(const QString& key)
 {
     for (Mod* mod : mods())
     {
-        if (mod->key().toLower() == key.toLower())
+        if (mod->key() == key)
         {
             DBG << "Removing mod" << mod->name() << "from repository" << name();
             removeMod(mod);

@@ -39,6 +39,8 @@ public:
     void startUpdates();
     void stopUpdates();
     void setBattlEyeEnabled(bool battlEyeEnabled);
+
+protected:
     virtual void setTicked(bool ticked);
 
 private:
