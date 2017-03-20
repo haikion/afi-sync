@@ -423,10 +423,6 @@ bool LibTorrentApi::folderExists(const QString& key)
     if (!handle.is_valid())
         return false;
 
-    lt::torrent_status status = handle.status();
-    if (status.state == lt::torrent_status::downloading_metadata)
-        return false; //Torrent file has not been downloaded yet.
-
     return true;
 }
 

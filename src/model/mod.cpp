@@ -132,7 +132,7 @@ void Mod::start()
 void Mod::setProcessCompletion(bool value)
 {
     settings()->setValue(processCompletionKey_, value);
-    DBG << "Process (completion) set to" << value << "for mod" << name();
+    DBG << "Process (completion) set to" << value << "for" << name();
 }
 
 bool Mod::getProcessCompletion() const
@@ -388,6 +388,7 @@ void Mod::updateStatus()
             setStatus(SyncStatus::READY);
         }
     }
+    else if (status() == SyncStatus::READY || status() == SyncStatus::READY_PAUSED) {}
     else if (sync_->folderReady(key_))
     {
         setStatus(SyncStatus::WAITING);
@@ -417,8 +418,12 @@ void Mod::updateStatus()
     }
     else if (eta() > 0)
     {
-        setStatus(SyncStatus::DOWNLOADING);
-        setProcessCompletion(true);
+        if (status() != SyncStatus::DOWNLOADING)
+        {
+            setStatus(SyncStatus::DOWNLOADING);
+            //Heavy operation -> only set when entering downloading state.
+            setProcessCompletion(true);
+        }
     }
 }
 
