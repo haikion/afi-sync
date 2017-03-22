@@ -432,13 +432,6 @@ void Mod::processCompletion()
 
 void Mod::checkboxClicked()
 {
-    //Activate download when mod is active in at least on repo.
-    bool allDisabled = false;
-    for (ModAdapter* adp : adapters_)
-    {
-        allDisabled = allDisabled || adp->ticked();
-    }
-    setTicked(allDisabled);
     DBG << name() << "checked state set to" << ticked();
     //Below cmd will start the download if repository is active.
     QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);

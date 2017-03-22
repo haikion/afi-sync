@@ -370,7 +370,8 @@ int64_t LibTorrentApi::bytesToCheck(const lt::torrent_status& status) const
     if (tw == 0) //Not loaded yet.
         return NOT_FOUND;
 
-    int64_t rVal = tw*(1 - status.progress);
+    int64_t rVal = tw - status.total_done;
+
     //DBG << "rVal =" << rVal;
     return rVal;
 }

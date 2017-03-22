@@ -10,7 +10,7 @@ class SettingsModel: public QObject
     Q_OBJECT
 
 public:
-    static SettingsModel* instance();
+    SettingsModel(QObject* parent); //Should only be used when constructing for QQmlEngine
 
 public slots:
     static QString launchParameters();
@@ -54,12 +54,13 @@ public slots:
     static bool process(const QString& name);
 
 private:
-    SettingsModel();
     static QSettings* settings_;
     static bool saveDir(const QString& key, const QString& path);
     static QString setting(const QString& key, const QString& defaultValue);
     static QString syncSettingsPath_;
     static QString settingsPath_;
+    static QSettings* settings();
+    static void createSettings();
 };
 
 #endif // SETTINGSMODEL_H

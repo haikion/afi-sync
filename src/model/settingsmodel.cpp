@@ -8,14 +8,13 @@
 
 QSettings* SettingsModel::settings_ = nullptr;
 
-SettingsModel* SettingsModel::instance()
+SettingsModel::SettingsModel(QObject* parent = nullptr):
+    QObject(parent)
 {
-    static SettingsModel instance;
-
-    return &instance;
+    createSettings();
 }
 
-SettingsModel::SettingsModel()
+void SettingsModel::createSettings()
 {
     DBG << "Creating settings object.";
     QCoreApplication::setOrganizationName("AFISync");
@@ -28,27 +27,35 @@ SettingsModel::SettingsModel()
     settings_ = new QSettings();
 }
 
+QSettings* SettingsModel::settings()
+{
+    if (!settings_)
+        createSettings();
+
+    return settings_;
+}
+
 //Saves only valid dirs
 bool SettingsModel::saveDir(const QString& key, const QString& path)
 {
     QFileInfo dir(path);
-    QString originalPath = settings_->value(key).toString();
+    QString originalPath = settings()->value(key).toString();
     if (originalPath == path || !dir.isDir() || !dir.isWritable())
     {
         return false;
     }
-    settings_->setValue(key, path);
+    settings()->setValue(key, path);
     return true;
 }
 
 //Sets default value for performance reasons.
 QString SettingsModel::setting(const QString& key, const QString& defaultValue)
 {
-    QString set = settings_->value(key).toString();
+    QString set = settings()->value(key).toString();
     if (set == QString())
     {
         DBG << "Setting default value" << defaultValue << "for" << key;
-        settings_->setValue(key, defaultValue);
+        settings()->setValue(key, defaultValue);
         set = defaultValue;
     }
     return set;
@@ -57,7 +64,7 @@ QString SettingsModel::setting(const QString& key, const QString& defaultValue)
 QString SettingsModel::arma3Path()
 {
    return setting("arma3Dir", PathFinder::arma3Path());
-    //return settings_->value("arma3Dir", PathFinder::arma3Path()).toString();
+    //return settings()->value("arma3Dir", PathFinder::arma3Path()).toString();
 }
 
 void SettingsModel::setArma3Path(const QString& path)
@@ -67,13 +74,13 @@ void SettingsModel::setArma3Path(const QString& path)
 
 void SettingsModel::resetArma3Path()
 {
-    settings_->setValue("arma3Dir", PathFinder::arma3Path());
+    settings()->setValue("arma3Dir", PathFinder::arma3Path());
 }
 
 QString SettingsModel::teamSpeak3Path()
 {
    return setting("teamSpeak3Path", PathFinder::teamspeak3Path());
-    //return settings_->value("teamSpeak3Path", PathFinder::teamspeak3Path()).toString();
+    //return settings()->value("teamSpeak3Path", PathFinder::teamspeak3Path()).toString();
 }
 
 void SettingsModel::setTeamSpeak3Path(const QString& path)
@@ -83,42 +90,42 @@ void SettingsModel::setTeamSpeak3Path(const QString& path)
 
 void SettingsModel::resetTeamSpeak3Path()
 {
-    settings_->setValue("teamSpeak3Path", PathFinder::teamspeak3Path());
+    settings()->setValue("teamSpeak3Path", PathFinder::teamspeak3Path());
 }
 
 QString SettingsModel::steamPath()
 {
     DBG;
-    return settings_->value("steamPath", PathFinder::steamPath()).toString();
+    return settings()->value("steamPath", PathFinder::steamPath()).toString();
 }
 
 void SettingsModel::setSteamPath(const QString& path)
 {
-    settings_->setValue("steamPath", path);
+    settings()->setValue("steamPath", path);
 }
 
 void SettingsModel::resetSteamPath()
 {
     DBG;
-    settings_->setValue("steamPath", PathFinder::steamPath());
+    settings()->setValue("steamPath", PathFinder::steamPath());
 }
 
 
 QString SettingsModel::maxUpload()
 {
-    QString rVal = settings_->value("maxUpload", "").toString();
+    QString rVal = settings()->value("maxUpload", "").toString();
     return rVal;
 }
 
 void SettingsModel::setMaxDownload(const QString& value)
 {
-    settings_->setValue("maxDownload", value);
+    settings()->setValue("maxDownload", value);
     Global::sync->setMaxDownload(value.toInt());
 }
 
 QString SettingsModel::maxDownload()
 {
-    return settings_->value("maxDownload", "").toString();
+    return settings()->value("maxDownload", "").toString();
 }
 
 void SettingsModel::setMaxDownloadEnabled(bool value)
@@ -129,7 +136,7 @@ void SettingsModel::setMaxDownloadEnabled(bool value)
 
 bool SettingsModel::maxDownloadEnabled()
 {
-    return settings_->value("maxDownloadEnabled", false).toBool();
+    return settings()->value("maxDownloadEnabled", false).toBool();
 }
 
 void SettingsModel::setMaxUploadEnabled(bool value)
@@ -137,27 +144,27 @@ void SettingsModel::setMaxUploadEnabled(bool value)
     if (!value)
         Global::sync->setMaxUpload(0); //Disable limit
 
-    return settings_->setValue("maxUploadEnabled", value);
+    return settings()->setValue("maxUploadEnabled", value);
 }
 
 bool SettingsModel::maxUploadEnabled()
 {
-    return settings_->value("maxUploadEnabled", false).toBool();
+    return settings()->value("maxUploadEnabled", false).toBool();
 }
 
 void SettingsModel::setInstallDate(const QString& repoName, const unsigned& value)
 {
-    settings_->setValue("installDate" + repoName, value);
+    settings()->setValue("installDate" + repoName, value);
 }
 
 unsigned SettingsModel::installDate(const QString& repoName)
 {
-    return settings_->value("installDate" + repoName).toInt();
+    return settings()->value("installDate" + repoName).toInt();
 }
 
 void SettingsModel::setPort(const QString& port)
 {
-    settings_->setValue("port", port);
+    settings()->setValue("port", port);
     if (Global::sync == nullptr)
     {
         DBG << "ERROR: sync is null";
@@ -168,12 +175,12 @@ void SettingsModel::setPort(const QString& port)
 
 QString SettingsModel::port()
 {
-    return settings_->value("port", QString::number(Constants::DEFAULT_PORT)).toString();
+    return settings()->value("port", QString::number(Constants::DEFAULT_PORT)).toString();
 }
 
 void SettingsModel::resetPort()
 {
-    settings_->setValue("port", QString::number(Constants::DEFAULT_PORT));
+    settings()->setValue("port", QString::number(Constants::DEFAULT_PORT));
 }
 
 QString SettingsModel::settingsPath()
@@ -185,7 +192,7 @@ void SettingsModel::setTicked(const QString& modName, QString repoName, bool val
 {
     QString repoStr = repoName.replace("/| ","_");
     QString key = modName.isEmpty() ? repoName + "/checked" : modName + "/" + repoStr + "ticked";
-    settings_->setValue(key, value);
+    settings()->setValue(key, value);
 }
 
 bool SettingsModel::ticked(const QString& modName, QString repoName)
@@ -193,17 +200,17 @@ bool SettingsModel::ticked(const QString& modName, QString repoName)
 
     QString repoStr = repoName.replace("/| ","_");
     QString key = modName.isEmpty() ? repoName + "/checked" : modName + "/" + repoStr + "ticked";
-    return settings_->value(key, false).toBool();
+    return settings()->value(key, false).toBool();
 }
 
 void SettingsModel::setProcess(const QString& name, bool value)
 {
-    settings_->setValue(name + "/process", value);
+    settings()->setValue(name + "/process", value);
 }
 
 bool SettingsModel::process(const QString& name)
 {
-    return settings_->value(name + "/process", true).toBool();
+    return settings()->value(name + "/process", true).toBool();
 }
 
 QString SettingsModel::syncSettingsPath()
@@ -218,17 +225,17 @@ void SettingsModel::setMaxUpload(const QString& value)
         return;
 
     Global::sync->setMaxUpload(value.toInt());
-    settings_->setValue("maxUpload", value);
+    settings()->setValue("maxUpload", value);
 }
 
 bool SettingsModel::battlEyeEnabled()
 {
-    return settings_->value("battlEyeEnabled", true).toBool();
+    return settings()->value("battlEyeEnabled", true).toBool();
 }
 
 void SettingsModel::setDeltaPatchingEnabled(bool enabled)
 {
-    settings_->setValue("deltaPatchingEnabled", enabled);
+    settings()->setValue("deltaPatchingEnabled", enabled);
     if (Global::sync)
     {
         if (enabled)
@@ -240,17 +247,17 @@ void SettingsModel::setDeltaPatchingEnabled(bool enabled)
 
 bool SettingsModel::deltaPatchingEnabled()
 {
-    return settings_->value("deltaPatchingEnabled", false).toBool();
+    return settings()->value("deltaPatchingEnabled", false).toBool();
 }
 
 void SettingsModel::setBattlEyeEnabled(bool enabled)
 {
-    settings_->setValue("battlEyeEnabled", enabled);
+    settings()->setValue("battlEyeEnabled", enabled);
 }
 
 QString SettingsModel::modDownloadPath()
 {
-    return QDir::fromNativeSeparators(settings_->value("modDownloadPath", PathFinder::arma3Path()).toString());
+    return QDir::fromNativeSeparators(settings()->value("modDownloadPath", PathFinder::arma3Path()).toString());
 }
 
 void SettingsModel::setModDownloadPath(QString path)
@@ -263,7 +270,7 @@ void SettingsModel::setModDownloadPath(QString path)
             << modDownloadPath() << " path =" << path;
         return;
     }
-    settings_->setValue("modDownloadPath", path);
+    settings()->setValue("modDownloadPath", path);
     if (Global::model != nullptr)
         Global::model->reset();
 }
@@ -275,10 +282,10 @@ void SettingsModel::resetModDownloadPath()
 
 QString SettingsModel::launchParameters()
 {
-    return settings_->value("launchParameters", "-noSplash -world=empty -skipIntro").toString();
+    return settings()->value("launchParameters", "-noSplash -world=empty -skipIntro").toString();
 }
 
 void SettingsModel::setLaunchParameters(const QString& parameters)
 {
-    settings_->setValue("launchParameters", parameters);
+    settings()->setValue("launchParameters", parameters);
 }

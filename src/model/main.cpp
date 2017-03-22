@@ -53,7 +53,8 @@ static QObject* getSettingsModel(QQmlEngine* engine, QJSEngine* scriptEngine)
     Q_UNUSED(scriptEngine)
     Q_UNUSED(engine)
 
-    return SettingsModel::instance();
+    //QQmlEngine tries to destroy singletons on destruction so real C++ singletons cannot be used.
+    return new SettingsModel(engine);
 }
 
 static QObject* getProcessMonitor(QQmlEngine* engine, QJSEngine* scriptEngine)
