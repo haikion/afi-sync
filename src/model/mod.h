@@ -48,8 +48,6 @@ private:
     QSet<Repository*> repositories_;
     unsigned waitTime_;
     QVector<ModAdapter*> adapters_;
-    //QSettings key for process completion.
-    QString processCompletionKey_;
 
     void buildPathHash();
     void updateEta();

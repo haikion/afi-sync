@@ -47,9 +47,14 @@ void Repository::setBattlEyeEnabled(bool battleEyeEnabled)
     battlEyeEnabled_ = battleEyeEnabled;
 }
 
+bool Repository::ticked() const
+{
+    return SettingsModel::ticked("", name());
+}
+
 void Repository::setTicked(bool ticked)
 {
-    SyncItem::setTicked(ticked);
+    SettingsModel::setTicked("", name(), ticked);
     update();
 }
 
@@ -104,11 +109,12 @@ void Repository::changed(bool offline)
 void Repository::checkboxClicked(bool offline)
 {
     stopUpdates();
-    SyncItem::checkboxClicked();
+    setTicked(!ticked());
+    //SyncItem::checkboxClicked();
     setStatus("Processing new mods...");
     updateEtaAndStatus();
     changed(offline);
-    DBG << "checked()=" << ticked();
+    DBG << "ticked() =" << ticked();
     update();
     if (!ticked())
         return;

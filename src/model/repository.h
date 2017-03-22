@@ -39,6 +39,7 @@ public:
     void startUpdates();
     void stopUpdates();
     void setBattlEyeEnabled(bool battlEyeEnabled);
+    virtual bool ticked() const;
 
 protected:
     virtual void setTicked(bool ticked);

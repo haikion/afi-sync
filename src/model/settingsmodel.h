@@ -10,7 +10,7 @@ class SettingsModel: public QObject
     Q_OBJECT
 
 public:
-    SettingsModel(QObject* parent = 0);
+    static SettingsModel* instance();
 
 public slots:
     static QString launchParameters();
@@ -46,11 +46,17 @@ public slots:
     static void resetPort();
     static QString syncSettingsPath();
     static QString settingsPath();
+    //Tells if syncitem is ticked (!= files checked)
+    static void setTicked(const QString& modName, QString repoName, bool value);
+    static bool ticked(const QString& modName, QString repoName);
+    //Tells if process completion (file checking, installation) is needed
+    static void setProcess(const QString& name, bool value);
+    static bool process(const QString& name);
 
 private:
+    SettingsModel();
     static QSettings* settings_;
     static bool saveDir(const QString& key, const QString& path);
-    static QSettings* settings();
     static QString setting(const QString& key, const QString& defaultValue);
     static QString syncSettingsPath_;
     static QString settingsPath_;

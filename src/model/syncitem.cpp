@@ -3,8 +3,6 @@
 #include "syncitem.h"
 #include "debug.h"
 
-QSettings* SyncItem::settings_ = nullptr;
-
 SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
     TreeItem(name, parentItem),
     name_(name),
@@ -12,10 +10,6 @@ SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
     eta_(Constants::MAX_ETA),
     fileSize_(0)
 {
-    if (settings_ == nullptr)
-    {
-        settings_ = new QSettings();
-    }
 }
 
 QString SyncItem::checkText()
@@ -85,21 +79,6 @@ void SyncItem::setName(const QString& name)
     name_ = name;
 }
 
-bool SyncItem::ticked() const
-{
-    return settings_->value(name() + "/checked", false).toBool();
-}
-
-void SyncItem::setTicked(bool checked)
-{
-    settings_->setValue(name() + "/checked", checked);
-}
-
-void SyncItem::checkboxClicked()
-{
-    setTicked(!ticked());
-}
-
 quint64 SyncItem::fileSize() const
 {
     return fileSize_;
@@ -108,11 +87,6 @@ quint64 SyncItem::fileSize() const
 void SyncItem::setFileSize(const quint64 size)
 {
     fileSize_ = size;
-}
-
-QSettings* SyncItem::settings() const
-{
-    return settings_;
 }
 
 void SyncItem::setStatus(const QString& status)

@@ -1,11 +1,11 @@
+//Common things in mod and repository
+
 #ifndef ABSTRACTITEM_H
 #define ABSTRACTITEM_H
 
 #include <QObject>
-#include <QSettings>
 #include "treeitem.h"
 
-//Common things in mod and repository
 
 namespace SyncStatus {
     static const QString DOWNLOADING = "Downloading...";
@@ -42,18 +42,13 @@ public:
     void setStatus(const QString& status);
     QString name() const;
     void setName(const QString& name);
-    virtual bool ticked() const;
-    virtual void checkboxClicked();
+    virtual bool ticked() const = 0;
+    virtual void checkboxClicked() = 0;
     quint64 fileSize() const;
     void setFileSize(const quint64 size);
     QString fileSizeText() const;
 
-protected:
-    QSettings* settings() const;
-    virtual void setTicked(bool ticked);
-
 private:
-    static QSettings* settings_;
     QString name_;
     QString status_;
     int eta_;

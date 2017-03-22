@@ -51,8 +51,9 @@ static QObject* getTreeModel(QQmlEngine* engine, QJSEngine* scriptEngine)
 static QObject* getSettingsModel(QQmlEngine* engine, QJSEngine* scriptEngine)
 {
     Q_UNUSED(scriptEngine)
+    Q_UNUSED(engine)
 
-    return new SettingsModel(engine);
+    return SettingsModel::instance();
 }
 
 static QObject* getProcessMonitor(QQmlEngine* engine, QJSEngine* scriptEngine)
@@ -88,9 +89,6 @@ int gui(int argc, char* argv[])
 {
     QApplication app(argc, argv);
 
-    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, SettingsModel::settingsPath());
-    QSettings::setDefaultFormat(QSettings::IniFormat);
-
     #ifndef QT_DEBUG
         #ifdef Q_OS_WIN
             Breakpad::CrashHandler::instance()->Init(QStringLiteral("."));
@@ -119,9 +117,6 @@ int gui(int argc, char* argv[])
 int cli(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
-
-    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, SettingsModel::settingsPath());
-    QSettings::setDefaultFormat(QSettings::IniFormat);
 
     QCommandLineParser parser;
     parser.addHelpOption();
@@ -193,10 +188,6 @@ int cli(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    QCoreApplication::setOrganizationName("AFISync");
-    QCoreApplication::setOrganizationDomain("armafinland.fi");
-    QCoreApplication::setApplicationName("AFISync");
-
     if (argc > 1)
     {
         return cli(argc, argv);

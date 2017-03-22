@@ -17,8 +17,7 @@ Mod::Mod(const QString& name, const QString& key):
     key_(key),
     sync_(nullptr),
     updateTimer_(nullptr),
-    waitTime_(0),
-    processCompletionKey_(name + "/process")
+    waitTime_(0)
 {
     DBG;
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
@@ -48,9 +47,6 @@ void Mod::threadConstructor()
 
 void Mod::init()
 {
-    if (!isOptional())
-        setTicked(true);
-
     repositoryChanged();
     update();
     DBG << "name =" << name() << "key =" << key() << "Completed";
@@ -131,13 +127,13 @@ void Mod::start()
 
 void Mod::setProcessCompletion(bool value)
 {
-    settings()->setValue(processCompletionKey_, value);
+    SettingsModel::setProcess(name(), value);
     DBG << "Process (completion) set to" << value << "for" << name();
 }
 
 bool Mod::getProcessCompletion() const
 {
-    return settings()->value(processCompletionKey_, true).toBool();
+    return SettingsModel::process(name());
 }
 
 bool Mod::stop()

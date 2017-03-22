@@ -1,6 +1,7 @@
 #include "debug.h"
 #include "modadapter.h"
 #include "repository.h"
+#include "settingsmodel.h"
 
 ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index):
     SyncItem(mod->name(), repo),
@@ -10,7 +11,6 @@ ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index):
 {
     setParentItem(repo);
     QString repoStr = repo_->name().replace("/| ","_");
-    tickedKey_ = name() + "/" + repoStr + "ticked";
     //Connect everything
     setFileSize(mod->fileSize());
     repo->appendModAdapter(this, index);
@@ -53,7 +53,7 @@ bool ModAdapter::ticked() const
     if (!isOptional_)
         return true;
 
-    return settings()->value(tickedKey_, false).toBool();
+    return SettingsModel::ticked(name(), repo()->name());
 }
 
 void ModAdapter::setTicked(bool checked)
@@ -64,7 +64,7 @@ void ModAdapter::setTicked(bool checked)
         return;
     }
 
-    settings()->setValue(tickedKey_, checked);
+    SettingsModel::setTicked(name(), repo()->name(), checked);
     mod_->checkboxClicked();
 }
 

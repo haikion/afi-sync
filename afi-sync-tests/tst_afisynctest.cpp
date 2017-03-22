@@ -151,7 +151,7 @@ AfiSyncTest::AfiSyncTest():
    model_(nullptr),
    root_(nullptr),
    session_(nullptr),
-   settings_(new SettingsModel(this))
+   settings_(SettingsModel::instance())
 {
    handle_ = createHandle();
    settings_->setModDownloadPath(TMP_PATH + "/1");
@@ -179,6 +179,7 @@ void AfiSyncTest::cleanupTest()
         delete model_;
         model_ = nullptr;
     }
+    FileUtils::safeRemove("settings/AFISync/AFISync.ini");
 }
 
 libtorrent::torrent_handle AfiSyncTest::createHandle(const QString& url, const QString& modDownloadPath)
@@ -710,6 +711,7 @@ void AfiSyncTest::modFilesRemoved()
     bool extraFileExists = QFileInfo(TMP_PATH + "/1extraFile/@mod1/extraFile.txt").exists();
     FileUtils::safeRemoveRecursively(TMP_PATH);
     QVERIFY(!extraFileExists);
+    cleanupTest();
 }
 
 //Repository tests
@@ -719,7 +721,7 @@ void AfiSyncTest::repoTickedFalseDefault()
     cleanupTest();
     startTest();
 
-    Repository* repo = new Repository("dummy2", "address", 1234, "", root_);
+    Repository* repo = new Repository("dummy3", "address", 1234, "", root_);
     QVERIFY(!repo->ticked());
 
     cleanupTest();
@@ -729,7 +731,7 @@ void AfiSyncTest::repoCheckboxClicked()
 {
     startTest();
 
-    Repository* repo = new Repository("dummy", "address", 1234, "", root_);
+    Repository* repo = new Repository("dummy4", "address", 1234, "", root_);
     repo->checkboxClicked();
     QVERIFY(repo->ticked());
 

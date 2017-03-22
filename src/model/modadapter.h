@@ -39,7 +39,6 @@ public slots:
 private:
     Mod* mod_;
     Repository* repo_;
-    QString tickedKey_;
     bool isOptional_;
     QString guiData_;
 };
