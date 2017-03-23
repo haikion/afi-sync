@@ -10,7 +10,7 @@ class SettingsModel: public QObject
     Q_OBJECT
 
 public:
-    SettingsModel(QObject* parent); //Should only be used when constructing for QQmlEngine
+    SettingsModel(QObject* parent = nullptr); //Should only be used when constructing for QQmlEngine
 
 public slots:
     static QString launchParameters();

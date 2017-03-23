@@ -180,22 +180,21 @@ QString FileUtils::casedPath(const QString& path)
 
     for (const QString& ciName : ciNames)
     {
-        bool failed = true;
         QDirIterator it(casedPath);
-        while (it.hasNext())
+        while (true)
         {
+            if (!it.hasNext())
+            {
+                DBG << "ERROR: Unable to construct case sensitive path from" << path;
+                return QString();
+            }
             QFileInfo fi = it.next();
             if (fi.fileName().toUpper() == ciName.toUpper())
             {
                 casedPath += (casedPath.endsWith("/") ? "" : "/") + fi.fileName();
                 DBG << casedPath;
-                failed = false;
+                break;
             }
-        }
-        if (failed)
-        {
-            DBG << "ERROR: Unable to construct case sensitive path from" << path;
-            return QString();
         }
     }
     DBG << "Output:" << casedPath;

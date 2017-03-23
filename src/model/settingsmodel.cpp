@@ -8,7 +8,7 @@
 
 QSettings* SettingsModel::settings_ = nullptr;
 
-SettingsModel::SettingsModel(QObject* parent = nullptr):
+SettingsModel::SettingsModel(QObject* parent):
     QObject(parent)
 {
     createSettings();

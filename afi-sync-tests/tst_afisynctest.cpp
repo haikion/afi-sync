@@ -31,14 +31,16 @@
 #include "../src/model/debug.h"
 #include "../src/model/modadapter.h"
 
-//Delta patching consts
+//File paths etc..
 static const QString PATCHING_FILES_PATH = "patching";
 static const QString TMP_PATH = "temp";
 static const QString TORRENT_1 = "http://mythbox.pwnz.org/torrents/@vt5_1.torrent";
 static const QString TORRENT_2 = PATCHING_FILES_PATH  + "/afisync_patches_1.torrent";
 static const QString TORRENT_4 = "http://mythbox.pwnz.org/torrents/afisync_patches_1.torrent";
 static const QString TORRENT_PATH_1 = "torrents/@vt5_1.torrent";
-static const QString TORRENT_PATH_MOD1_3 = PATCHING_FILES_PATH + "/@mod1_3.torrent";
+static const QString MOD1_3_NAME = "@mod1_3.torrent";
+static const QString TORRENT_PATH_MOD1_3 = PATCHING_FILES_PATH + "/" + MOD1_3_NAME;
+static const QString TORRENT_PATH_MOD1_3_TMP = TMP_PATH + "/" + MOD1_3_NAME;
 static const QString MOD_NAME_1 = "@mod1";
 static const QString MOD_PATH_1 = TMP_PATH + "/1/" + MOD_NAME_1;
 static const QString MOD_PATH_2 = TMP_PATH + "/2/" + MOD_NAME_1;
@@ -48,7 +50,6 @@ static const QString DELTA_PATCH_NAME = "afisync_patches";
 static const QString PATCHES_PATH = TMP_PATH + "/" + DELTA_PATCH_NAME;
 //file copy tests
 static const QString SRC_PATH = PATCHING_FILES_PATH;
-static const QString DST_PATH = TMP_PATH;
 static const QString DEEP_PATH = TMP_PATH + "/deeper";
 
 
@@ -70,6 +71,7 @@ private Q_SLOTS:
 
     //FileUtils tests
     void copy();
+    void rmCi();
     void copyDeep();
     void noSuchDir();
     void copyDeepOverwrite();
@@ -151,7 +153,7 @@ AfiSyncTest::AfiSyncTest():
    model_(nullptr),
    root_(nullptr),
    session_(nullptr),
-   settings_(SettingsModel::instance())
+   settings_(new SettingsModel())
 {
    handle_ = createHandle();
    settings_->setModDownloadPath(TMP_PATH + "/1");
@@ -489,13 +491,22 @@ void AfiSyncTest::deltaNoPeers()
 
 void AfiSyncTest::copy()
 {
-    FileUtils::copy(SRC_PATH, DST_PATH);
-    QDir dstDir(DST_PATH);
+    FileUtils::copy(SRC_PATH, TMP_PATH);
+    QDir dstDir(TMP_PATH);
     bool rVal = dstDir.exists();
-    bool childDirExists = QFileInfo(DST_PATH + "/1").isDir();
+    bool childDirExists = QFileInfo(TMP_PATH + "/1").isDir();
     FileUtils::safeRemoveRecursively(dstDir); //Cleanup
     QVERIFY(rVal);
     QVERIFY(childDirExists);
+}
+
+void AfiSyncTest::rmCi()
+{
+    FileUtils::copy(SRC_PATH, TMP_PATH);
+    FileUtils::rmCi(TORRENT_PATH_MOD1_3_TMP);
+    bool fileRemoved = !QFileInfo(TORRENT_PATH_MOD1_3_TMP).exists();
+    FileUtils::safeRemoveRecursively(TMP_PATH); //Cleanup
+    QVERIFY(fileRemoved);
 }
 
 void AfiSyncTest::copyDeep()
@@ -510,9 +521,9 @@ void AfiSyncTest::copyDeep()
 //Tests if dir is copied over dir when going to over 0 level.
 void AfiSyncTest::copyDeepOverwrite()
 {
-    FileUtils::copy(SRC_PATH, DST_PATH);
-    FileUtils::copy(SRC_PATH, DST_PATH);
-    QDir dstDir(DST_PATH);
+    FileUtils::copy(SRC_PATH, TMP_PATH);
+    FileUtils::copy(SRC_PATH, TMP_PATH);
+    QDir dstDir(TMP_PATH);
     bool rVal = dstDir.exists();
     dstDir.removeRecursively(); //cleanup
     QVERIFY(rVal);
@@ -520,10 +531,10 @@ void AfiSyncTest::copyDeepOverwrite()
 
 void AfiSyncTest::noSuchDir()
 {
-    QDir(DST_PATH).removeRecursively();
+    QDir(TMP_PATH).removeRecursively();
     QString noExist = "noExist";
-    FileUtils::copy("noExist", DST_PATH);
-    QVERIFY(!QFileInfo(DST_PATH).exists());
+    FileUtils::copy("noExist", TMP_PATH);
+    QVERIFY(!QFileInfo(TMP_PATH).exists());
 }
 
 void AfiSyncTest::simpleCmd()
