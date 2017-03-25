@@ -72,6 +72,7 @@ private Q_SLOTS:
     //FileUtils tests
     void copy();
     void rmCi();
+    void rmCiDifficult();
     void copyDeep();
     void noSuchDir();
     void copyDeepOverwrite();
@@ -506,6 +507,19 @@ void AfiSyncTest::rmCi()
     FileUtils::rmCi(TORRENT_PATH_MOD1_3_TMP);
     bool fileRemoved = !QFileInfo(TORRENT_PATH_MOD1_3_TMP).exists();
     FileUtils::safeRemoveRecursively(TMP_PATH); //Cleanup
+    QVERIFY(fileRemoved);
+}
+
+void AfiSyncTest::rmCiDifficult()
+{
+    static const QString PATH = "späced päth";
+    static const QString FILE_PATH = PATH + "/" + MOD1_3_NAME;
+
+    QDir().mkpath(PATH);
+    FileUtils::copy(SRC_PATH, PATH);
+    FileUtils::rmCi(FILE_PATH);
+    bool fileRemoved = !QFileInfo(FILE_PATH).exists();
+    FileUtils::safeRemoveRecursively(PATH);
     QVERIFY(fileRemoved);
 }
 
