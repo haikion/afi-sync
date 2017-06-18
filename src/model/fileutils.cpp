@@ -219,21 +219,25 @@ bool FileUtils::safeRemove(const QString& filePath)
 bool FileUtils::safeRemove(QFile& file)
 {
     QString path = QFileInfo(file).absoluteFilePath();
-    if (!pathIsSafe(path))
-        return false;
 
-    DBG << "Removing" << path;
-    return file.remove();
+    if (pathIsSafe(path) && file.remove())
+    {
+        DBG << "Removed" << path;
+        return true;
+    }
+    return false;
 }
 
 bool FileUtils::safeRemoveRecursively(QDir& dir)
 {
     QString path = dir.absolutePath();
-    if (!pathIsSafe(path))
-        return false;
 
-    DBG << "Removing" << path;
-    return dir.removeRecursively();
+    if (pathIsSafe(path) && dir.removeRecursively())
+    {
+        DBG << "Removed" << path;
+        return true;
+    }
+    return false;
 }
 
 bool FileUtils::safeRemoveRecursively(const QString& path)
