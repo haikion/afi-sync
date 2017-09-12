@@ -9,6 +9,7 @@ public:
     static QString arma3Path();
     static QString arma3MyDocuments();
     static QString teamspeak3Path();
+    static QString teamspeak3AppDataPath();
     static QString steamPath();
 
 private:

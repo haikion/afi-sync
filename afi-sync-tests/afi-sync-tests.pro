@@ -9,10 +9,12 @@ QT += qml quick testlib
 CONFIG += c++11
 
 win32 {
-    INCLUDEPATH += D:\AfiSync\sources\libtorrent-rasterbar-1.1.0\include
-    INCLUDEPATH += D:\AfiSync\sources\boost_1_61_0
-    LIBS += -LD:\AfiSync\sources\boost_1_61_0\stage\lib -llibboost_system-mgw49-mt-1_61 -lws2_32 #  -llibboost_chrono-mgw49-mt-1_61
-    LIBS += -LD:\AfiSync\sources\libtorrent-rasterbar-1.1.0\bin\gcc-mingw-4.9.2\release\threading-multi -llibtorrent.dll
+    DEFINES += _WIN32_WINNT=0x0501
+    INCLUDEPATH += ..\..\src\libtorrent-rasterbar-1.1.2\include
+    INCLUDEPATH += ..\..\src\boost_1_63_0
+    #Dynamic build
+    DEFINES += BOOST_ALL_NO_LIB
+    LIBS += -L..\..\lib -lboost_system-vc140-mt-gd-1_63 -lboost_atomic-vc140-mt-gd-1_63 -lboost_random-vc140-mt-gd-1_63 -lws2_32 -ltorrent
 }
 
 unix {

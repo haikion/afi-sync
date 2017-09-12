@@ -7,6 +7,7 @@
 #include "debug.h"
 #include "fileutils.h"
 #include "settingsmodel.h"
+#include "pathfinder.h"
 
 QStringList FileUtils::safeSubpaths_;
 
@@ -254,6 +255,7 @@ bool FileUtils::pathIsSafe(const QString& path)
     safeSubpaths.append(SettingsModel::modDownloadPath());
     safeSubpaths.append(SettingsModel::arma3Path());
     safeSubpaths.append(SettingsModel::teamSpeak3Path());
+    safeSubpaths.append(PathFinder::teamspeak3AppDataPath());
     safeSubpaths.append(QCoreApplication::applicationDirPath());
     safeSubpaths.append(".");
     safeSubpaths.append(safeSubpaths_);

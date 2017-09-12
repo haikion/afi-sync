@@ -41,6 +41,15 @@ QString PathFinder::teamspeak3Path()
     return QDir::toNativeSeparators(path);
 }
 
+QString PathFinder::teamspeak3AppDataPath()
+{
+    QDir dir =  QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    dir.cd("../../TS3Client");
+
+    return QDir::toNativeSeparators(dir.absolutePath()); //TODO: Consider discarding this as toNative conversion should be done only on UI-layer.
+}
+
+
 QString PathFinder::steamPath()
 {
     QString path = readRegPath("HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Valve\\Steam", "InstallPath");

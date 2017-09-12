@@ -271,7 +271,7 @@ void SettingsModel::setModDownloadPath(QString path)
         return;
     }
     settings()->setValue("modDownloadPath", path);
-    if (Global::model != nullptr)
+    if (Global::model != nullptr) //TODO: Consider removing, seems too defensive.
         Global::model->reset();
 }
 
