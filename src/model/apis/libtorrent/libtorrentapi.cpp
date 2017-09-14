@@ -1003,6 +1003,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         params.ti = loadFromFile(pathPrefix + ".torrent");
         params.save_path = SettingsModel::modDownloadPath().toStdString();
         params.resume_data = loadResumeData(pathPrefix + ".fastresume");
+        //FIXME: Sometimes this becomes off as empty.
         QString url = QString::fromLocal8Bit(FileUtils::readFile(pathPrefix + ".link")).toLower();
         DBG << url << (params.ti == 0) << params.resume_data.size();
         if (params.ti == 0 || url.isEmpty() || !params.ti->is_valid())
