@@ -19,7 +19,7 @@ public:
     Console(QObject* parent = nullptr);
     ~Console();
 
-    QProcess*runCmdAsync(const QString& cmd);
+    QProcess* runCmdAsync(const QString& cmd);
 
 public slots:
     bool runCmd(const QString& cmd) const;

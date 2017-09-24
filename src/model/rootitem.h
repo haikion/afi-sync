@@ -7,6 +7,7 @@
 #include "treemodel.h"
 #include "treeitem.h"
 #include "jsonreader.h"
+#include "bissignaturechecker.h"
 
 class Repository;
 class JsonReader;
@@ -31,6 +32,7 @@ public:
     bool stopUpdates();
     void startUpdates();
     void startUpdateTimers();
+    BisSignatureChecker* checker() const;
 
 private slots:
     void removeOrphans();
@@ -48,6 +50,7 @@ private:
     QTimer repoTimer_;
     unsigned port_;
     JsonReader jsonReader_;
+    BisSignatureChecker* checker_;
 
     void initSync();
     QString defaultter(const QString& value, const QString& defaultValue);

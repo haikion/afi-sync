@@ -112,7 +112,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             {
                 QString modName = mod.value("name").toString().toLower();
                 DBG << "Parsed mod parameters for" << modName;
-                newMod = new Mod(modName, key);
+                newMod = new Mod(modName, key, root->checker());
                 DBG << "New mod object created:" << modName;
                 newMod->setFileSize(qvariant_cast<quint64>(mod.value("fileSize", "0")));
                 modHash.insert(key, newMod);

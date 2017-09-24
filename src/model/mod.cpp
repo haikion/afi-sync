@@ -9,15 +9,17 @@
 #include "repository.h"
 #include "installer.h"
 #include "modadapter.h"
+#include "bissignaturechecker.h"
 
 const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 
-Mod::Mod(const QString& name, const QString& key):
+Mod::Mod(const QString& name, const QString& key, BisSignatureChecker* checker):
     SyncItem(name, 0),
     key_(key),
     sync_(nullptr),
     updateTimer_(nullptr),
-    waitTime_(0)
+    waitTime_(0),
+    checker_(checker)
 {
     DBG;
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
@@ -361,11 +363,11 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::NOT_IN_SYNC);
     }
-    else if (sync_->folderQueued(key_))
+    else if (checker_->isQueued(path()) || sync_->folderQueued(key_))
     {
         setStatus(SyncStatus::QUEUED);
     }
-    else if (sync_->folderChecking(key_))
+    else if (checker_->isChecking(path()) || sync_->folderChecking(key_))
     {
         setStatus(SyncStatus::CHECKING);
     }
@@ -423,11 +425,27 @@ void Mod::updateStatus()
     }
 }
 
+void Mod::handleBisCheckDone(SigCheckProcess::CheckStatus status)
+{
+    if (status == SigCheckProcess::CheckStatus::FAILURE)
+    {
+        DBG << "Warning: BIS signature check failed for" << name() << ". Reverting back to libTorrent check...";
+        sync_->checkFolder(key_);
+    }
+
+    Installer::install(this);
+}
+
 void Mod::processCompletion()
 {
-    sync_->checkFolder(key_);
     deleteExtraFiles();
-    Installer::install(this);
+    QSharedPointer<SigCheckProcess> checkingProcess = checker_->check(path(), sync_->folderFilesUpper(key_));
+    if (checkingProcess->checkStatus() == SigCheckProcess::CheckStatus::FAILURE)
+    {
+        //Didn't manage to start
+        handleBisCheckDone(SigCheckProcess::CheckStatus::FAILURE);
+    }
+    connect(checkingProcess.data(), SIGNAL(checkDone(SigCheckProcess::CheckStatus)), this, SLOT(handleBisCheckDone(SigCheckProcess::CheckStatus)));
 }
 
 void Mod::checkboxClicked()

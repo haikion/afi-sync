@@ -22,6 +22,7 @@ public:
     static bool safeRemoveRecursively(QDir& dir);
     static bool safeRemoveRecursively(const QString& path);
     static bool safeRename(const QString& srcPath, const QString& dstPath);
+    static bool filesExistCi(QSet<QString> filePaths);
     //For testability
     static void appendSafePath(const QString& path);
 
@@ -30,6 +31,7 @@ private:
 
     static bool pathIsSafe(const QString& path);
     static QString casedPath(const QString& path);
+    static bool fileExistsCi(const QString& path);
 };
 
 #endif // FILEUTILS_H

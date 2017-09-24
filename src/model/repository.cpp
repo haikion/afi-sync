@@ -88,7 +88,7 @@ void Repository::processCompletion()
     for (Mod* mod : mods())
     {
         if (mod->ticked())
-            mod->processCompletion();
+            QMetaObject::invokeMethod(mod, "processCompletion", Qt::QueuedConnection);
     }
     SettingsModel::setInstallDate(name(), QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
 }

@@ -10,6 +10,7 @@
 #include <QCoreApplication>
 #include <QString>
 #include <QStringList>
+#include <QProcess>
 
 #include <libtorrent/torrent_info.hpp>
 
@@ -30,9 +31,12 @@
 #include "../src/model/fileutils.h"
 #include "../src/model/debug.h"
 #include "../src/model/modadapter.h"
+#include "../src/model/bissignaturechecker.h"
+#include "../src/model/sigcheckprocess.h"
 
 //File paths etc..
 static const QString PATCHING_FILES_PATH = "patching";
+static const QString MODS_PATH = "mods";
 static const QString TMP_PATH = "temp";
 static const QString TORRENT_1 = "http://mythbox.pwnz.org/torrents/@vt5_1.torrent";
 static const QString TORRENT_2 = PATCHING_FILES_PATH  + "/afisync_patches_1.torrent";
@@ -46,6 +50,10 @@ static const QString MOD_PATH_1 = TMP_PATH + "/1/" + MOD_NAME_1;
 static const QString MOD_PATH_2 = TMP_PATH + "/2/" + MOD_NAME_1;
 static const QString MOD_PATH_3 = TMP_PATH + "/3/" + MOD_NAME_1;
 static const QString MOD_PATH_4 = TMP_PATH + "/sameHash3/" + MOD_NAME_1;
+static const QString MOD_PATH_FILES_MISSING = MODS_PATH + "/@signatureCheckModFilesMissing";
+static const QString MOD_PATH_CORRUPTED_PBO = MODS_PATH + "/@signatureCheckModCorruptedPbo";
+static const QString MOD_PATH_VALID_CHECK = MODS_PATH + "/@signatureCheckMod";
+static const QString MOD_PATH_KEYS_MISSING = MODS_PATH + "/@signatureCheckModKeysMissing";
 static const QString DELTA_PATCH_NAME = "afisync_patches";
 static const QString PATCHES_PATH = TMP_PATH + "/" + DELTA_PATCH_NAME;
 //file copy tests
@@ -76,6 +84,8 @@ private Q_SLOTS:
     void copyDeep();
     void noSuchDir();
     void copyDeepOverwrite();
+    void checkFilesExist();
+    void checkFilesExistNeg();
 
     //LibTorrent API tests
     void saveAndLoad();
@@ -134,6 +144,14 @@ private Q_SLOTS:
     void jsonReaderAddRepo();
     void jsonReaderRemoveRepo();
     void jsonReaderMoveMod();
+
+    //Bis checker tests
+    void bisCheck();
+    void bisCheckCorruptedPbo();
+    void bisCheckFilesMissing();
+    void bisCheckModKeysMissing();
+    void bisCheckModDoubleSignature();
+    void bisCheckQueue();
 
 private:
     ISync* sync_;
@@ -477,7 +495,8 @@ void AfiSyncTest::deltaNoPeers()
     FileUtils::safeRemoveRecursively(modsPath + "/" + Constants::DELTA_PATCHES_NAME);
 
     Repository* repo = new Repository("repo", "dummy", 21221, "", root_);
-    Mod* mod = new Mod("@mod1", TMP_PATH + "/@mod1_1.torrent");
+    BisSignatureChecker checker;
+    Mod* mod = new Mod("@mod1", TMP_PATH + "/@mod1_1.torrent", &checker);
     repo->checkboxClicked();
     new ModAdapter(mod, repo, false, 0);
     QThread::sleep(3); //Wait for workerThread to finish
@@ -541,6 +560,20 @@ void AfiSyncTest::copyDeepOverwrite()
     bool rVal = dstDir.exists();
     dstDir.removeRecursively(); //cleanup
     QVERIFY(rVal);
+}
+
+void AfiSyncTest::checkFilesExist()
+{
+    QSet<QString> filePaths;
+    filePaths.insert(QFileInfo(MOD_PATH_FILES_MISSING + "/KeYs/ace_3.9.2.18.bikey").absoluteFilePath().toUpper());
+    QVERIFY(FileUtils::filesExistCi(filePaths));
+}
+
+void AfiSyncTest::checkFilesExistNeg()
+{
+    QSet<QString> filePaths;
+    filePaths.insert("/some/rnd/file.txt");
+    QVERIFY(!FileUtils::filesExistCi(filePaths));
 }
 
 void AfiSyncTest::noSuchDir()
@@ -670,6 +703,96 @@ void AfiSyncTest::jsonReaderMoveMod()
     cleanupTest();
 }
 
+void AfiSyncTest::bisCheck()
+{
+    BisSignatureChecker checker;
+    QSet<QString> filePaths;
+    filePaths.insert(MOD_PATH_VALID_CHECK + "/addons/ace_norearm.pbo");
+    filePaths.insert(MOD_PATH_VALID_CHECK + "/addons/ace_norearm.pbo.ace_3.9.2.18-5f0e6b71.bisign");
+    filePaths.insert(MOD_PATH_VALID_CHECK + "/keys/ace_3.9.2.18.bikey");
+    QSharedPointer<SigCheckProcess> process = checker.check(MOD_PATH_VALID_CHECK, filePaths);
+    QEventLoop loop;
+    connect(process.data(), SIGNAL(finished(int)), &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(SigCheckProcess::CheckStatus::SUCCESS, process->checkStatus());
+}
+
+void AfiSyncTest::bisCheckCorruptedPbo()
+{
+    BisSignatureChecker checker;
+    QSet<QString> filePaths;
+    filePaths.insert(MOD_PATH_VALID_CHECK + "/addons/ace_norearm.pbo");
+    filePaths.insert(MOD_PATH_VALID_CHECK + "/addons/ace_norearm.pbo.ace_3.9.2.18-5f0e6b71.bisign");
+    filePaths.insert(MOD_PATH_VALID_CHECK + "/keys/ace_3.9.2.18.bikey");
+    QSharedPointer<SigCheckProcess> process = checker.check(MOD_PATH_CORRUPTED_PBO, filePaths);
+    QEventLoop loop;
+    connect(process.data(), SIGNAL(finished(int)), &loop, SLOT(quit()));
+    loop.exec();
+    QCOMPARE(SigCheckProcess::CheckStatus::SUCCESS, process->checkStatus());
+}
+
+//DSCheckSignatures.exe passes even when there are not addons.
+//This tests wether file existance test works
+void AfiSyncTest::bisCheckFilesMissing()
+{
+    BisSignatureChecker checker;
+    QSet<QString> filePaths;
+    filePaths.insert(MOD_PATH_FILES_MISSING + "/addons/ace_norearm.pbo");
+    filePaths.insert(MOD_PATH_FILES_MISSING + "/addons/ace_norearm.pbo.ace_3.9.2.18-5f0e6b71.bisign");
+    filePaths.insert(MOD_PATH_FILES_MISSING + "/keys/ace_3.9.2.18.bikey");
+    QSharedPointer<SigCheckProcess> process = checker.check(MOD_PATH_FILES_MISSING, filePaths);
+
+    QCOMPARE(SigCheckProcess::CheckStatus::FAILURE, process->checkStatus());
+}
+
+void AfiSyncTest::bisCheckModKeysMissing()
+{
+    BisSignatureChecker checker;
+    QSet<QString> filePaths;
+    filePaths.insert(MOD_PATH_KEYS_MISSING + "/addons/ace_norearm.pbo");
+    filePaths.insert(MOD_PATH_KEYS_MISSING + "/addons/ace_norearm.pbo.ace_3.9.2.18-5f0e6b71.bisign");
+    QSharedPointer<SigCheckProcess> process = checker.check(MOD_PATH_KEYS_MISSING, filePaths);
+
+    QEventLoop loop;
+    connect(process.data(), SIGNAL(finished(int)), &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(SigCheckProcess::CheckStatus::FAILURE, process->checkStatus());
+}
+
+void AfiSyncTest::bisCheckModDoubleSignature()
+{
+    BisSignatureChecker checker;
+    QSet<QString> filePaths;
+    filePaths.insert(MOD_PATH_KEYS_MISSING + "/addons/ace_norearm.pbo");
+    filePaths.insert(MOD_PATH_KEYS_MISSING + "/addons/ace_norearm.pbo.ace_3.10.2.22-23cf08c2.bisign");
+    filePaths.insert(MOD_PATH_KEYS_MISSING + "/keys/ace_3.9.2.18.bikey");
+    QSharedPointer<SigCheckProcess> process = checker.check(MOD_PATH_KEYS_MISSING, filePaths);
+
+    QEventLoop loop;
+    connect(process.data(), SIGNAL(finished(int)), &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(SigCheckProcess::CheckStatus::FAILURE, process->checkStatus());
+}
+
+void AfiSyncTest::bisCheckQueue()
+{
+    BisSignatureChecker* checker = new BisSignatureChecker();
+    QSet<QString> filePaths;
+    filePaths.insert(MOD_PATH_VALID_CHECK + "/addons/ace_norearm.pbo");
+    filePaths.insert(MOD_PATH_VALID_CHECK + "/addons/ace_norearm.pbo.ace_3.9.2.18-5f0e6b71.bisign");
+    filePaths.insert(MOD_PATH_VALID_CHECK + "/keys/ace_3.9.2.18.bikey");
+    for (int i = 0; i < 20; ++i)
+    {
+        checker->check(MOD_PATH_VALID_CHECK, filePaths);
+    }
+    QEventLoop loop;
+    connect(checker, SIGNAL(checkDone()), &loop, SLOT(quit()));
+    loop.exec();
+}
+
 //Sync tests
 
 void AfiSyncTest::addRemoveFolder()
@@ -721,7 +844,8 @@ void AfiSyncTest::modFilesRemoved()
     FileUtils::copy("mods", TMP_PATH);
     settings_->setModDownloadPath(TMP_PATH + "/1extraFile");
     Repository* repo = new Repository("dummy2", "address", 1234, "", root_);
-    Mod* mod = new Mod("@mod1", TORRENT_PATH_MOD1_3);
+    BisSignatureChecker checker;
+    Mod* mod = new Mod("@mod1", TORRENT_PATH_MOD1_3, &checker);
     ModAdapter* adp = new ModAdapter(mod, repo, false, 0);
     Q_UNUSED(adp);
     repo->checkboxClicked();
@@ -769,7 +893,8 @@ void AfiSyncTest::sizeBasic()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    BisSignatureChecker checker;
+    Mod* mod = new Mod("@vt5", TORRENT_1, &checker);
     mod->setFileSize(quint64(1000));
     QVERIFY(mod->fileSize() == quint64(1000));
     mod->deleteLater();
@@ -782,9 +907,10 @@ void AfiSyncTest::repoSize()
     startTest();
 
     Repository* repo = new Repository("name", "address", 1234, "password", root_);
-    Mod* mod1 = new Mod("@vt5", TORRENT_1);
+    BisSignatureChecker checker;
+    Mod* mod1 = new Mod("@vt5", TORRENT_1, &checker);
     mod1->setFileSize(quint64(1000));
-    Mod* mod2 = new Mod("@vt5", TORRENT_1);
+    Mod* mod2 = new Mod("@vt5", TORRENT_1, &checker);
     mod2->setFileSize(quint64(3000));
     new ModAdapter(mod1, repo, false, 0);
     new ModAdapter(mod2, repo, false, 1);
@@ -798,7 +924,8 @@ void AfiSyncTest::noSize()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    BisSignatureChecker checker;
+    Mod* mod = new Mod("@vt5", TORRENT_1, &checker);
     QVERIFY(mod->fileSize() == 0);
     mod->deleteLater();
 
@@ -819,7 +946,8 @@ void AfiSyncTest::sizeStringB()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    BisSignatureChecker checker;
+    Mod* mod = new Mod("@vt5", TORRENT_1, &checker);
     mod->setFileSize(quint64(1000));
     QCOMPARE(mod->fileSizeText(), QString("1000.00 B"));
     mod->deleteLater();
@@ -831,7 +959,8 @@ void AfiSyncTest::sizeStringMB()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    BisSignatureChecker checker;
+    Mod* mod = new Mod("@vt5", TORRENT_1, &checker);
     mod->setFileSize(quint64(21309));
     QCOMPARE(mod->fileSizeText(), QString("20.81 kB"));
     mod->deleteLater();
@@ -843,7 +972,8 @@ void AfiSyncTest::sizeStringGB()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    BisSignatureChecker checker;
+    Mod* mod = new Mod("@vt5", TORRENT_1, &checker);
     mod->setFileSize(quint64(3376414));
     QCOMPARE(mod->fileSizeText(), QString("3.22 MB"));
     mod->deleteLater();
@@ -855,7 +985,8 @@ void AfiSyncTest::sizeStringGB2()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    BisSignatureChecker checker;
+    Mod* mod = new Mod("@vt5", TORRENT_1, &checker);
     mod->setFileSize(quint64(33764140));
     QCOMPARE(mod->fileSizeText(), QString("32.20 MB"));
     mod->deleteLater();
@@ -867,7 +998,8 @@ void AfiSyncTest::sizeString0()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    BisSignatureChecker checker;
+    Mod* mod = new Mod("@vt5", TORRENT_1, &checker);
     QCOMPARE(mod->fileSizeText(), QString("??.?? MB"));
     mod->deleteLater();
 
@@ -878,7 +1010,8 @@ void AfiSyncTest::sizeOverflow()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    BisSignatureChecker checker;
+    Mod* mod = new Mod("@vt5", TORRENT_1, &checker);
     mod->setFileSize(quint64(13770848165));
     QCOMPARE(mod->fileSizeText(), QString("12.83 GB"));
     mod->deleteLater();

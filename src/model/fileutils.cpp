@@ -186,20 +186,24 @@ QString FileUtils::casedPath(const QString& path)
         {
             if (!it.hasNext())
             {
-                DBG << "ERROR: Unable to construct case sensitive path from" << path;
+                DBG << "WARNING: Unable to construct case sensitive path from" << pathCi;
                 return QString();
             }
             QFileInfo fi = it.next();
             if (fi.fileName().toUpper() == ciName.toUpper())
             {
                 casedPath += (casedPath.endsWith("/") ? "" : "/") + fi.fileName();
-                DBG << casedPath;
                 break;
             }
         }
     }
     DBG << "Output:" << casedPath;
     return casedPath;
+}
+
+bool FileUtils::fileExistsCi(const QString& path)
+{
+    return QFileInfo(casedPath(path)).exists();
 }
 
 bool FileUtils::safeRename(const QString& srcPath, const QString& dstPath)
@@ -209,6 +213,18 @@ bool FileUtils::safeRename(const QString& srcPath, const QString& dstPath)
 
     DBG << "Rename" << srcPath << "to"  << dstPath;
     return QFile::rename(srcPath, dstPath);
+}
+
+bool FileUtils::filesExistCi(QSet<QString> filePaths)
+{
+    for (const QString& path : filePaths)
+    {
+        if (!fileExistsCi(path))
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool FileUtils::safeRemove(const QString& filePath)

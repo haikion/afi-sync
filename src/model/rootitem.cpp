@@ -36,6 +36,8 @@ RootItem::RootItem(unsigned port,
     Global::workerThread->setObjectName("workerThread");
     Global::workerThread->start();
     DBG << "Worker thread started";
+    checker_ = new BisSignatureChecker(this);
+    moveToThread(Global::workerThread);
 
     initSync();
     Global::sync = sync_;
@@ -292,6 +294,11 @@ void RootItem::update()
         if (repo->ticked())
             repo->update();
     }
+}
+
+BisSignatureChecker* RootItem::checker() const
+{
+    return checker_;
 }
 
 void RootItem::initSync()
