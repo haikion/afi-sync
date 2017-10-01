@@ -35,6 +35,7 @@ public:
     virtual QString statusText();
     virtual QString startText() = 0;
     virtual QString joinText() = 0;
+    virtual void processCompletion() = 0;
     virtual int eta() const;
     virtual void setEta(const int& eta);
 

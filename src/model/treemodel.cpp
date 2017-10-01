@@ -18,6 +18,7 @@
 #include "treemodel.h"
 #include "rootitem.h"
 #include "global.h"
+#include "modadapter.h"
 
 const QHash<int, QByteArray> TreeModel::ROLE_NAMES({
                                    {TreeModel::Check, QByteArrayLiteral("check")},
@@ -124,6 +125,17 @@ void TreeModel::processCompletion()
     rootItem_->processCompletion();
 }
 
+void TreeModel::processCompletion(const QModelIndex& idx)
+{
+    SyncItem* syncItem = static_cast<SyncItem*>(idx.internalPointer());
+    DBG << idx;
+    if (syncItem)
+    {
+        DBG << "Rechecking:" << syncItem->name();
+        syncItem->processCompletion();
+    }
+}
+
 QString TreeModel::versionString() const
 {
     return Constants::VERSION_STRING;
@@ -142,6 +154,18 @@ void TreeModel::updateSpeed(qint64 download, qint64 upload)
         upload_ = upload;
         emit uploadChanged(getUpload());
     }
+}
+
+bool TreeModel::ticked(const QModelIndex& idx) const
+{
+    SyncItem* item = static_cast<SyncItem*>(idx.internalPointer());
+    if (item)
+    {
+        return item->ticked();
+    }
+
+    DBG << "ERROR: ticked asked from non-syncitem object:" << idx.internalPointer();
+    return false;
 }
 
 //For testability

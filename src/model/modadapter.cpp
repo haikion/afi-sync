@@ -56,6 +56,11 @@ bool ModAdapter::ticked() const
     return SettingsModel::ticked(name(), repo()->name());
 }
 
+void ModAdapter::processCompletion()
+{
+    mod_->processCompletion();
+}
+
 void ModAdapter::setTicked(bool checked)
 {
     if (!isOptional_)

@@ -62,8 +62,10 @@ public slots:
     void join(const QModelIndex& repoIdx) const;
     void resetSync();
     void processCompletion();
+    void processCompletion(const QModelIndex& idx);
     QString versionString() const;
     void updateSpeed(qint64 download, qint64 upload);
+    bool ticked(const QModelIndex& idx) const;
 
 private:
     RootItem* rootItem_;

@@ -3,6 +3,7 @@ import QtQuick 2.3
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
+import QtQuick.Dialogs 1.1
 import org.AFISync 0.1
 import "." //Enables Global.qml
 
@@ -20,8 +21,40 @@ TreeView {
         updateCheckboxes()
     }
 
+    onCurrentIndexChanged: console.log("current index: " + currentIndex
+                                       + " current row: " + currentIndex.row)
+
     style: TreeViewStyle {
         backgroundColor: defaultColor
+    }
+
+    Menu {
+        id: contextMenu
+        property var index
+        function display(idx)
+        {
+            index = idx;
+            popup()
+        }
+
+        MenuItem {
+            text: "Recheck"
+            onTriggered: {
+                console.log(contextMenu.index)
+                if (!TreeModel.ticked(contextMenu.index))
+                {
+                    checkDialog.open()
+                    return
+                }
+
+                TreeModel.processCompletion(contextMenu.index)
+            }
+        }
+    }
+
+    MessageDialog {
+        id: checkDialog
+        text: "Needs to be actived before rechecking."
     }
 
     rowDelegate: Rectangle {
@@ -46,7 +79,6 @@ TreeView {
                     var idx = styleData.index;
                     TreeModel.checkboxClicked(idx)
                     repositoryList.enabled = true
-                    console.log("Checked=" + checked + " styleData.value=" + styleData.value)
                 }
                 //Does not update otherwise.. qml kiddings me /__\
                 Connections {
@@ -59,7 +91,38 @@ TreeView {
         }
     }
 
+    MouseArea {
+        id: contextArea
+        anchors.fill: parent
+        acceptedButtons: Qt.RightButton
+
+        onClicked: {
+            mouse.accepted = false;
+            var index = repositoryList.indexAt(mouse.x, mouse.y)
+            if (!index.valid)
+            {
+                return;
+            }
+
+            console.log("Index " + index)
+            if (mouse.button === Qt.RightButton)
+            {
+                contextMenu.display(index);
+            }
+            else
+            {
+                repositoryList.updateCheckboxes()
+                if (repositoryList.isExpanded(index)) {
+                    repositoryList.collapse(index)
+                } else {
+                    repositoryList.expand(index)
+                }
+            }
+        }
+    }
+
     TableViewColumn {
+        id: nameColumn
         title: "Name"
         role: "name"
         resizable : false
@@ -72,8 +135,11 @@ TreeView {
                 text: styleData.value
                 anchors.verticalCenter: parent.verticalCenter
             }
+
             MouseArea {
                 anchors.fill: parent
+                acceptedButtons: Qt.LeftButton
+
                 onClicked: {
                     repositoryList.updateCheckboxes()
                     if (repositoryList.isExpanded(styleData.index)) {

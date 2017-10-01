@@ -26,6 +26,7 @@ public:
     virtual QString status() const;
     virtual void checkboxClicked();
     virtual bool ticked() const;
+    virtual void processCompletion();
     bool isOptional() const;
     Mod* mod() const;
     Repository* repo() const;
