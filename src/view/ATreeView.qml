@@ -41,7 +41,7 @@ TreeView {
             text: "Recheck"
             onTriggered: {
                 console.log(contextMenu.index)
-                if (!TreeModel.ticked(contextMenu.index))
+                if (!TreeModel.ready(contextMenu.index))
                 {
                     checkDialog.open()
                     return
@@ -54,7 +54,7 @@ TreeView {
 
     MessageDialog {
         id: checkDialog
-        text: "Needs to be actived before rechecking."
+        text: "Needs to be ready before rechecking."
     }
 
     rowDelegate: Rectangle {

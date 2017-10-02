@@ -156,12 +156,12 @@ void TreeModel::updateSpeed(qint64 download, qint64 upload)
     }
 }
 
-bool TreeModel::ticked(const QModelIndex& idx) const
+bool TreeModel::ready(const QModelIndex& idx) const
 {
     SyncItem* item = static_cast<SyncItem*>(idx.internalPointer());
     if (item)
     {
-        return item->ticked();
+        return item->status() == SyncStatus::READY;
     }
 
     DBG << "ERROR: ticked asked from non-syncitem object:" << idx.internalPointer();

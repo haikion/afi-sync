@@ -139,6 +139,7 @@ bool Mod::getProcessCompletion() const
 bool Mod::stop()
 {
     DBG << name();
+    //TODO: Might be too defensive
     if (!sync_->folderExists(key_))
     {
         DBG << "ERROR: Folder" << name() << "does not exist.";

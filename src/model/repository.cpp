@@ -65,7 +65,6 @@ void Repository::startUpdates()
     {
         mod->startUpdates();
     }
-    parentItem()->startUpdateTimers();
 }
 
 Repository::~Repository()
@@ -110,16 +109,11 @@ void Repository::checkboxClicked(bool offline)
 {
     stopUpdates();
     setTicked(!ticked());
-    //SyncItem::checkboxClicked();
     setStatus("Processing new mods...");
-    updateEtaAndStatus();
-    changed(offline);
-    DBG << "ticked() =" << ticked();
     update();
-    if (!ticked())
-        return;
-
-    startUpdates();
+    changed(offline);
+    if (ticked())
+        startUpdates();
 }
 
 void Repository::checkboxClicked()

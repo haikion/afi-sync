@@ -253,6 +253,7 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
 {
     lt::torrent_handle handle = getHandle(key);
 
+    //TODO: Might be too defensive
     if (!handle.is_valid())
         return;
 
