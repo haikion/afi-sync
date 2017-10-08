@@ -16,10 +16,10 @@ bool SpeedEstimator::cutEsimation(const QString& key)
 
 int64_t SpeedEstimator::estimate(const QString& key, const int64_t toCheck)
 {
-    int64_t t_2 = runningTimeMs();
+    int64_t t_2 = runningTimeS();
     int64_t rVal = estimation();
 
-    if (toCheck <= 0) //Sanity check
+    if (toCheck <= 0) //Sanity check TODO: Might be too defensive
     {
         DBG << "ERROR: toCheck is negative or zero. toCheck =" << toCheck;
         return rVal;
@@ -38,7 +38,7 @@ int64_t SpeedEstimator::estimate(const QString& key, const int64_t toCheck)
         //t_1 == t_2, might happen because of the VeryCoarseTimer?
         if (t_1 >= t_2)
         {
-            if (t_1 > t_2) //Sanity check, this should never happen.
+            if (t_1 > t_2) //Sanity check, this should never happen. TODO: Might be too defensive
                 DBG << "ERROR: t_1 > t_2, t_1 =" << t_1 << " t_2 =" << t_2;
             return rVal;
         }

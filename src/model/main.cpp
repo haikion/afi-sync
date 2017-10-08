@@ -8,6 +8,9 @@
 #include <QDir>
 #include <QTextStream>
 #include <QCommandLineParser>
+
+#include <libtorrent/torrent_handle.hpp>
+
 #include "apis/libtorrent/deltapatcher.h"
 #include "global.h"
 #include "treemodel.h"
@@ -156,7 +159,8 @@ int cli(int argc, char* argv[])
         QString oldPath = parser.value(DELTA_ARGS.at(0));
         QString newPath = parser.value(DELTA_ARGS.at(1));
         QString patchesPath = parser.value(DELTA_ARGS.at(2));
-        DeltaPatcher dp(patchesPath);
+        //TODO: This should be done with static functions
+        DeltaPatcher dp(patchesPath, libtorrent::torrent_handle());
         dp.delta(oldPath, newPath);
 
         return 0;

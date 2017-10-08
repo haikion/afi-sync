@@ -14,17 +14,9 @@ const unsigned AHasher::MAX_VALUE = 1679615; // ZZZZ
 QString AHasher::hash(QList<QFileInfo> files)
 {
     qint64 size = 0;
-
     for (QFileInfo fi : files)
-    {
-        if (!fi.exists())
-        {
-            DBG << "ERROR: File" << fi.absoluteFilePath() << "does not exist.";
-            continue;
-        }
-
         size += fi.size();
-    }
+
     qint64 modulated = size % MAX_VALUE; //Ensures the value is within 4 chars.
     QString rVal = baseEncode(modulated);
     for (int padding = 4 - rVal.size(); padding > 0; --padding)

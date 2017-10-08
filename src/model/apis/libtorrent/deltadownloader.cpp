@@ -154,7 +154,7 @@ QVector<int> DeltaDownloader::patchIndexes(const QString& modName)
     for (const QString& patchName : modPatches)
     {
         int i = patches_.indexOf(patchName);
-        if (i == -1) //Fail safe
+        if (i == -1) //Fail safe TODO: Might be too defensive
         {
             DBG << "ERROR: Index == -1 for" << patchName;
             continue;

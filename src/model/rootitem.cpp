@@ -160,7 +160,7 @@ void RootItem::startUpdateTimers()
 
 void RootItem::startUpdates()
 {
-    //startUpdateTimers(); Called by repo if needed
+    startUpdateTimers();
     for (Repository* repo : childItems())
     {
         if (repo->status() == SyncStatus::INACTIVE)

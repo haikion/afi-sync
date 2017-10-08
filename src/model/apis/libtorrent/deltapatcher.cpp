@@ -4,6 +4,9 @@
 #include <QDirIterator>
 #include <QRegExp>
 #include <QDebug>
+
+#include "libtorrent/torrent_status.hpp"
+
 #include "../../fileutils.h"
 #include "../../debug.h"
 #include "../../runningtime.h"
@@ -26,11 +29,11 @@ const QString DeltaPatcher::DELTA_EXTENSION = ".vcdiff";
 const QString DeltaPatcher::SEPARATOR = ".";
 const QString DeltaPatcher::PATCH_DIR = "delta_patch";
 
-
-DeltaPatcher::DeltaPatcher(const QString& patchesPath):
+DeltaPatcher::DeltaPatcher(const QString& patchesPath, libtorrent::torrent_handle handle):
     QObject(nullptr),
     bytesPatched_(0),
-    totalBytes_(0)
+    totalBytes_(0),
+    handle_(handle)
 {
     //Required because patching process is ran
     //synchronously but still needs to be shutdownable.
@@ -72,8 +75,6 @@ void DeltaPatcher::patch(const QString& modPath)
 
 void DeltaPatcher::patchDirSync(const QString& modPath)
 {
-    static const QString ERROR_NO_PATCHES = "ERROR: no patches found for";
-
     QDir patchesDir = QDir(patchesFi_->absoluteFilePath());
     const QStringList allPatches = patchesDir.entryList(QDir::Files);
     DBG << allPatches << patchesDir.absolutePath()
@@ -83,31 +84,56 @@ void DeltaPatcher::patchDirSync(const QString& modPath)
     QStringList patches = filterPatches(modPath, allPatches);
     if (patches.size() == 0)
     {
-        DBG << ERROR_NO_PATCHES << modName << " from "
-            << allPatches << " hash = " << AHasher::hash(modPath);
+        DBG << "ERROR: no patches found for" << modName << "from"
+            << allPatches << "hash =" << AHasher::hash(modPath);
         emit patched(modPath, false);
         return;
     }
-    DBG << patches;
-    for (const QString& patchPath : patches)
+    applyPatches(modPath, patches, 0);
+}
+
+//Recursively applies all patches to modPath
+//
+//libTorrent may report downloaded bytes early.
+//which means AFISync may try apply the patch before it is actually downloaded
+//This functions tries to wait for the libTorrent to actually finish the download.
+void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches, int attempts)
+{
+    static const int MAX_ATTEMPTS = 10;
+    if (attempts > MAX_ATTEMPTS)
     {
-        if (!patch(patchPath, modPath))
+        //FAIL
+        emit patched(modPath, false);
+        bytesPatched_ = 0;
+        patchingMod_ = "";
+        return;
+    }
+    if (patch(patches.first(), modPath))
+    {
+        patches.takeFirst();
+        if (patches.isEmpty())
         {
-            emit patched(modPath, false);
+            //SUCCESS
+            emit patched(modPath, true);
             bytesPatched_ = 0;
             patchingMod_ = "";
             return;
         }
+        applyPatches(modPath, patches, attempts);
     }
-    emit patched(modPath, true);
-    bytesPatched_ = 0;
-    patchingMod_ = "";
+    else
+    {
+        //Try as long as downloading and after that 10 times with 10s delays.
+        if (handle_.status().is_finished)
+        {
+            ++attempts;
+        }
+        QTimer::singleShot(10000, [=] {applyPatches(modPath, patches, attempts);});
+    }
 }
 
 QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringList& allPatches)
 {
-    static const QString ERROR_NO_PATCHES = "ERROR: no patches found for";
-
     QString modName = QFileInfo(modPath).fileName();
     int ltstVersion = latestVersion(modName, allPatches);
     if (ltstVersion == -1)
@@ -144,28 +170,16 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
 
 qint64 DeltaPatcher::bytesPatched(const QString& modName) const
 {
-    static const qint64 INTERVAL = 60000;
+    static const qint64 INTERVAL = 10;
 
     static qint64 prevBytesPatched = 0;
-    static qint64 speed = 250000;
-    static qint64 increment = 0;
-    static qint64 startTime = runningTimeMs();
-    static qint64 prevTime = runningTimeMs();
+    static qint64 speed = 250;
+    static qint64 startTime = runningTimeS();
 
     if (modName != patchingMod_)
         return 0;
 
-    qint64 currentTime = runningTimeMs();
-    //Simulates progression, when no actual change happens
-    //because user needs continious feedback.
-    if (prevBytesPatched == bytesPatched_)
-    {
-        increment += (speed * (currentTime - prevTime))/1000;
-        prevTime = currentTime;
-        qint64 rVal =  bytesPatched_ + increment;
-        DBG << rVal;
-        return rVal;
-    }
+    qint64 currentTime = runningTimeS();
     //Step completed, re-estimate speed.
     qint64 dTime = currentTime - startTime;
     if (dTime > INTERVAL)
@@ -174,8 +188,7 @@ qint64 DeltaPatcher::bytesPatched(const QString& modName) const
         startTime = currentTime;
         DBG << "New patching speed estimation:" << speed << "bytes per second.";
     }
-    increment = 0;
-    prevBytesPatched = bytesPatched_;
+     prevBytesPatched = bytesPatched_;
     return std::min(bytesPatched_, totalBytes_);
 }
 
@@ -195,21 +208,10 @@ bool DeltaPatcher::notPatching()
 //Synchronous patch function
 bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
 {
-    const int MAX_ATTEMPTS = 10;
-
-    QString patchPath = patchesFi_->absoluteFilePath() + "/" + patch;
-    int i = 0;
-    //libTorrent may report downloaded bytes early.
-    //Which means AFISync may try apply the patch before it is actually downloaded
-    //Give libTorrent some time to actually finish the download.
-    for (i = 0; i < MAX_ATTEMPTS && !extract(patchPath); ++i)
-        QThread::sleep(5);
-
-    if (i >= MAX_ATTEMPTS)
+    if (!extract(patchesFi_->absoluteFilePath() + "/" + patch))
         return false;
 
-    QString extractedPath = patchesFi_->absoluteFilePath() + "/" + PATCH_DIR;
-    return patchExtracted(extractedPath, modPath);
+    return patchExtracted(patchesFi_->absoluteFilePath() + "/" + PATCH_DIR, modPath);
 }
 
 void DeltaPatcher::cleanUp(QDir& deltaDir, QDir& tmpDir)
@@ -279,7 +281,6 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
 
 bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
 {
-
     QString patchesPath = patchesFi_->absoluteFilePath();
     QDir patchesDir(patchesPath);
     QString deltaPath = patchesPath + "/" + PATCH_DIR;
@@ -288,7 +289,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
     QString modName = QFileInfo(oldPath).fileName();
     QString patchName = modName + SEPARATOR
             + QString::number(latestVersion(modName) + 1) + SEPARATOR + oldHash + ".7z";
-    QString patchPath = patchesFi_->absoluteFilePath() + "/" + patchName;
+    QString patchPath = patchesPath + "/" + patchName;
 
     QFileInfo laterFi = QFileInfo(laterPath);
     if (!laterFi.exists())
@@ -308,7 +309,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
 
     if (!patchesFi_->isWritable())
     {
-        DBG << "ERROR: Directory" << patchesFi_->absoluteFilePath() << "is not writable.";
+        DBG << "ERROR: Directory" << patchesPath << "is not writable.";
         return false;
     }
 

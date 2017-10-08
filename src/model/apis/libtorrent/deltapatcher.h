@@ -12,6 +12,9 @@
 #include <QThread>
 #include <QDir>
 #include <QQueue>
+
+#include "libtorrent/torrent_handle.hpp"
+
 #include "../../console.h"
 
 class DeltaPatcher: public QObject
@@ -19,7 +22,7 @@ class DeltaPatcher: public QObject
     Q_OBJECT
 
 public:
-    DeltaPatcher(const QString& patchesPath);
+    DeltaPatcher(const QString& patchesPath, libtorrent::torrent_handle handle);
     ~DeltaPatcher();
 
     //Patches dir to latest version.
@@ -55,6 +58,7 @@ private:
     //Contains the name of the mod being patched.
     QString patchingMod_;
     Console* console_;
+    libtorrent::torrent_handle handle_;
 
     bool extract(const QString& zipPath);
     bool createEmptyDir(QDir dir) const;
@@ -64,6 +68,7 @@ private:
     //Applies single patch to mod dir
     bool patch(const QString& patch, const QString& modPath);
     QStringList removePatchesFromLatest(const QString& latestPath, const QString& deltaPath) const;
+    void applyPatches(const QString& modPath, QStringList patches, int attempts);
 
 private slots:
     void threadConstructor(const QString& patchesPath);

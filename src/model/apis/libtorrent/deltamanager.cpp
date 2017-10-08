@@ -14,7 +14,7 @@ DeltaManager::DeltaManager(lt::torrent_handle handle, QObject* parent):
     QObject(parent),
     downloader_(new DeltaDownloader(handle)),
     patcher_(new DeltaPatcher(SettingsModel::modDownloadPath()
-                              + "/" + Constants::DELTA_PATCHES_NAME)),
+                              + "/" + Constants::DELTA_PATCHES_NAME, handle)),
     handle_(handle)
 {
     connect(patcher_, SIGNAL(patched(QString, bool)), this, SLOT(handlePatched(QString, bool)));
@@ -54,7 +54,10 @@ CiHash<QString> DeltaManager::keyHash() const
 bool DeltaManager::patch(const QString& modName, const QString& key)
 {
     if (!patchAvailable(modName))
+    {
+        DBG << "Warning: No patches found for" << modName;
         return false;
+    }
 
     keyHash_.insert(key, modName);
     inDownload_.insert(modName);
