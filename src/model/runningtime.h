@@ -3,5 +3,6 @@
 
 
 unsigned runningTimeMs();
+unsigned runningTimeS();
 
 #endif // RUNNINGTIME_H
