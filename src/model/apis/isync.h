@@ -51,7 +51,7 @@ public:
     //Returns file system path of the folder with specific key.
     virtual QString folderPath(const QString& key) = 0;
     //Returns total bandwidths
-    virtual qint64 download() = 0;
+    virtual qint64 download() const = 0;
     virtual qint64 upload() = 0;
     //Shutdowns the sync
     virtual void shutdown() = 0;

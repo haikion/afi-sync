@@ -37,7 +37,8 @@ LibTorrentApi::LibTorrentApi(QObject *parent) :
     session_(nullptr),
     deltaManager_(nullptr),
     numResumeData_(0),
-    settingsPath_(SettingsModel::syncSettingsPath() + "/libtorrent.dat")
+    settingsPath_(SettingsModel::syncSettingsPath() + "/libtorrent.dat"),
+    checkingSpeed_(20000000)
 {
     init();
     emit initCompleted();
@@ -283,73 +284,103 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
 
 int LibTorrentApi::folderEta(const QString& key)
 {
-    lt::torrent_handle handle;
-    QString torrentKey = key;
-    int increment = 0;
-    if (deltaManager_ && (key == deltaUpdatesKey_ || deltaManager_->contains(key)))
+   lt::torrent_status status = getHandle(key).status();
+   if (status.state == lt::torrent_status::state_t::queued_for_checking)
+   {
+       return queuedCheckingEta(status);
+   }
+   else if (status.state == lt::torrent_status::state_t::checking_files)
+   {
+       return checkingEta(status);
+   }
+   else if (status.state == lt::torrent_status::downloading && status.queue_position > 0)
+   {
+       return queuedDownloadEta(status);
+   }
+   else if (deltaManager_ && deltaManager_->contains(key))
+   {
+       return deltaManager_->patchingEta(key);
+   }
+   return downloadEta(status);
+}
+
+int LibTorrentApi::checkingEta(const lt::torrent_status& status)
+{
+    static QMap<lt::sha1_hash, int64_t> lastBytesMap;
+    static QMap<lt::sha1_hash, int64_t> lastTime;
+    if (lastBytesMap.contains(status.info_hash))
     {
-        handle = deltaManager_->handle();
-        increment = deltaManager_->patchingEta(key);
-        torrentKey = deltaUpdatesKey_;
+        int64_t dChecked = status.total_wanted_done - lastBytesMap[status.info_hash];
+        int64_t dT = runningTimeMs() - lastTime[status.info_hash];
+        checkingSpeed_ = dChecked / dT;
+        DBG << "Checking speed =" << checkingSpeed_;
     }
-    else
+
+    return (status.total_wanted - status.total_wanted_done) / checkingSpeed_;
+}
+
+int LibTorrentApi::queuedDownloadEta(const lt::torrent_status& status) const
+{
+    qint64 totalBytesToDownload = status.total_wanted;
+    qint64 totalBytesToCheck =  status.total_wanted;
+    for (const lt::torrent_handle handle : keyHash_.values())
     {
-        handle = getHandle(key);
+        lt::torrent_status otherStatus = handle.status();
+        if (otherStatus.state == lt::torrent_status::state_t::downloading &&
+                otherStatus.queue_position < status.queue_position)
+        {
+            totalBytesToDownload += otherStatus.total_wanted;
+            totalBytesToCheck += otherStatus.total_wanted;
+        }
+        if (otherStatus.state == lt::torrent_status::state_t::checking_files)
+        {
+            totalBytesToCheck += otherStatus.total_wanted;
+        }
     }
-    if (!handle.is_valid())
+    if (download() == 0 || checkingSpeed_ == 0)
     {
-        DBG << ERROR_KEY_NOT_FOUND << key;
         return Constants::MAX_ETA;
     }
 
-    lt::torrent_status status = handle.status();
+    return (totalBytesToDownload / download()) + (totalBytesToCheck / checkingSpeed_);
+}
 
-    bool queued = folderQueued(status);
-    if (folderChecking(status))
+int LibTorrentApi::queuedCheckingEta(const lt::torrent_status& status) const
+{
+    int rVal = status.total_wanted / checkingSpeed_; //TODO: Update checking speed
+    for (const lt::torrent_handle handle : keyHash_.values())
     {
-        int64_t bc = bytesToCheck(status);
-        if (bc == NOT_FOUND)
-            return NOT_FOUND;
-
-        int64_t checkingSpeed;
-        if (queued)
+        lt::torrent_status otherStatus = handle.status();
+        if (otherStatus.state == lt::torrent_status::state_t::queued_for_checking &&
+                otherStatus.queue_position < status.queue_position)
         {
-            checkingSpeed = speedEstimator_.estimation();
+            rVal += queuedCheckingEta(otherStatus);
         }
-        else
-        {
-            checkingSpeed = speedEstimator_.estimate(torrentKey, bc);
-        }
-        if (checkingSpeed == 0)
-            return Constants::MAX_ETA;
-        int64_t rVal = bc/checkingSpeed;
-        return rVal + increment;
     }
-    //Cut checking speed estimation.
-    speedEstimator_.cutEsimation(torrentKey);
-    if (status.is_finished)
-        return increment;
 
-    int download = queued ? session_->status().payload_download_rate : status.download_rate;
+    return rVal;
+}
 
-    if (download == 0)
+int LibTorrentApi::downloadEta(const lt::torrent_status& status) const
+{
+    if (status.download_rate == 0)
+    {
         return Constants::MAX_ETA;
+    }    
 
-    if (status.total_wanted == 0)
+    qint64 totalBytesToCheck = 0;
+    for (const lt::torrent_handle handle : keyHash_.values())
     {
-        DBG << "ERROR: total_wanted = 0";
-        return NOT_FOUND;
-    }
-    boost::int64_t totalWanted = status.total_wanted;
-    boost::int64_t totalWantedDone = status.total_wanted_done;
-    if (key == deltaUpdatesKey_)
-    {
-        //In case of delta update, only account for mod specific patch downloads.
-        totalWanted = deltaManager_->totalWanted(key);
-        totalWantedDone = deltaManager_->totalWantedDone(key);
+        lt::torrent_status otherStatus = handle.status();
+        if ( otherStatus.state == lt::torrent_status::state_t::checking_files ||
+                otherStatus.state == lt::torrent_status::state_t::queued_for_checking ||
+                otherStatus.state == lt::torrent_status::state_t::downloading)
+        {
+            totalBytesToCheck += status.total_wanted;
+        }
     }
 
-    return ((totalWanted - totalWantedDone) / download) + increment;
+    return ((status.total_wanted - status.total_wanted_done) / status.download_rate) + (totalBytesToCheck / checkingSpeed_);
 }
 
 bool LibTorrentApi::folderPatching(const QString& key)
@@ -524,7 +555,7 @@ qint64 LibTorrentApi::upload()
     return session_->status().payload_upload_rate;
 }
 
-qint64 LibTorrentApi::download()
+qint64 LibTorrentApi::download() const
 {
     if (!session_)
         return 0;

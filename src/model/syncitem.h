@@ -37,7 +37,6 @@ public:
     virtual QString joinText() = 0;
     virtual void processCompletion() = 0;
     virtual int eta() const;
-    virtual void setEta(const int& eta);
 
     virtual QString status() const;
     void setStatus(const QString& status);
@@ -48,6 +47,9 @@ public:
     quint64 fileSize() const;
     void setFileSize(const quint64 size);
     QString fileSizeText() const;
+
+protected:
+    virtual void setEta(const int& eta);
 
 private:
     QString name_;

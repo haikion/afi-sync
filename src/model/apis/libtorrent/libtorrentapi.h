@@ -64,7 +64,7 @@ public:
     //Shutdowns the sync
     virtual void shutdown();
     //Total bandwiths
-    virtual qint64 download();
+    virtual qint64 download() const;
     virtual qint64 upload();
     //Sets global max upload
     virtual void setMaxUpload(unsigned limit);
@@ -99,6 +99,7 @@ private:
     SpeedEstimator speedEstimator_;
     QString deltaUpdatesKey_;
     QString settingsPath_;
+    int64_t checkingSpeed_;
 
     void init();
     bool loadLtSettings();
@@ -131,6 +132,10 @@ private:
     libtorrent::torrent_handle getHandleSilent(const QString& key);
     bool folderChecking(const libtorrent::torrent_status& status) const;
     bool folderQueued(const libtorrent::torrent_status& status) const;
+    int queuedCheckingEta(const libtorrent::torrent_status& status) const;
+    int queuedDownloadEta(const libtorrent::torrent_status& status) const;
+    int downloadEta(const libtorrent::torrent_status& status) const;
+    int checkingEta(const libtorrent::torrent_status& status);
 };
 
 #endif // LIBTORRENTAPI_H

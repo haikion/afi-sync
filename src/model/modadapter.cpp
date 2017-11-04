@@ -42,6 +42,11 @@ QString ModAdapter::status() const
     return mod_->status();
 }
 
+QString ModAdapter::progressText()
+{
+    return mod_->progressText();
+}
+
 void ModAdapter::checkboxClicked()
 {
     setTicked(!ticked());
@@ -59,6 +64,11 @@ bool ModAdapter::ticked() const
 void ModAdapter::processCompletion()
 {
     mod_->processCompletion();
+}
+
+int ModAdapter::eta() const
+{
+    return mod_->eta();
 }
 
 void ModAdapter::setTicked(bool checked)
@@ -85,7 +95,6 @@ Mod* ModAdapter::mod() const
 
 void ModAdapter::updateView()
 {
-    setEta(mod_->eta());
     QString guiData = checkText() + progressText() + status();
     if (guiData == guiData_)
         return; //Avoid heavy UI updates when data has not been changed.

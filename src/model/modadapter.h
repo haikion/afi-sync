@@ -24,9 +24,11 @@ public:
     virtual QString startText();
     virtual QString joinText();
     virtual QString status() const;
+    virtual QString progressText();
     virtual void checkboxClicked();
     virtual bool ticked() const;
     virtual void processCompletion();
+    virtual int eta() const;
     bool isOptional() const;
     Mod* mod() const;
     Repository* repo() const;

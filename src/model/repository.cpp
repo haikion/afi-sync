@@ -188,27 +188,16 @@ QString Repository::createParFile(const QString& parameters)
     return FILE_NAME;
 }
 
+//Which mod takes longest to complete?
 int Repository::calculateEta() const
 {
     int maxEta = 0;
-    int queuedEtasSum = 0;
 
     for (Mod* item : mods())
     {
-        if (item->status() == SyncStatus::QUEUED)
-        {
-            //Sum queued etas as they are run
-            //one after another.
-            queuedEtasSum += item->eta();
-        }
-        else
-        {
-            //These are run simulteniously so only use
-            //longest eta.
-            maxEta = std::max(item->eta(), maxEta);
-        }
+        maxEta = std::max(item->eta(), maxEta);
     }
-    return maxEta + queuedEtasSum;
+    return maxEta;
 }
 
 void Repository::updateEtaAndStatus()

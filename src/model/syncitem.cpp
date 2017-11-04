@@ -56,7 +56,7 @@ QString SyncItem::progressText()
 
 QString SyncItem::startText()
 {
-    return "uploadText()";
+    return "uploadText()"; //TODO: Wtf??
 }
 
 int SyncItem::eta() const

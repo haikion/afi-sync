@@ -450,18 +450,13 @@ bool Mod::reposInactive() const
 
 void Mod::updateEta()
 {
-    if (status() == SyncStatus::INACTIVE || status() == SyncStatus::NOT_IN_SYNC)
+    if (status() == SyncStatus::INACTIVE
+            || status() == SyncStatus::NOT_IN_SYNC || status() == SyncStatus::READY)
     {
         setEta(0);
         return;
     }
-    int eta = sync_->folderEta(key_);
-    if (eta == -404)
-    {
-        DBG << "ERROR: Unable to retrieve eta for mod" << name();
-        return;
-    }
-    setEta(eta);
+    setEta(sync_->folderEta(key_));
 }
 
 Repository* Mod::parentItem()

@@ -184,11 +184,12 @@ qint64 DeltaPatcher::bytesPatched(const QString& modName) const
     qint64 dTime = currentTime - startTime;
     if (dTime > INTERVAL)
     {
+        //FIXME: This reports 0 always?
         speed = (bytesPatched_ - prevBytesPatched) / dTime;
         startTime = currentTime;
-        DBG << "New patching speed estimation:" << speed << "bytes per second.";
+        DBG << "New patching speed estimation:" << speed << "bytes per second. patchingMod_ = " + patchingMod_;
     }
-     prevBytesPatched = bytesPatched_;
+    prevBytesPatched = bytesPatched_;
     return std::min(bytesPatched_, totalBytes_);
 }
 
