@@ -285,13 +285,13 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
 int LibTorrentApi::folderEta(const QString& key)
 {
    lt::torrent_status status = getHandle(key).status();
-   if (status.state == lt::torrent_status::state_t::queued_for_checking)
+   if (status.state == lt::torrent_status::state_t::checking_files)
    {
+       if (status.queue_position == 0)
+       {
+           return checkingEta(status);
+       }
        return queuedCheckingEta(status);
-   }
-   else if (status.state == lt::torrent_status::state_t::checking_files)
-   {
-       return checkingEta(status);
    }
    else if (status.state == lt::torrent_status::downloading && status.queue_position > 0)
    {
@@ -308,13 +308,28 @@ int LibTorrentApi::checkingEta(const lt::torrent_status& status)
 {
     static QMap<lt::sha1_hash, int64_t> lastBytesMap;
     static QMap<lt::sha1_hash, int64_t> lastTime;
+
     if (lastBytesMap.contains(status.info_hash))
     {
         int64_t dChecked = status.total_wanted_done - lastBytesMap[status.info_hash];
-        int64_t dT = runningTimeMs() - lastTime[status.info_hash];
-        checkingSpeed_ = dChecked / dT;
-        DBG << "Checking speed =" << checkingSpeed_;
+        int64_t dT = runningTimeS() - lastTime[status.info_hash];
+        if (dChecked > 0 && dT > 0)
+        {
+            static const uint64_t SAMPLE_SIZE = 20;
+            static uint64_t averager[SAMPLE_SIZE];
+            static uint64_t i = 0;
+
+            //Insert average of last <=10 meassurements
+            ++i;
+            averager[i % SAMPLE_SIZE] = dChecked / dT;
+            checkingSpeed_ = std::accumulate(std::begin(averager), std::end(averager), 0) / std::min(i, SAMPLE_SIZE);
+            DBG << "Checking speed =" << checkingSpeed_;
+        }
     }
+    lastBytesMap[status.info_hash] = status.total_wanted_done;
+    lastTime[status.info_hash] = runningTimeS();
+    if (checkingSpeed_ == 0)
+        return Constants::MAX_ETA;
 
     return (status.total_wanted - status.total_wanted_done) / checkingSpeed_;
 }
@@ -347,16 +362,28 @@ int LibTorrentApi::queuedDownloadEta(const lt::torrent_status& status) const
 
 int LibTorrentApi::queuedCheckingEta(const lt::torrent_status& status) const
 {
-    int rVal = status.total_wanted / checkingSpeed_; //TODO: Update checking speed
-    for (const lt::torrent_handle handle : keyHash_.values())
+    //Caching
+    static QMap<lt::sha1_hash, std::pair<int, unsigned>> cache;
+    if (cache.contains(status.info_hash)
+            && (runningTimeS() - cache[status.info_hash].second) < 1 )
     {
-        lt::torrent_status otherStatus = handle.status();
-        if (otherStatus.state == lt::torrent_status::state_t::queued_for_checking &&
-                otherStatus.queue_position < status.queue_position)
+        return cache[status.info_hash].first;
+    }
+
+    if (checkingSpeed_ == 0)
+        return Constants::MAX_ETA;
+
+    int rVal = (status.total_wanted - status.total_wanted_done) / checkingSpeed_; //TODO: Update checking speed
+    for (const lt::torrent_handle& handle : keyHash_.values())
+    {
+        if (handle.queue_position() == (status.queue_position - 1)
+                && handle.status().state == lt::torrent_status::state_t::checking_files)
         {
-            rVal += queuedCheckingEta(otherStatus);
+            rVal += cache.contains(handle.info_hash()) ? cache[handle.info_hash()].first : 0;
+            break;
         }
     }
+    cache[status.info_hash] = std::pair<int, unsigned>(rVal, runningTimeS());
 
     return rVal;
 }
