@@ -54,7 +54,8 @@ This should copy required DLL files into lib directory and AFISync should now co
 ## Linux mirror set-up
 
 For Linux mirror set-up AFISync needs to be compiled first.
-- Install dependencies: Boost and libTorrent (rakshasa) dev-packages
+- Install dependencies: Boost, Qt and libTorrent (rasterbar) dev-packages: libboost-dev, qtbase5-dev, qtbase5-dev-tools, qtdeclarative5-dev, qt5-default, libtorrent-rasterbar-dev
+- Fetch sources: ```git clone https://github.com/haikion/afi-sync.git```
 - Compile AFISync: ```qmake && make```
 - Run mirror:   ./AFISync --mirror <mods directory>
 
