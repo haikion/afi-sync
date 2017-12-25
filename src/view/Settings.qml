@@ -237,17 +237,13 @@ Column {
             height: defaultHeight
             labelText: "Port:"
             fieldText: SettingsModel.port()
-            defaultValue: "41000"
+            defaultValue: ConstantsModel.defaultPort()
             onFieldChanged: {
                 console.log("Port set: " + getFieldText())
                 SettingsModel.setPort(getFieldText())
             }
             onCheckedChanged: {
-                if (!checked) {
-                    SettingsModel.resetPort()
-                    tf.text = SettingsModel.port()
-                    fieldChanged()
-                }
+                SettingsModel.setPortTicked(checked)
             }
 
             Row {

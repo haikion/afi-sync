@@ -59,7 +59,8 @@ SOURCES += src/model/main.cpp \
     src/model/fileutils.cpp \
     src/model/logmanager.cpp \
     src/model/console.cpp \
-    src/model/szip.cpp
+    src/model/szip.cpp \
+    src/model/constantsmodel.cpp
 
 RESOURCES += qml.qrc
 
@@ -99,7 +100,8 @@ HEADERS += \
     src/model/fileutils.h \
     src/model/logmanager.h \
     src/model/console.h \
-    src/model/szip.h
+    src/model/szip.h \
+    src/model/constantsmodel.h
 
 DISTFILES += \
     AFISync.rc \

@@ -280,7 +280,7 @@ void AfiSyncTest::delta()
 {
     beforeDelta();
 
-    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH, libtorrent::torrent_handle());
     QDir patchesDir(PATCHES_PATH);
     patchesDir.removeRecursively();
     patchesDir.mkpath(".");
@@ -294,7 +294,7 @@ void AfiSyncTest::deltaIdentical()
 {
     beforeDelta();
 
-    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH, libtorrent::torrent_handle());
     QDir modDir2(MOD_PATH_2);
     FileUtils::safeRemoveRecursively(modDir2);
     modDir2.mkpath(".");
@@ -309,7 +309,7 @@ void AfiSyncTest::deltaHashCollision()
 {
     beforeDelta();
 
-    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH, libtorrent::torrent_handle());
     QDir modDir2(MOD_PATH_2);
     FileUtils::safeRemoveRecursively(modDir2);
     modDir2.mkpath(".");
@@ -323,7 +323,7 @@ void AfiSyncTest::chainDelta()
 {
     beforeDelta();
 
-    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH, libtorrent::torrent_handle());
     QDir patchesDir(PATCHES_PATH);
     patchesDir.removeRecursively();
     patchesDir.mkpath(".");
@@ -339,7 +339,7 @@ void AfiSyncTest::patch()
 {
     beforeDelta();
 
-    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH);
+    DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH, libtorrent::torrent_handle());
     QEventLoop loop;
     QObject::connect(patcher, SIGNAL(patched(QString, bool)), &loop, SLOT(quit()));
     patcher->patch(MOD_PATH_1);
@@ -715,6 +715,7 @@ void AfiSyncTest::addRemoveFolderKey()
 
 //Tests if files get removed from mod directory
 //if that was the only change done.
+
 void AfiSyncTest::modFilesRemoved()
 {
     startTest();

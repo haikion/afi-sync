@@ -29,9 +29,7 @@ public:
     };
     static const QHash<int, QByteArray> ROLE_NAMES;
 
-    explicit TreeModel(const QString& data, QObject* parent = 0);
-    explicit TreeModel(unsigned port, QObject* parent = 0);
-    TreeModel(QObject* parent = 0);
+    explicit TreeModel(QObject* parent = 0, bool haltGui = false);
     ~TreeModel();
 
     QVariant data(const QModelIndex& index, int role) const Q_DECL_OVERRIDE;

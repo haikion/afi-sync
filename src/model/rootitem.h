@@ -17,7 +17,6 @@ class RootItem : public QObject, public TreeItem
 
 public:
     explicit RootItem(TreeModel* parentModel);
-    explicit RootItem(unsigned port, TreeModel* parentModel);
     virtual ~RootItem();
 
     void updateView(TreeItem* item, int row = -1);
@@ -46,7 +45,6 @@ private:
     ISync* sync_;
     QTimer updateTimer_;
     QTimer repoTimer_;
-    unsigned port_;
     JsonReader jsonReader_;
 
     void initSync();

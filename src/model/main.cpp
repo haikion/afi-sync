@@ -19,6 +19,7 @@
 #include "processmonitor.h"
 #include "logmanager.h"
 #include "fileutils.h"
+#include "constantsmodel.h"
 #include "crashhandler/crashhandler.h"
 
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
@@ -54,10 +55,17 @@ static QObject* getTreeModel(QQmlEngine* engine, QJSEngine* scriptEngine)
 static QObject* getSettingsModel(QQmlEngine* engine, QJSEngine* scriptEngine)
 {
     Q_UNUSED(scriptEngine)
-    Q_UNUSED(engine)
 
     //QQmlEngine tries to destroy singletons on destruction so real C++ singletons cannot be used.
     return new SettingsModel(engine);
+}
+
+static QObject* getConstantsModel(QQmlEngine* engine, QJSEngine* scriptEngine)
+{
+    Q_UNUSED(scriptEngine)
+
+    //QQmlEngine tries to destroy singletons on destruction so real C++ singletons cannot be used.
+    return new ConstantsModel(engine);
 }
 
 static QObject* getProcessMonitor(QQmlEngine* engine, QJSEngine* scriptEngine)
@@ -104,6 +112,7 @@ int gui(int argc, char* argv[])
     qmlRegisterSingletonType<TreeModel>("org.AFISync", 0, 1, "TreeModel", getTreeModel);
     qmlRegisterSingletonType<SettingsModel>("org.AFISync", 0, 1, "SettingsModel", getSettingsModel);
     qmlRegisterSingletonType<ProcessMonitor>("org.AFISync", 0, 1, "ProcessMonitor", getProcessMonitor);
+    qmlRegisterSingletonType<ConstantsModel>("org.AFISync", 0, 1, "ConstantsModel", getConstantsModel);
     DBG << "QML Singletons registered";
     DBG << "QGuiApplication created";
     QQmlApplicationEngine engine;
@@ -168,9 +177,7 @@ int cli(int argc, char* argv[])
     DBG << "FAIL" << missingArgs.size() << missingArgs;
 
     QString username, password, directory;
-    unsigned port;
     directory = parser.value("mirror");
-    port = parser.value("port").toInt();
     QFileInfo dir(directory);
     QString modDownloadPath = dir.absoluteFilePath();
     if (!dir.isDir() || !dir.isWritable())
@@ -180,12 +187,12 @@ int cli(int argc, char* argv[])
     }
     DBG << "Setting mod download path:" << modDownloadPath;
     SettingsModel::setModDownloadPath(modDownloadPath);
-    SettingsModel::setPort(QString::number(port));
+    SettingsModel::setPort(parser.value("port"));
 
     Global::guiless = true;
     SettingsModel::setDeltaPatchingEnabled(true);
     DBG << "Delta updates enabled due to the mirror mode.";
-    TreeModel* model = new TreeModel(port, &app);
+    TreeModel* model = new TreeModel(&app, true);
     DBG << "model created";
     model->enableRepositories();
     return app.exec();

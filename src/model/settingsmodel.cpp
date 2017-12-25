@@ -165,22 +165,26 @@ unsigned SettingsModel::installDate(const QString& repoName)
 void SettingsModel::setPort(const QString& port)
 {
     settings()->setValue("port", port);
-    if (Global::sync == nullptr)
-    {
-        DBG << "ERROR: sync is null";
-        return;
-    }
     Global::sync->setPort(port.toInt());
+}
+
+void SettingsModel::setPortTicked(bool ticked)
+{
+    settings()->setValue("portTicked", ticked);
+    if (!ticked)
+    {
+        Global::sync->setPort(Constants::DEFAULT_PORT.toInt());
+    }
+}
+
+bool SettingsModel::portTicked()
+{
+    return settings()->value("portTicked", false).toBool();
 }
 
 QString SettingsModel::port()
 {
-    return settings()->value("port", QString::number(Constants::DEFAULT_PORT)).toString();
-}
-
-void SettingsModel::resetPort()
-{
-    settings()->setValue("port", QString::number(Constants::DEFAULT_PORT));
+    return settings()->value("port", Constants::DEFAULT_PORT).toString();
 }
 
 QString SettingsModel::settingsPath()

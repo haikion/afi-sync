@@ -19,17 +19,10 @@
 const int RootItem::REPO_UPDATE_DELAY = 60000; //ms
 
 RootItem::RootItem(TreeModel* parentModel):
-    RootItem(Constants::DEFAULT_PORT, parentModel)
-{
-}
-
-RootItem::RootItem(unsigned port,
-                   TreeModel* parentModel):
     QObject(),
     TreeItem("[DBG] Root Item"),
     initializing_(true),
-    parent_(parentModel),
-    port_(port)
+    parent_(parentModel)
 {
     //Create worker thread
     Global::workerThread = new QThread();

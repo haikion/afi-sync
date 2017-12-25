@@ -30,9 +30,9 @@ const QHash<int, QByteArray> TreeModel::ROLE_NAMES({
                                    {TreeModel::FileSize, QByteArrayLiteral("fileSize")}
                                });
 
-TreeModel::TreeModel(unsigned port, QObject* parent) :
+TreeModel::TreeModel(QObject* parent, bool haltGui):
     QAbstractItemModel(parent),
-    rootItem_(new RootItem(port, this)),
+    rootItem_(new RootItem(this)),
     download_(0),
     upload_(0),
     haltGui_(false)
@@ -43,15 +43,6 @@ TreeModel::TreeModel(unsigned port, QObject* parent) :
 void TreeModel::setHaltGui(bool halt)
 {
     haltGui_ = halt;
-}
-
-TreeModel::TreeModel(QObject* parent) :
-    QAbstractItemModel(parent),
-    rootItem_(new RootItem(this)),
-    download_(0),
-    upload_(0)
-{
-    DBG << "done";
 }
 
 TreeModel::~TreeModel()

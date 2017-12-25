@@ -85,7 +85,8 @@ bool LibTorrentApi::createSession()
     }
     settings.set_str(lt::settings_pack::user_agent, userAgent + "/" + Constants::VERSION_STRING.toStdString());
     //Load port setting
-    settings.set_str(lt::settings_pack::listen_interfaces, "0.0.0.0:" + SettingsModel::port().toStdString());
+    QString port = SettingsModel::portTicked() ? SettingsModel::port() : Constants::DEFAULT_PORT;
+    settings.set_str(lt::settings_pack::listen_interfaces, "0.0.0.0:" + port.toStdString());
     //Load bandwidth limits
     QString uLimit = SettingsModel::maxUpload();
     QString dLimit = SettingsModel::maxDownload();

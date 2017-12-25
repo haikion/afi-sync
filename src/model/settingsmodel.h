@@ -43,7 +43,6 @@ public slots:
     static unsigned installDate(const QString& repoName);
     static void setPort(const QString& port);
     static QString port();
-    static void resetPort();
     static QString syncSettingsPath();
     static QString settingsPath();
     //Tells if syncitem is ticked (!= files checked)
@@ -52,6 +51,8 @@ public slots:
     //Tells if process completion (file checking, installation) is needed
     static void setProcess(const QString& name, bool value);
     static bool process(const QString& name);
+    static void setPortTicked(bool ticked);
+    static bool portTicked();
 
 private:
     static QSettings* settings_;
