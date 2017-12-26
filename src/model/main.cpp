@@ -176,9 +176,7 @@ int cli(int argc, char* argv[])
     }
     DBG << "FAIL" << missingArgs.size() << missingArgs;
 
-    QString username, password, directory;
-    directory = parser.value("mirror");
-    QFileInfo dir(directory);
+    QFileInfo dir(parser.value("mirror"));
     QString modDownloadPath = dir.absoluteFilePath();
     if (!dir.isDir() || !dir.isWritable())
     {
