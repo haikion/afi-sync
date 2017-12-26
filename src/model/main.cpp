@@ -188,6 +188,7 @@ int cli(int argc, char* argv[])
     DBG << "Setting mod download path:" << modDownloadPath;
     SettingsModel::setModDownloadPath(modDownloadPath);
     SettingsModel::setPort(parser.value("port"));
+    SettingsModel::setPortEnabled(true);
 
     Global::guiless = true;
     SettingsModel::setDeltaPatchingEnabled(true);
