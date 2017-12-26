@@ -168,7 +168,7 @@ void SettingsModel::setPort(const QString& port)
 void SettingsModel::setPortEnabled(bool enabled)
 {
     settings()->setValue("portEnabled", enabled);
-    Global::sync->setPort(enabled ? Constants::DEFAULT_PORT.toInt() : Constants::DEFAULT_PORT.toInt());
+    Global::sync->setPort(enabled ? port().toInt() : Constants::DEFAULT_PORT.toInt());
 }
 
 bool SettingsModel::portEnabled()

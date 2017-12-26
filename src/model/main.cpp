@@ -185,13 +185,13 @@ int cli(int argc, char* argv[])
     }
     DBG << "Setting mod download path:" << modDownloadPath;
     SettingsModel::setModDownloadPath(modDownloadPath);
-    SettingsModel::setPort(parser.value("port"));
-    SettingsModel::setPortEnabled(true);
 
     Global::guiless = true;
     SettingsModel::setDeltaPatchingEnabled(true);
     DBG << "Delta updates enabled due to the mirror mode.";
     TreeModel* model = new TreeModel(&app, true);
+    SettingsModel::setPort(parser.value("port"));
+    SettingsModel::setPortEnabled(true);
     DBG << "model created";
     model->enableRepositories();
     return app.exec();
