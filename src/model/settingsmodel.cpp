@@ -6,6 +6,8 @@
 #include "settingsmodel.h"
 #include "global.h"
 
+//TODO: Combine set and enabled
+
 QSettings* SettingsModel::settings_ = nullptr;
 
 SettingsModel::SettingsModel(QObject* parent):
@@ -161,16 +163,12 @@ unsigned SettingsModel::installDate(const QString& repoName)
 void SettingsModel::setPort(const QString& port)
 {
     settings()->setValue("port", port);
-    Global::sync->setPort(port.toInt());
 }
 
 void SettingsModel::setPortEnabled(bool enabled)
 {
     settings()->setValue("portEnabled", enabled);
-    if (!enabled)
-    {
-        Global::sync->setPort(Constants::DEFAULT_PORT.toInt());
-    }
+    Global::sync->setPort(enabled ? Constants::DEFAULT_PORT.toInt() : Constants::DEFAULT_PORT.toInt());
 }
 
 bool SettingsModel::portEnabled()
