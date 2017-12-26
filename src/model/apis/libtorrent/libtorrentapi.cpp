@@ -85,7 +85,7 @@ bool LibTorrentApi::createSession()
     }
     settings.set_str(lt::settings_pack::user_agent, userAgent + "/" + Constants::VERSION_STRING.toStdString());
     //Load port setting
-    QString port = SettingsModel::portTicked() ? SettingsModel::port() : Constants::DEFAULT_PORT;
+    QString port = SettingsModel::portEnabled() ? SettingsModel::port() : Constants::DEFAULT_PORT;
     settings.set_str(lt::settings_pack::listen_interfaces, "0.0.0.0:" + port.toStdString());
     //Load bandwidth limits
     QString uLimit = SettingsModel::maxUpload();
@@ -593,12 +593,6 @@ qint64 LibTorrentApi::download() const
 
 void LibTorrentApi::setMaxUpload(unsigned limit)
 {
-    if (!session_)
-    {
-        DBG << ERROR_SESSION_NULL;
-        return;
-    }
-
     lt::settings_pack pack;
     pack.set_int(lt::settings_pack::upload_rate_limit, limit * 1024);
     session_->apply_settings(pack);
@@ -606,12 +600,6 @@ void LibTorrentApi::setMaxUpload(unsigned limit)
 
 void LibTorrentApi::setMaxDownload(unsigned limit)
 {
-    if (!session_)
-    {
-        DBG << ERROR_SESSION_NULL;
-        return;
-    }
-
     DBG << "Setting max download to" << limit;
     lt::settings_pack pack;
     pack.set_int(lt::settings_pack::download_rate_limit, limit * 1024);

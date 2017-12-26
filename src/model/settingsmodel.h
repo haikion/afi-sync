@@ -33,11 +33,11 @@ public slots:
     static void resetSteamPath();
     static void setMaxUpload(const QString& value);
     static QString maxUpload();
-    static void setMaxUploadEnabled(bool value);
+    static void setMaxUploadEnabled(bool enabled);
     static bool maxUploadEnabled();
     static void setMaxDownload(const QString& value);
     static QString maxDownload();
-    static void setMaxDownloadEnabled(bool value);
+    static void setMaxDownloadEnabled(bool enabled);
     static bool maxDownloadEnabled();
     static void setInstallDate(const QString& repoName, const unsigned& value);
     static unsigned installDate(const QString& repoName);
@@ -51,8 +51,8 @@ public slots:
     //Tells if process completion (file checking, installation) is needed
     static void setProcess(const QString& name, bool value);
     static bool process(const QString& name);
-    static void setPortTicked(bool ticked);
-    static bool portTicked();
+    static void setPortEnabled(bool enabled);
+    static bool portEnabled();
 
 private:
     static QSettings* settings_;

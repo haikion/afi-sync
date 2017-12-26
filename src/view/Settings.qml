@@ -51,21 +51,11 @@ Column {
         text: "ArmA 3 is running. Please close it and repeat the operation."
     }
 
-    Rectangle {
-        color: "transparent"
+    GroupBox {
         width: parent.width
-        border.width: 1
-        height: title11.height + alp.height + 20
-
-        SettingsTitle {
-            id: title11
-            text: "General"
-            font.pixelSize: labelFont
-        }
+        title: "General"
 
         Column {
-            anchors.top: title11.bottom
-            anchors.topMargin: 5
             width: parent.width - fieldSpacing
             anchors.left: parent.left
             anchors.leftMargin: fieldSpacing/2
@@ -86,22 +76,13 @@ Column {
         }
     }
 
-    Rectangle {
-        color: "transparent"
+    GroupBox {
         width: parent.width
-        border.width: 1
-        height: title10.height + 4*modDownloadPath.height + 20
-
-        SettingsTitle {
-            id: title10
-            text: "Paths"
-            font.pixelSize: labelFont
-        }
+        title: "Paths"
 
         Column {
             spacing: 1
             width: parent.width - fieldSpacing
-            anchors.top: title10.bottom
             anchors.topMargin: 5
             id: modDownloadPath
             anchors.left: parent.left
@@ -116,7 +97,6 @@ Column {
                 id: pathField1
 
                 text: SettingsModel.modDownloadPath().replace(/\//g, "\\");
-                //onTextChanged: SettingsModel.setModDownloadPath(text);
                 width: parent.width
                 height: defaultHeight
                 enabled: false
@@ -177,53 +157,37 @@ Column {
 
     }
 
-    Rectangle {
-        color: "transparent"
+    GroupBox {
+        title: "Network Settings"
         width: parent.width
         height: 6*defaultHeight
-        border.width: 1
         id: bandwidthRect
-
-        Text {
-            id: title
-            text: "Network Settings"
-            font.pixelSize: labelFont
-            anchors.top: parent.top
-            anchors.topMargin: 3
-            anchors.left: parent.left
-            anchors.leftMargin: 3
-        }
-
 
         BandwidthRow {
             id: uploadRow
             anchors.top: title.bottom
-            anchors.topMargin: 3
-            anchors.left: parent.left
-            anchors.leftMargin: 3
             height: defaultHeight
             labelText: "Upload limit:"
             fieldText: SettingsModel.maxUpload()
             checked: SettingsModel.maxUploadEnabled()
+
             onFieldChanged: {
-                console.log("upload set: " + getFieldText())
                 SettingsModel.setMaxUpload(getFieldText())
+                SettingsModel.setMaxUploadEnabled(getEnabled())
             }
         }
 
         BandwidthRow {
             id: downloadRow
             anchors.top: uploadRow.bottom
-            anchors.topMargin: 3
-            anchors.left: parent.left
-            anchors.leftMargin: 3
             height: defaultHeight
             labelText: "Download limit:"
             fieldText: SettingsModel.maxDownload()
             checked: SettingsModel.maxDownloadEnabled()
+
             onFieldChanged: {
-                console.log("Download set: " + getFieldText())
                 SettingsModel.setMaxDownload(getFieldText())
+                SettingsModel.setMaxDownloadEnabled(getEnabled())
             }
         }
 
@@ -231,56 +195,44 @@ Column {
             id: portRow
             unit: ""
             anchors.top: downloadRow.bottom
-            anchors.topMargin: 3
-            anchors.left: parent.left
-            anchors.leftMargin: 3
             height: defaultHeight
             labelText: "Port:"
             fieldText: SettingsModel.port()
             defaultValue: ConstantsModel.defaultPort()
+            checked: SettingsModel.portEnabled()
+
             onFieldChanged: {
-                console.log("Port set: " + getFieldText())
                 SettingsModel.setPort(getFieldText())
-            }
-            onCheckedChanged: {
-                SettingsModel.setPortTicked(checked)
+                SettingsModel.setPortEnabled(getEnabled())
             }
 
-            Row {
-                id: deltaPatchingRow
+        }
 
-                anchors.top: portRow.bottom
-                anchors.topMargin: 3
-                spacing: 4
-                anchors.left: parent.left
+        Row {
+            id: deltaPatchingRow
 
-                CheckBox {
-                    checked: SettingsModel.deltaPatchingEnabled();
-                    onCheckedChanged: SettingsModel.setDeltaPatchingEnabled(checked);
-                }
-                Text {
-                    text: qsTr("Delta Patching")
-                    font.pixelSize: labelFont
-                }
+            anchors.top: portRow.bottom
+            anchors.topMargin: 3
+            spacing: 4
+            anchors.left: parent.left
+            anchors.leftMargin: 3
+
+            CheckBox {
+                checked: SettingsModel.deltaPatchingEnabled();
+                onCheckedChanged: SettingsModel.setDeltaPatchingEnabled(checked);
+            }
+            Text {
+                text: qsTr("Delta Patching")
+                font.pixelSize: labelFont
             }
         }
     }
 
-    Rectangle {
-        color: "transparent"
+    GroupBox {
+        title: "Troubleshooting"
         width: parent.width
-        border.width: 1
-        height: troublesColumn.height + title2.height + 15
-
-        SettingsTitle {
-            id: title2
-            text: "Troubleshooting"
-            font.pixelSize: labelFont
-        }
 
         Column {
-            anchors.top: title2.bottom
-            anchors.topMargin: 5
             width: parent.width - 10
             anchors.horizontalCenter: parent.horizontalCenter
             id: troublesColumn

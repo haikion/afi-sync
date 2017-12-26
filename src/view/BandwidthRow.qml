@@ -14,13 +14,24 @@ Rectangle {
     function getFieldText() {
         return tf.text
     }
+    function getEnabled() {
+        return cb.checked
+    }
+    anchors.topMargin: 3
+    anchors.left: parent.left
+    anchors.leftMargin: 3
 
     CheckBox {
         id: cb
-        //checked: fieldText != defaultValue
+        checked: true
         anchors.verticalCenter: parent.verticalCenter
         onCheckedChanged: {
             fieldChanged()
+        }
+
+        Component.onCompleted:
+        {
+            checked = parent.checked
         }
     }
 

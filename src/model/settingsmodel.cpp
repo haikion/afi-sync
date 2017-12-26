@@ -64,7 +64,6 @@ QString SettingsModel::setting(const QString& key, const QString& defaultValue)
 QString SettingsModel::arma3Path()
 {
    return setting("arma3Dir", PathFinder::arma3Path());
-    //return settings()->value("arma3Dir", PathFinder::arma3Path()).toString();
 }
 
 void SettingsModel::setArma3Path(const QString& path)
@@ -80,7 +79,6 @@ void SettingsModel::resetArma3Path()
 QString SettingsModel::teamSpeak3Path()
 {
    return setting("teamSpeak3Path", PathFinder::teamspeak3Path());
-    //return settings()->value("teamSpeak3Path", PathFinder::teamspeak3Path()).toString();
 }
 
 void SettingsModel::setTeamSpeak3Path(const QString& path)
@@ -120,7 +118,6 @@ QString SettingsModel::maxUpload()
 void SettingsModel::setMaxDownload(const QString& value)
 {
     settings()->setValue("maxDownload", value);
-    Global::sync->setMaxDownload(value.toInt());
 }
 
 QString SettingsModel::maxDownload()
@@ -128,10 +125,11 @@ QString SettingsModel::maxDownload()
     return settings()->value("maxDownload", "").toString();
 }
 
-void SettingsModel::setMaxDownloadEnabled(bool value)
+void SettingsModel::setMaxDownloadEnabled(bool enabled)
 {
-    if (!value)
-        Global::sync->setMaxDownload(0); //Disable limit
+    settings()->setValue("maxDownloadEnabled", enabled);
+    //Activate or disable limit
+    Global::sync->setMaxDownload(enabled ? maxDownload().toUInt() : 0);
 }
 
 bool SettingsModel::maxDownloadEnabled()
@@ -139,12 +137,10 @@ bool SettingsModel::maxDownloadEnabled()
     return settings()->value("maxDownloadEnabled", false).toBool();
 }
 
-void SettingsModel::setMaxUploadEnabled(bool value)
+void SettingsModel::setMaxUploadEnabled(bool enabled)
 {
-    if (!value)
-        Global::sync->setMaxUpload(0); //Disable limit
-
-    return settings()->setValue("maxUploadEnabled", value);
+    settings()->setValue("maxUploadEnabled", enabled);
+    Global::sync->setMaxUpload(enabled ? maxUpload().toUInt() : 0);
 }
 
 bool SettingsModel::maxUploadEnabled()
@@ -168,18 +164,18 @@ void SettingsModel::setPort(const QString& port)
     Global::sync->setPort(port.toInt());
 }
 
-void SettingsModel::setPortTicked(bool ticked)
+void SettingsModel::setPortEnabled(bool enabled)
 {
-    settings()->setValue("portTicked", ticked);
-    if (!ticked)
+    settings()->setValue("portEnabled", enabled);
+    if (!enabled)
     {
         Global::sync->setPort(Constants::DEFAULT_PORT.toInt());
     }
 }
 
-bool SettingsModel::portTicked()
+bool SettingsModel::portEnabled()
 {
-    return settings()->value("portTicked", false).toBool();
+    return settings()->value("portEnabled", false).toBool();
 }
 
 QString SettingsModel::port()
@@ -224,11 +220,6 @@ QString SettingsModel::syncSettingsPath()
 
 void SettingsModel::setMaxUpload(const QString& value)
 {
-    DBG;
-    if (Global::sync == nullptr)
-        return;
-
-    Global::sync->setMaxUpload(value.toInt());
     settings()->setValue("maxUpload", value);
 }
 
@@ -281,7 +272,7 @@ void SettingsModel::setModDownloadPath(QString path)
 
 void SettingsModel::resetModDownloadPath()
 {
-    setModDownloadPath(PathFinder::arma3MyDocuments());
+    setModDownloadPath(PathFinder::arma3Path());
 }
 
 QString SettingsModel::launchParameters()
