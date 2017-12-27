@@ -117,9 +117,11 @@ QString SettingsModel::maxUpload()
     return rVal;
 }
 
-void SettingsModel::setMaxDownload(const QString& value)
+void SettingsModel::setMaxDownload(const QString& maxDownload, bool enabled)
 {
-    settings()->setValue("maxDownload", value);
+    settings()->setValue("maxDownload", maxDownload);
+    settings()->setValue("maxDownloadEnabled", enabled);
+    Global::sync->setMaxDownload(enabled ? maxDownload.toUInt() : 0);
 }
 
 QString SettingsModel::maxDownload()
@@ -127,22 +129,9 @@ QString SettingsModel::maxDownload()
     return settings()->value("maxDownload", "").toString();
 }
 
-void SettingsModel::setMaxDownloadEnabled(bool enabled)
-{
-    settings()->setValue("maxDownloadEnabled", enabled);
-    //Activate or disable limit
-    Global::sync->setMaxDownload(enabled ? maxDownload().toUInt() : 0);
-}
-
 bool SettingsModel::maxDownloadEnabled()
 {
     return settings()->value("maxDownloadEnabled", false).toBool();
-}
-
-void SettingsModel::setMaxUploadEnabled(bool enabled)
-{
-    settings()->setValue("maxUploadEnabled", enabled);
-    Global::sync->setMaxUpload(enabled ? maxUpload().toUInt() : 0);
 }
 
 bool SettingsModel::maxUploadEnabled()
@@ -160,15 +149,11 @@ unsigned SettingsModel::installDate(const QString& repoName)
     return settings()->value("installDate" + repoName).toInt();
 }
 
-void SettingsModel::setPort(const QString& port)
+void SettingsModel::setPort(const QString& port, bool enabled)
 {
     settings()->setValue("port", port);
-}
-
-void SettingsModel::setPortEnabled(bool enabled)
-{
     settings()->setValue("portEnabled", enabled);
-    Global::sync->setPort(enabled ? port().toInt() : Constants::DEFAULT_PORT.toInt());
+    Global::sync->setPort(enabled ? port.toInt() : Constants::DEFAULT_PORT.toInt());
 }
 
 bool SettingsModel::portEnabled()
@@ -216,9 +201,11 @@ QString SettingsModel::syncSettingsPath()
     return settingsPath() + "/sync";
 }
 
-void SettingsModel::setMaxUpload(const QString& value)
+void SettingsModel::setMaxUpload(const QString& maxUpload, bool enabled)
 {
-    settings()->setValue("maxUpload", value);
+    settings()->setValue("maxUpload", maxUpload);
+    settings()->setValue("maxUploadEnabled", enabled);
+    Global::sync->setMaxUpload(enabled ? maxUpload.toUInt() : 0);
 }
 
 bool SettingsModel::battlEyeEnabled()

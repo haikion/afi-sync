@@ -172,8 +172,7 @@ Column {
             checked: SettingsModel.maxUploadEnabled()
 
             onFieldChanged: {
-                SettingsModel.setMaxUpload(getFieldText())
-                SettingsModel.setMaxUploadEnabled(getEnabled())
+                SettingsModel.setMaxUpload(getFieldText(), getEnabled())
             }
         }
 
@@ -186,8 +185,7 @@ Column {
             checked: SettingsModel.maxDownloadEnabled()
 
             onFieldChanged: {
-                SettingsModel.setMaxDownload(getFieldText())
-                SettingsModel.setMaxDownloadEnabled(getEnabled())
+                SettingsModel.setMaxDownload(getFieldText(), getEnabled())
             }
         }
 
@@ -202,8 +200,7 @@ Column {
             checked: SettingsModel.portEnabled()
 
             onFieldChanged: {
-                SettingsModel.setPort(getFieldText())
-                SettingsModel.setPortEnabled(getEnabled())
+                SettingsModel.setPort(getFieldText(), getEnabled())
             }
 
         }

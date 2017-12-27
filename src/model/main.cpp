@@ -190,8 +190,7 @@ int cli(int argc, char* argv[])
     SettingsModel::setDeltaPatchingEnabled(true);
     DBG << "Delta updates enabled due to the mirror mode.";
     TreeModel* model = new TreeModel(&app, true);
-    SettingsModel::setPort(parser.value("port"));
-    SettingsModel::setPortEnabled(true);
+    SettingsModel::setPort(parser.value("port"), true);
     DBG << "model created";
     model->enableRepositories();
     return app.exec();
