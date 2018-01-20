@@ -401,6 +401,10 @@ void Mod::updateStatus()
             setStatus(SyncStatus::PAUSED);
         }
     }
+    else if (sync_->folderPatching(key_))
+    {
+        setStatus(SyncStatus::PATCHING);
+    }
     else if (sync_->folderNoPeers(key_))
     {
         setStatus(SyncStatus::NO_PEERS);
@@ -408,10 +412,6 @@ void Mod::updateStatus()
     else if (sync_->folderDownloadingPatches(key_))
     {
         setStatus(SyncStatus::DOWNLOADING_PATCHES);
-    }
-    else if (sync_->folderPatching(key_))
-    {
-        setStatus(SyncStatus::PATCHING);
     }
     else if (eta() > 0)
     {
@@ -426,7 +426,6 @@ void Mod::updateStatus()
 
 void Mod::processCompletion()
 {
-    sync_->checkFolder(key_);
     deleteExtraFiles();
     Installer::install(this);
 }

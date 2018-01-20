@@ -374,7 +374,7 @@ int LibTorrentApi::queuedCheckingEta(const lt::torrent_status& status) const
     if (checkingSpeed_ == 0)
         return Constants::MAX_ETA;
 
-    int rVal = (status.total_wanted - status.total_wanted_done) / checkingSpeed_; //TODO: Update checking speed
+    int rVal = (status.total_wanted - status.total_wanted_done) / checkingSpeed_;
     for (const lt::torrent_handle& handle : keyHash_.values())
     {
         if (handle.queue_position() == (status.queue_position - 1)
