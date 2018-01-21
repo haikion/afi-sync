@@ -49,6 +49,7 @@ private:
 
     void initSync();
     QString defaultter(const QString& value, const QString& defaultValue);
+    void printDeletables();
 };
 
 #endif // ROOTITEM_H

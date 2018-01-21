@@ -6,6 +6,9 @@
 #include <QDir>
 #include <QSet>
 #include <QTimer>
+#include <QDirIterator>
+#include <QFile>
+#include <QStringList>
 #include "apis/libtorrent/libtorrentapi.h"
 #include "debug.h"
 #include "global.h"
@@ -34,6 +37,7 @@ RootItem::RootItem(TreeModel* parentModel):
     Global::sync = sync_;
     DBG << "initSync completed";
     jsonReader_.fillEverything(this);
+    printDeletables();
     DBG << "readJson completed";
     if (sync_->ready())
     {
@@ -72,6 +76,55 @@ RootItem::~RootItem()
     sync_ = nullptr;
     Global::sync = nullptr;
     DBG << "Sync deleted";
+}
+
+void RootItem::printDeletables()
+{
+    QStringList afisyncMods;
+    QStringList inactiveMods;
+
+    for (Repository* repo : childItems())
+    {
+        for (Mod* mod : repo->mods())
+        {
+            afisyncMods.append(mod->name());
+            //FIXME: Incorrect!
+            if (!mod->ticked())
+            {
+                inactiveMods.append(mod->name());
+            }
+        }
+    }
+
+    QString notIncludedStr;
+    qint64 spaceNotIncluded = 0;
+    QString inactivesStr;
+    qint64 spaceInactive = 0;
+    static const QString DELETE_CMD = "rmdir";
+    QDirIterator it(SettingsModel::modDownloadPath());
+    while (it.hasNext())
+    {
+        QFileInfo f(it.next());
+        QString fileName = f.fileName();
+        if (!fileName.startsWith("@"))
+        {
+            continue;
+        }
+
+        if (!afisyncMods.contains(fileName))
+        {
+            notIncludedStr += " " + fileName;
+            spaceNotIncluded += FileUtils::dirSize(f.filePath());
+        }
+        if (!inactiveMods.contains(fileName))
+        {
+            inactivesStr += " " + fileName;
+            spaceInactive += FileUtils::dirSize(f.filePath());
+        }
+    }
+
+    DBG << "Delete non included mods (Space used: " + QString::number(spaceNotIncluded/1000000000) + " GB ) " + DELETE_CMD + notIncludedStr;
+    DBG << "Delete inactive mods (Space used: " + QString::number(spaceInactive/1000000000) + " GB ) " + DELETE_CMD + inactivesStr;
 }
 
 //Removes sync dirs which
