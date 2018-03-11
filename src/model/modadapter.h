@@ -37,7 +37,7 @@ protected:
     virtual void setTicked(bool ticked);
 
 public slots:
-    void updateView();
+    void updateView(bool force);
 
 private:
     Mod* mod_;

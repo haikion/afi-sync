@@ -93,14 +93,18 @@ Mod* ModAdapter::mod() const
     return mod_;
 }
 
-void ModAdapter::updateView()
+void ModAdapter::updateView(bool force)
 {
-    QString guiData = checkText() + progressText() + status();
-    if (guiData == guiData_)
-        return; //Avoid heavy UI updates when data has not been changed.
+    //Only update if mod and its repo is active or when force == true
+    if ((ticked() && repo()->ticked()) || force)
+    {
+        QString guiData = checkText() + progressText() + status();
+        if (guiData == guiData_)
+            return; //Avoid heavy UI updates when data has not been changed.
 
-    repo_->updateView(this, repo_->childItems().indexOf(this));
-    guiData_ = guiData;
+        repo_->updateView(this, repo_->childItems().indexOf(this));
+        guiData_ = guiData;
+    }
 }
 
 Repository* ModAdapter::repo() const

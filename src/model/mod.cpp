@@ -63,12 +63,8 @@ void Mod::updateView(bool force)
 {
     for (ModAdapter* adp : adapters_)
     {
-        //Only update if mod and its repo is active or when force == true
-        if ((adp->ticked() && adp->repo()->ticked()) || force)
-        {
-            //Run in main (UI) thread.
-            QMetaObject::invokeMethod(adp, "updateView", Qt::QueuedConnection);
-        }
+        //Run in main (UI) thread.
+        QMetaObject::invokeMethod(adp, "updateView", Qt::QueuedConnection, Q_ARG(bool, force));
     }
 }
 
