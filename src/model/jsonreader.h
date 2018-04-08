@@ -38,6 +38,8 @@ private:
     void removeDeprecatedRepos(RootItem* root, const QSet<QString> jsonRepos);
     void removeDeprecatedMods(Repository* repo, const QSet<QString> jsonMods);
     QHash<QString, Mod*> createModHash(const RootItem* root) const;
+    QByteArray fetchJsonBytes(QString url);
+    QVariantMap bytesToJson(const QByteArray& bytes) const;
 };
 
 #endif // JSONREADER_H
