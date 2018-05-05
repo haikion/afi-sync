@@ -30,7 +30,6 @@ Mod::Mod(const QString& name, const QString& key):
 
 Mod::~Mod()
 {
-    DBG;
     for (ModAdapter* adp : adapters_)
     {
         DBG << "Destroying adapter";
@@ -263,7 +262,6 @@ void Mod::startUpdates()
 void Mod::stopUpdates()
 {
     DBG << name();
-    DBG << Global::workerThread->isRunning();
     //Updates need to be stopped before object destruction, hence blocking.
     QMetaObject::invokeMethod(this, "stopUpdatesSlot", Qt::BlockingQueuedConnection);
     //Process pending updateView request in UI Thread. (Prevents segfault)
@@ -397,13 +395,13 @@ void Mod::updateStatus()
             setStatus(SyncStatus::PAUSED);
         }
     }
-    else if (sync_->folderPatching(key_))
-    {
-        setStatus(SyncStatus::PATCHING);
-    }
     else if (sync_->folderNoPeers(key_))
     {
         setStatus(SyncStatus::NO_PEERS);
+    }
+    else if (sync_->folderPatching(key_))
+    {
+        setStatus(SyncStatus::PATCHING);
     }
     else if (sync_->folderDownloadingPatches(key_))
     {
@@ -426,6 +424,12 @@ void Mod::processCompletion()
     Installer::install(this);
 }
 
+void Mod::check()
+{
+    sync_->checkFolder(key_);
+    processCompletion();
+}
+
 void Mod::checkboxClicked()
 {
     DBG << name() << "checked state set to" << ticked();
@@ -435,7 +439,7 @@ void Mod::checkboxClicked()
 
 bool Mod::reposInactive() const
 {
-    for (Repository* repo : repositories_)
+    for (const Repository* repo : repositories_)
     {
         if (repo->status() != SyncStatus::INACTIVE)
             return false;

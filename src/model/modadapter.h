@@ -20,6 +20,7 @@ public:
     ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index);
     ~ModAdapter() = default;
 
+    virtual void check();
     virtual QString checkText();
     virtual QString startText();
     virtual QString joinText();

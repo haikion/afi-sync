@@ -47,7 +47,7 @@ TreeView {
                     return
                 }
 
-                TreeModel.processCompletion(contextMenu.index)
+                TreeModel.check(contextMenu.index)
             }
         }
     }

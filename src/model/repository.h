@@ -20,6 +20,7 @@ public:
                QString password, RootItem* parent);
     ~Repository();
 
+    void check();
     void appendModAdapter(ModAdapter* adp, int index);
     void updateView(TreeItem* item, int row = -1);
     virtual void checkboxClicked();

@@ -36,6 +36,7 @@ public:
     virtual QString startText() = 0;
     virtual QString joinText() = 0;
     virtual void processCompletion() = 0;
+    virtual void check() = 0;
     virtual int eta() const;
 
     virtual QString status() const;

@@ -81,6 +81,14 @@ Repository::~Repository()
     parent->rowsChanged();
 }
 
+void Repository::check()
+{
+    for (SyncItem* mod : mods())
+    {
+        mod->check();
+    }
+}
+
 void Repository::processCompletion()
 {
     ready_ = true;

@@ -14,12 +14,10 @@
 #include <libtorrent/session.hpp>
 #include <libtorrent/bdecode.hpp>
 #include <libtorrent/create_torrent.hpp>
-
 #include <QFile>
 #include <QFileInfo>
 #include <QDirIterator>
 #include <QThread>
-
 #include "../../settingsmodel.h"
 #include "../../global.h"
 #include "../../debug.h"
@@ -88,8 +86,8 @@ bool LibTorrentApi::createSession()
     QString port = SettingsModel::portEnabled() ? SettingsModel::port() : Constants::DEFAULT_PORT;
     settings.set_str(lt::settings_pack::listen_interfaces, "0.0.0.0:" + port.toStdString());
     //Load bandwidth limits
-    QString uLimit = SettingsModel::maxUpload();
-    QString dLimit = SettingsModel::maxDownload();
+    const QString uLimit = SettingsModel::maxUpload();
+    const QString dLimit = SettingsModel::maxDownload();
     if (uLimit != "")
         settings.set_int(lt::settings_pack::upload_rate_limit, uLimit.toInt() * 1024);
     if (dLimit != "")
@@ -526,7 +524,6 @@ QString LibTorrentApi::folderPath(const QString& key)
     {
         rVal += QString::fromStdString(status.name);
     }
-    DBG << "key =" << key << "rVal =" << rVal;
     return rVal;
 }
 

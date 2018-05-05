@@ -18,6 +18,11 @@ ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index):
     mod->appendRepository(repo);
 }
 
+void ModAdapter::check()
+{
+    mod_->check();
+}
+
 QString ModAdapter::checkText()
 {
     if (!isOptional())

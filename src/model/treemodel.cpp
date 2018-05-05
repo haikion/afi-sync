@@ -35,7 +35,7 @@ TreeModel::TreeModel(QObject* parent, bool haltGui):
     rootItem_(new RootItem(this)),
     download_(0),
     upload_(0),
-    haltGui_(false)
+    haltGui_(haltGui)
 {
     DBG;
 }
@@ -116,14 +116,13 @@ void TreeModel::processCompletion()
     rootItem_->processCompletion();
 }
 
-void TreeModel::processCompletion(const QModelIndex& idx)
+void TreeModel::check(const QModelIndex& idx)
 {
     SyncItem* syncItem = static_cast<SyncItem*>(idx.internalPointer());
-    DBG << idx;
     if (syncItem)
     {
         DBG << "Rechecking:" << syncItem->name();
-        syncItem->processCompletion();
+        syncItem->check();
     }
 }
 

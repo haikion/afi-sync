@@ -34,10 +34,8 @@
 //File paths etc..
 static const QString PATCHING_FILES_PATH = "patching";
 static const QString TMP_PATH = "temp";
-static const QString TORRENT_1 = "http://mythbox.pwnz.org/torrents/@vt5_1.torrent";
 static const QString TORRENT_2 = PATCHING_FILES_PATH  + "/afisync_patches_1.torrent";
-static const QString TORRENT_4 = "http://mythbox.pwnz.org/torrents/afisync_patches_1.torrent";
-static const QString TORRENT_PATH_1 = "torrents/@vt5_1.torrent";
+static const QString VT5_TORRENT_PATH = "torrents/@vt5_1.torrent";
 static const QString MOD1_3_NAME = "@mod1_3.torrent";
 static const QString TORRENT_PATH_MOD1_3 = PATCHING_FILES_PATH + "/" + MOD1_3_NAME;
 static const QString TORRENT_PATH_MOD1_3_TMP = TMP_PATH + "/" + MOD1_3_NAME;
@@ -243,14 +241,14 @@ void AfiSyncTest::saveAndLoad()
 
     QDir().mkpath(TMP_PATH);
     settings_->setModDownloadPath(TMP_PATH);
-    sync->addFolder(TORRENT_PATH_1, "@vt5");
+    sync->addFolder(VT5_TORRENT_PATH, "@vt5");
     delete sync;
     QThread::sleep(10);
     sync = new LibTorrentApi();
 
-    bool exists = sync->folderExists(TORRENT_PATH_1);
-    bool rVal = sync->removeFolder(TORRENT_PATH_1);
-    bool existsAfterDelete = sync->folderExists(TORRENT_PATH_1);
+    bool exists = sync->folderExists(VT5_TORRENT_PATH);
+    bool rVal = sync->removeFolder(VT5_TORRENT_PATH);
+    bool existsAfterDelete = sync->folderExists(VT5_TORRENT_PATH);
     FileUtils::safeRemoveRecursively(TMP_PATH);
     QVERIFY(exists);
     QVERIFY(rVal);
@@ -368,8 +366,7 @@ void AfiSyncTest::patchAvailable()
 {
     beforeDelta();
 
-    QString modPath = TMP_PATH + "/1";
-    settings_->setModDownloadPath(modPath);
+    settings_->setModDownloadPath(TMP_PATH + "/1");
     DeltaDownloader upd(handle_);
     bool rVal = upd.patchAvailable(MOD_NAME_1);
     afterDelta();
@@ -379,7 +376,6 @@ void AfiSyncTest::patchAvailable()
 void AfiSyncTest::patchAvailableNegativeName()
 {
     beforeDelta();
-
     settings_->setModDownloadPath(TMP_PATH + "/1");
     DeltaDownloader upd(handle_);
     bool rVal = upd.patchAvailable("@mod5");
@@ -390,7 +386,6 @@ void AfiSyncTest::patchAvailableNegativeName()
 void AfiSyncTest::patchAvailableNegativeVer()
 {
     beforeDelta();
-
     settings_->setModDownloadPath(TMP_PATH + "/3");
     DeltaDownloader upd(handle_);
     bool rVal = upd.patchAvailable(MOD_NAME_1);
@@ -472,7 +467,7 @@ void AfiSyncTest::deltaNoPeers()
     Global::sync->setDeltaUpdatesFolder(TMP_PATH + "/afisync_patches_nopeers.torrent");
     Global::sync->enableDeltaUpdates();
 
-    QString modsPath = TMP_PATH + "/1";
+    const QString modsPath = TMP_PATH + "/1";
     settings_->setModDownloadPath(modsPath);
     FileUtils::safeRemoveRecursively(modsPath + "/" + Constants::DELTA_PATCHES_NAME);
 
@@ -676,22 +671,21 @@ void AfiSyncTest::addRemoveFolder()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, "@vt5");
-    bool exists = sync_->folderExists(TORRENT_1);
+    sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
+    bool exists = sync_->folderExists(VT5_TORRENT_PATH);
     int counter = 0;
     //Wait 1 sec for async call to finish
     while (!exists && counter < 10)
     {
         ++counter;
-        exists = sync_->folderExists(TORRENT_1);
+        exists = sync_->folderExists(VT5_TORRENT_PATH);
         QThread::msleep(100);
     }
 
     QCOMPARE(exists, true);
-    bool rVal = sync_->removeFolder(TORRENT_1);
+    const bool rVal = sync_->removeFolder(VT5_TORRENT_PATH);
     QCOMPARE(rVal, true);
-    exists = sync_->folderExists(TORRENT_1);
-    QCOMPARE(exists, false);
+    QCOMPARE(sync_->folderExists(VT5_TORRENT_PATH), false);
 
     cleanupTest();
 }
@@ -699,14 +693,10 @@ void AfiSyncTest::addRemoveFolder()
 void AfiSyncTest::addRemoveFolderKey()
 {
     ISync* sync = new LibTorrentApi();
-
-    sync->addFolder(TORRENT_PATH_1, "@vt5");
-    bool exists = sync->folderExists(TORRENT_PATH_1);
-    QCOMPARE(exists, true);
-    bool rVal = sync->removeFolder(TORRENT_PATH_1);
-    QCOMPARE(rVal, true);
-    exists = sync->folderExists(TORRENT_PATH_1);
-    QCOMPARE(exists, false);
+    sync->addFolder(VT5_TORRENT_PATH, "@vt5");
+    QCOMPARE(sync->folderExists(VT5_TORRENT_PATH), true);
+    QCOMPARE(sync->removeFolder(VT5_TORRENT_PATH), true);
+    QCOMPARE(sync->folderExists(VT5_TORRENT_PATH), false);
 
     delete sync;
 }
@@ -734,7 +724,7 @@ void AfiSyncTest::modFilesRemoved()
         DBG << "Wating... mod status =" << mod->status();
         QThread::sleep(1); //Wait for check to finish
     }
-    bool extraFileExists = QFileInfo(TMP_PATH + "/1extraFile/@mod1/extraFile.txt").exists();
+    const bool extraFileExists = QFileInfo(TMP_PATH + "/1extraFile/@mod1/extraFile.txt").exists();
     FileUtils::safeRemoveRecursively(TMP_PATH);
     QVERIFY(!extraFileExists);
     cleanupTest();
@@ -770,7 +760,7 @@ void AfiSyncTest::sizeBasic()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
     mod->setFileSize(quint64(1000));
     QVERIFY(mod->fileSize() == quint64(1000));
     mod->deleteLater();
@@ -780,12 +770,13 @@ void AfiSyncTest::sizeBasic()
 
 void AfiSyncTest::repoSize()
 {
+    QSKIP("Server down");
     startTest();
 
     Repository* repo = new Repository("name", "address", 1234, "password", root_);
-    Mod* mod1 = new Mod("@vt5", TORRENT_1);
+    Mod* mod1 = new Mod("@vt5", VT5_TORRENT_PATH);
     mod1->setFileSize(quint64(1000));
-    Mod* mod2 = new Mod("@vt5", TORRENT_1);
+    Mod* mod2 = new Mod("@vt5", VT5_TORRENT_PATH);
     mod2->setFileSize(quint64(3000));
     new ModAdapter(mod1, repo, false, 0);
     new ModAdapter(mod2, repo, false, 1);
@@ -797,9 +788,10 @@ void AfiSyncTest::repoSize()
 
 void AfiSyncTest::noSize()
 {
+    QSKIP("Server down");
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
     QVERIFY(mod->fileSize() == 0);
     mod->deleteLater();
 
@@ -820,7 +812,7 @@ void AfiSyncTest::sizeStringB()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
     mod->setFileSize(quint64(1000));
     QCOMPARE(mod->fileSizeText(), QString("1000.00 B"));
     mod->deleteLater();
@@ -832,7 +824,7 @@ void AfiSyncTest::sizeStringMB()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
     mod->setFileSize(quint64(21309));
     QCOMPARE(mod->fileSizeText(), QString("20.81 kB"));
     mod->deleteLater();
@@ -844,7 +836,7 @@ void AfiSyncTest::sizeStringGB()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
     mod->setFileSize(quint64(3376414));
     QCOMPARE(mod->fileSizeText(), QString("3.22 MB"));
     mod->deleteLater();
@@ -856,7 +848,7 @@ void AfiSyncTest::sizeStringGB2()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
     mod->setFileSize(quint64(33764140));
     QCOMPARE(mod->fileSizeText(), QString("32.20 MB"));
     mod->deleteLater();
@@ -868,7 +860,7 @@ void AfiSyncTest::sizeString0()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
     QCOMPARE(mod->fileSizeText(), QString("??.?? MB"));
     mod->deleteLater();
 
@@ -879,7 +871,7 @@ void AfiSyncTest::sizeOverflow()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", TORRENT_1);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
     mod->setFileSize(quint64(13770848165));
     QCOMPARE(mod->fileSizeText(), QString("12.83 GB"));
     mod->deleteLater();
@@ -891,10 +883,10 @@ void AfiSyncTest::getFilesUpper()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, "@vt5");
-    QSet<QString> files = sync_->folderFilesUpper(TORRENT_1);
+    sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
+    QSet<QString> files = sync_->folderFilesUpper(VT5_TORRENT_PATH);
     QCOMPARE(files.size(), 3);
-    sync_->removeFolder(TORRENT_1);
+    sync_->removeFolder(VT5_TORRENT_PATH);
 
     cleanupTest();
 }
@@ -903,10 +895,10 @@ void AfiSyncTest::getFolderKeys()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, "@vt5");
+    sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
     QCOMPARE(sync_->folderKeys().size(), 1);
-    QCOMPARE(sync_->folderKeys().at(0), TORRENT_1.toLower());
-    sync_->removeFolder(TORRENT_1);
+    QCOMPARE(sync_->folderKeys().at(0), VT5_TORRENT_PATH.toLower());
+    sync_->removeFolder(VT5_TORRENT_PATH);
 
     cleanupTest();
 }
@@ -915,10 +907,10 @@ void AfiSyncTest::setFolderPaused()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, "@vt5");
-    sync_->setFolderPaused(TORRENT_1, true);
-    QCOMPARE(sync_->folderPaused(TORRENT_1), true);
-    sync_->removeFolder(TORRENT_1);
+    sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
+    sync_->setFolderPaused(VT5_TORRENT_PATH, true);
+    QCOMPARE(sync_->folderPaused(VT5_TORRENT_PATH), true);
+    sync_->removeFolder(VT5_TORRENT_PATH);
 
     cleanupTest();
 }
@@ -927,11 +919,11 @@ void AfiSyncTest::getEta()
 {
     startTest();
 
-    sync_->addFolder(TORRENT_1, "@vt5");
-    int eta = sync_->folderEta(TORRENT_1);
+    sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
+    int eta = sync_->folderEta(VT5_TORRENT_PATH);
     qDebug() << "eta =" << eta;
     QVERIFY(eta > 0);
-    sync_->removeFolder(TORRENT_1);
+    sync_->removeFolder(VT5_TORRENT_PATH);
 
     cleanupTest();
 }

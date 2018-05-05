@@ -32,8 +32,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
     DBG << "Stopping UI updates.";
     const bool updateRunning = root->stopUpdates();
     jsonMap_ = qvariant_cast<QVariantMap>(readJsonFile(jsonFilePath).toVariant());
-    QString updateUrlStr = updateUrl(jsonMap_);
-    const QVariantMap jsonMapUpdate = updateJson(updateUrlStr);
+    const QVariantMap jsonMapUpdate = updateJson(updateUrl(jsonMap_));
     if (jsonMapUpdate != QVariantMap())
         jsonMap_ = jsonMapUpdate;
 
@@ -53,11 +52,10 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
     }
 
     const QList<QVariant> repositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
-    DBG << "repositories size =" << repositories.size() << "updateurl =" << updateUrlStr;
     QHash<QString, Mod*> modHash = createModHash(root);
     QHash<Repository*, QSet<QString>> jsonMods; //Holds mod + repo listing of mods that are in repositories.json document.
     QSet<QString> jsonRepos;
-    QHash<QString, Repository*> adRepos = addedRepos(root);
+    const QHash<QString, Repository*> adRepos = addedRepos(root);
     for (const QVariant& repoVar : repositories)
     {
         QVariantMap repository = qvariant_cast<QVariantMap>(repoVar);

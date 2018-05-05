@@ -122,7 +122,7 @@ int gui(int argc, char* argv[])
     engine.load(QUrl(QStringLiteral("qrc:/SplashScreen.qml")));
     DBG << "QML Engine loaded";
 
-    int rVal = app.exec();
+    const int rVal = app.exec();
     DBG << "END";
     return rVal;
 }

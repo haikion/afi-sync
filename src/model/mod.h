@@ -19,6 +19,7 @@ public:
     Mod(const QString& name, const QString& key);
     ~Mod();
 
+    void check();
     QString key() const;
     virtual Repository* parentItem();
     void appendRepository(Repository* repository);
