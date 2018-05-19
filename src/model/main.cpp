@@ -1,26 +1,23 @@
 #include <csignal>
-#include <QCoreApplication>
+#include <libtorrent/torrent_handle.hpp>
 #include <QApplication>
+#include <QCommandLineParser>
+#include <QCoreApplication>
+#include <QDir>
 #include <QQmlApplicationEngine>
 #include <QQuickItem>
-#include <QtQml>
 #include <QSettings>
-#include <QDir>
 #include <QTextStream>
-#include <QCommandLineParser>
-
-#include <libtorrent/torrent_handle.hpp>
-
+#include <QtQml>
+#include "afisynclogger.h"
 #include "apis/libtorrent/deltapatcher.h"
-#include "global.h"
-#include "treemodel.h"
-#include "settingsmodel.h"
-#include "debug.h"
-#include "processmonitor.h"
-#include "logmanager.h"
-#include "fileutils.h"
 #include "constantsmodel.h"
 #include "crashhandler/crashhandler.h"
+#include "fileutils.h"
+#include "global.h"
+#include "processmonitor.h"
+#include "settingsmodel.h"
+#include "treemodel.h"
 
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
 
@@ -35,14 +32,13 @@ struct CleanExit
     static void exitQt(int sig)
     {
         Q_UNUSED(sig);
-
         QCoreApplication::exit(0);
     }
 };
 
 static QObject* getTreeModel(QQmlEngine* engine, QJSEngine* scriptEngine)
 {
-    DBG;
+    LOG;
     Q_UNUSED(scriptEngine)
     Global::model = new TreeModel(engine);
 
@@ -83,18 +79,16 @@ void messageHandler(QtMsgType type, const QMessageLogContext& context, const QSt
     static QMutex mutex;
     QMutexLocker locker(&mutex);
 
-    *Global::logStream << msg << "\n";
+    LOG << msg.toStdString() << "\n";
 }
 
-void createLogFile()
+void initStandalone()
 {
-    if (!Global::logManager)
-        Global::logManager = new LogManager();
-
-    Global::logManager->rotateLogs();
-    QFile* file = new QFile(Constants::LOG_FILE);
-    file->open(QIODevice::WriteOnly | QIODevice::Append);
-    Global::logStream = new QTextStream(file);
+    #ifdef Q_OS_WIN
+        Breakpad::CrashHandler::instance()->Init(QStringLiteral("."));
+    #endif
+    AfiSyncLogger::initFileLogging();
+    qInstallMessageHandler(messageHandler);
 }
 
 int gui(int argc, char* argv[])
@@ -102,28 +96,24 @@ int gui(int argc, char* argv[])
     QApplication app(argc, argv);
 
     #ifndef QT_DEBUG
-        #ifdef Q_OS_WIN
-            Breakpad::CrashHandler::instance()->Init(QStringLiteral("."));
-        #endif
-        createLogFile();
-        qInstallMessageHandler(messageHandler);
+        initStandalone();
     #endif
-    DBG << "\nAFISync" << Constants::VERSION_STRING << "started";
+    LOG << "\nAFISync" << Constants::VERSION_STRING << "started";
     qmlRegisterSingletonType<TreeModel>("org.AFISync", 0, 1, "TreeModel", getTreeModel);
     qmlRegisterSingletonType<SettingsModel>("org.AFISync", 0, 1, "SettingsModel", getSettingsModel);
     qmlRegisterSingletonType<ProcessMonitor>("org.AFISync", 0, 1, "ProcessMonitor", getProcessMonitor);
     qmlRegisterSingletonType<ConstantsModel>("org.AFISync", 0, 1, "ConstantsModel", getConstantsModel);
-    DBG << "QML Singletons registered";
-    DBG << "QGuiApplication created";
+    LOG << "QML Singletons registered";
+    LOG << "QGuiApplication created";
     QQmlApplicationEngine engine;
     #ifdef STATIC_BUILD
         engine.setImportPathList(QStringList(QStringLiteral("qrc:/qml")));
     #endif
     engine.load(QUrl(QStringLiteral("qrc:/SplashScreen.qml")));
-    DBG << "QML Engine loaded";
+    LOG << "QML Engine loaded";
 
     const int rVal = app.exec();
-    DBG << "END";
+    LOG << "END";
     return rVal;
 }
 
@@ -150,11 +140,11 @@ int cli(int argc, char* argv[])
     QStringList args;
     for (int i = 0; i < argc; ++i)
     {
-        DBG << argv[i];
+        LOG << argv[i];
         args.append(argv[i]);
     }
     parser.process(args);
-    DBG << parser.errorText();
+    LOG << parser.errorText();
 
     //Delta patching
     QSet<QString> missingArgs = DELTA_ARGS.toSet() - parser.optionNames().toSet();
@@ -174,7 +164,7 @@ int cli(int argc, char* argv[])
 
         return 0;
     }
-    DBG << "FAIL" << missingArgs.size() << missingArgs;
+    LOG << "FAIL" << missingArgs.size() << missingArgs;
 
     QFileInfo dir(parser.value("mirror"));
     QString modDownloadPath = dir.absoluteFilePath();
@@ -183,15 +173,15 @@ int cli(int argc, char* argv[])
         qDebug() << "Invalid path:" << modDownloadPath;
         QCoreApplication::exit(2);
     }
-    DBG << "Setting mod download path:" << modDownloadPath;
+    LOG << "Setting mod download path:" << modDownloadPath;
     SettingsModel::setModDownloadPath(modDownloadPath);
 
     Global::guiless = true;
     SettingsModel::setDeltaPatchingEnabled(true);
-    DBG << "Delta updates enabled due to the mirror mode.";
+    LOG << "Delta updates enabled due to the mirror mode.";
     TreeModel* model = new TreeModel(&app, true);
     SettingsModel::setPort(parser.value("port"), true);
-    DBG << "model created";
+    LOG << "model created";
     model->enableRepositories();
     return app.exec();
 }

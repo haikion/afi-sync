@@ -1,20 +1,17 @@
-#include <vector>
-#include <string>
-#include <algorithm>
-
-#include <QRegExp>
-#include <QDir>
-
-#include <libtorrent/torrent_info.hpp>
-#include <libtorrent/torrent_status.hpp>
-#include <libtorrent/file_storage.hpp>
-#include <libtorrent/file_pool.hpp>
-
 #include "../../debug.h"
 #include "../../settingsmodel.h"
-#include "deltadownloader.h"
 #include "ahasher.h"
+#include "deltadownloader.h"
 #include "deltapatcher.h"
+#include <QDir>
+#include <QRegExp>
+#include <algorithm>
+#include <libtorrent/file_pool.hpp>
+#include <libtorrent/file_storage.hpp>
+#include <libtorrent/torrent_info.hpp>
+#include <libtorrent/torrent_status.hpp>
+#include <string>
+#include <vector>
 
 namespace lt = libtorrent;
 
@@ -24,7 +21,7 @@ DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle):
     boost::shared_ptr<const lt::torrent_info> torrent = handle_.torrent_file();
     if (!torrent || !torrent->is_valid())
     {
-        DBG << "ERROR: Torrent is invalid.";
+        LOG << "ERROR: Torrent is invalid.";
         return;
     }
     //Always seed.
@@ -48,13 +45,13 @@ DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle):
 
 void DeltaDownloader::createFilePaths()
 {
-    DBG << fileStorage_.paths().size();
+    LOG << fileStorage_.paths().size();
     for (int i = 0; i < fileStorage_.num_files(); ++i)
     {
         //path is sometimes "".
         QString name = QString::fromStdString(fileStorage_.file_name(i));
         QString pathQ = QDir::fromNativeSeparators(name);
-        DBG << "Appending" << pathQ;
+        LOG << "Appending" << pathQ;
         patches_.append(pathQ);
     }
 }
@@ -75,7 +72,7 @@ bool DeltaDownloader::patchDownloaded(const QString& modName)
     boost::int64_t done = totalWantedDone(indexes);
     boost::int64_t wanted = totalWanted(indexes);
 
-    DBG << modName << " download process: " << done << "/" << wanted;
+    LOG << modName << " download process: " << done << "/" << wanted;
     return done >= wanted;
 }
 
@@ -156,12 +153,11 @@ QVector<int> DeltaDownloader::patchIndexes(const QString& modName)
         int i = patches_.indexOf(patchName);
         if (i == -1) //Fail safe TODO: Might be too defensive
         {
-            DBG << "ERROR: Index == -1 for" << patchName;
+            LOG << "ERROR: Index == -1 for" << patchName;
             continue;
         }
         indexes.append(i);
     }
-    DBG << "Returning" << indexes << "modPatches =" << modPatches;
     fileIndexCache_.insert(modName, indexes);
     return indexes;
 }

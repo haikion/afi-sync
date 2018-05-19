@@ -5,7 +5,7 @@ Heart::Heart(QObject* parent, int maxDelay) :
     QObject(parent),
     maxDelay_(maxDelay)
 {
-    DBG << "maxDelay =" << maxDelay;
+    LOG << "maxDelay =" << maxDelay;
     timer_.setInterval(1000);
     connect(&timer_, SIGNAL(timeout()), this, SLOT(process()));
     reset();
@@ -13,7 +13,7 @@ Heart::Heart(QObject* parent, int maxDelay) :
 
 void Heart::reset(int maxDelay)
 {
-    DBG << "maxDelay =" << maxDelay;
+    LOG << "maxDelay =" << maxDelay;
     maxDelay_ = maxDelay;
     beat();
     timer_.start();
@@ -37,7 +37,7 @@ void Heart::process()
     --secondsToDeath_;
     if (secondsToDeath_ < 0)
     {
-        DBG << "Death";
+        LOG << "Death";
         emit death();
         timer_.stop();
     }

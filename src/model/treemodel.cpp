@@ -7,7 +7,7 @@
 
 #include <sys/types.h>
 #include <signal.h>
-#include "debug.h"
+#include "afisynclogger.h"
 #include <QDir>
 #include <QStringList>
 #include <QFile>
@@ -37,7 +37,7 @@ TreeModel::TreeModel(QObject* parent, bool haltGui):
     upload_(0),
     haltGui_(haltGui)
 {
-    DBG;
+    LOG;
 }
 
 void TreeModel::setHaltGui(bool halt)
@@ -47,7 +47,7 @@ void TreeModel::setHaltGui(bool halt)
 
 TreeModel::~TreeModel()
 {
-    DBG;
+    LOG;
     delete rootItem_;
 }
 
@@ -58,13 +58,13 @@ void TreeModel::reset()
 
 void TreeModel::enableRepositories()
 {
-    DBG;
+    LOG;
     rootItem_->enableRepositories();
 }
 
 void TreeModel::rowsChanged()
 {
-    DBG;
+    LOG;
     emit layoutChanged();
 }
 
@@ -121,7 +121,7 @@ void TreeModel::check(const QModelIndex& idx)
     SyncItem* syncItem = static_cast<SyncItem*>(idx.internalPointer());
     if (syncItem)
     {
-        DBG << "Rechecking:" << syncItem->name();
+        LOG << "Rechecking:" << syncItem->name();
         syncItem->check();
     }
 }
@@ -133,7 +133,7 @@ QString TreeModel::versionString() const
 
 void TreeModel::updateSpeed(qint64 download, qint64 upload)
 {
-    //DBG << "download =" << download << " upload =" << upload;
+    //LOG << "download =" << download << " upload =" << upload;
     if (download != download_)
     {
         download_ = download;
@@ -154,7 +154,7 @@ bool TreeModel::ready(const QModelIndex& idx) const
         return item->status() == SyncStatus::READY;
     }
 
-    DBG << "ERROR: ticked asked from non-syncitem object:" << idx.internalPointer();
+    LOG << "ERROR: ticked asked from non-syncitem object:" << idx.internalPointer();
     return false;
 }
 
@@ -190,7 +190,7 @@ void TreeModel::updateView(TreeItem* item, int row)
 
     if (haltGui_)
     {
-        DBG << "UI updates halted.";
+        LOG << "UI updates halted.";
         return;
     }
 
@@ -200,7 +200,7 @@ void TreeModel::updateView(TreeItem* item, int row)
     QModelIndex idx = createIndex(row, 0, item);
     if (!idx.isValid())
     {
-        DBG << "ERROR: Tried to update invalid index.";
+        LOG << "ERROR: Tried to update invalid index.";
         return;
     }
 
@@ -232,8 +232,6 @@ QVariant TreeModel::data(const QModelIndex& index, int role = Qt::DisplayRole) c
 
 Qt::ItemFlags TreeModel::flags(const QModelIndex& index) const
 {
-    //DBG;
-
     if (haltGui_ || !index.isValid())
         return 0;
 
@@ -259,11 +257,8 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent)
         parentItem = static_cast<TreeItem*>(parent.internalPointer());
 
     if(!parentItem)
-    {
-        DBG << "Invalid request. row =" << row
-            << "column =" << column << "parent =" << parent;
         return QModelIndex();
-    }
+
     TreeItem* childItem = parentItem->child(row);
     if (childItem)
         return createIndex(row, column, childItem);

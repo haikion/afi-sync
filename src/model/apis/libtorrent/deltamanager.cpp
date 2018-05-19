@@ -55,13 +55,13 @@ bool DeltaManager::patch(const QString& modName, const QString& key)
 {
     if (!patchAvailable(modName))
     {
-        DBG << "Warning: No patches found for" << modName;
+        LOG << "Warning: No patches found for" << modName;
         return false;
     }
 
     keyHash_.insert(key, modName);
     inDownload_.insert(modName);
-    DBG << "Starting updates";
+    LOG << "Starting updates";
     QMetaObject::invokeMethod(&updateTimer_, "start", Qt::QueuedConnection);
     if (downloader_->patchDownloaded(modName))
     {
@@ -103,7 +103,7 @@ int64_t DeltaManager::totalWanted(const QString& key)
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
     {
-        DBG << "ERROR: Key" << key << "not found.";
+        LOG << "ERROR: Key" << key << "not found.";
         return 99999999;
     }
 
@@ -115,7 +115,7 @@ int64_t DeltaManager::totalWantedDone(const QString& key)
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
     {
-        DBG << "ERROR: Key" << key << "not found.";
+        LOG << "ERROR: Key" << key << "not found.";
         return 99999999;
     }
 
@@ -146,7 +146,7 @@ void DeltaManager::handlePatched(const QString& modPath, bool success)
 {
     QString modName = QFileInfo(modPath).fileName();
     QString key = keyHash_.key(modName);
-    DBG << key << modName;
+    LOG << key << modName;
     keyHash_.remove(key);
     if (keyHash_.empty())
     {
@@ -169,12 +169,11 @@ void DeltaManager::deleteExtraFiles()
         if (fi.isFile())
             localFiles.insert(fi.absoluteFilePath().toUpper());
     }
-    DBG << savePath << localFiles << torrentFiles;
 
     QSet<QString> extraFiles = localFiles - torrentFiles;
     for (const QString& filePath : extraFiles)
     {
-        DBG << "Deleting" << filePath;
+        LOG << "Deleting" << filePath;
         FileUtils::rmCi(filePath);
     }
 }
@@ -189,7 +188,7 @@ QSet<QString> DeltaManager::torrentFilesUpper()
     boost::shared_ptr<const lt::torrent_info> torrentFile = handle.torrent_file();
     if (!torrentFile)
     {
-        DBG << "ERROR: torrent_file is null";
+        LOG << "ERROR: torrent_file is null";
         return rVal;
     }
     lt::file_storage files = torrentFile->files();

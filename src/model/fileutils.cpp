@@ -1,13 +1,14 @@
-#include <QFileInfo>
-#include <QDir>
-#include <QFile>
-#include <QStringList>
-#include <QDirIterator>
 #include <QCoreApplication>
-#include "debug.h"
+#include <QDir>
+#include <QDirIterator>
+#include <QFile>
+#include <QFileInfo>
+#include <QStringList>
+#include "afisynclogger.h"
 #include "fileutils.h"
-#include "settingsmodel.h"
 #include "pathfinder.h"
+#include "qstreams.h"
+#include "settingsmodel.h"
 
 QStringList FileUtils::safeSubpaths_;
 
@@ -22,7 +23,7 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
         QDir().mkpath(dstPath);
         if (!QFileInfo(dstPath).exists())
         {
-            DBG << "ERROR: Failed to create directory" << dstPath;
+            LOG << "ERROR: Failed to create directory" << dstPath;
             return false;
         }
         QDir srcDir(srcPath);
@@ -41,22 +42,22 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
     else if (srcFi.isFile())
     {
         QFile dstFile(dstPath);
-        DBG << "Copying" << srcPath << "to" << dstPath;
+        LOG << "Copying" << srcPath << "to" << dstPath;
         FileUtils::safeRemove(dstFile);
         if (dstFile.exists())
         {
-            DBG << "Cannot overwrite file" << dstPath;
+            LOG << "Cannot overwrite file" << dstPath;
             return false;
         }
         if (!QFile::copy(srcPath, dstPath))
         {
-            DBG << "Failure to copy " << srcPath << "to" << dstPath;
+            LOG << "Failure to copy " << srcPath << "to" << dstPath;
             return false;
         }
     }
     else
     {
-        DBG << srcPath << "does not exist";
+        LOG << srcPath << "does not exist";
         return false;
     }
     return true;
@@ -71,7 +72,7 @@ bool FileUtils::move(const QString& srcPath, const QString& dstPath)
         QDir().mkpath(dstPath);
         if (!QFileInfo(dstPath).exists())
         {
-            DBG << "ERROR: Failed to create directory" << dstPath;
+            LOG << "ERROR: Failed to create directory" << dstPath;
             return false;
         }
         QDir srcDir(srcPath);
@@ -90,22 +91,22 @@ bool FileUtils::move(const QString& srcPath, const QString& dstPath)
     else if (srcFi.isFile())
     {
         QFile dstFile(dstPath);
-        DBG << "Moving" << srcPath << "to" << dstPath;
+        LOG << "Moving" << srcPath << "to" << dstPath;
         FileUtils::safeRemove(dstFile);
         if (dstFile.exists())
         {
-            DBG << "Cannot overwrite file" << dstPath;
+            LOG << "Cannot overwrite file" << dstPath;
             return false;
         }
         if (!safeRename(srcPath, dstPath))
         {
-            DBG << "Failure to copy " << srcPath << "to" << dstPath;
+            LOG << "Failure to copy " << srcPath << "to" << dstPath;
             return false;
         }
     }
     else
     {
-        DBG << srcPath << "does not exist";
+        LOG << srcPath << "does not exist";
         return false;
     }
     return true;
@@ -141,7 +142,7 @@ QByteArray FileUtils::readFile(const QString& path)
     file.open(QFile::ReadOnly);
     if (!file.isReadable())
     {
-        DBG << "Warning: unable to read file" << path;
+        LOG << "Warning: unable to read file" << path;
         return rVal;
     }
 
@@ -161,10 +162,10 @@ bool FileUtils::writeFile(const QByteArray& data, const QString& path)
 
     if (!file.isWritable())
     {
-        DBG << "ERROR: file" << path << " is not writable.";
+        LOG << "ERROR: file" << path << " is not writable.";
         return false;
     }
-    DBG << "Writing file:" << path;
+    LOG << "Writing file:" << path;
     file.write(data);
     file.close();
     return true;
@@ -172,7 +173,7 @@ bool FileUtils::writeFile(const QByteArray& data, const QString& path)
 
 QString FileUtils::casedPath(const QString& path)
 {
-    DBG << "Input:" << path;
+    LOG << "Input:" << path;
     QString pathCi = QFileInfo(path).absoluteFilePath();
     //Construct case sentive path by comparing file or dir names to case sentive ones.
     QStringList ciNames = pathCi.split("/");
@@ -186,19 +187,19 @@ QString FileUtils::casedPath(const QString& path)
         {
             if (!it.hasNext())
             {
-                DBG << "ERROR: Unable to construct case sensitive path from" << path;
+                LOG << "ERROR: Unable to construct case sensitive path from" << path;
                 return QString();
             }
             QFileInfo fi = it.next();
             if (fi.fileName().toUpper() == ciName.toUpper())
             {
                 casedPath += (casedPath.endsWith("/") ? "" : "/") + fi.fileName();
-                DBG << casedPath;
+                LOG << casedPath;
                 break;
             }
         }
     }
-    DBG << "Output:" << casedPath;
+    LOG << "Output:" << casedPath;
     return casedPath;
 }
 
@@ -207,7 +208,7 @@ bool FileUtils::safeRename(const QString& srcPath, const QString& dstPath)
     if (!pathIsSafe(srcPath))
         return false;
 
-    DBG << "Rename" << srcPath << "to"  << dstPath;
+    LOG << "Rename" << srcPath << "to"  << dstPath;
     return QFile::rename(srcPath, dstPath);
 }
 
@@ -223,7 +224,7 @@ bool FileUtils::safeRemove(QFile& file)
 
     if (pathIsSafe(path) && file.remove())
     {
-        DBG << "Removed" << path;
+        LOG << "Removed" << path;
         return true;
     }
     return false;
@@ -235,7 +236,7 @@ bool FileUtils::safeRemoveRecursively(QDir& dir)
 
     if (pathIsSafe(path) && dir.removeRecursively())
     {
-        DBG << "Removed" << path;
+        LOG << "Removed" << path;
         return true;
     }
     return false;
@@ -268,7 +269,7 @@ bool FileUtils::pathIsSafe(const QString& path)
             return true;
     }
 
-    DBG << "ERROR: " << pathFull << "not in safe subpaths" << safeSubpaths << ". Operation aborted!";
+    LOG << "ERROR: " << pathFull << "not in safe subpaths" << safeSubpaths << ". Operation aborted!";
     return false;
 }
 

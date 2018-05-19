@@ -1,16 +1,14 @@
-#include <QFileInfo>
-#include <QTimer>
-#include <QStringList>
-#include <QDirIterator>
-#include <QRegExp>
 #include <QDebug>
-
+#include <QDirIterator>
+#include <QFileInfo>
+#include <QRegExp>
+#include <QStringList>
+#include <QTimer>
 #include "libtorrent/torrent_status.hpp"
-
-#include "../../fileutils.h"
 #include "../../debug.h"
-#include "../../runningtime.h"
+#include "../../fileutils.h"
 #include "../../global.h"
+#include "../../runningtime.h"
 #include "ahasher.h"
 #include "deltapatcher.h"
 
@@ -77,14 +75,14 @@ void DeltaPatcher::patchDirSync(const QString& modPath)
 {
     QDir patchesDir = QDir(patchesFi_->absoluteFilePath());
     const QStringList allPatches = patchesDir.entryList(QDir::Files);
-    DBG << allPatches << patchesDir.absolutePath()
+    LOG << allPatches << patchesDir.absolutePath()
         << patchesFi_->absoluteFilePath() << modPath;
     QString modName = QFileInfo(modPath).fileName();
     patchingMod_ = modName; //Needed for eta
     QStringList patches = filterPatches(modPath, allPatches);
     if (patches.size() == 0)
     {
-        DBG << "ERROR: no patches found for" << modName << "from"
+        LOG << "ERROR: no patches found for" << modName << "from"
             << allPatches << "hash =" << AHasher::hash(modPath);
         emit patched(modPath, false);
         return;
@@ -159,7 +157,7 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
         QStringList matches = allPatches.filter(regExp);
         if (matches.size() != 1)
         {
-            DBG << "ERROR: Incorrect number (" << matches.size()
+            LOG << "ERROR: Incorrect number (" << matches.size()
                      << ") of suitable patches. Aborting...2";
             return QStringList();
         }
@@ -187,7 +185,7 @@ qint64 DeltaPatcher::bytesPatched(const QString& modName) const
         //FIXME: This reports 0 always?
         speed = (bytesPatched_ - prevBytesPatched) / dTime;
         startTime = currentTime;
-        DBG << "New patching speed estimation:" << speed << "bytes per second. patchingMod_ = " + patchingMod_;
+        LOG << "New patching speed estimation:" << speed << "bytes per second. patchingMod_ = " + patchingMod_;
     }
     prevBytesPatched = bytesPatched_;
     return std::min(bytesPatched_, totalBytes_);
@@ -217,9 +215,9 @@ bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
 
 void DeltaPatcher::cleanUp(QDir& deltaDir, QDir& tmpDir)
 {
-    DBG << "Deleting dir" << deltaDir.absolutePath();
+    LOG << "Deleting dir" << deltaDir.absolutePath();
     FileUtils::safeRemoveRecursively(deltaDir);
-    DBG << "Deleting dir" << tmpDir.absolutePath();
+    LOG << "Deleting dir" << tmpDir.absolutePath();
     FileUtils::safeRemoveRecursively(tmpDir);
 }
 
@@ -235,11 +233,11 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
         return false;
     }
 
-    DBG << "extractedPath" << extractedPath;
+    LOG << "extractedPath" << extractedPath;
     QDirIterator it(extractedPath, QDir::Files, QDirIterator::Subdirectories);
     if (!it.hasNext())
     {
-        DBG << "ERROR: Nothing to patch in" << extractedPath;
+        LOG << "ERROR: Nothing to patch in" << extractedPath;
         cleanUp(deltaDir, tmpDir);
         return false;
     }
@@ -255,7 +253,7 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
         QDir().mkpath(QFileInfo(patchedPath).absolutePath());
         if (!diffPath.endsWith(DELTA_EXTENSION))
         {
-            DBG << "Moving" << diffPath << "to" << patchedPath;
+            LOG << "Moving" << diffPath << "to" << patchedPath;
             QFile::rename(diffPath, patchedPath);
             continue;
         }
@@ -268,7 +266,7 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
 
         if (!rVal)
         {
-            DBG << "Warning: Delta patching failed. targetPath =" << targetPath;
+            LOG << "Warning: Delta patching failed. targetPath =" << targetPath;
             cleanUp(deltaDir, tmpDir);
             return false;
         }
@@ -276,7 +274,7 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
     }
     FileUtils::move(tmpDir.absolutePath(), targetPath);
     cleanUp(deltaDir, tmpDir);
-    DBG << "Delta patching successful! targetPath =" << targetPath;
+    LOG << "Delta patching successful! targetPath =" << targetPath;
     return true;
 }
 
@@ -295,7 +293,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
     QFileInfo laterFi = QFileInfo(laterPath);
     if (!laterFi.exists())
     {
-        DBG << "ERROR: Path" << laterPath << "does not exist.";
+        LOG << "ERROR: Path" << laterPath << "does not exist.";
         return false;
     }
     laterPath = laterFi.absoluteFilePath();
@@ -304,19 +302,19 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
             patchesDir.entryList().filter(QRegExp(modName + "\\..*\\." + oldHash + "\\.7z" ));
     if (conflictingFiles.size() > 0)
     {
-        DBG << "ERROR: patch" << patchName << "collides with files:" << conflictingFiles;
+        LOG << "ERROR: patch" << patchName << "collides with files:" << conflictingFiles;
         return false;
     }
 
     if (!patchesFi_->isWritable())
     {
-        DBG << "ERROR: Directory" << patchesPath << "is not writable.";
+        LOG << "ERROR: Directory" << patchesPath << "is not writable.";
         return false;
     }
 
     if (deltaDir.exists())
     {
-        DBG << "ERROR: Directory" << deltaPath << "already exists. Deleting...";
+        LOG << "ERROR: Directory" << deltaPath << "already exists. Deleting...";
         FileUtils::safeRemoveRecursively(deltaDir);
     }
 
@@ -328,7 +326,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
         QFileInfo newFile = it.next();
 
         QString relPath = newFile.absoluteFilePath().remove(laterPath);
-        DBG << relPath << laterPath;
+        LOG << relPath << laterPath;
         QFileInfo oldFile = QFileInfo(oldPath + "/" + relPath);
         QString outputPath = deltaPath + relPath;
         QString parentPath = QFileInfo(outputPath).absolutePath();
@@ -336,7 +334,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
 
         if (!oldFile.exists())
         {
-            DBG << "Copying" << newPath << "to" << outputPath;
+            LOG << "Copying" << newPath << "to" << outputPath;
             QFile::copy(newPath, outputPath);
             QDir().mkpath(parentPath);
             rVal = true;
@@ -348,7 +346,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
         QString laterPath = QDir::toNativeSeparators(newPath);
         if (oldFile.size() == QFileInfo(laterPath).size())
         {
-            DBG << "Files" << oldPath << "and file" << laterPath << "are (size) identical. Delta patch generation aborted.";
+            LOG << "Files" << oldPath << "and file" << laterPath << "are (size) identical. Delta patch generation aborted.";
             continue;
         }
         QDir().mkpath(parentPath);
@@ -356,14 +354,14 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
         QMetaObject::invokeMethod(console_, "runCmd", Qt::BlockingQueuedConnection,
                                   Q_ARG(QString, XDELTA_EXECUTABLE + " -e -S none -s \""
                                         + oldPath + "\" \"" + laterPath + "\" \"" + outputPath + "\""));
-        DBG << "New delta patch file generated" << outputPath;
+        LOG << "New delta patch file generated" << outputPath;
         rVal = true;
     }
 
     if (!rVal)
     {
         FileUtils::safeRemoveRecursively(deltaDir);
-        DBG << "ERROR: Directories" << oldPath << "and" << laterPath << "are identical."
+        LOG << "ERROR: Directories" << oldPath << "and" << laterPath << "are identical."
             << "Patch generation aborted.";
         return false;
     }
@@ -390,7 +388,7 @@ QStringList DeltaPatcher::removePatchesFromLatest(const QString& latestPath, con
     for (const QString& name : matches)
     {
         FileUtils::safeRemove(patchesPath + "/" + name);
-        DBG << "ERROR: Found patch from latest version. Patch" << name << "removed.";
+        LOG << "ERROR: Found patch from latest version. Patch" << name << "removed.";
         rVal.append(name);
     }
 
@@ -399,7 +397,7 @@ QStringList DeltaPatcher::removePatchesFromLatest(const QString& latestPath, con
 
 bool DeltaPatcher::extract(const QString& zipPath)
 {
-    DBG << "Extracting" << zipPath;
+    LOG << "Extracting" << zipPath;
     QFileInfo fi = QFileInfo(zipPath);
     console_->runCmd(SZIP_EXECUTABLE + " -y x \""
            + QDir::toNativeSeparators(zipPath)
@@ -429,17 +427,17 @@ bool DeltaPatcher::createEmptyDir(QDir dir) const
 {
     if (dir.exists())
     {
-        DBG << "ERROR:" << dir.absolutePath() << "already exists! Deleting..";
+        LOG << "ERROR:" << dir.absolutePath() << "already exists! Deleting..";
         if (!FileUtils::safeRemoveRecursively(dir))
         {
-            DBG << "ERROR: Unable to remove directory:" << dir.absolutePath();
+            LOG << "ERROR: Unable to remove directory:" << dir.absolutePath();
             return false;
         }
     }
-    DBG << "Creating directory:" << dir.absolutePath();
+    LOG << "Creating directory:" << dir.absolutePath();
     if (!dir.mkpath("."))
     {
-        DBG << "ERROR: Unable to create tmp dir:" << dir.absolutePath();
+        LOG << "ERROR: Unable to create tmp dir:" << dir.absolutePath();
         return false;
     }
     return true;

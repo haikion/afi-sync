@@ -5,12 +5,12 @@ cd ..\..\
 set BIN_PATH=%cd%\afi-sync\bin
 set SRC_PATH=%cd%\src
 set LIB_PATH=%cd%\lib
-set BOOST_BUILD_PATH=%SRC_PATH%\boost_1_63_0
-set LIBTORRENT_BUILD_PATH=%SRC_PATH%\libtorrent-rasterbar-1.1.2
-set PARAMS=--with-system --with-date_time --with-atomic --with-random architecture=x86 address-model=64
+set BOOST_BUILD_PATH=%SRC_PATH%\boost_1_66_0
+set LIBTORRENT_BUILD_PATH=%SRC_PATH%\libtorrent-rasterbar-1.1.7
+set PARAMS=--with-system --with-date_time --with-atomic --with-random --with-log --with-filesystem --with-thread architecture=x86 address-model=64 define=BOOST_USE_WINAPI_VERSION=0x0501
 set MSVC_PARAMS_DYNAMIC=%PARAMS% link=shared runtime-link=shared toolset=msvc runtime-debugging=on variant=debug
 set MSVC_PARAMS_STATIC=%PARAMS% link=static runtime-link=static toolset=msvc variant=release %PARAMS%
-set PATH=C:\Qt\Tools\mingw530_32\bin;%BOOST_BUILD_PATH%;%PATH%;%BIN_PATH%
+set PATH=%BOOST_BUILD_PATH%;%PATH%;%BIN_PATH%
 
 call vcvarsall.bat x86_amd64
 cd %SRC_PATH%

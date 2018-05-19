@@ -1,15 +1,15 @@
 #include <algorithm>
+#include <QDateTime>
 #include <QDir>
 #include <QProcess>
 #include <QStandardPaths>
-#include <QDateTime>
-#include "debug.h"
-#include "settingsmodel.h"
-#include "settingsmodel.h"
-#include "repository.h"
+#include "afisynclogger.h"
+#include "fileutils.h"
 #include "installer.h"
 #include "modadapter.h"
-#include "fileutils.h"
+#include "repository.h"
+#include "settingsmodel.h"
+#include "settingsmodel.h"
 
 Repository::Repository(const QString& name, const QString& serverAddress, unsigned port,
                       QString password, RootItem* parent):
@@ -21,7 +21,7 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
     ready_(true),
     battlEyeEnabled_(true)
 {
-    DBG << "Created repo name =" << name;
+    LOG << "Created repo name =" << name;
     update();
     if (ticked())
         startUpdates();
@@ -35,7 +35,7 @@ void Repository::update()
 
 void Repository::stopUpdates()
 {
-    DBG;
+    LOG;
     for (Mod* mod : mods())
     {
         mod->stopUpdates();
@@ -60,7 +60,7 @@ void Repository::setTicked(bool ticked)
 
 void Repository::startUpdates()
 {
-    DBG;
+    LOG;
     for (Mod* mod : mods())
     {
         mod->startUpdates();
@@ -69,7 +69,7 @@ void Repository::startUpdates()
 
 Repository::~Repository()
 {
-    DBG << "name =" << name();
+    LOG << "name =" << name();
     for (Mod* mod : mods())
     {
         //Remove mod object from repository but keep
@@ -152,13 +152,13 @@ void Repository::generalLaunch(const QStringList& extraParams)
     QString paramsFile = createParFile(modsParameter());
     if (QFileInfo(steamExecutable).exists())
     {
-        DBG << "Using params file";
+        LOG << "Using params file";
         arguments << "-applaunch" << "107410" << "-par=" + paramsFile;
         executable = steamExecutable;
     }
     else if (modsParameter().size() > 0)
     {
-        DBG << "Failsafe activated because parameter file path is incorrect. paramsFile =" << paramsFile;
+        LOG << "Failsafe activated because parameter file path is incorrect. paramsFile =" << paramsFile;
         arguments << modsParameter();
     }
     arguments << "-noLauncher";
@@ -174,7 +174,7 @@ void Repository::generalLaunch(const QStringList& extraParams)
         QStringList userParams = paramsString.split(" ");
         arguments << userParams;
     }
-    DBG << " name() =" << name()
+    LOG << " name() =" << name()
              << "executable =" << executable
              << "arguments =" << arguments;
     QProcess::startDetached(executable, arguments);
@@ -185,7 +185,7 @@ QString Repository::createParFile(const QString& parameters)
     static const QString FILE_NAME = "afiSyncParameters.txt";
 
     QString path = SettingsModel::arma3Path() + "/" + FILE_NAME;
-    DBG << path;
+    LOG << path;
     QFile file(path);
     FileUtils::safeRemove(file);
     file.open(QIODevice::WriteOnly | QIODevice::Append);
@@ -328,7 +328,7 @@ ISync* Repository::sync() const
 
 void Repository::enableMods()
 {
-    DBG << "name =" << name();
+    LOG << "name =" << name();
     for (ModAdapter* adp : modAdapters())
     {
         if (adp->isOptional() && !adp->ticked())
@@ -344,12 +344,12 @@ bool Repository::removeMod(const QString& key)
     {
         if (mod->key() == key)
         {
-            DBG << "Removing mod" << mod->name() << "from repository" << name();
+            LOG << "Removing mod" << mod->name() << "from repository" << name();
             removeMod(mod);
             return true;
         }
     }
-    DBG << "ERROR: key" << key << "not found in repository" << name();
+    LOG << "ERROR: key" << key << "not found in repository" << name();
     return false;
 }
 
@@ -358,7 +358,7 @@ bool Repository::removeMod(Mod* mod, bool removeFromSync)
     //Removes mod view adapter.
     if (!mod->removeRepository(this))
     {
-        DBG << "ERROR: Unable to remove" << mod->name() << "from repository" << name();
+        LOG << "ERROR: Unable to remove" << mod->name() << "from repository" << name();
         return false;
     }
     parentItem()->rowsChanged();

@@ -1,7 +1,7 @@
 #include <QEventLoop>
 #include <QTimer>
+#include "afisynclogger.h"
 #include "syncnetworkaccessmanager.h"
-#include "debug.h"
 
 const int SyncNetworkAccessManager::DEFAULT_TIMEOUT = 3000;
 
@@ -12,7 +12,7 @@ SyncNetworkAccessManager::SyncNetworkAccessManager(QObject* parent):
     moveToThread(&thread_);
     thread_.setObjectName("SyncNetworkManager Thread");
     thread_.start();
-    DBG << "Thread =" << &thread_ << "id" << thread_.currentThreadId();
+    LOG << "Thread =" << &thread_ << "id" << thread_.currentThreadId();
 }
 
 SyncNetworkAccessManager::~SyncNetworkAccessManager()
@@ -39,5 +39,5 @@ void SyncNetworkAccessManager::syncGetSlot(QNetworkRequest req, QNetworkReply*& 
     QTimer::singleShot(timeout, &loop, SLOT(quit()));
     loop.exec();
     if (!reply->isFinished())
-        DBG << "ERROR: Request timeout from url" << req.url().url();
+        LOG << "ERROR: Request timeout from url" << req.url().url();
 }

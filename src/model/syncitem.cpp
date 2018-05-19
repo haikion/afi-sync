@@ -1,7 +1,8 @@
 #include <limits>
 #include <QTime>
+#include "afisynclogger.h"
+#include "global.h"
 #include "syncitem.h"
-#include "debug.h"
 
 SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
     TreeItem(name, parentItem),
@@ -50,8 +51,7 @@ QString SyncItem::progressText()
     if (eta_ >= Constants::MAX_ETA)
         return "??:??:??";
 
-    QString rVal = QTime(0,0,0).addSecs(eta_).toString();
-    return rVal;
+    return QTime(0,0,0).addSecs(eta_).toString();
 }
 
 QString SyncItem::startText()

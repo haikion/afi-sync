@@ -5,10 +5,9 @@
 
 namespace Global
 {
+    ISync* sync = nullptr;
+    QTextStream* logStream = nullptr;
     QThread* workerThread = nullptr;
     TreeModel* model = nullptr;
-    QTextStream* logStream = nullptr;
-    ISync* sync = nullptr;
-    LogManager* logManager = nullptr;
     bool guiless = false;
 }

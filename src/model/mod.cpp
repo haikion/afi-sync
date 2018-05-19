@@ -1,14 +1,14 @@
-#include "debug.h"
-#include <QTimer>
-#include <QDirIterator>
 #include <QCoreApplication>
+#include <QDirIterator>
+#include <QTimer>
+#include "afisynclogger.h"
 #include "fileutils.h"
 #include "global.h"
-#include "settingsmodel.h"
-#include "mod.h"
-#include "repository.h"
 #include "installer.h"
+#include "mod.h"
 #include "modadapter.h"
+#include "repository.h"
+#include "settingsmodel.h"
 
 const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 
@@ -19,7 +19,7 @@ Mod::Mod(const QString& name, const QString& key):
     updateTimer_(nullptr),
     waitTime_(0)
 {
-    DBG;
+    LOG;
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
     //Enables non lagging UI
     moveToThread(Global::workerThread);
@@ -32,7 +32,7 @@ Mod::~Mod()
 {
     for (ModAdapter* adp : adapters_)
     {
-        DBG << "Destroying adapter";
+        LOG << "Destroying adapter";
         delete adp;
     }
 }
@@ -48,7 +48,7 @@ void Mod::init()
 {
     repositoryChanged();
     update();
-    DBG << "name =" << name() << "key =" << key() << "Completed";
+    LOG << "name =" << name() << "key =" << key() << "Completed";
 }
 
 void Mod::update(bool force)
@@ -77,7 +77,7 @@ void Mod::removeConflicting() const
         if (path().toLower() == syncPath.toLower() && syncKey != key_)
         {
             //Downloading into same folder but the key is different!
-            DBG << "Removing conflicting (" << syncKey << "," << syncPath << ") for (" << key_ << "," << path() << ").";
+            LOG << "Removing conflicting (" << syncKey << "," << syncPath << ") for (" << key_ << "," << path() << ").";
             sync_->removeFolder(syncKey);
             return;
         }
@@ -95,13 +95,13 @@ QString Mod::path() const
 //If mod is not in sync it will be added to it.
 void Mod::start()
 {
-    DBG << "name =" << name();
+    LOG << "name =" << name();
 
     if (!sync_->folderExists(key_))
     {
         removeConflicting();
         //Add folder
-        DBG << "Adding" << name() << "to sync.";
+        LOG << "Adding" << name() << "to sync.";
         sync_->addFolder(key_, name());
         setProcessCompletion(true);
     }
@@ -109,7 +109,7 @@ void Mod::start()
     QString error = sync_->folderError(key_);
     if (!error.isEmpty())
     {
-        DBG << "name =" << name() << "Re-adding directory. error =" << error;
+        LOG << "name =" << name() << "Re-adding directory. error =" << error;
         //Disagreement between Sync and AFISync
         sync_->removeFolder(key_);
         sync_->addFolder(key_, name());
@@ -123,7 +123,7 @@ void Mod::start()
 void Mod::setProcessCompletion(bool value)
 {
     SettingsModel::setProcess(name(), value);
-    DBG << "Process (completion) set to" << value << "for" << name();
+    LOG << "Process (completion) set to" << value << "for" << name();
 }
 
 bool Mod::getProcessCompletion() const
@@ -133,15 +133,15 @@ bool Mod::getProcessCompletion() const
 
 bool Mod::stop()
 {
-    DBG << name();
+    LOG << name();
     //TODO: Might be too defensive
     if (!sync_->folderExists(key_))
     {
-        DBG << "ERROR: Folder" << name() << "does not exist.";
+        LOG << "ERROR: Folder" << name() << "does not exist.";
         return false;
     }
 
-    DBG << "Stopping mod transfer. name =" << name();
+    LOG << "Stopping mod transfer. name =" << name();
     sync_->setFolderPaused(key_, true);
     stopUpdatesSlot();
     update(true);
@@ -151,10 +151,10 @@ bool Mod::stop()
 
 void Mod::deleteExtraFiles()
 {
-    DBG << "name =" << name();
+    LOG << "name =" << name();
     if (!ticked())
     {
-        DBG << "name =" << name()  << "Mod is inactive, doing nothing.";
+        LOG << "name =" << name()  << "Mod is inactive, doing nothing.";
         return;
     }
 
@@ -170,21 +170,17 @@ void Mod::deleteExtraFiles()
     //Fail safe if there is torrent without files.
     if (remoteFiles.size() == 0)
     {
-        DBG << "ERROR: Not deleting extra files because torrent contains 0 files.";
+        LOG << "ERROR: Not deleting extra files because torrent contains 0 files.";
         return; //Would delete everything otherwise
     }
-
-    DBG << " name =" << name()
-             << "\n\n remoteFiles =" << remoteFiles
-             << "\n\n localFiles =" << localFiles;
 
     QSet<QString> extraFiles = localFiles - remoteFiles;
     for (QString path : extraFiles)
     {
-        DBG << "Deleting extra file" << path << "from mod" << name();
+        LOG << "Deleting extra file" << path << "from mod" << name();
         FileUtils::rmCi(path);
     }
-    DBG << "Completed name =" << name();
+    LOG << "Completed name =" << name();
 }
 
 //Returns true if at least one adapter is active.
@@ -218,26 +214,26 @@ void Mod::repositoryChanged(bool offline)
     //just in case
     if (!sync_)
     {
-        DBG << "ERROR: Sync is null" << name();
+        LOG << "ERROR: Sync is null" << name();
         return;
     }
 
     if (offline)
     {
-        DBG << "Offline, not updating Sync" << name();
+        LOG << "Offline, not updating Sync" << name();
         return;
     }
     if (reposInactive() || !ticked())
     {
         if (sync_->folderExists(key_))
         {
-            DBG << "All repositories inactive or mod unchecked. Stopping" << name();
+            LOG << "All repositories inactive or mod unchecked. Stopping" << name();
             stop();
         }
         return;
     }
     //At least one repo active and mod checked
-    DBG << "Starting mod transfer. name =" << name();
+    LOG << "Starting mod transfer. name =" << name();
     start();
 }
 
@@ -253,7 +249,7 @@ QString Mod::key() const
 
 void Mod::startUpdates()
 {
-    DBG << name();
+    LOG << name();
     connect(updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
     QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
 }
@@ -261,7 +257,7 @@ void Mod::startUpdates()
 //This should always be run in UI Thread
 void Mod::stopUpdates()
 {
-    DBG << name();
+    LOG << name();
     //Updates need to be stopped before object destruction, hence blocking.
     QMetaObject::invokeMethod(this, "stopUpdatesSlot", Qt::BlockingQueuedConnection);
     //Process pending updateView request in UI Thread. (Prevents segfault)
@@ -277,7 +273,7 @@ void Mod::stopUpdatesSlot()
 
 void Mod::appendRepository(Repository* repository)
 {
-    DBG << "mod name =" << name() << " repo name =" << repository->name();
+    LOG << "mod name =" << name() << " repo name =" << repository->name();
 
     repositories_.insert(repository);
     if (repositories().size() == 1)
@@ -287,13 +283,13 @@ void Mod::appendRepository(Repository* repository)
         sync_ = repo->sync();
         if (sync_->ready())
         {
-            DBG << "name =" << name() << "Calling init directly";
+            LOG << "name =" << name() << "Calling init directly";
             QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
         }
         else
         {
             connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(init()));
-            DBG << "name =" << name() << "initCompleted connection created";
+            LOG << "name =" << name() << "initCompleted connection created";
         }
     }
     QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
@@ -308,7 +304,7 @@ bool Mod::removeRepository(Repository* repository)
     auto it = repositories_.find(repository);
     if (it == repositories_.end())
     {
-        DBG << errorMsg;
+        LOG << errorMsg;
         return false;
     }
     repositories_.erase(it);
@@ -317,11 +313,11 @@ bool Mod::removeRepository(Repository* repository)
         if (adp->parentItem() == repository)
         {
             repository->removeChild(adp);
-            DBG << "Mod View Adapter removed.";
+            LOG << "Mod View Adapter removed.";
             return true;
         }
     }
-    DBG << errorMsg;
+    LOG << errorMsg;
     return false;
 }
 
@@ -432,7 +428,7 @@ void Mod::check()
 
 void Mod::checkboxClicked()
 {
-    DBG << name() << "checked state set to" << ticked();
+    LOG << name() << "checked state set to" << ticked();
     //Below cmd will start the download if repository is active.
     QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
 }

@@ -1,8 +1,9 @@
-#include "debug.h"
+#include <QCoreApplication>
 #include <QDir>
 #include <QSettings>
 #include <QStandardPaths>
-#include <QCoreApplication>
+#include "afisynclogger.h"
+#include "global.h"
 #include "pathfinder.h"
 
 
@@ -82,7 +83,7 @@ void PathFinder::checkPath(const QString& path, const QString& name)
     if (path == QCoreApplication::applicationDirPath()
             && !Global::guiless)
     {
-        DBG << "ERROR: Unable to find path for" << name << "."
+        LOG << "ERROR: Unable to find path for" << name << "."
             << "Using default:" << path;
     }
     #endif

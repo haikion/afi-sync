@@ -1,10 +1,10 @@
-#include "debug.h"
-#include <QFileInfo>
-#include <QDir>
+#include "afisynclogger.h"
 #include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
+#include "global.h"
 #include "pathfinder.h"
 #include "settingsmodel.h"
-#include "global.h"
 
 //TODO: Combine set and enabled
 
@@ -18,7 +18,7 @@ SettingsModel::SettingsModel(QObject* parent):
 
 void SettingsModel::createSettings()
 {
-    DBG << "Creating settings object.";
+    LOG << "Creating settings object.";
     QCoreApplication::setOrganizationName("AFISync");
     QCoreApplication::setOrganizationDomain("armafinland.fi");
     QCoreApplication::setApplicationName("AFISync");
@@ -56,7 +56,7 @@ QString SettingsModel::setting(const QString& key, const QString& defaultValue)
     QString set = settings()->value(key).toString();
     if (set == QString())
     {
-        DBG << "Setting default value" << defaultValue << "for" << key;
+        LOG << "Setting default value" << defaultValue << "for" << key;
         settings()->setValue(key, defaultValue);
         set = defaultValue;
     }
@@ -95,7 +95,7 @@ void SettingsModel::resetTeamSpeak3Path()
 
 QString SettingsModel::steamPath()
 {
-    DBG;
+    LOG;
     return settings()->value("steamPath", PathFinder::steamPath()).toString();
 }
 
@@ -106,7 +106,7 @@ void SettingsModel::setSteamPath(const QString& path)
 
 void SettingsModel::resetSteamPath()
 {
-    DBG;
+    LOG;
     settings()->setValue("steamPath", PathFinder::steamPath());
 }
 
@@ -242,11 +242,11 @@ QString SettingsModel::modDownloadPath()
 
 void SettingsModel::setModDownloadPath(QString path)
 {
-    DBG << "path =" << path;
+    LOG << "path =" << path;
     path = QDir::fromNativeSeparators(path);
     if (!saveDir("modDownloadPath", path))
     {
-        DBG << "Warning: failed to set mod download path. modDownloadPath() ="
+        LOG << "Warning: failed to set mod download path. modDownloadPath() ="
             << modDownloadPath() << " path =" << path;
         return;
     }

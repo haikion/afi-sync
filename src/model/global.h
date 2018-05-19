@@ -5,27 +5,25 @@
 #include "treemodel.h"
 #include "version.h"
 #include "apis/isync.h"
-#include "logmanager.h"
+#include "afisynclogger.h"
 
 namespace Constants
 {
-    const QString DEFAULT_USERNAME = "user";
-    const QString DEFAULT_PASSWORD = "password";
-    const QString DEFAULT_PORT = "41000";
-    const QString VERSION_STRING = VERSION_CHARS;
-    const QString DELTA_PATCHES_NAME = "afisync_patches";
+    static const QString DEFAULT_PASSWORD = "password";
+    static const QString DEFAULT_PORT = "41000";
+    static const QString DEFAULT_USERNAME = "user";
+    static const QString DELTA_PATCHES_NAME = "afisync_patches";
     static const QString LOG_FILE = "afisync.log";
-    //At least 100 max etas can be summed without overflow
-    const int MAX_ETA = std::numeric_limits<int>::max()/100;
+    static const QString VERSION_STRING = VERSION_CHARS;
+    static const int MAX_ETA = std::numeric_limits<int>::max()/100;
 }
 
 namespace Global
 {
+    extern ISync* sync;
+    extern QTextStream* logStream;
     extern QThread* workerThread;
     extern TreeModel* model;
-    extern QTextStream* logStream;
-    extern ISync* sync;
-    extern LogManager* logManager;
     extern bool guiless;
 }
 

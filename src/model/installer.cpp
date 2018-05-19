@@ -1,9 +1,9 @@
+#include "afisynclogger.h"
 #include "fileutils.h"
-#include "settingsmodel.h"
+#include "installer.h"
 #include "pathfinder.h"
 #include "repository.h"
-#include "installer.h"
-#include "debug.h"
+#include "settingsmodel.h"
 
 void Installer::install(const Mod* mod)
 {
@@ -27,15 +27,15 @@ void Installer::install(const QDir& src, const QDir& dst)
 {
     if (!src.exists())
     {
-        DBG << "Nothing to install from" << src.absolutePath();
+        LOG << "Nothing to install from" << src.absolutePath();
         return;
     }
     if (!dst.exists())
     {
-        DBG << "Warning: Destination directory:" << dst.absolutePath() << "does not exist.";
+        LOG << "Warning: Destination directory:" << dst.absolutePath() << "does not exist.";
         return;
     }
-    DBG << "Installing" << src.absolutePath()
+    LOG << "Installing" << src.absolutePath()
              << "to" << dst.absolutePath();
     FileUtils::copy(src.absolutePath(), dst.absolutePath());
 }

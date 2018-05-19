@@ -1,23 +1,23 @@
-#include <sys/types.h>
 #include <signal.h>
-#include <QThread>
-#include <QModelIndex>
-#include <QFile>
+#include <sys/types.h>
+#include "apis/libtorrent/libtorrentapi.h"
 #include <QDir>
-#include <QSet>
-#include <QTimer>
 #include <QDirIterator>
 #include <QFile>
+#include <QFile>
+#include <QModelIndex>
+#include <QSet>
 #include <QStringList>
-#include "apis/libtorrent/libtorrentapi.h"
-#include "debug.h"
-#include "global.h"
-#include "rootitem.h"
-#include "repository.h"
-#include "jsonreader.h"
-#include "settingsmodel.h"
-#include "processmonitor.h"
+#include <QThread>
+#include <QTimer>
+#include "afisynclogger.h"
 #include "fileutils.h"
+#include "global.h"
+#include "jsonreader.h"
+#include "processmonitor.h"
+#include "repository.h"
+#include "rootitem.h"
+#include "settingsmodel.h"
 
 const int RootItem::REPO_UPDATE_DELAY = 60000; //ms
 
@@ -31,14 +31,14 @@ RootItem::RootItem(TreeModel* parentModel):
     Global::workerThread = new QThread();
     Global::workerThread->setObjectName("workerThread");
     Global::workerThread->start();
-    DBG << "Worker thread started";
+    LOG << "Worker thread started";
 
     initSync();
     Global::sync = sync_;
-    DBG << "initSync completed";
+    LOG << "initSync completed";
     jsonReader_.fillEverything(this);
     printDeletables();
-    DBG << "readJson completed";
+    LOG << "readJson completed";
     if (sync_->ready())
     {
         removeOrphans();
@@ -53,29 +53,29 @@ RootItem::RootItem(TreeModel* parentModel):
 
 RootItem::~RootItem()
 {
-    DBG;
+    LOG;
     stopUpdates();
-    DBG << "Updates stopped";
+    LOG << "Updates stopped";
     //Causes segfaults (because of workerThread->quit()?) and there is no need for this anyway
     //if destructor is only used during program shutdown.
     for (Repository* repo : childItems())
     {
-        DBG << "Deleting repository" << repo->name();
+        LOG << "Deleting repository" << repo->name();
         delete repo;
     }
-    DBG << "Repositories deleted";
+    LOG << "Repositories deleted";
     Global::workerThread->quit();
     Global::workerThread->wait(1000);
     Global::workerThread->terminate();
     Global::workerThread->wait(1000);
-    DBG << "Worker thread shutdown. isFinished() =" << Global::workerThread->isFinished();
+    LOG << "Worker thread shutdown. isFinished() =" << Global::workerThread->isFinished();
     delete Global::workerThread;
     Global::workerThread = nullptr;
-    DBG << "Worker thread deleted";
+    LOG << "Worker thread deleted";
     delete sync_;
     sync_ = nullptr;
     Global::sync = nullptr;
-    DBG << "Sync deleted";
+    LOG << "Sync deleted";
 }
 
 void RootItem::printDeletables()
@@ -123,8 +123,8 @@ void RootItem::printDeletables()
         }
     }
 
-    DBG << "Delete non included mods (Space used: " + QString::number(spaceNotIncluded/1000000000) + " GB ) " + DELETE_CMD + notIncludedStr;
-    DBG << "Delete inactive mods (Space used: " + QString::number(spaceInactive/1000000000) + " GB ) " + DELETE_CMD + inactivesStr;
+    LOG << "Delete non included mods (Space used: " + QString::number(spaceNotIncluded/1000000000) + " GB ) " + DELETE_CMD + notIncludedStr;
+    LOG << "Delete inactive mods (Space used: " + QString::number(spaceInactive/1000000000) + " GB ) " + DELETE_CMD + inactivesStr;
 }
 
 //Removes sync dirs which
@@ -137,7 +137,7 @@ void RootItem::removeOrphans()
     {
         for (const Mod* mod : repository->mods())
         {
-            DBG << "Processing mod =" << mod->name()
+            LOG << "Processing mod =" << mod->name()
                      << " key =" << mod->key()
                      << " repository =" << repository->name();
             keys.insert(mod->key());
@@ -148,26 +148,26 @@ void RootItem::removeOrphans()
         if (!keys.contains(key))
         {
             //Not found
-            DBG << "Deleting folder with key:" << key;
+            LOG << "Deleting folder with key:" << key;
             sync_->removeFolder(key);
         }
     }
-    DBG << "Done";
+    LOG << "Done";
 }
 
 void RootItem::processCompletion()
 {
-    DBG << "Started";
+    LOG << "Started";
     for (Repository* repo : childItems())
     {
         if (repo->status() == SyncStatus::INACTIVE)
         {
-            DBG << "Skipping" << repo->name() << "due to inactivity.";
+            LOG << "Skipping" << repo->name() << "due to inactivity.";
             continue;
         }
         repo->processCompletion();
     }
-    DBG << "Finished";
+    LOG << "Finished";
 }
 
 void RootItem::rowsChanged()
@@ -192,13 +192,13 @@ void RootItem::startUpdateTimers()
 {
     if (sync_->ready())
     {
-        DBG << "Starting updateTimer directly";
+        LOG << "Starting updateTimer directly";
         updateTimer_.start();
         repoTimer_.start();
     }
     else
     {
-        DBG << "Connecting updateTimer start to initCompleted()";
+        LOG << "Connecting updateTimer start to initCompleted()";
         connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), &updateTimer_, SLOT(start()), Qt::UniqueConnection);
         connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), &repoTimer_, SLOT(start()), Qt::UniqueConnection);
     }
@@ -219,7 +219,7 @@ void RootItem::startUpdates()
 
 void RootItem::resetSyncSettings()
 {
-    DBG;
+    LOG;
     for (Repository* repo : childItems())
     {
         if (repo->ticked())
@@ -238,12 +238,12 @@ void RootItem::resetSyncSettings()
     {
         FileUtils::safeRemoveRecursively(dir);
         //It's rape time.
-        DBG << "Warning: Failure to delete Sync Storage... retrying path ="
+        LOG << "Warning: Failure to delete Sync Storage... retrying path ="
             << dir.absolutePath() << "attempts =" << attempts;
         QThread::sleep(1);
         ++attempts;
     }
-    DBG << "Sync storage deleted. path =" << dir.absolutePath();
+    LOG << "Sync storage deleted. path =" << dir.absolutePath();
     dir.mkpath(".");
     sync_->start();
 }
@@ -265,7 +265,7 @@ void RootItem::updateView(TreeItem* item, int row)
         //Wait for repos to load
         return;
     }
-    //DBG << "Updating row =" << row->row();
+    //LOG << "Updating row =" << row->row();
     parent_->updateView(item, row);
 }
 
@@ -276,7 +276,7 @@ ISync* RootItem::sync() const
 
 void RootItem::enableRepositories()
 {
-    DBG;
+    LOG;
     for (Repository* repo : childItems())
     {
         if (!repo->ticked())
@@ -299,7 +299,7 @@ void RootItem::updateSpeed()
 {
     if (!parent_ || !sync_)
     {
-        DBG << "ERROR: null value. parent_ =" << parent_ << "sync_" << sync_;
+        LOG << "ERROR: null value. parent_ =" << parent_ << "sync_" << sync_;
         return;
     }
 
@@ -312,22 +312,22 @@ void RootItem::periodicRepoUpdate()
     {
         if (repo->status() == SyncStatus::PATCHING)
         {
-            DBG << "Periodic update disabled while patching.";
+            LOG << "Periodic update disabled while patching.";
             return;
         }
     }
     if (ProcessMonitor::afiSyncRunning())
     {
-        DBG << "Ignored because Arma 3 is running";
+        LOG << "Ignored because Arma 3 is running";
         return;
     }
     if (jsonReader_.updateAvailable())
     {
-        DBG << "Updating repo...";
+        LOG << "Updating repo...";
         jsonReader_.fillEverything(this);
         return;
     }
-    DBG << "No repo updates";
+    LOG << "No repo updates";
 }
 
 void RootItem::update()
@@ -345,7 +345,7 @@ void RootItem::initSync()
     sync_ = new LibTorrentApi();
     updateTimer_.setInterval(1000);
     repoTimer_.setInterval(REPO_UPDATE_DELAY);
-    DBG << "Setting up speed updates";
+    LOG << "Setting up speed updates";
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
     connect(&repoTimer_, SIGNAL(timeout()), this, SLOT(periodicRepoUpdate()));
 }

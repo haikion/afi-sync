@@ -1,6 +1,6 @@
 #include <QTimer>
+#include "afisynclogger.h"
 #include "console.h"
-#include "debug.h"
 
 Console::Console(QObject* parent):
     QObject(parent)
@@ -17,7 +17,7 @@ Console::~Console()
 
 bool Console::runCmd(const QString& cmd) const
 {
-    DBG << "Running command:" << cmd.toStdString().c_str();
+    LOG << "Running command:" << cmd.toStdString().c_str();
 
     process_->start(cmd);
     process_->waitForFinished(-1);
@@ -27,7 +27,7 @@ bool Console::runCmd(const QString& cmd) const
 
 QProcess* Console::runCmdAsync(const QString& cmd)
 {
-    DBG << "Running command:" << cmd.toStdString().c_str();
+    LOG << "Running command:" << cmd.toStdString().c_str();
 
     process_->start(cmd);
     return process_;
@@ -35,14 +35,14 @@ QProcess* Console::runCmdAsync(const QString& cmd)
 
 void Console::printOutput()
 {
-    DBG << process_->readAll().toStdString().c_str();
+    LOG << process_->readAll().toStdString().c_str();
 }
 
 void Console::terminate()
 {
     if (process_->state() == QProcess::ProcessState::Running)
     {
-        DBG << "Terminating process" << process_->program();
+        LOG << "Terminating process" << process_->program();
         process_->terminate();
     }
 }

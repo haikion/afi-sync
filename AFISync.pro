@@ -8,18 +8,18 @@ win32 {
     include(src\model\crashhandler\crashhandler.pri)
 
     DEFINES += _WIN32_WINNT=0x0501
-    INCLUDEPATH += ..\src\libtorrent-rasterbar-1.1.2\include
-    INCLUDEPATH += ..\src\boost_1_63_0
+    INCLUDEPATH += ..\src\libtorrent-rasterbar-1.1.7\include
+    INCLUDEPATH += ..\src\boost_1_66_0
     RC_ICONS = src/view/armafin-logo-64px2.ico
     LIBS += -L..\lib
     !Release {
         #Dynamic build
         DEFINES += BOOST_ALL_NO_LIB
-        LIBS += -lboost_system-vc140-mt-gd-1_63 -lboost_atomic-vc140-mt-gd-1_63 -lboost_random-vc140-mt-gd-1_63 -lws2_32 -ltorrent
+        LIBS += -lboost_system-vc140-mt-gd-x64-1_66 -lboost_atomic-vc140-mt-gd-x64-1_66 -lboost_random-vc140-mt-gd-x64-1_66 -lboost_date_time-vc140-mt-gd-x64-1_66 -lboost_log-vc140-mt-gd-x64-1_66 -lboost_log_setup-vc140-mt-gd-x64-1_66 -lboost_filesystem-vc140-mt-gd-x64-1_66 -lboost_thread-vc140-mt-gd-x64-1_66 -lws2_32 -ltorrent
     }
     Release {
         #Static build
-        LIBS += -llibboost_system-vc140-mt-s-1_63 -llibboost_atomic-vc140-mt-s-1_63 -llibboost_random-vc140-mt-s-1_63 -lws2_32 -llibtorrent
+        #LIBS += -llibboost_system-vc140-mt-s-1_66 -llibboost_atomic-vc140-mt-s-1_66 -llibboost_random-vc140-mt-s-1_66 -lws2_32 -llibtorrent
         DEFINES += STATIC_BUILD=1
         #Generate pdb debug symbols for crash dumps
         QMAKE_CXXFLAGS+=/Zi
@@ -57,10 +57,11 @@ SOURCES += src/model/main.cpp \
     src/model/apis/libtorrent/deltapatcher.cpp \
     src/model/apis/libtorrent/deltamanager.cpp \
     src/model/fileutils.cpp \
-    src/model/logmanager.cpp \
+    src/model/afisynclogger.cpp \
     src/model/console.cpp \
     src/model/szip.cpp \
-    src/model/constantsmodel.cpp
+    src/model/constantsmodel.cpp \
+    src/model/qstreams.cpp
 
 RESOURCES += qml.qrc
 
@@ -98,10 +99,11 @@ HEADERS += \
     src/model/apis/libtorrent/deltapatcher.h \
     src/model/apis/libtorrent/deltamanager.h \
     src/model/fileutils.h \
-    src/model/logmanager.h \
+    src/model/afisynclogger.h \
     src/model/console.h \
     src/model/szip.h \
-    src/model/constantsmodel.h
+    src/model/constantsmodel.h \
+    src/model/qstreams.h
 
 DISTFILES += \
     AFISync.rc \

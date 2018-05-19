@@ -1,17 +1,17 @@
+#include <QCoreApplication>
 #include <QFile>
 #include <QFileInfo> //Debug prints
-#include <QNetworkReply>
-#include <QVariantMap>
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
-#include <QJsonArray>
-#include <QCoreApplication>
+#include <QNetworkReply>
+#include <QVariantMap>
+#include "afisynclogger.h"
+#include "jsonreader.h"
 #include "mod.h"
+#include "modadapter.h"
 #include "repository.h"
 #include "rootitem.h"
-#include "jsonreader.h"
-#include "debug.h"
-#include "modadapter.h"
 #include "settingsmodel.h"
 
 const QString JsonReader::SEPARATOR = "|||";
@@ -29,7 +29,7 @@ void JsonReader::fillEverything(RootItem* root)
 
 void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
 {
-    DBG << "Stopping UI updates.";
+    LOG << "Stopping UI updates.";
     const bool updateRunning = root->stopUpdates();
     jsonMap_ = qvariant_cast<QVariantMap>(readJsonFile(jsonFilePath).toVariant());
     const QVariantMap jsonMapUpdate = updateJson(updateUrl(jsonMap_));
@@ -38,14 +38,14 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
 
     if (jsonMap_ == QVariantMap())
     {
-        DBG << "ERROR: Json file parse failure. Exiting...";
+        LOG << "ERROR: Json file parse failure. Exiting...";
         exit(2);
     }
     //Handle delta updates url
     const QString newDeltaUpdateUrl = jsonMap_.value("deltaUpdates").toString();
     if (!newDeltaUpdateUrl.isEmpty() && root->sync()->deltaUpdatesKey() != newDeltaUpdateUrl)
     {
-        DBG << "Updating delta update url";
+        LOG << "Updating delta update url";
         root->sync()->setDeltaUpdatesFolder(newDeltaUpdateUrl);
         if (SettingsModel::deltaPatchingEnabled())
             root->sync()->enableDeltaUpdates();
@@ -61,12 +61,12 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
         QVariantMap repository = qvariant_cast<QVariantMap>(repoVar);
         QString repoName = qvariant_cast<QString>(repository.value("name"));
         jsonRepos.insert(repoName);
-        DBG << "Repo Json parsed";
+        LOG << "Repo Json parsed";
         Repository* repo;
         auto it = adRepos.find(repoName);
         if (it != adRepos.end())
         {
-            DBG << "Repo" << repoName << "already in root. Using it";
+            LOG << "Repo" << repoName << "already in root. Using it";
             repo = it.value();
         }
         else
@@ -75,7 +75,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             const unsigned serverPort = qvariant_cast<unsigned>(repository.value("serverPort"));
             const QString password = qvariant_cast<QString>(repository.value("password", ""));
             repo = new Repository(repoName, serverAddress, serverPort, password, root);
-            DBG << "appending repo name =" << repoName << " address =" << serverAddress
+            LOG << "appending repo name =" << repoName << " address =" << serverAddress
                 << " port =" << QString::number(serverPort);
             root->appendChild(repo);
         }
@@ -86,33 +86,33 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
         {
             const QVariantMap mod = qvariant_cast<QVariantMap>(mods.at(i));
             const QString key = qvariant_cast<QString>(mod.value("key")).toLower();
-            DBG << "key parsed. key =" << key;
+            LOG << "key parsed. key =" << key;
             //Do not add same mod to same repo twice.
             jsonMods1.insert(key);
             if (repo->contains(key))
             {
-                DBG << "Key" << key << "already in" << repoName;
+                LOG << "Key" << key << "already in" << repoName;
                 continue;
             }
             QHash<QString, Mod*>::const_iterator it = modHash.find(key);
             Mod* newMod;
             if (it != modHash.end())
             {
-                DBG << "Already added. Using existing value.";
+                LOG << "Already added. Using existing value.";
                 //Use existing one from another repo.
                 newMod = it.value();
             }
             else
             {
                 const QString modName = mod.value("name").toString().toLower();
-                DBG << "Parsed mod parameters for" << modName;
+                LOG << "Parsed mod parameters for" << modName;
                 newMod = new Mod(modName, key);
-                DBG << "New mod object created:" << modName;
+                LOG << "New mod object created:" << modName;
                 newMod->setFileSize(qvariant_cast<quint64>(mod.value("fileSize", "0")));
                 modHash.insert(key, newMod);
-                DBG << modName << "added to modhash.";
+                LOG << modName << "added to modhash.";
             }
-            DBG << "Appending mod (name =" << newMod->name()
+            LOG << "Appending mod (name =" << newMod->name()
                 << " key =" << newMod->key()
                 << ") to repository" << repoName;
             new ModAdapter(newMod, repo, mod.value("optional", false).toBool(), i);
@@ -125,7 +125,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
     for (Repository* repo : root->childItems())
         removeDeprecatedMods(repo, jsonMods.value(repo));
 
-    DBG << "Starting UI updates.";
+    LOG << "Starting UI updates.";
     if (updateRunning)
         root->startUpdates();
 
@@ -177,13 +177,13 @@ void JsonReader::removeDeprecatedMods(Repository* repo, const QSet<QString> json
 
 void JsonReader::removeDeprecatedRepos(RootItem* root, const QSet<QString> jsonRepos)
 {
-    DBG << "Checking deprecated mods...";
+    LOG << "Checking deprecated mods...";
 
     QHash<QString, Repository*> adRepos = addedRepos(root);
     QSet<QString> depreRepos = adRepos.keys().toSet() - jsonRepos;
     for (const QString& repoName : depreRepos)
     {
-        DBG << "Removing deprecated repo:" << repoName;
+        LOG << "Removing deprecated repo:" << repoName;
         Repository* repo = adRepos.value(repoName);
         root->removeChild(repo);
         delete repo;
@@ -206,13 +206,13 @@ QJsonDocument JsonReader::readJsonFile(const QString& path) const
     QFile file(path);
     if (!file.exists() || !file.open(QIODevice::ReadOnly))
     {
-        DBG << "ERROR: failed to open json file: " << path << " file.exists =" << file.exists();
+        LOG << "ERROR: failed to open json file: " << path << " file.exists =" << file.exists();
         return QJsonDocument();
     }
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     if (!doc.isObject())
     {
-        DBG << "ERROR: error parsing json file: " << path;
+        LOG << "ERROR: error parsing json file: " << path;
         return QJsonDocument();
     }
     file.close();
@@ -225,7 +225,7 @@ QByteArray JsonReader::fetchJsonBytes(QString url)
     QNetworkReply* reply = nam_.syncGet(QNetworkRequest(url));
     if (reply->bytesAvailable() == 0)
     {
-        DBG << "Warning: failed. url =" << url;
+        LOG << "Warning: failed. url =" << url;
         return QByteArray();
     }
     QByteArray rVal = reply->readAll();

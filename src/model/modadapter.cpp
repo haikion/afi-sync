@@ -1,4 +1,4 @@
-#include "debug.h"
+#include "afisynclogger.h"
 #include "modadapter.h"
 #include "repository.h"
 #include "settingsmodel.h"
@@ -80,7 +80,7 @@ void ModAdapter::setTicked(bool checked)
 {
     if (!isOptional_)
     {
-        DBG << "ERROR: Tried to set checked for non optional mod" << name();
+        LOG << "ERROR: Tried to set checked for non optional mod" << name();
         return;
     }
 

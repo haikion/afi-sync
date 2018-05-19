@@ -1,7 +1,7 @@
 #include <QProcess>
 #include <QCoreApplication>
 #include "processmonitor.h"
-#include "debug.h"
+#include "afisynclogger.h"
 
 const QString ProcessMonitor::ARMA3_PROCESS = "arma3.exe";
 const QString ProcessMonitor::ARMA3_PROCESS_BE = "arma3battleye.exe";
@@ -10,7 +10,7 @@ const QString ProcessMonitor::AFISYNC_PROCESS = "AFISync.exe";
 
 ProcessMonitor::ProcessMonitor(QObject* parent): QObject(parent)
 {
-    DBG;
+    LOG;
 }
 
 bool ProcessMonitor::arma3Running()

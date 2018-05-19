@@ -4,9 +4,10 @@
     A container for items of data supplied by the simple tree model.
 */
 
-#include "debug.h"
 #include <QStringList>
+#include "afisynclogger.h"
 #include "treeitem.h"
+#include "treemodel.h"
 
 TreeItem::TreeItem(const QString& name, TreeItem* parentItem)
 {
@@ -67,7 +68,7 @@ int TreeItem::row() const
     }
     if (rVal == -1)
     {
-        DBG << "ERROR:" << name_ << "has no row.";
+        LOG << "ERROR:" << name_ << "has no row.";
     }
 
     return rVal;
@@ -76,6 +77,6 @@ int TreeItem::row() const
 QVariant TreeItem::data(int column) const
 {
     //TODO: Figure out why this is called.
-    DBG << "column =" << column << "name =" << name_;
+    LOG << "column =" << column << "name =" << name_;
     return QVariant();
 }
