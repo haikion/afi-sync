@@ -30,7 +30,8 @@ win32 {
 }
 
 unix {
-    LIBS += -ltorrent-rasterbar -lboost_system
+   DEFINES += BOOST_LOG_DYN_LINK
+   LIBS += -lboost_system -lboost_atomic -lboost_random -lboost_date_time -lboost_log_setup -lboost_filesystem -lboost_log -lboost_thread -ltorrent-rasterbar
 }
 
 SOURCES += src/model/main.cpp \

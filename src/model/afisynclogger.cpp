@@ -16,7 +16,7 @@
 #include "fileutils.h"
 
 #ifdef Q_OS_LINUX
-    const QString LogManager::SZIP_EXECUTABLE = "7za";
+    const QString AfiSyncLogger::SZIP_EXECUTABLE = "7za";
 #else
     const QString AfiSyncLogger::SZIP_EXECUTABLE = "bin\\7za.exe";
 #endif

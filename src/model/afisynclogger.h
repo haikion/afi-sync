@@ -4,10 +4,10 @@
 #ifndef LOGMANAGER_H
 #define LOGMANAGER_H
 
+#include <boost/log/trivial.hpp>
 #include <QSet>
 #include <QString>
 #include <QVector>
-#include <boost/log/trivial.hpp>
 #include "runningtime.h"
 #include "console.h"
 #include "szip.h"
