@@ -7,6 +7,8 @@
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/log/utility/setup/file.hpp>
+#include <boost/log/expressions/attr_fwd.hpp>
+#include <boost/log/expressions/attr.hpp>
 #include <QFile>
 #include <QDateTime>
 #include <QDirIterator>
@@ -14,6 +16,8 @@
 #include "global.h"
 #include "afisynclogger.h"
 #include "fileutils.h"
+
+using namespace boost::log;
 
 #ifdef Q_OS_LINUX
     const QString AfiSyncLogger::SZIP_EXECUTABLE = "7za";
@@ -26,8 +30,19 @@ const int MAX_LOG_FILES = 3;
 void AfiSyncLogger::initFileLogging()
 {
     rotateLogs();
-    boost::log::add_file_log(Constants::LOG_FILE.toStdString());
-    boost::log::core::get()->set_filter(boost::log::trivial::severity >= boost::log::trivial::info);
+
+    add_file_log
+    (
+        keywords::file_name = Constants::LOG_FILE.toStdString(),
+        // This makes the sink to write log records that look like this:
+        // 1: [normal] A normal severity message
+        // 2: [error] An error severity message
+        keywords::format =
+        (
+            expressions::stream << " [" << boost::log::trivial::severity
+                << "] " << expressions::smessage
+        )
+    );
 }
 
 bool AfiSyncLogger::rotateLogs()

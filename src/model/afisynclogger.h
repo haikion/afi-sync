@@ -13,7 +13,7 @@
 #include "szip.h"
 #include "qstreams.h"
 
-#define LOG BOOST_LOG_TRIVIAL(info) << runningTimeMs() << Q_FUNC_INFO
+#define LOG BOOST_LOG_TRIVIAL(info) << " " << Q_FUNC_INFO
 
 class AfiSyncLogger
 {
