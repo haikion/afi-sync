@@ -83,8 +83,8 @@ void PathFinder::checkPath(const QString& path, const QString& name)
     if (path == QCoreApplication::applicationDirPath()
             && !Global::guiless)
     {
-        LOG << "ERROR: Unable to find path for" << name << "."
-            << "Using default:" << path;
+        LOG_ERROR << "Unable to find path for " << name
+            << " Using default: " << path;
     }
     #endif
 }

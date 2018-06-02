@@ -1,4 +1,4 @@
-#include "../../debug.h"
+#include "../../afisynclogger.h"
 #include "../../runningtime.h"
 #include "speedestimator.h"
 
@@ -21,7 +21,7 @@ int64_t SpeedEstimator::estimate(const QString& key, const int64_t toCheck)
 
     if (toCheck <= 0) //Sanity check TODO: Might be too defensive
     {
-        LOG << "ERROR: toCheck is negative or zero. toCheck =" << toCheck;
+        LOG_ERROR << "toCheck is negative or zero. toCheck = " << toCheck;
         return rVal;
     }
     if (progresses_.contains(key))
@@ -32,14 +32,14 @@ int64_t SpeedEstimator::estimate(const QString& key, const int64_t toCheck)
 
         if (x_1 < toCheck) //Sanity check
         {
-            LOG << "ERROR: x_1 < toCheck. x_1 =" << x_1 << "toCheck =" << toCheck;
+            LOG_ERROR << "x_1 < toCheck. x_1 = " << x_1 << "toCheck = " << toCheck;
             return rVal;
         }
         //t_1 == t_2, might happen because of the VeryCoarseTimer?
         if (t_1 >= t_2)
         {
             if (t_1 > t_2) //Sanity check, this should never happen. TODO: Might be too defensive
-                LOG << "ERROR: t_1 > t_2, t_1 =" << t_1 << " t_2 =" << t_2;
+                LOG_ERROR << "t_1 > t_2, t_1 =" << t_1 << " t_2 =" << t_2;
             return rVal;
         }
 

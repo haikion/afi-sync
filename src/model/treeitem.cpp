@@ -68,7 +68,7 @@ int TreeItem::row() const
     }
     if (rVal == -1)
     {
-        LOG << "ERROR:" << name_ << "has no row.";
+        LOG_ERROR << name_ << " has no row.";
     }
 
     return rVal;
@@ -77,6 +77,6 @@ int TreeItem::row() const
 QVariant TreeItem::data(int column) const
 {
     //TODO: Figure out why this is called.
-    LOG << "column =" << column << "name =" << name_;
+    LOG << "column = " << column << " name = " << name_;
     return QVariant();
 }

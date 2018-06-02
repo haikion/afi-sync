@@ -60,7 +60,7 @@ RootItem::~RootItem()
     //if destructor is only used during program shutdown.
     for (Repository* repo : childItems())
     {
-        LOG << "Deleting repository" << repo->name();
+        LOG << "Deleting repository " << repo->name();
         delete repo;
     }
     LOG << "Repositories deleted";
@@ -68,7 +68,7 @@ RootItem::~RootItem()
     Global::workerThread->wait(1000);
     Global::workerThread->terminate();
     Global::workerThread->wait(1000);
-    LOG << "Worker thread shutdown. isFinished() =" << Global::workerThread->isFinished();
+    LOG << "Worker thread shutdown. isFinished() = " << Global::workerThread->isFinished();
     delete Global::workerThread;
     Global::workerThread = nullptr;
     LOG << "Worker thread deleted";
@@ -137,9 +137,9 @@ void RootItem::removeOrphans()
     {
         for (const Mod* mod : repository->mods())
         {
-            LOG << "Processing mod =" << mod->name()
-                     << " key =" << mod->key()
-                     << " repository =" << repository->name();
+            LOG << "Processing mod = " << mod->name()
+                     << " key = " << mod->key()
+                     << " repository = " << repository->name();
             keys.insert(mod->key());
         }
     }
@@ -148,7 +148,7 @@ void RootItem::removeOrphans()
         if (!keys.contains(key))
         {
             //Not found
-            LOG << "Deleting folder with key:" << key;
+            LOG << "Deleting folder with key: " << key;
             sync_->removeFolder(key);
         }
     }
@@ -162,7 +162,7 @@ void RootItem::processCompletion()
     {
         if (repo->status() == SyncStatus::INACTIVE)
         {
-            LOG << "Skipping" << repo->name() << "due to inactivity.";
+            LOG << "Skipping " << repo->name() << " due to inactivity.";
             continue;
         }
         repo->processCompletion();
@@ -238,12 +238,12 @@ void RootItem::resetSyncSettings()
     {
         FileUtils::safeRemoveRecursively(dir);
         //It's rape time.
-        LOG << "Warning: Failure to delete Sync Storage... retrying path ="
-            << dir.absolutePath() << "attempts =" << attempts;
+        LOG_WARNING << "Failure to delete Sync Storage... retrying path = "
+            << dir.absolutePath() << " attempts = " << attempts;
         QThread::sleep(1);
         ++attempts;
     }
-    LOG << "Sync storage deleted. path =" << dir.absolutePath();
+    LOG << "Sync storage deleted. path = " << dir.absolutePath();
     dir.mkpath(".");
     sync_->start();
 }
@@ -265,7 +265,6 @@ void RootItem::updateView(TreeItem* item, int row)
         //Wait for repos to load
         return;
     }
-    //LOG << "Updating row =" << row->row();
     parent_->updateView(item, row);
 }
 
@@ -299,7 +298,7 @@ void RootItem::updateSpeed()
 {
     if (!parent_ || !sync_)
     {
-        LOG << "ERROR: null value. parent_ =" << parent_ << "sync_" << sync_;
+        LOG_ERROR << "Null value. parent_ = " << parent_ << " sync_ = " << sync_;
         return;
     }
 

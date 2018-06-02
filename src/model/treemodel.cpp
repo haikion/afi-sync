@@ -121,7 +121,7 @@ void TreeModel::check(const QModelIndex& idx)
     SyncItem* syncItem = static_cast<SyncItem*>(idx.internalPointer());
     if (syncItem)
     {
-        LOG << "Rechecking:" << syncItem->name();
+        LOG << "Rechecking: " << syncItem->name();
         syncItem->check();
     }
 }
@@ -133,7 +133,6 @@ QString TreeModel::versionString() const
 
 void TreeModel::updateSpeed(qint64 download, qint64 upload)
 {
-    //LOG << "download =" << download << " upload =" << upload;
     if (download != download_)
     {
         download_ = download;
@@ -154,7 +153,7 @@ bool TreeModel::ready(const QModelIndex& idx) const
         return item->status() == SyncStatus::READY;
     }
 
-    LOG << "ERROR: ticked asked from non-syncitem object:" << idx.internalPointer();
+    LOG_ERROR << "Ticked asked from non-syncitem object: " << idx.internalPointer();
     return false;
 }
 

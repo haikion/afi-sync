@@ -17,7 +17,7 @@ Console::~Console()
 
 bool Console::runCmd(const QString& cmd) const
 {
-    LOG << "Running command:" << cmd.toStdString().c_str();
+    LOG << "Running command: " << cmd.toStdString().c_str();
 
     process_->start(cmd);
     process_->waitForFinished(-1);
@@ -27,7 +27,7 @@ bool Console::runCmd(const QString& cmd) const
 
 QProcess* Console::runCmdAsync(const QString& cmd)
 {
-    LOG << "Running command:" << cmd.toStdString().c_str();
+    LOG << "Running command: " << cmd.toStdString().c_str();
 
     process_->start(cmd);
     return process_;
@@ -42,7 +42,7 @@ void Console::terminate()
 {
     if (process_->state() == QProcess::ProcessState::Running)
     {
-        LOG << "Terminating process" << process_->program();
+        LOG << "Terminating process " << process_->program();
         process_->terminate();
     }
 }

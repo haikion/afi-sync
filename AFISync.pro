@@ -19,7 +19,7 @@ win32 {
     }
     Release {
         #Static build
-        #LIBS += -llibboost_system-vc140-mt-s-1_66 -llibboost_atomic-vc140-mt-s-1_66 -llibboost_random-vc140-mt-s-1_66 -lws2_32 -llibtorrent
+        LIBS += -llibboost_system-vc140-mt-s-x64-1_66 -llibboost_atomic-vc140-mt-s-x64-1_66 -llibboost_random-vc140-mt-s-x64-1_66 -llibboost_date_time-vc140-mt-s-x64-1_66 -llibboost_log-vc140-mt-s-x64-1_66 -llibboost_log_setup-vc140-mt-s-x64-1_66 -llibboost_filesystem-vc140-mt-s-x64-1_66 -llibboost_thread-vc140-mt-s-x64-1_66 -lws2_32 -llibtorrent
         DEFINES += STATIC_BUILD=1
         #Generate pdb debug symbols for crash dumps
         QMAKE_CXXFLAGS+=/Zi
@@ -47,7 +47,6 @@ SOURCES += src/model/main.cpp \
     src/model/settingsmodel.cpp \
     src/model/global.cpp \
     src/model/modadapter.cpp \
-    src/model/apis/heart.cpp \
     src/model/runningtime.cpp \
     src/model/processmonitor.cpp \
     src/model/apis/libtorrent/libtorrentapi.cpp \
@@ -84,9 +83,7 @@ HEADERS += \
     src/model/pathfinder.h \
     src/model/settingsmodel.h \
     src/model/global.h \
-    src/model/debug.h \
     src/model/modadapter.h \
-    src/model/apis/heart.h \
     src/model/runningtime.h \
     src/model/apis/isync.h \
     src/model/processmonitor.h \

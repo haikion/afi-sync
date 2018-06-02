@@ -242,12 +242,12 @@ QString SettingsModel::modDownloadPath()
 
 void SettingsModel::setModDownloadPath(QString path)
 {
-    LOG << "path =" << path;
+    LOG << "path = " << path;
     path = QDir::fromNativeSeparators(path);
     if (!saveDir("modDownloadPath", path))
     {
-        LOG << "Warning: failed to set mod download path. modDownloadPath() ="
-            << modDownloadPath() << " path =" << path;
+        LOG_WARNING << "Failed to set mod download path. modDownloadPath() = "
+            << modDownloadPath() << " path = " << path;
         return;
     }
     settings()->setValue("modDownloadPath", path);

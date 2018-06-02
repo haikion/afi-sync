@@ -3,6 +3,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QStandardPaths>
+#include <QTextStream>
 #include "afisynclogger.h"
 #include "fileutils.h"
 #include "installer.h"
@@ -21,7 +22,7 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
     ready_(true),
     battlEyeEnabled_(true)
 {
-    LOG << "Created repo name =" << name;
+    LOG << "Created repo name = " << name;
     update();
     if (ticked())
         startUpdates();
@@ -69,7 +70,7 @@ void Repository::startUpdates()
 
 Repository::~Repository()
 {
-    LOG << "name =" << name();
+    LOG << "name = " << name();
     for (Mod* mod : mods())
     {
         //Remove mod object from repository but keep
@@ -158,7 +159,7 @@ void Repository::generalLaunch(const QStringList& extraParams)
     }
     else if (modsParameter().size() > 0)
     {
-        LOG << "Failsafe activated because parameter file path is incorrect. paramsFile =" << paramsFile;
+        LOG << "Failsafe activated because parameter file path is incorrect. paramsFile = " << paramsFile;
         arguments << modsParameter();
     }
     arguments << "-noLauncher";
@@ -174,17 +175,16 @@ void Repository::generalLaunch(const QStringList& extraParams)
         QStringList userParams = paramsString.split(" ");
         arguments << userParams;
     }
-    LOG << " name() =" << name()
-             << "executable =" << executable
-             << "arguments =" << arguments;
+    LOG << " name() = " << name()
+             << "executable = " << executable
+             << "arguments = " << arguments;
     QProcess::startDetached(executable, arguments);
 }
 
 QString Repository::createParFile(const QString& parameters)
 {
     static const QString FILE_NAME = "afiSyncParameters.txt";
-
-    QString path = SettingsModel::arma3Path() + "/" + FILE_NAME;
+    const QString path = SettingsModel::arma3Path() + "/" + FILE_NAME;
     LOG << path;
     QFile file(path);
     FileUtils::safeRemove(file);
@@ -328,7 +328,7 @@ ISync* Repository::sync() const
 
 void Repository::enableMods()
 {
-    LOG << "name =" << name();
+    LOG << "name = " << name();
     for (ModAdapter* adp : modAdapters())
     {
         if (adp->isOptional() && !adp->ticked())
@@ -344,12 +344,12 @@ bool Repository::removeMod(const QString& key)
     {
         if (mod->key() == key)
         {
-            LOG << "Removing mod" << mod->name() << "from repository" << name();
+            LOG << "Removing mod " << mod->name() << " from repository " << name();
             removeMod(mod);
             return true;
         }
     }
-    LOG << "ERROR: key" << key << "not found in repository" << name();
+    LOG << "Key " << key << " not found in repository " << name();
     return false;
 }
 
@@ -358,7 +358,7 @@ bool Repository::removeMod(Mod* mod, bool removeFromSync)
     //Removes mod view adapter.
     if (!mod->removeRepository(this))
     {
-        LOG << "ERROR: Unable to remove" << mod->name() << "from repository" << name();
+        LOG_ERROR << "Unable to remove " << mod->name() << " from repository " << name();
         return false;
     }
     parentItem()->rowsChanged();

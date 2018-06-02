@@ -38,7 +38,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
 
     if (jsonMap_ == QVariantMap())
     {
-        LOG << "ERROR: Json file parse failure. Exiting...";
+        LOG_ERROR << "Json file parse failure. Exiting...";
         exit(2);
     }
     //Handle delta updates url
@@ -66,7 +66,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
         auto it = adRepos.find(repoName);
         if (it != adRepos.end())
         {
-            LOG << "Repo" << repoName << "already in root. Using it";
+            LOG << "Repo " << repoName << " already in root. Using it";
             repo = it.value();
         }
         else
@@ -75,8 +75,8 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             const unsigned serverPort = qvariant_cast<unsigned>(repository.value("serverPort"));
             const QString password = qvariant_cast<QString>(repository.value("password", ""));
             repo = new Repository(repoName, serverAddress, serverPort, password, root);
-            LOG << "appending repo name =" << repoName << " address =" << serverAddress
-                << " port =" << QString::number(serverPort);
+            LOG << "appending repo name = " << repoName << " address =" << serverAddress
+                << " port = " << QString::number(serverPort);
             root->appendChild(repo);
         }
         repo->setBattlEyeEnabled(qvariant_cast<bool>(repository.value("battlEyeEnabled", true)));
@@ -91,7 +91,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             jsonMods1.insert(key);
             if (repo->contains(key))
             {
-                LOG << "Key" << key << "already in" << repoName;
+                LOG << "Key " << key << " already in " << repoName;
                 continue;
             }
             QHash<QString, Mod*>::const_iterator it = modHash.find(key);
@@ -105,16 +105,16 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             else
             {
                 const QString modName = mod.value("name").toString().toLower();
-                LOG << "Parsed mod parameters for" << modName;
+                LOG << "Parsed mod parameters for " << modName;
                 newMod = new Mod(modName, key);
-                LOG << "New mod object created:" << modName;
+                LOG << "New mod object created: " << modName;
                 newMod->setFileSize(qvariant_cast<quint64>(mod.value("fileSize", "0")));
                 modHash.insert(key, newMod);
-                LOG << modName << "added to modhash.";
+                LOG << modName << " added to modhash.";
             }
-            LOG << "Appending mod (name =" << newMod->name()
-                << " key =" << newMod->key()
-                << ") to repository" << repoName;
+            LOG << "Appending mod (name = " << newMod->name()
+                << " key = " << newMod->key()
+                << ") to repository " << repoName;
             new ModAdapter(newMod, repo, mod.value("optional", false).toBool(), i);
         }
         jsonMods.insert(repo, jsonMods1);
@@ -183,7 +183,7 @@ void JsonReader::removeDeprecatedRepos(RootItem* root, const QSet<QString> jsonR
     QSet<QString> depreRepos = adRepos.keys().toSet() - jsonRepos;
     for (const QString& repoName : depreRepos)
     {
-        LOG << "Removing deprecated repo:" << repoName;
+        LOG << "Removing deprecated repo: " << repoName;
         Repository* repo = adRepos.value(repoName);
         root->removeChild(repo);
         delete repo;
@@ -206,13 +206,13 @@ QJsonDocument JsonReader::readJsonFile(const QString& path) const
     QFile file(path);
     if (!file.exists() || !file.open(QIODevice::ReadOnly))
     {
-        LOG << "ERROR: failed to open json file: " << path << " file.exists =" << file.exists();
+        LOG_ERROR << "Failed to open json file: " << path << " file.exists = " << file.exists();
         return QJsonDocument();
     }
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     if (!doc.isObject())
     {
-        LOG << "ERROR: error parsing json file: " << path;
+        LOG_ERROR << "Error parsing json file: " << path;
         return QJsonDocument();
     }
     file.close();
@@ -225,7 +225,7 @@ QByteArray JsonReader::fetchJsonBytes(QString url)
     QNetworkReply* reply = nam_.syncGet(QNetworkRequest(url));
     if (reply->bytesAvailable() == 0)
     {
-        LOG << "Warning: failed. url =" << url;
+        LOG_WARNING << "Failed. url = " << url;
         return QByteArray();
     }
     QByteArray rVal = reply->readAll();
