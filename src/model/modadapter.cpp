@@ -80,7 +80,7 @@ void ModAdapter::setTicked(bool checked)
 {
     if (!isOptional_)
     {
-        LOG_ERROR << "Tried to set checked for non optional mod" << name();
+        LOG_ERROR << "Tried to set checked for non optional mod " << name();
         return;
     }
 

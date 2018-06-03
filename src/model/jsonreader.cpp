@@ -206,13 +206,13 @@ QJsonDocument JsonReader::readJsonFile(const QString& path) const
     QFile file(path);
     if (!file.exists() || !file.open(QIODevice::ReadOnly))
     {
-        LOG_ERROR << "failed to open json file: " << path << " file.exists =" << file.exists();
+        LOG_ERROR << "Failed to open json file: " << path << " file.exists = " << file.exists();
         return QJsonDocument();
     }
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     if (!doc.isObject())
     {
-        LOG_ERROR << "error parsing json file: " << path;
+        LOG_ERROR << "Error parsing json file: " << path;
         return QJsonDocument();
     }
     file.close();
@@ -225,7 +225,7 @@ QByteArray JsonReader::fetchJsonBytes(QString url)
     QNetworkReply* reply = nam_.syncGet(QNetworkRequest(url));
     if (reply->bytesAvailable() == 0)
     {
-        LOG_WARNING << "failed. url =" << url;
+        LOG_WARNING << "Failed. url = " << url;
         return QByteArray();
     }
     QByteArray rVal = reply->readAll();

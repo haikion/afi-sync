@@ -2,7 +2,6 @@
 #include <QDirIterator>
 #include <QThread>
 #include "libtorrent/torrent_info.hpp"
-#include "../../debug.h"
 #include "../../global.h"
 #include "../../settingsmodel.h"
 #include "../../fileutils.h"
@@ -103,7 +102,7 @@ int64_t DeltaManager::totalWanted(const QString& key)
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
     {
-        LOG_ERROR << "Key" << key << "not found.";
+        LOG_ERROR << "Key " << key << " not found.";
         return 99999999;
     }
 

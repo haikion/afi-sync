@@ -214,7 +214,7 @@ void Mod::repositoryChanged(bool offline)
     //just in case
     if (!sync_)
     {
-        LOG_ERROR << "Sync is null" << name();
+        LOG_ERROR << "Sync is null " << name();
         return;
     }
 
@@ -233,7 +233,7 @@ void Mod::repositoryChanged(bool offline)
         return;
     }
     //At least one repo active and mod checked
-    LOG << "Starting mod transfer. name =" << name();
+    LOG << "Starting mod transfer. name = " << name();
     start();
 }
 

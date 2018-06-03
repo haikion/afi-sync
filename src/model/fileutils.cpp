@@ -72,7 +72,7 @@ bool FileUtils::move(const QString& srcPath, const QString& dstPath)
         QDir().mkpath(dstPath);
         if (!QFileInfo(dstPath).exists())
         {
-            LOG_ERROR << "Failed to create directory" << dstPath;
+            LOG_ERROR << "Failed to create directory " << dstPath;
             return false;
         }
         QDir srcDir(srcPath);
@@ -142,7 +142,7 @@ QByteArray FileUtils::readFile(const QString& path)
     file.open(QFile::ReadOnly);
     if (!file.isReadable())
     {
-        LOG_WARNING << "unable to read file" << path;
+        LOG_WARNING << "Unable to read file: " << path;
         return rVal;
     }
 
@@ -162,7 +162,7 @@ bool FileUtils::writeFile(const QByteArray& data, const QString& path)
 
     if (!file.isWritable())
     {
-        LOG_ERROR << "file " << path << " is not writable.";
+        LOG_ERROR << "File " << path << " is not writable.";
         return false;
     }
     LOG << "Writing file: " << path;
@@ -187,7 +187,7 @@ QString FileUtils::casedPath(const QString& path)
         {
             if (!it.hasNext())
             {
-                LOG_ERROR << "Unable to construct case sensitive path from" << path;
+                LOG_ERROR << "Unable to construct case sensitive path from " << path;
                 return QString();
             }
             QFileInfo fi = it.next();
@@ -268,8 +268,7 @@ bool FileUtils::pathIsSafe(const QString& path)
         if (safeUpper.length() >= 4 && pathUpper.startsWith(safeUpper))
             return true;
     }
-
-    LOG_ERROR << "" << pathFull << "not in safe subpaths" << safeSubpaths << ". Operation aborted!";
+    LOG_ERROR << pathFull << " not in safe subpaths " << safeSubpaths << ". Operation aborted!";
     return false;
 }
 

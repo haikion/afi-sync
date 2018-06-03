@@ -1,17 +1,19 @@
-#include "../../debug.h"
-#include "../../settingsmodel.h"
-#include "ahasher.h"
-#include "deltadownloader.h"
-#include "deltapatcher.h"
-#include <QDir>
-#include <QRegExp>
 #include <algorithm>
+#include <string>
+#include <vector>
 #include <libtorrent/file_pool.hpp>
 #include <libtorrent/file_storage.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
-#include <string>
-#include <vector>
+#include <QDir>
+#include <QRegExp>
+#include "../../afisynclogger.h"
+#include "../../global.h"
+#include "../../settingsmodel.h"
+#include "ahasher.h"
+#include "deltadownloader.h"
+#include "deltapatcher.h"
+
 
 namespace lt = libtorrent;
 
@@ -45,7 +47,6 @@ DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle):
 
 void DeltaDownloader::createFilePaths()
 {
-    LOG << fileStorage_.paths().size();
     for (int i = 0; i < fileStorage_.num_files(); ++i)
     {
         //path is sometimes "".
@@ -68,9 +69,9 @@ bool DeltaDownloader::patchAvailable(const QString& modName)
 
 bool DeltaDownloader::patchDownloaded(const QString& modName)
 {
-    QVector<int> indexes = patchIndexes(modName);
-    boost::int64_t done = totalWantedDone(indexes);
-    boost::int64_t wanted = totalWanted(indexes);
+    const QVector<int> indexes = patchIndexes(modName);
+    const boost::int64_t done = totalWantedDone(indexes);
+    const boost::int64_t wanted = totalWanted(indexes);
 
     LOG << modName << " download process: " << done << "/" << wanted;
     return done >= wanted;

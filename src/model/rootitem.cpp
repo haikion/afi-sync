@@ -148,7 +148,7 @@ void RootItem::removeOrphans()
         if (!keys.contains(key))
         {
             //Not found
-            LOG << "Deleting folder with key:" << key;
+            LOG << "Deleting folder with key: " << key;
             sync_->removeFolder(key);
         }
     }
@@ -238,8 +238,8 @@ void RootItem::resetSyncSettings()
     {
         FileUtils::safeRemoveRecursively(dir);
         //It's rape time.
-        LOG_WARNING << "Failure to delete Sync Storage... retrying path ="
-            << dir.absolutePath() << "attempts =" << attempts;
+        LOG_WARNING << "Failure to delete Sync Storage... retrying path = "
+            << dir.absolutePath() << " attempts = " << attempts;
         QThread::sleep(1);
         ++attempts;
     }
@@ -298,7 +298,7 @@ void RootItem::updateSpeed()
 {
     if (!parent_ || !sync_)
     {
-        LOG_ERROR << "null value. parent_ =" << parent_ << "sync_" << sync_;
+        LOG_ERROR << "Null value. parent_ = " << parent_ << " sync_ = " << sync_;
         return;
     }
 

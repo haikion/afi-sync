@@ -153,7 +153,7 @@ bool TreeModel::ready(const QModelIndex& idx) const
         return item->status() == SyncStatus::READY;
     }
 
-    LOG_ERROR << "ticked asked from non-syncitem object:" << idx.internalPointer();
+    LOG_ERROR << "Ticked asked from non-syncitem object: " << idx.internalPointer();
     return false;
 }
 

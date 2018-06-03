@@ -5,7 +5,6 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QDebug>
-#include "../../debug.h"
 #include "ahasher.h"
 
 const unsigned AHasher::BASE = 36;

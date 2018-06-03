@@ -83,7 +83,6 @@ HEADERS += \
     src/model/pathfinder.h \
     src/model/settingsmodel.h \
     src/model/global.h \
-    src/model/debug.h \
     src/model/modadapter.h \
     src/model/runningtime.h \
     src/model/apis/isync.h \

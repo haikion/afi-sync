@@ -35,7 +35,6 @@ void Installer::install(const QDir& src, const QDir& dst)
         LOG_WARNING << "Destination directory: " << dst.absolutePath() << " does not exist.";
         return;
     }
-    LOG << "Installing " << src.absolutePath()
-             << " to " << dst.absolutePath();
+    LOG << "Installing " << src.absolutePath() << " to " << dst.absolutePath();
     FileUtils::copy(src.absolutePath(), dst.absolutePath());
 }

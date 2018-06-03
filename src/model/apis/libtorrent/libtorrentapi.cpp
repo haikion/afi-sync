@@ -17,7 +17,6 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QThread>
-#include "../../debug.h"
 #include "../../fileutils.h"
 #include "../../global.h"
 #include "../../settingsmodel.h"
@@ -56,7 +55,7 @@ LibTorrentApi::~LibTorrentApi()
 
 bool LibTorrentApi::createSession()
 {
-    DBG;
+    LOG;
     lt::settings_pack settings;
 
     //Disable encryption
@@ -130,13 +129,13 @@ void LibTorrentApi::saveSettings()
     QByteArray bytes;
     lt::bencode(std::back_inserter(bytes), e);
     FileUtils::writeFile(bytes, settingsPath_);
-    LOG << "Data saved." << bytes.size() << "bytes written.";
+    LOG << "Data saved. " << bytes.size() << " bytes written.";
 }
 
 //Loads libTorrent specific settings
 bool LibTorrentApi::loadLtSettings()
 {
-    DBG;
+    LOG;
     if (!session_)
         return false;
 
@@ -321,7 +320,7 @@ int LibTorrentApi::checkingEta(const lt::torrent_status& status)
             ++i;
             averager[i % SAMPLE_SIZE] = dChecked / dT;
             checkingSpeed_ = std::accumulate(std::begin(averager), std::end(averager), 0) / std::min(i, SAMPLE_SIZE);
-            LOG << "Checking speed =" << checkingSpeed_;
+            LOG << "Checking speed = " << checkingSpeed_;
         }
     }
     lastBytesMap[status.info_hash] = status.total_wanted_done;
@@ -683,10 +682,9 @@ bool LibTorrentApi::removeFolder(const QString& key)
     if (!handle.is_valid())
     {
         lt::torrent_status sta = handle.status();
-        LOG_ERROR << "Torrent is in invalid state. error ="
+        LOG_ERROR << "Torrent is in invalid state. error = "
             << QString::fromStdString(sta.error)
-            << "state =" << sta.state;
-
+            << " state = " << sta.state;
         return false;
     }
     QString filePrefix = SettingsModel::syncSettingsPath() + "/" + getHashString(handle);
@@ -746,7 +744,7 @@ bool LibTorrentApi::disableDeltaUpdates()
 
 bool LibTorrentApi::disableDeltaUpdatesNoTorrents()
 {
-    DBG;
+    LOG;
 
     if (!deltaManager_)
         return false;
@@ -758,7 +756,7 @@ bool LibTorrentApi::disableDeltaUpdatesNoTorrents()
 
 bool LibTorrentApi::enableDeltaUpdates()
 {
-    DBG;
+    LOG;
 
     if (deltaUpdatesKey_.isEmpty())
     {
@@ -792,7 +790,7 @@ lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key)
     }
     if (status.state == lt::torrent_status::downloading_metadata)
     {
-        LOG_ERROR << "Failure downloading torrent from" << key << ":" << status.error.c_str();
+        LOG_ERROR << "Failure downloading torrent from " << key << ":" << status.error.c_str();
         return lt::torrent_handle();
     }
 
@@ -814,7 +812,7 @@ lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key)
     QDir().mkpath(fi.absoluteFilePath());
     if (!fi.isReadable())
     {
-        LOG_ERROR << "Parent dir " << fi.absoluteFilePath() << "is not readable.";
+        LOG_ERROR << "Parent dir " << fi.absoluteFilePath() << " is not readable.";
         return lt::torrent_handle();
     }
     if (folderExists(key))
@@ -835,7 +833,7 @@ lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key)
     atp.save_path = QDir::toNativeSeparators(fi.absoluteFilePath()).toStdString();
     atp.paused = true;
     LOG << "url = " << QString::fromStdString(atp.url)
-        << "save_path = " << QString::fromStdString(atp.save_path);
+        << " save_path = " << QString::fromStdString(atp.save_path);
     lt::error_code ec;
     libtorrent::torrent_handle handle = session_->add_torrent(atp, ec);
     if (ec)
@@ -914,7 +912,7 @@ bool LibTorrentApi::saveTorrentFile(const lt::torrent_handle& handle) const
     QString filePrefix = SettingsModel::syncSettingsPath() + "/" + getHashString(handle);
     //Torrent file
     boost::shared_ptr<lt::torrent_info const> ti = getTorrentFile(handle);
-    LOG << "name =" << QString::fromStdString(handle.status(lt::torrent_handle::query_name).name);
+    LOG << "name = " << QString::fromStdString(handle.status(lt::torrent_handle::query_name).name);
     if (!ti)
     {
         LOG_ERROR << "Unable to save torrent file. It is null.";
@@ -939,7 +937,7 @@ bool LibTorrentApi::saveTorrentFile(const lt::torrent_handle& handle) const
 
 void LibTorrentApi::generateResumeData() const
 {
-    DBG;
+    LOG;
     if (!session_)
         return;
 
@@ -1026,7 +1024,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
 {
     if (!dir.isReadable())
     {
-        LOG_WARNING << "directory" << dir.absolutePath() << "is not readable.";
+        LOG_WARNING << "Directory " << dir.absolutePath() << " is not readable.";
         return;
     }
 
@@ -1052,8 +1050,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         LOG << url << (params.ti == 0) << params.resume_data.size();
         if (params.ti == 0 || url.isEmpty() || !params.ti->is_valid())
         {
-            LOG_ERROR << "Loading torrent " << filePath
-                << "url = " << url;
+            LOG_ERROR << "Loading torrent " << filePath << " url = " << url;
             it.next();
             continue;
         }

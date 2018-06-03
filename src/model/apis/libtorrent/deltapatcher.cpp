@@ -5,7 +5,6 @@
 #include <QStringList>
 #include <QTimer>
 #include "libtorrent/torrent_status.hpp"
-#include "../../debug.h"
 #include "../../fileutils.h"
 #include "../../global.h"
 #include "../../runningtime.h"
@@ -293,7 +292,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
     QFileInfo laterFi = QFileInfo(laterPath);
     if (!laterFi.exists())
     {
-        LOG_ERROR << "Path" << laterPath << "does not exist.";
+        LOG_ERROR << "Path " << laterPath << " does not exist.";
         return false;
     }
     laterPath = laterFi.absoluteFilePath();
@@ -302,19 +301,19 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
             patchesDir.entryList().filter(QRegExp(modName + "\\..*\\." + oldHash + "\\.7z" ));
     if (conflictingFiles.size() > 0)
     {
-        LOG_ERROR << "patch" << patchName << "collides with files:" << conflictingFiles;
+        LOG_ERROR << "patch " << patchName << " collides with files: " << conflictingFiles;
         return false;
     }
 
     if (!patchesFi_->isWritable())
     {
-        LOG_ERROR << "Directory" << patchesPath << "is not writable.";
+        LOG_ERROR << "Directory " << patchesPath << " is not writable.";
         return false;
     }
 
     if (deltaDir.exists())
     {
-        LOG_ERROR << "Directory" << deltaPath << "already exists. Deleting...";
+        LOG_ERROR << "Directory " << deltaPath << " already exists. Deleting...";
         FileUtils::safeRemoveRecursively(deltaDir);
     }
 
@@ -361,8 +360,8 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
     if (!rVal)
     {
         FileUtils::safeRemoveRecursively(deltaDir);
-        LOG_ERROR << "Directories" << oldPath << "and" << laterPath << "are identical."
-            << "Patch generation aborted.";
+        LOG_ERROR << "Directories " << oldPath << " and " << laterPath
+            << " are identical. Patch generation aborted.";
         return false;
     }
 
@@ -388,7 +387,7 @@ QStringList DeltaPatcher::removePatchesFromLatest(const QString& latestPath, con
     for (const QString& name : matches)
     {
         FileUtils::safeRemove(patchesPath + "/" + name);
-        LOG_ERROR << "Found patch from latest version. Patch" << name << "removed.";
+        LOG_ERROR << "Found patch from latest version. Patch " << name << " removed.";
         rVal.append(name);
     }
 

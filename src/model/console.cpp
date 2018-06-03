@@ -27,7 +27,7 @@ bool Console::runCmd(const QString& cmd) const
 
 QProcess* Console::runCmdAsync(const QString& cmd)
 {
-    LOG << "Running command:" << cmd.toStdString().c_str();
+    LOG << "Running command: " << cmd.toStdString().c_str();
 
     process_->start(cmd);
     return process_;

@@ -164,13 +164,12 @@ int cli(int argc, char* argv[])
 
         return 0;
     }
-    LOG << "FAIL " << missingArgs.size() << " " << missingArgs;
-
+    LOG << "Fail " << missingArgs.size() << " " << missingArgs;
     QFileInfo dir(parser.value("mirror"));
     QString modDownloadPath = dir.absoluteFilePath();
     if (!dir.isDir() || !dir.isWritable())
     {
-        qDebug() << "Invalid path:" << modDownloadPath;
+        LOG << "Invalid path:" << modDownloadPath;
         QCoreApplication::exit(2);
     }
     LOG << "Setting mod download path: " << modDownloadPath;

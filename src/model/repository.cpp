@@ -3,6 +3,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QStandardPaths>
+#include <QTextStream>
 #include "afisynclogger.h"
 #include "fileutils.h"
 #include "installer.h"
@@ -175,16 +176,15 @@ void Repository::generalLaunch(const QStringList& extraParams)
         arguments << userParams;
     }
     LOG << " name() = " << name()
-             << " executable = " << executable
-             << " arguments = " << arguments;
+        << " executable = " << executable
+        << " arguments = " << arguments;
     QProcess::startDetached(executable, arguments);
 }
 
 QString Repository::createParFile(const QString& parameters)
 {
     static const QString FILE_NAME = "afiSyncParameters.txt";
-
-    QString path = SettingsModel::arma3Path() + "/" + FILE_NAME;
+    const QString path = SettingsModel::arma3Path() + "/" + FILE_NAME;
     LOG << path;
     QFile file(path);
     FileUtils::safeRemove(file);
@@ -349,7 +349,7 @@ bool Repository::removeMod(const QString& key)
             return true;
         }
     }
-    LOG_ERROR << "key" << key << "not found in repository" << name();
+    LOG << "Key " << key << " not found in repository " << name();
     return false;
 }
 
@@ -358,7 +358,7 @@ bool Repository::removeMod(Mod* mod, bool removeFromSync)
     //Removes mod view adapter.
     if (!mod->removeRepository(this))
     {
-        LOG_ERROR << "Unable to remove" << mod->name() << "from repository" << name();
+        LOG_ERROR << "Unable to remove " << mod->name() << " from repository " << name();
         return false;
     }
     parentItem()->rowsChanged();
