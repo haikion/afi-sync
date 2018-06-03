@@ -42,22 +42,22 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
     else if (srcFi.isFile())
     {
         QFile dstFile(dstPath);
-        LOG << "Copying" << srcPath << "to" << dstPath;
+        LOG << "Copying " << srcPath << " to " << dstPath;
         FileUtils::safeRemove(dstFile);
         if (dstFile.exists())
         {
-            LOG << "Cannot overwrite file" << dstPath;
+            LOG << "Cannot overwrite file " << dstPath;
             return false;
         }
         if (!QFile::copy(srcPath, dstPath))
         {
-            LOG << "Failure to copy " << srcPath << "to" << dstPath;
+            LOG << "Failure to copy " << srcPath << " to " << dstPath;
             return false;
         }
     }
     else
     {
-        LOG << srcPath << "does not exist";
+        LOG << srcPath << " does not exist";
         return false;
     }
     return true;
@@ -91,22 +91,22 @@ bool FileUtils::move(const QString& srcPath, const QString& dstPath)
     else if (srcFi.isFile())
     {
         QFile dstFile(dstPath);
-        LOG << "Moving" << srcPath << "to" << dstPath;
+        LOG << "Moving " << srcPath << " to " << dstPath;
         FileUtils::safeRemove(dstFile);
         if (dstFile.exists())
         {
-            LOG << "Cannot overwrite file" << dstPath;
+            LOG << "Cannot overwrite file " << dstPath;
             return false;
         }
         if (!safeRename(srcPath, dstPath))
         {
-            LOG << "Failure to copy " << srcPath << "to" << dstPath;
+            LOG << "Failure to copy " << srcPath << " to " << dstPath;
             return false;
         }
     }
     else
     {
-        LOG << srcPath << "does not exist";
+        LOG << srcPath << " does not exist";
         return false;
     }
     return true;
@@ -162,10 +162,10 @@ bool FileUtils::writeFile(const QByteArray& data, const QString& path)
 
     if (!file.isWritable())
     {
-        LOG_ERROR << "file" << path << " is not writable.";
+        LOG_ERROR << "file " << path << " is not writable.";
         return false;
     }
-    LOG << "Writing file:" << path;
+    LOG << "Writing file: " << path;
     file.write(data);
     file.close();
     return true;
@@ -173,7 +173,7 @@ bool FileUtils::writeFile(const QByteArray& data, const QString& path)
 
 QString FileUtils::casedPath(const QString& path)
 {
-    LOG << "Input:" << path;
+    LOG << "Input: " << path;
     QString pathCi = QFileInfo(path).absoluteFilePath();
     //Construct case sentive path by comparing file or dir names to case sentive ones.
     QStringList ciNames = pathCi.split("/");
@@ -199,7 +199,7 @@ QString FileUtils::casedPath(const QString& path)
             }
         }
     }
-    LOG << "Output:" << casedPath;
+    LOG << "Output: " << casedPath;
     return casedPath;
 }
 
@@ -208,7 +208,7 @@ bool FileUtils::safeRename(const QString& srcPath, const QString& dstPath)
     if (!pathIsSafe(srcPath))
         return false;
 
-    LOG << "Rename" << srcPath << "to"  << dstPath;
+    LOG << "Rename " << srcPath << " to "  << dstPath;
     return QFile::rename(srcPath, dstPath);
 }
 
@@ -224,7 +224,7 @@ bool FileUtils::safeRemove(QFile& file)
 
     if (pathIsSafe(path) && file.remove())
     {
-        LOG << "Removed" << path;
+        LOG << "Removed " << path;
         return true;
     }
     return false;
@@ -236,7 +236,7 @@ bool FileUtils::safeRemoveRecursively(QDir& dir)
 
     if (pathIsSafe(path) && dir.removeRecursively())
     {
-        LOG << "Removed" << path;
+        LOG << "Removed " << path;
         return true;
     }
     return false;

@@ -56,7 +56,7 @@ QString SettingsModel::setting(const QString& key, const QString& defaultValue)
     QString set = settings()->value(key).toString();
     if (set == QString())
     {
-        LOG << "Setting default value" << defaultValue << "for" << key;
+        LOG << "Setting default value " << defaultValue << " for " << key;
         settings()->setValue(key, defaultValue);
         set = defaultValue;
     }
@@ -242,7 +242,7 @@ QString SettingsModel::modDownloadPath()
 
 void SettingsModel::setModDownloadPath(QString path)
 {
-    LOG << "path =" << path;
+    LOG << "path = " << path;
     path = QDir::fromNativeSeparators(path);
     if (!saveDir("modDownloadPath", path))
     {

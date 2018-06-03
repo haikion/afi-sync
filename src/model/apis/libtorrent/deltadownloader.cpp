@@ -51,7 +51,7 @@ void DeltaDownloader::createFilePaths()
         //path is sometimes "".
         QString name = QString::fromStdString(fileStorage_.file_name(i));
         QString pathQ = QDir::fromNativeSeparators(name);
-        LOG << "Appending" << pathQ;
+        LOG << "Appending " << pathQ;
         patches_.append(pathQ);
     }
 }

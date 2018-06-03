@@ -58,7 +58,7 @@ bool AfiSyncLogger::rotateLogs()
     for (int i = 0; i <= (patchArchives.size() - MAX_LOG_FILES); ++i)
     {
         const QString deleteThis = patchArchives.at(i);
-        LOG << "Deleting old log file" << deleteThis;
+        LOG << "Deleting old log file " << deleteThis;
         FileUtils::safeRemove(deleteThis);
     }
     const QString filePrefix = QString(Constants::LOG_FILE) + "_" + QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss");

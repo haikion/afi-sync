@@ -121,7 +121,7 @@ void TreeModel::check(const QModelIndex& idx)
     SyncItem* syncItem = static_cast<SyncItem*>(idx.internalPointer());
     if (syncItem)
     {
-        LOG << "Rechecking:" << syncItem->name();
+        LOG << "Rechecking: " << syncItem->name();
         syncItem->check();
     }
 }
@@ -133,7 +133,6 @@ QString TreeModel::versionString() const
 
 void TreeModel::updateSpeed(qint64 download, qint64 upload)
 {
-    //LOG << "download =" << download << " upload =" << upload;
     if (download != download_)
     {
         download_ = download;

@@ -12,7 +12,7 @@ SyncNetworkAccessManager::SyncNetworkAccessManager(QObject* parent):
     moveToThread(&thread_);
     thread_.setObjectName("SyncNetworkManager Thread");
     thread_.start();
-    LOG << "Thread =" << &thread_ << "id" << thread_.currentThreadId();
+    LOG << "Thread = " << &thread_ << " id = " << thread_.currentThreadId();
 }
 
 SyncNetworkAccessManager::~SyncNetworkAccessManager()

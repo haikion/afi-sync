@@ -48,7 +48,7 @@ void Mod::init()
 {
     repositoryChanged();
     update();
-    LOG << "name =" << name() << "key =" << key() << "Completed";
+    LOG << "name = " << name() << "key = " << key() << " Completed";
 }
 
 void Mod::update(bool force)
@@ -77,7 +77,7 @@ void Mod::removeConflicting() const
         if (path().toLower() == syncPath.toLower() && syncKey != key_)
         {
             //Downloading into same folder but the key is different!
-            LOG << "Removing conflicting (" << syncKey << "," << syncPath << ") for (" << key_ << "," << path() << ").";
+            LOG << "Removing conflicting (" << syncKey << ", " << syncPath << ") for (" << key_ << ", " << path() << ").";
             sync_->removeFolder(syncKey);
             return;
         }
@@ -95,13 +95,13 @@ QString Mod::path() const
 //If mod is not in sync it will be added to it.
 void Mod::start()
 {
-    LOG << "name =" << name();
+    LOG << "name = " << name();
 
     if (!sync_->folderExists(key_))
     {
         removeConflicting();
         //Add folder
-        LOG << "Adding" << name() << "to sync.";
+        LOG << "Adding " << name() << " to sync.";
         sync_->addFolder(key_, name());
         setProcessCompletion(true);
     }
@@ -109,7 +109,7 @@ void Mod::start()
     QString error = sync_->folderError(key_);
     if (!error.isEmpty())
     {
-        LOG << "name =" << name() << "Re-adding directory. error =" << error;
+        LOG << "name = " << name() << " Re-adding directory. error = " << error;
         //Disagreement between Sync and AFISync
         sync_->removeFolder(key_);
         sync_->addFolder(key_, name());
@@ -123,7 +123,7 @@ void Mod::start()
 void Mod::setProcessCompletion(bool value)
 {
     SettingsModel::setProcess(name(), value);
-    LOG << "Process (completion) set to" << value << "for" << name();
+    LOG << "Process (completion) set to " << value << " for " << name();
 }
 
 bool Mod::getProcessCompletion() const
@@ -141,7 +141,7 @@ bool Mod::stop()
         return false;
     }
 
-    LOG << "Stopping mod transfer. name =" << name();
+    LOG << "Stopping mod transfer. name = " << name();
     sync_->setFolderPaused(key_, true);
     stopUpdatesSlot();
     update(true);
@@ -151,10 +151,10 @@ bool Mod::stop()
 
 void Mod::deleteExtraFiles()
 {
-    LOG << "name =" << name();
+    LOG << "name = " << name();
     if (!ticked())
     {
-        LOG << "name =" << name()  << "Mod is inactive, doing nothing.";
+        LOG << "Mod " << name()  << " is inactive, doing nothing.";
         return;
     }
 
@@ -177,10 +177,10 @@ void Mod::deleteExtraFiles()
     QSet<QString> extraFiles = localFiles - remoteFiles;
     for (QString path : extraFiles)
     {
-        LOG << "Deleting extra file" << path << "from mod" << name();
+        LOG << "Deleting extra file " << path << " from mod " << name();
         FileUtils::rmCi(path);
     }
-    LOG << "Completed name =" << name();
+    LOG << "Completed name = " << name();
 }
 
 //Returns true if at least one adapter is active.
@@ -220,14 +220,14 @@ void Mod::repositoryChanged(bool offline)
 
     if (offline)
     {
-        LOG << "Offline, not updating Sync" << name();
+        LOG << "Offline, not updating Sync " << name();
         return;
     }
     if (reposInactive() || !ticked())
     {
         if (sync_->folderExists(key_))
         {
-            LOG << "All repositories inactive or mod unchecked. Stopping" << name();
+            LOG << "All repositories inactive or mod unchecked. Stopping " << name();
             stop();
         }
         return;
@@ -273,7 +273,7 @@ void Mod::stopUpdatesSlot()
 
 void Mod::appendRepository(Repository* repository)
 {
-    LOG << "mod name =" << name() << " repo name =" << repository->name();
+    LOG << "mod name = " << name() << " repo name = " << repository->name();
 
     repositories_.insert(repository);
     if (repositories().size() == 1)
@@ -283,13 +283,13 @@ void Mod::appendRepository(Repository* repository)
         sync_ = repo->sync();
         if (sync_->ready())
         {
-            LOG << "name =" << name() << "Calling init directly";
+            LOG << "name = " << name() << " Calling init directly";
             QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
         }
         else
         {
             connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(init()));
-            LOG << "name =" << name() << "initCompleted connection created";
+            LOG << "name = " << name() << " initCompleted connection created";
         }
     }
     QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
@@ -428,7 +428,7 @@ void Mod::check()
 
 void Mod::checkboxClicked()
 {
-    LOG << name() << "checked state set to" << ticked();
+    LOG << name() << " checked state set to " << ticked();
     //Below cmd will start the download if repository is active.
     QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
 }

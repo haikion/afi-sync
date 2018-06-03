@@ -21,7 +21,7 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
     ready_(true),
     battlEyeEnabled_(true)
 {
-    LOG << "Created repo name =" << name;
+    LOG << "Created repo name = " << name;
     update();
     if (ticked())
         startUpdates();
@@ -69,7 +69,7 @@ void Repository::startUpdates()
 
 Repository::~Repository()
 {
-    LOG << "name =" << name();
+    LOG << "name = " << name();
     for (Mod* mod : mods())
     {
         //Remove mod object from repository but keep
@@ -158,7 +158,7 @@ void Repository::generalLaunch(const QStringList& extraParams)
     }
     else if (modsParameter().size() > 0)
     {
-        LOG << "Failsafe activated because parameter file path is incorrect. paramsFile =" << paramsFile;
+        LOG << "Failsafe activated because parameter file path is incorrect. paramsFile = " << paramsFile;
         arguments << modsParameter();
     }
     arguments << "-noLauncher";
@@ -174,9 +174,9 @@ void Repository::generalLaunch(const QStringList& extraParams)
         QStringList userParams = paramsString.split(" ");
         arguments << userParams;
     }
-    LOG << " name() =" << name()
-             << "executable =" << executable
-             << "arguments =" << arguments;
+    LOG << " name() = " << name()
+             << " executable = " << executable
+             << " arguments = " << arguments;
     QProcess::startDetached(executable, arguments);
 }
 
@@ -328,7 +328,7 @@ ISync* Repository::sync() const
 
 void Repository::enableMods()
 {
-    LOG << "name =" << name();
+    LOG << "name = " << name();
     for (ModAdapter* adp : modAdapters())
     {
         if (adp->isOptional() && !adp->ticked())
@@ -344,7 +344,7 @@ bool Repository::removeMod(const QString& key)
     {
         if (mod->key() == key)
         {
-            LOG << "Removing mod" << mod->name() << "from repository" << name();
+            LOG << "Removing mod " << mod->name() << " from repository " << name();
             removeMod(mod);
             return true;
         }

@@ -98,7 +98,7 @@ int gui(int argc, char* argv[])
     #ifndef QT_DEBUG
         initStandalone();
     #endif
-    LOG << "\nAFISync" << Constants::VERSION_STRING << "started";
+    LOG << "AFISync " << Constants::VERSION_STRING << " started";
     qmlRegisterSingletonType<TreeModel>("org.AFISync", 0, 1, "TreeModel", getTreeModel);
     qmlRegisterSingletonType<SettingsModel>("org.AFISync", 0, 1, "SettingsModel", getSettingsModel);
     qmlRegisterSingletonType<ProcessMonitor>("org.AFISync", 0, 1, "ProcessMonitor", getProcessMonitor);
@@ -164,7 +164,7 @@ int cli(int argc, char* argv[])
 
         return 0;
     }
-    LOG << "FAIL" << missingArgs.size() << missingArgs;
+    LOG << "FAIL " << missingArgs.size() << " " << missingArgs;
 
     QFileInfo dir(parser.value("mirror"));
     QString modDownloadPath = dir.absoluteFilePath();
@@ -173,7 +173,7 @@ int cli(int argc, char* argv[])
         qDebug() << "Invalid path:" << modDownloadPath;
         QCoreApplication::exit(2);
     }
-    LOG << "Setting mod download path:" << modDownloadPath;
+    LOG << "Setting mod download path: " << modDownloadPath;
     SettingsModel::setModDownloadPath(modDownloadPath);
 
     Global::guiless = true;

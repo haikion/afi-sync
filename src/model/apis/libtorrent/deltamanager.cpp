@@ -146,7 +146,7 @@ void DeltaManager::handlePatched(const QString& modPath, bool success)
 {
     QString modName = QFileInfo(modPath).fileName();
     QString key = keyHash_.key(modName);
-    LOG << key << modName;
+    LOG << key << " " << modName;
     keyHash_.remove(key);
     if (keyHash_.empty())
     {
@@ -173,7 +173,7 @@ void DeltaManager::deleteExtraFiles()
     QSet<QString> extraFiles = localFiles - torrentFiles;
     for (const QString& filePath : extraFiles)
     {
-        LOG << "Deleting" << filePath;
+        LOG << "Deleting " << filePath;
         FileUtils::rmCi(filePath);
     }
 }

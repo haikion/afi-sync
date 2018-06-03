@@ -27,15 +27,15 @@ void Installer::install(const QDir& src, const QDir& dst)
 {
     if (!src.exists())
     {
-        LOG << "Nothing to install from" << src.absolutePath();
+        LOG << "Nothing to install from " << src.absolutePath();
         return;
     }
     if (!dst.exists())
     {
-        LOG_WARNING << "Destination directory:" << dst.absolutePath() << "does not exist.";
+        LOG_WARNING << "Destination directory: " << dst.absolutePath() << " does not exist.";
         return;
     }
-    LOG << "Installing" << src.absolutePath()
-             << "to" << dst.absolutePath();
+    LOG << "Installing " << src.absolutePath()
+             << " to " << dst.absolutePath();
     FileUtils::copy(src.absolutePath(), dst.absolutePath());
 }

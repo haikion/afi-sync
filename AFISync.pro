@@ -47,7 +47,6 @@ SOURCES += src/model/main.cpp \
     src/model/settingsmodel.cpp \
     src/model/global.cpp \
     src/model/modadapter.cpp \
-    src/model/apis/heart.cpp \
     src/model/runningtime.cpp \
     src/model/processmonitor.cpp \
     src/model/apis/libtorrent/libtorrentapi.cpp \
@@ -86,7 +85,6 @@ HEADERS += \
     src/model/global.h \
     src/model/debug.h \
     src/model/modadapter.h \
-    src/model/apis/heart.h \
     src/model/runningtime.h \
     src/model/apis/isync.h \
     src/model/processmonitor.h \
