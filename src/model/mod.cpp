@@ -137,7 +137,7 @@ bool Mod::stop()
     //TODO: Might be too defensive
     if (!sync_->folderExists(key_))
     {
-        LOG << "ERROR: Folder" << name() << "does not exist.";
+        LOG_ERROR << "Folder" << name() << "does not exist.";
         return false;
     }
 
@@ -170,7 +170,7 @@ void Mod::deleteExtraFiles()
     //Fail safe if there is torrent without files.
     if (remoteFiles.size() == 0)
     {
-        LOG << "ERROR: Not deleting extra files because torrent contains 0 files.";
+        LOG_ERROR << "Not deleting extra files because torrent contains 0 files.";
         return; //Would delete everything otherwise
     }
 
@@ -214,7 +214,7 @@ void Mod::repositoryChanged(bool offline)
     //just in case
     if (!sync_)
     {
-        LOG << "ERROR: Sync is null" << name();
+        LOG_ERROR << "Sync is null" << name();
         return;
     }
 

@@ -154,7 +154,7 @@ bool TreeModel::ready(const QModelIndex& idx) const
         return item->status() == SyncStatus::READY;
     }
 
-    LOG << "ERROR: ticked asked from non-syncitem object:" << idx.internalPointer();
+    LOG_ERROR << "ticked asked from non-syncitem object:" << idx.internalPointer();
     return false;
 }
 
@@ -200,7 +200,7 @@ void TreeModel::updateView(TreeItem* item, int row)
     QModelIndex idx = createIndex(row, 0, item);
     if (!idx.isValid())
     {
-        LOG << "ERROR: Tried to update invalid index.";
+        LOG_ERROR << "Tried to update invalid index.";
         return;
     }
 

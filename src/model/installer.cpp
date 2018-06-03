@@ -32,7 +32,7 @@ void Installer::install(const QDir& src, const QDir& dst)
     }
     if (!dst.exists())
     {
-        LOG << "Warning: Destination directory:" << dst.absolutePath() << "does not exist.";
+        LOG_WARNING << "Destination directory:" << dst.absolutePath() << "does not exist.";
         return;
     }
     LOG << "Installing" << src.absolutePath()

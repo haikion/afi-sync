@@ -55,7 +55,7 @@ bool DeltaManager::patch(const QString& modName, const QString& key)
 {
     if (!patchAvailable(modName))
     {
-        LOG << "Warning: No patches found for" << modName;
+        LOG_WARNING << "No patches found for" << modName;
         return false;
     }
 
@@ -103,7 +103,7 @@ int64_t DeltaManager::totalWanted(const QString& key)
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
     {
-        LOG << "ERROR: Key" << key << "not found.";
+        LOG_ERROR << "Key" << key << "not found.";
         return 99999999;
     }
 
@@ -115,7 +115,7 @@ int64_t DeltaManager::totalWantedDone(const QString& key)
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
     {
-        LOG << "ERROR: Key" << key << "not found.";
+        LOG_ERROR << "Key" << key << "not found.";
         return 99999999;
     }
 
@@ -188,7 +188,7 @@ QSet<QString> DeltaManager::torrentFilesUpper()
     boost::shared_ptr<const lt::torrent_info> torrentFile = handle.torrent_file();
     if (!torrentFile)
     {
-        LOG << "ERROR: torrent_file is null";
+        LOG_ERROR << "torrent_file is null";
         return rVal;
     }
     lt::file_storage files = torrentFile->files();

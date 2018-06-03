@@ -13,7 +13,9 @@
 #include "szip.h"
 #include "qstreams.h"
 
-#define LOG BOOST_LOG_TRIVIAL(info) << " " << Q_FUNC_INFO
+#define LOG BOOST_LOG_TRIVIAL(info) << " " << Q_FUNC_INFO << " "
+#define LOG_ERROR BOOST_LOG_TRIVIAL(error) << " " << Q_FUNC_INFO << " "
+#define LOG_WARNING BOOST_LOG_TRIVIAL(warning) << " " << Q_FUNC_INFO << " "
 
 class AfiSyncLogger
 {

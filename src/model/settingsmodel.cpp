@@ -246,7 +246,7 @@ void SettingsModel::setModDownloadPath(QString path)
     path = QDir::fromNativeSeparators(path);
     if (!saveDir("modDownloadPath", path))
     {
-        LOG << "Warning: failed to set mod download path. modDownloadPath() ="
+        LOG_WARNING << "failed to set mod download path. modDownloadPath() ="
             << modDownloadPath() << " path =" << path;
         return;
     }

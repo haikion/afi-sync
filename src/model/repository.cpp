@@ -349,7 +349,7 @@ bool Repository::removeMod(const QString& key)
             return true;
         }
     }
-    LOG << "ERROR: key" << key << "not found in repository" << name();
+    LOG_ERROR << "key" << key << "not found in repository" << name();
     return false;
 }
 
@@ -358,7 +358,7 @@ bool Repository::removeMod(Mod* mod, bool removeFromSync)
     //Removes mod view adapter.
     if (!mod->removeRepository(this))
     {
-        LOG << "ERROR: Unable to remove" << mod->name() << "from repository" << name();
+        LOG_ERROR << "Unable to remove" << mod->name() << "from repository" << name();
         return false;
     }
     parentItem()->rowsChanged();

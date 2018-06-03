@@ -82,7 +82,7 @@ void DeltaPatcher::patchDirSync(const QString& modPath)
     QStringList patches = filterPatches(modPath, allPatches);
     if (patches.size() == 0)
     {
-        LOG << "ERROR: no patches found for" << modName << "from"
+        LOG_ERROR << "no patches found for" << modName << "from"
             << allPatches << "hash =" << AHasher::hash(modPath);
         emit patched(modPath, false);
         return;
@@ -157,7 +157,7 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
         QStringList matches = allPatches.filter(regExp);
         if (matches.size() != 1)
         {
-            LOG << "ERROR: Incorrect number (" << matches.size()
+            LOG_ERROR << "Incorrect number (" << matches.size()
                      << ") of suitable patches. Aborting...2";
             return QStringList();
         }
@@ -237,7 +237,7 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
     QDirIterator it(extractedPath, QDir::Files, QDirIterator::Subdirectories);
     if (!it.hasNext())
     {
-        LOG << "ERROR: Nothing to patch in" << extractedPath;
+        LOG_ERROR << "Nothing to patch in" << extractedPath;
         cleanUp(deltaDir, tmpDir);
         return false;
     }
@@ -266,7 +266,7 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
 
         if (!rVal)
         {
-            LOG << "Warning: Delta patching failed. targetPath =" << targetPath;
+            LOG_WARNING << "Delta patching failed. targetPath =" << targetPath;
             cleanUp(deltaDir, tmpDir);
             return false;
         }
@@ -293,7 +293,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
     QFileInfo laterFi = QFileInfo(laterPath);
     if (!laterFi.exists())
     {
-        LOG << "ERROR: Path" << laterPath << "does not exist.";
+        LOG_ERROR << "Path" << laterPath << "does not exist.";
         return false;
     }
     laterPath = laterFi.absoluteFilePath();
@@ -302,19 +302,19 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
             patchesDir.entryList().filter(QRegExp(modName + "\\..*\\." + oldHash + "\\.7z" ));
     if (conflictingFiles.size() > 0)
     {
-        LOG << "ERROR: patch" << patchName << "collides with files:" << conflictingFiles;
+        LOG_ERROR << "patch" << patchName << "collides with files:" << conflictingFiles;
         return false;
     }
 
     if (!patchesFi_->isWritable())
     {
-        LOG << "ERROR: Directory" << patchesPath << "is not writable.";
+        LOG_ERROR << "Directory" << patchesPath << "is not writable.";
         return false;
     }
 
     if (deltaDir.exists())
     {
-        LOG << "ERROR: Directory" << deltaPath << "already exists. Deleting...";
+        LOG_ERROR << "Directory" << deltaPath << "already exists. Deleting...";
         FileUtils::safeRemoveRecursively(deltaDir);
     }
 
@@ -361,7 +361,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
     if (!rVal)
     {
         FileUtils::safeRemoveRecursively(deltaDir);
-        LOG << "ERROR: Directories" << oldPath << "and" << laterPath << "are identical."
+        LOG_ERROR << "Directories" << oldPath << "and" << laterPath << "are identical."
             << "Patch generation aborted.";
         return false;
     }
@@ -388,7 +388,7 @@ QStringList DeltaPatcher::removePatchesFromLatest(const QString& latestPath, con
     for (const QString& name : matches)
     {
         FileUtils::safeRemove(patchesPath + "/" + name);
-        LOG << "ERROR: Found patch from latest version. Patch" << name << "removed.";
+        LOG_ERROR << "Found patch from latest version. Patch" << name << "removed.";
         rVal.append(name);
     }
 
@@ -430,14 +430,14 @@ bool DeltaPatcher::createEmptyDir(QDir dir) const
         LOG << "ERROR:" << dir.absolutePath() << "already exists! Deleting..";
         if (!FileUtils::safeRemoveRecursively(dir))
         {
-            LOG << "ERROR: Unable to remove directory:" << dir.absolutePath();
+            LOG_ERROR << "Unable to remove directory:" << dir.absolutePath();
             return false;
         }
     }
     LOG << "Creating directory:" << dir.absolutePath();
     if (!dir.mkpath("."))
     {
-        LOG << "ERROR: Unable to create tmp dir:" << dir.absolutePath();
+        LOG_ERROR << "Unable to create tmp dir:" << dir.absolutePath();
         return false;
     }
     return true;

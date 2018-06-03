@@ -38,7 +38,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
 
     if (jsonMap_ == QVariantMap())
     {
-        LOG << "ERROR: Json file parse failure. Exiting...";
+        LOG_ERROR << "Json file parse failure. Exiting...";
         exit(2);
     }
     //Handle delta updates url
@@ -206,13 +206,13 @@ QJsonDocument JsonReader::readJsonFile(const QString& path) const
     QFile file(path);
     if (!file.exists() || !file.open(QIODevice::ReadOnly))
     {
-        LOG << "ERROR: failed to open json file: " << path << " file.exists =" << file.exists();
+        LOG_ERROR << "failed to open json file: " << path << " file.exists =" << file.exists();
         return QJsonDocument();
     }
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     if (!doc.isObject())
     {
-        LOG << "ERROR: error parsing json file: " << path;
+        LOG_ERROR << "error parsing json file: " << path;
         return QJsonDocument();
     }
     file.close();
@@ -225,7 +225,7 @@ QByteArray JsonReader::fetchJsonBytes(QString url)
     QNetworkReply* reply = nam_.syncGet(QNetworkRequest(url));
     if (reply->bytesAvailable() == 0)
     {
-        LOG << "Warning: failed. url =" << url;
+        LOG_WARNING << "failed. url =" << url;
         return QByteArray();
     }
     QByteArray rVal = reply->readAll();

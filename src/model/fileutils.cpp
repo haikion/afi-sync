@@ -23,7 +23,7 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
         QDir().mkpath(dstPath);
         if (!QFileInfo(dstPath).exists())
         {
-            LOG << "ERROR: Failed to create directory" << dstPath;
+            LOG_ERROR << "Failed to create directory" << dstPath;
             return false;
         }
         QDir srcDir(srcPath);
@@ -72,7 +72,7 @@ bool FileUtils::move(const QString& srcPath, const QString& dstPath)
         QDir().mkpath(dstPath);
         if (!QFileInfo(dstPath).exists())
         {
-            LOG << "ERROR: Failed to create directory" << dstPath;
+            LOG_ERROR << "Failed to create directory" << dstPath;
             return false;
         }
         QDir srcDir(srcPath);
@@ -142,7 +142,7 @@ QByteArray FileUtils::readFile(const QString& path)
     file.open(QFile::ReadOnly);
     if (!file.isReadable())
     {
-        LOG << "Warning: unable to read file" << path;
+        LOG_WARNING << "unable to read file" << path;
         return rVal;
     }
 
@@ -162,7 +162,7 @@ bool FileUtils::writeFile(const QByteArray& data, const QString& path)
 
     if (!file.isWritable())
     {
-        LOG << "ERROR: file" << path << " is not writable.";
+        LOG_ERROR << "file" << path << " is not writable.";
         return false;
     }
     LOG << "Writing file:" << path;
@@ -187,7 +187,7 @@ QString FileUtils::casedPath(const QString& path)
         {
             if (!it.hasNext())
             {
-                LOG << "ERROR: Unable to construct case sensitive path from" << path;
+                LOG_ERROR << "Unable to construct case sensitive path from" << path;
                 return QString();
             }
             QFileInfo fi = it.next();
@@ -269,7 +269,7 @@ bool FileUtils::pathIsSafe(const QString& path)
             return true;
     }
 
-    LOG << "ERROR: " << pathFull << "not in safe subpaths" << safeSubpaths << ". Operation aborted!";
+    LOG_ERROR << "" << pathFull << "not in safe subpaths" << safeSubpaths << ". Operation aborted!";
     return false;
 }
 

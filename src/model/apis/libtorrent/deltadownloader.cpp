@@ -21,7 +21,7 @@ DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle):
     boost::shared_ptr<const lt::torrent_info> torrent = handle_.torrent_file();
     if (!torrent || !torrent->is_valid())
     {
-        LOG << "ERROR: Torrent is invalid.";
+        LOG_ERROR << "Torrent is invalid.";
         return;
     }
     //Always seed.
@@ -153,7 +153,7 @@ QVector<int> DeltaDownloader::patchIndexes(const QString& modName)
         int i = patches_.indexOf(patchName);
         if (i == -1) //Fail safe TODO: Might be too defensive
         {
-            LOG << "ERROR: Index == -1 for" << patchName;
+            LOG_ERROR << "Index == -1 for" << patchName;
             continue;
         }
         indexes.append(i);

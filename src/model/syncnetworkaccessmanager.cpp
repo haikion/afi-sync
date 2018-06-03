@@ -39,5 +39,5 @@ void SyncNetworkAccessManager::syncGetSlot(QNetworkRequest req, QNetworkReply*& 
     QTimer::singleShot(timeout, &loop, SLOT(quit()));
     loop.exec();
     if (!reply->isFinished())
-        LOG << "ERROR: Request timeout from url" << req.url().url();
+        LOG_ERROR << "Request timeout from url" << req.url().url();
 }
