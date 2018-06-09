@@ -14,8 +14,9 @@ win32 {
     LIBS += -L..\lib
     !Release {
         #Dynamic build
-        DEFINES += BOOST_ALL_NO_LIB
-        LIBS += -lboost_system-vc140-mt-gd-x64-1_66 -lboost_atomic-vc140-mt-gd-x64-1_66 -lboost_random-vc140-mt-gd-x64-1_66 -lboost_date_time-vc140-mt-gd-x64-1_66 -lboost_log-vc140-mt-gd-x64-1_66 -lboost_log_setup-vc140-mt-gd-x64-1_66 -lboost_filesystem-vc140-mt-gd-x64-1_66 -lboost_thread-vc140-mt-gd-x64-1_66 -lws2_32 -ltorrent
+        DEFINES += BOOST_ALL_DYN_LINK
+        POSTFIX = vc140-mt-gd-x64-1_66
+        LIBS += -lboost_log_setup-$${POSTFIX} -lboost_log-$${POSTFIX} -lboost_filesystem-$${POSTFIX} -lboost_system-$${POSTFIX} -lboost_date_time-$${POSTFIX} -lboost_thread-$${POSTFIX} -lboost_regex-$${POSTFIX} -lboost_atomic-$${POSTFIX} -lboost_random-$${POSTFIX} -lws2_32 -ltorrent
     }
     Release {
         #Static build
