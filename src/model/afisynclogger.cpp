@@ -39,8 +39,7 @@ void AfiSyncLogger::initFileLogging()
         // 2: [error] An error severity message
         keywords::format =
         (
-            expressions::stream << " [" << boost::log::trivial::severity
-                << "] " << expressions::smessage
+            expressions::stream << " [" << trivial::severity << "] " << expressions::smessage
         )
     );
 }
