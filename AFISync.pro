@@ -6,7 +6,6 @@ CONFIG += c++14
 win32 {
     #Google Crashpad crash reporting
     include(src\model\crashhandler\crashhandler.pri)
-
     DEFINES += _WIN32_WINNT=0x0501
     INCLUDEPATH += ..\src\libtorrent-rasterbar-1.1.7\include
     INCLUDEPATH += ..\src\boost_1_66_0
@@ -20,7 +19,7 @@ win32 {
     }
     Release {
         #Static build
-        #LIBS += -llibboost_system-vc140-mt-s-1_66 -llibboost_atomic-vc140-mt-s-1_66 -llibboost_random-vc140-mt-s-1_66 -lws2_32 -llibtorrent
+        LIBS += -llibboost_system-vc140-mt-s-x64-1_66 -llibboost_atomic-vc140-mt-s-x64-1_66 -llibboost_random-vc140-mt-s-x64-1_66 -lws2_32 -llibtorrent
         DEFINES += STATIC_BUILD=1
         #Generate pdb debug symbols for crash dumps
         QMAKE_CXXFLAGS+=/Zi

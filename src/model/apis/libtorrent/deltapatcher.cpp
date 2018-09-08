@@ -168,11 +168,12 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
 qint64 DeltaPatcher::bytesPatched(const QString& modName) const
 {
     static const qint64 INTERVAL = 10;
-
-    static qint64 prevBytesPatched = 0;
     static qint64 speed = 250;
     static qint64 startTime = runningTimeS();
+    static qint64 prevBytesPatched = 0;
 
+    if (bytesPatched_ == 0)
+        prevBytesPatched = 0; //bytesPatched was reseted
     if (modName != patchingMod_)
         return 0;
 
