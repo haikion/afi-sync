@@ -17,20 +17,20 @@ class ModAdapter : public SyncItem
     Q_OBJECT
 
 public:
-    ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index);
+    ModAdapter(Mod* mod, Repository* repo, bool optional, int index);
     ~ModAdapter() = default;
 
     virtual void check();
     virtual QString checkText();
     virtual QString startText();
     virtual QString joinText();
-    virtual QString status() const;
+    virtual QString statusStr() const;
     virtual QString progressText();
     virtual void checkboxClicked();
     virtual bool ticked() const;
     virtual void processCompletion();
     virtual int eta() const;
-    bool isOptional() const;
+    virtual bool optional() const;
     Mod* mod() const;
     Repository* repo() const;
 

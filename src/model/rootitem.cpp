@@ -160,7 +160,7 @@ void RootItem::processCompletion()
     LOG << "Started";
     for (Repository* repo : childItems())
     {
-        if (repo->status() == SyncStatus::INACTIVE)
+        if (repo->statusStr() == SyncStatus::INACTIVE)
         {
             LOG << "Skipping " << repo->name() << " due to inactivity.";
             continue;
@@ -209,7 +209,7 @@ void RootItem::startUpdates()
     startUpdateTimers();
     for (Repository* repo : childItems())
     {
-        if (repo->status() == SyncStatus::INACTIVE)
+        if (repo->statusStr() == SyncStatus::INACTIVE)
             continue;
 
         repo->startUpdates();
@@ -309,7 +309,7 @@ void RootItem::periodicRepoUpdate()
 {
     for (Repository* repo : childItems())
     {
-        if (repo->status() == SyncStatus::PATCHING)
+        if (repo->statusStr() == SyncStatus::PATCHING)
         {
             LOG << "Periodic update disabled while patching.";
             return;

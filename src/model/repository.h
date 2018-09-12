@@ -9,11 +9,12 @@
 #include <QHash>
 #include <QObject>
 #include <QPair>
+#include "interfaces/irepository.h"
 #include "syncitem.h"
 #include "mod.h"
 #include "rootitem.h"
 
-class Repository : public SyncItem
+class Repository : public SyncItem, virtual public IRepository
 {
 public:
     Repository(const QString& name, const QString& serverAddress, unsigned port,
@@ -28,9 +29,10 @@ public:
     ISync* sync() const;
     virtual QString startText();
     virtual QString joinText();
-    void join();
-    void launch();
+    virtual void join();
+    virtual void start();
     QList<Mod*> mods() const;
+    QList<ISyncItem*> uiMods() const;
     void processCompletion();
     void enableMods();
     bool removeMod(const QString& key);

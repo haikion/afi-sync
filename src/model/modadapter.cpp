@@ -25,7 +25,7 @@ void ModAdapter::check()
 
 QString ModAdapter::checkText()
 {
-    if (!isOptional())
+    if (!optional())
         return "disabled";
 
     QString rVal = ticked() ? "true" : "false";
@@ -42,9 +42,9 @@ QString ModAdapter::joinText()
     return mod_->joinText();
 }
 
-QString ModAdapter::status() const
+QString ModAdapter::statusStr() const
 {
-    return mod_->status();
+    return mod_->statusStr();
 }
 
 QString ModAdapter::progressText()
@@ -88,7 +88,7 @@ void ModAdapter::setTicked(bool checked)
     mod_->checkboxClicked();
 }
 
-bool ModAdapter::isOptional() const
+bool ModAdapter::optional() const
 {
     return isOptional_;
 }
@@ -103,7 +103,7 @@ void ModAdapter::updateView(bool force)
     //Only update if mod and its repo is active or when force == true
     if ((ticked() && repo()->ticked()) || force)
     {
-        QString guiData = checkText() + progressText() + status();
+        QString guiData = checkText() + progressText() + statusStr();
         if (guiData == guiData_)
             return; //Avoid heavy UI updates when data has not been changed.
 

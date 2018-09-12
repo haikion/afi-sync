@@ -186,7 +186,7 @@ void Mod::deleteExtraFiles()
 //Returns true if at least one adapter is active.
 bool Mod::ticked() const
 {
-    if (!isOptional() && !reposInactive())
+    if (!optional() && !reposInactive())
         return true;
 
     for (ModAdapter* adp : modAdapters())
@@ -322,12 +322,12 @@ bool Mod::removeRepository(Repository* repository)
 }
 
 //Returns true only if all adapters are optional
-bool Mod::isOptional() const
+bool Mod::optional() const
 {
     bool rVal = true;
     for (ModAdapter* adp : modAdapters())
     {
-        rVal = rVal && adp->isOptional();
+        rVal = rVal && adp->optional();
     }
     return rVal;
 }
@@ -361,7 +361,7 @@ void Mod::updateStatus()
         setStatus(SyncStatus::CHECKING);
     }
     //Hack to fix BtSync reporting ready when it's not... :D (oh my god...)
-    else if (status() == SyncStatus::WAITING)
+    else if (statusStr() == SyncStatus::WAITING)
     {
         ++waitTime_;
         if (waitTime_ > COMPLETION_WAIT_DURATION)
@@ -375,14 +375,14 @@ void Mod::updateStatus()
             setStatus(SyncStatus::READY);
         }
     }
-    else if (status() == SyncStatus::READY || status() == SyncStatus::READY_PAUSED) {}
+    else if (statusStr() == SyncStatus::READY || statusStr() == SyncStatus::READY_PAUSED) {}
     else if (sync_->folderReady(key_))
     {
         setStatus(SyncStatus::WAITING);
     }
     else if (sync_->folderPaused(key_))
     {
-        if (status() == SyncStatus::READY)
+        if (statusStr() == SyncStatus::READY)
         {
             setStatus(SyncStatus::READY_PAUSED);
         }
@@ -405,7 +405,7 @@ void Mod::updateStatus()
     }
     else if (eta() > 0)
     {
-        if (status() != SyncStatus::DOWNLOADING)
+        if (statusStr() != SyncStatus::DOWNLOADING)
         {
             setStatus(SyncStatus::DOWNLOADING);
             //Heavy operation -> only set when entering downloading state.
@@ -437,7 +437,7 @@ bool Mod::reposInactive() const
 {
     for (const Repository* repo : repositories_)
     {
-        if (repo->status() != SyncStatus::INACTIVE)
+        if (repo->statusStr() != SyncStatus::INACTIVE)
             return false;
     }
     return true;
@@ -445,8 +445,8 @@ bool Mod::reposInactive() const
 
 void Mod::updateEta()
 {
-    if (status() == SyncStatus::INACTIVE
-            || status() == SyncStatus::NOT_IN_SYNC || status() == SyncStatus::READY)
+    if (statusStr() == SyncStatus::INACTIVE
+            || statusStr() == SyncStatus::NOT_IN_SYNC || statusStr() == SyncStatus::READY)
     {
         setEta(0);
         return;

@@ -84,24 +84,22 @@ QString TreeModel::bandwithString(int amount) const
     return QString::number(amount/1000) + " kB/s";
 }
 
-QString TreeModel::downloadStr()
+QString TreeModel::downloadStr() const
 {
     return bandwithString(download_);
 }
 
-QString TreeModel::uploadStr()
+QString TreeModel::uploadStr() const
 {
     return bandwithString(upload_);
 }
 
-// TODO: QML specific, remove
 void TreeModel::launch(const QModelIndex& repoIdx) const
 {
     Repository* repo = static_cast<Repository*>(repoIdx.internalPointer());
-    repo->launch();
+    repo->start();
 }
 
-// TODO: QML specific, remove
 void TreeModel::join(const QModelIndex& repoIdx) const
 {
     Repository* repo = static_cast<Repository*>(repoIdx.internalPointer());
@@ -118,7 +116,6 @@ void TreeModel::processCompletion()
     rootItem_->processCompletion();
 }
 
-// TODO: QML specific, remove
 void TreeModel::check(const QModelIndex& idx)
 {
     SyncItem* syncItem = static_cast<SyncItem*>(idx.internalPointer());
@@ -134,7 +131,6 @@ QString TreeModel::versionString() const
     return Constants::VERSION_STRING;
 }
 
-// TODO: QML specific, remove
 void TreeModel::updateSpeed(qint64 download, qint64 upload)
 {
     if (download != download_)
@@ -154,7 +150,7 @@ bool TreeModel::ready(const QModelIndex& idx) const
     SyncItem* item = static_cast<SyncItem*>(idx.internalPointer());
     if (item)
     {
-        return item->status() == SyncStatus::READY;
+        return item->statusStr() == SyncStatus::READY;
     }
 
     LOG_ERROR << "Ticked asked from non-syncitem object: " << idx.internalPointer();
@@ -222,11 +218,11 @@ QVariant TreeModel::data(const QModelIndex& index, int role = Qt::DisplayRole) c
         case Qt::DisplayRole: return item->data(index.column());
         case Check: return item->checkText();
         case Name: return item->nameText();
-        case Status: return item->statusText();
+        case Status: return item->statusStr();
         case Progress: return item->progressText();
         case Start: return item->startText();
         case Join: return item->joinText();
-        case FileSize: return item->fileSizeText();
+        case FileSize: return item->sizeStr();
     }
     Q_ASSERT_X(false, "TreeModel::data","Incorrect role = " + QString::number(role).toLatin1());
     return QVariant();

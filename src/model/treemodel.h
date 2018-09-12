@@ -53,8 +53,8 @@ signals:
 
 public slots:
     void rowsChanged();
-    QString downloadStr();
-    QString uploadStr();
+    QString downloadStr() const;
+    QString uploadStr() const;
     bool isRepository(const QModelIndex& index) const;
     void checkboxClicked(const QModelIndex& index);
     void launch(const QModelIndex& repoIdx) const;

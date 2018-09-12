@@ -24,12 +24,12 @@ QString SyncItem::nameText()
     return name_;
 }
 
-QString SyncItem::statusText()
+QString SyncItem::statusStr()
 {
-    return status();
+    return status_;
 }
 
-QString SyncItem::fileSizeText() const
+QString SyncItem::sizeStr() const
 {
     if (fileSize_ == 0)
         return QString("??.?? MB");
@@ -64,6 +64,11 @@ int SyncItem::eta() const
     return eta_;
 }
 
+QString SyncItem::etaStr() const
+{
+    return ""; //TODO
+}
+
 void SyncItem::setEta(const int& eta)
 {
     eta_ = eta;
@@ -84,6 +89,12 @@ quint64 SyncItem::fileSize() const
     return fileSize_;
 }
 
+bool SyncItem::optional()
+{
+    //Default for repositories. This is overwritten in mods
+    return true;
+}
+
 void SyncItem::setFileSize(const quint64 size)
 {
     fileSize_ = size;
@@ -94,7 +105,7 @@ void SyncItem::setStatus(const QString& status)
     status_ = status;
 }
 
-QString SyncItem::status() const
+QString SyncItem::statusStr() const
 {
     return status_;
 }

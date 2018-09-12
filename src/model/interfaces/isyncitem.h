@@ -10,14 +10,14 @@
 class ISyncItem
 {
 public:
-    virtual QString name() = 0;
+    virtual QString name() const = 0;
     virtual QString statusStr() = 0;
-    virtual QString etaStr() = 0;
-    virtual QString sizeStr() = 0;
-    virtual bool isOptional() = 0;
-    virtual bool checked() = 0;
-    virtual void setChecked(bool value) = 0;
-    virtual void reCheck() = 0;
+    virtual QString etaStr() const = 0;
+    virtual QString sizeStr() const = 0;
+    virtual bool optional() = 0;
+    virtual bool ticked() const = 0;
+    virtual void checkboxClicked() = 0;
+    virtual void check() = 0;
 };
 
 #endif // ISYNCITEM_H

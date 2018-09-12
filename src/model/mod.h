@@ -58,7 +58,7 @@ private:
     bool stop();
     void removeConflicting() const;
     QString path() const;
-    bool isOptional() const;
+    bool optional() const;
     void setProcessCompletion(bool value);
     bool getProcessCompletion() const;
 

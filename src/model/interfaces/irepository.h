@@ -4,10 +4,10 @@
 #include <QList>
 #include "isyncitem.h"
 
-class IRepository : public ISyncItem
+class IRepository : virtual public ISyncItem
 {
 public:
-    virtual QList<ISyncItem*> mods() = 0;
+    virtual QList<ISyncItem*> uiMods() const = 0;
     virtual void start() = 0;
     virtual void join() = 0;
 };

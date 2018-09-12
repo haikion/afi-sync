@@ -4,8 +4,8 @@
 #define ABSTRACTITEM_H
 
 #include <QObject>
+#include "interfaces/isyncitem.h"
 #include "treeitem.h"
-
 
 namespace SyncStatus {
     static const QString DOWNLOADING = "Downloading...";
@@ -24,7 +24,7 @@ namespace SyncStatus {
     static const QString QUEUED = "Queued";
 }
 
-class SyncItem : public TreeItem, public QObject
+class SyncItem : public TreeItem, public QObject, virtual public ISyncItem
 {
 public:
     explicit SyncItem(const QString& name, TreeItem* parentItem = nullptr);
@@ -32,22 +32,24 @@ public:
     virtual QString checkText();
     virtual QString nameText();
     virtual QString progressText();
-    virtual QString statusText();
+    virtual QString statusStr();
     virtual QString startText() = 0;
     virtual QString joinText() = 0;
     virtual void processCompletion() = 0;
     virtual void check() = 0;
     virtual int eta() const;
+    virtual QString etaStr() const;
 
-    virtual QString status() const;
-    void setStatus(const QString& status);
-    QString name() const;
+    virtual QString statusStr() const;
+    void setStatus(const QString& statusStr);
+    virtual QString name() const;
     void setName(const QString& name);
     virtual bool ticked() const = 0;
     virtual void checkboxClicked() = 0;
     quint64 fileSize() const;
+    virtual bool optional();
     void setFileSize(const quint64 size);
-    QString fileSizeText() const;
+    QString sizeStr() const;
 
 protected:
     virtual void setEta(const int& eta);

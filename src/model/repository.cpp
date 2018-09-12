@@ -135,7 +135,7 @@ void Repository::join()
     generalLaunch(joinParameters());
 }
 
-void Repository::launch()
+void Repository::start()
 {
     generalLaunch();
 }
@@ -214,7 +214,7 @@ void Repository::updateEtaAndStatus()
 
     for (const Mod* item : mods())
     {
-        modStatuses.insert(item->status());
+        modStatuses.insert(item->statusStr());
     }
     //Status
     QSet<QString> readyStatuses;
@@ -301,7 +301,7 @@ QString Repository::startText()
     {
         return "Start Disabled";
     }
-    if (status() == SyncStatus::READY)
+    if (statusStr() == SyncStatus::READY)
     {
         return "Start";
     }
@@ -314,7 +314,7 @@ QString Repository::joinText()
     {
         return "Join Disabled";
     }
-    if (status() == SyncStatus::READY)
+    if (statusStr() == SyncStatus::READY)
     {
         return "Join";
     }
@@ -331,7 +331,7 @@ void Repository::enableMods()
     LOG << "name = " << name();
     for (ModAdapter* adp : modAdapters())
     {
-        if (adp->isOptional() && !adp->ticked())
+        if (adp->optional() && !adp->ticked())
         {
             adp->checkboxClicked();
         }
@@ -389,6 +389,16 @@ bool Repository::contains(const QString& key) const
 QList<Mod*> Repository::mods() const
 {
     QList<Mod*> rVal;
+    for (TreeItem* item : TreeItem::childItems())
+    {
+        rVal.append(static_cast<ModAdapter*>(item)->mod());
+    }
+    return rVal;
+}
+
+QList<ISyncItem*> Repository::uiMods() const
+{
+    QList<ISyncItem*> rVal;
     for (TreeItem* item : TreeItem::childItems())
     {
         rVal.append(static_cast<ModAdapter*>(item)->mod());
