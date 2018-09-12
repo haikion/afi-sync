@@ -61,7 +61,8 @@ SOURCES += src/model/main.cpp \
     src/model/console.cpp \
     src/model/szip.cpp \
     src/model/constantsmodel.cpp \
-    src/model/qstreams.cpp
+    src/model/qstreams.cpp \
+    src/model/settingsuimodel.cpp
 
 RESOURCES += qml.qrc
 
@@ -105,7 +106,8 @@ HEADERS += \
     src/model/interfaces/ibandwidthmeter.h \
     src/model/interfaces/irepository.h \
     src/model/interfaces/isettings.h \
-    src/model/interfaces/isyncitem.h
+    src/model/interfaces/isyncitem.h \
+    src/model/settingsuimodel.h
 
 DISTFILES += \
     AFISync.rc \

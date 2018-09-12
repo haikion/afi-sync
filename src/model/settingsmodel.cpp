@@ -161,6 +161,16 @@ bool SettingsModel::portEnabled()
     return settings()->value("portEnabled", false).toBool();
 }
 
+void SettingsModel::setMaxDownloadEnabled(const bool maxDownloadEnabled)
+{
+    settings()->setValue("maxDownloadEnabled", maxDownloadEnabled);
+}
+
+void SettingsModel::setMaxUploadEnabled(const bool maxUploadEnabled)
+{
+    settings()->setValue("maxUploadEnabled", maxUploadEnabled);
+}
+
 QString SettingsModel::port()
 {
     return settings()->value("port", Constants::DEFAULT_PORT).toString();

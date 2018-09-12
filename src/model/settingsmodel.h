@@ -14,20 +14,20 @@ public:
 
 public slots:
     static QString launchParameters();
-    void setLaunchParameters(const QString& parameters);
-    static bool battlEyeEnabled();
-    void setBattlEyeEnabled(bool enabled);
+    static void setLaunchParameters(const QString& parameters);
+    static bool battlEyeEnabled(); //TODO: Remove?
+    void setBattlEyeEnabled(bool enabled); //TODO: Remove?
     static bool deltaPatchingEnabled();
     static void setDeltaPatchingEnabled(bool enabled);
     static QString modDownloadPath();
     static void setModDownloadPath(QString path);
-    void resetModDownloadPath();
+    static void resetModDownloadPath();
     static QString arma3Path();
-    void setArma3Path(const QString& path);
-    void resetArma3Path();
+    static void setArma3Path(const QString& path);
+    static void resetArma3Path();
     static QString teamSpeak3Path();
-    void setTeamSpeak3Path(const QString& path);
-    void resetTeamSpeak3Path();
+    static void setTeamSpeak3Path(const QString& path);
+    static void resetTeamSpeak3Path();
     static QString steamPath();
     static void setSteamPath(const QString& path);
     static void resetSteamPath();
@@ -50,6 +50,8 @@ public slots:
     static void setProcess(const QString& name, bool value);
     static bool process(const QString& name);
     static bool portEnabled();
+    static void setMaxUploadEnabled(const bool maxUploadEnabled);
+    static void setMaxDownloadEnabled(const bool maxDownloadEnabled);
 
 private:
     static QSettings* settings_;
