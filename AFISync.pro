@@ -101,7 +101,11 @@ HEADERS += \
     src/model/console.h \
     src/model/szip.h \
     src/model/constantsmodel.h \
-    src/model/qstreams.h
+    src/model/qstreams.h \
+    src/model/interfaces/ibandwidthmeter.h \
+    src/model/interfaces/irepository.h \
+    src/model/interfaces/isettings.h \
+    src/model/interfaces/isyncitem.h
 
 DISTFILES += \
     AFISync.rc \

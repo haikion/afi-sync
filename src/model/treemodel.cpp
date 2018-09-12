@@ -84,22 +84,24 @@ QString TreeModel::bandwithString(int amount) const
     return QString::number(amount/1000) + " kB/s";
 }
 
-QString TreeModel::getDownload() const
+QString TreeModel::downloadStr()
 {
     return bandwithString(download_);
 }
 
-QString TreeModel::getUpload() const
+QString TreeModel::uploadStr()
 {
     return bandwithString(upload_);
 }
 
+// TODO: QML specific, remove
 void TreeModel::launch(const QModelIndex& repoIdx) const
 {
     Repository* repo = static_cast<Repository*>(repoIdx.internalPointer());
     repo->launch();
 }
 
+// TODO: QML specific, remove
 void TreeModel::join(const QModelIndex& repoIdx) const
 {
     Repository* repo = static_cast<Repository*>(repoIdx.internalPointer());
@@ -116,6 +118,7 @@ void TreeModel::processCompletion()
     rootItem_->processCompletion();
 }
 
+// TODO: QML specific, remove
 void TreeModel::check(const QModelIndex& idx)
 {
     SyncItem* syncItem = static_cast<SyncItem*>(idx.internalPointer());
@@ -131,17 +134,18 @@ QString TreeModel::versionString() const
     return Constants::VERSION_STRING;
 }
 
+// TODO: QML specific, remove
 void TreeModel::updateSpeed(qint64 download, qint64 upload)
 {
     if (download != download_)
     {
         download_ = download;
-        emit downloadChanged(getDownload());
+        emit downloadChanged(downloadStr());
     }
     if (upload != upload_)
     {
         upload_ = upload;
-        emit uploadChanged(getUpload());
+        emit uploadChanged(uploadStr());
     }
 }
 

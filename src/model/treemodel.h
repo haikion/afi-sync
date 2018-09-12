@@ -6,16 +6,17 @@
 #include <QVariant>
 #include <QVariant>
 #include "apis/isync.h"
+#include "interfaces/ibandwidthmeter.h"
 
 class RootItem;
 class TreeItem;
 
 //! [0]
-class TreeModel : public QAbstractItemModel
+class TreeModel : public QAbstractItemModel, public IBandwidthMeter
 {
     Q_OBJECT
-    Q_PROPERTY(QString download READ getDownload NOTIFY downloadChanged)
-    Q_PROPERTY(QString upload READ getUpload NOTIFY uploadChanged)
+    Q_PROPERTY(QString download READ downloadStr NOTIFY downloadChanged)
+    Q_PROPERTY(QString upload READ uploadStr NOTIFY uploadChanged)
 
 public:
     enum  {
@@ -52,8 +53,8 @@ signals:
 
 public slots:
     void rowsChanged();
-    QString getDownload() const;
-    QString getUpload() const;
+    QString downloadStr();
+    QString uploadStr();
     bool isRepository(const QModelIndex& index) const;
     void checkboxClicked(const QModelIndex& index);
     void launch(const QModelIndex& repoIdx) const;
@@ -62,7 +63,7 @@ public slots:
     void processCompletion();
     void check(const QModelIndex& idx);
     QString versionString() const;
-    void updateSpeed(qint64 download, qint64 upload);
+    void updateSpeed(qint64 downloadStr, qint64 uploadStr);
     bool ready(const QModelIndex& idx) const;
 
 private:

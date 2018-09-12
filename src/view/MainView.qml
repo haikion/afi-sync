@@ -32,8 +32,8 @@ Item {
         running: false
         repeat: true
         onTriggered: {
-            downloadStr = TreeModel.getDownload()
-            uploadStr = TreeModel.getUpload()
+            downloadStr = TreeModel.downloadStr()
+            uploadStr = TreeModel.uploadStr()
             if (Global.armaStarted) {
                 //ArmA 3 was started by AFISync.
                 if (!ProcessMonitor.arma3Running())
