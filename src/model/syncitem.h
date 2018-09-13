@@ -4,6 +4,7 @@
 #define ABSTRACTITEM_H
 
 #include <QObject>
+#include <QSet>
 #include "interfaces/isyncitem.h"
 #include "treeitem.h"
 
@@ -49,7 +50,8 @@ public:
     quint64 fileSize() const;
     virtual bool optional();
     void setFileSize(const quint64 size);
-    QString sizeStr() const;
+    virtual QString sizeStr() const;
+    virtual bool active() const;
 
 protected:
     virtual void setEta(const int& eta);
@@ -59,6 +61,8 @@ private:
     QString status_;
     int eta_;
     quint64 fileSize_;
+
+    static QSet<QString> createActiveStatuses();
 };
 
 #endif // ABSTRACTITEM_H

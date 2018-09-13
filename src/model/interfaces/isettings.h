@@ -29,10 +29,6 @@ public:
     virtual QString port() = 0;
     virtual void setPort(QString port) = 0;
 
-    virtual void fixKickedFromServer() = 0;
-    virtual void reportBug() = 0;
-    virtual void forceActivate() = 0;
-
     virtual QString maxDownload() = 0;
     virtual bool maxDownloadEnabled() = 0;
     virtual void setMaxDownloadEnabled(bool enabled) = 0;

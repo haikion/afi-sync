@@ -45,6 +45,12 @@ QString SyncItem::sizeStr() const
     return QString::number(size, 'f', 2) + " " + list.at(i);
 }
 
+bool SyncItem::active() const
+{
+    static QSet<QString> activeStatuses = createActiveStatuses();
+    return activeStatuses.contains(status_);
+}
+
 QString SyncItem::progressText()
 {
     //In repository multiple MAX_ETA maybe summed so we use >=.
@@ -72,6 +78,20 @@ QString SyncItem::etaStr() const
 void SyncItem::setEta(const int& eta)
 {
     eta_ = eta;
+}
+
+QSet<QString> SyncItem::createActiveStatuses()
+{
+    QSet<QString> retVal;
+    retVal.insert(SyncStatus::DOWNLOADING);
+    retVal.insert(SyncStatus::CHECKING);
+    retVal.insert(SyncStatus::DOWNLOADING_PATCHES);
+    retVal.insert(SyncStatus::NO_PEERS);
+    retVal.insert(SyncStatus::PATCHING);
+    retVal.insert(SyncStatus::QUEUED);
+    retVal.insert(SyncStatus::READY);
+    retVal.insert(SyncStatus::READY_PAUSED);
+    return retVal;
 }
 
 QString SyncItem::name() const

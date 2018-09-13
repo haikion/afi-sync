@@ -18,6 +18,7 @@ public:
     virtual bool ticked() const = 0;
     virtual void checkboxClicked() = 0;
     virtual void check() = 0;
+    virtual bool active() const = 0;
 };
 
 #endif // ISYNCITEM_H
