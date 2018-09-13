@@ -1,11 +1,6 @@
 #include "settingsmodel.h"
 #include "settingsuimodel.h"
 
-SettingsUiModel::SettingsUiModel()
-{
-
-}
-
 QString SettingsUiModel::arma3Path()
 {
     return SettingsModel::arma3Path();
@@ -45,7 +40,6 @@ void SettingsUiModel::resetSteamPath()
 {
     SettingsModel::resetSteamPath();
 }
-
 
 void SettingsUiModel::setSteamPath(QString steamPath)
 {
@@ -87,24 +81,9 @@ void SettingsUiModel::setPort(QString port)
     SettingsModel::setPort(port, true);
 }
 
-void SettingsUiModel::fixKickedFromServer()
-{
-    treeModel->processCompletion();
-}
-
-void SettingsUiModel::reportBug()
-{
-    //TODO
-}
-
-void SettingsUiModel::forceActivate()
-{
-    //TODO
-}
-
 QString SettingsUiModel::maxDownload()
 {
-    SettingsModel::maxDownload();
+    return SettingsModel::maxDownload();
 }
 
 bool SettingsUiModel::maxDownloadEnabled()

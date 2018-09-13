@@ -10,7 +10,7 @@
 class SettingsUiModel : virtual public ISettings
 {
 public:
-    SettingsUiModel();
+    SettingsUiModel() = default;
 
     virtual QString arma3Path();
     virtual void resetArma3Path();
@@ -33,10 +33,6 @@ public:
 
     virtual QString port();
     virtual void setPort(QString port);
-
-    virtual void fixKickedFromServer();
-    virtual void reportBug();
-    virtual void forceActivate();
 
     virtual QString maxDownload();
     virtual bool maxDownloadEnabled();
