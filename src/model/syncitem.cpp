@@ -51,15 +51,6 @@ bool SyncItem::active() const
     return activeStatuses.contains(status_);
 }
 
-QString SyncItem::progressText()
-{
-    //In repository multiple MAX_ETA maybe summed so we use >=.
-    if (eta_ >= Constants::MAX_ETA)
-        return "??:??:??";
-
-    return QTime(0,0,0).addSecs(eta_).toString();
-}
-
 QString SyncItem::startText()
 {
     return "uploadText()"; //TODO: Wtf??
@@ -72,7 +63,11 @@ int SyncItem::eta() const
 
 QString SyncItem::etaStr() const
 {
-    return ""; //TODO
+    //In repository multiple MAX_ETA maybe summed so we use >=.
+    if (eta_ >= Constants::MAX_ETA)
+        return "??:??:??";
+
+    return QTime(0,0,0).addSecs(eta_).toString();
 }
 
 void SyncItem::setEta(const int& eta)
@@ -107,12 +102,6 @@ void SyncItem::setName(const QString& name)
 quint64 SyncItem::fileSize() const
 {
     return fileSize_;
-}
-
-bool SyncItem::optional()
-{
-    //Default for repositories. This is overwritten in mods
-    return true;
 }
 
 void SyncItem::setFileSize(const quint64 size)

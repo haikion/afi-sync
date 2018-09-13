@@ -32,6 +32,7 @@ public:
     void processCompletion();
     QVector<ModAdapter*> modAdapters() const;
     void appendModAdapter(ModAdapter* adapter);
+    virtual bool optional() const;
     void stopUpdates();
     void startUpdates();
     void updateStatus();
@@ -58,7 +59,6 @@ private:
     bool stop();
     void removeConflicting() const;
     QString path() const;
-    bool optional() const;
     void setProcessCompletion(bool value);
     bool getProcessCompletion() const;
 

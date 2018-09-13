@@ -47,9 +47,9 @@ QString ModAdapter::statusStr() const
     return mod_->statusStr();
 }
 
-QString ModAdapter::progressText()
+QString ModAdapter::etaStr() const
 {
-    return mod_->progressText();
+    return mod_->etaStr();
 }
 
 void ModAdapter::checkboxClicked()
@@ -103,7 +103,7 @@ void ModAdapter::updateView(bool force)
     //Only update if mod and its repo is active or when force == true
     if ((ticked() && repo()->ticked()) || force)
     {
-        QString guiData = checkText() + progressText() + statusStr();
+        QString guiData = checkText() + etaStr() + statusStr();
         if (guiData == guiData_)
             return; //Avoid heavy UI updates when data has not been changed.
 

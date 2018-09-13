@@ -17,9 +17,10 @@
 const QString JsonReader::SEPARATOR = "|||";
 
 //Fastest
-JsonReader::JsonReader():
+JsonReader::JsonReader(ISync* sync):
     repositoriesPath_(QCoreApplication::applicationDirPath() + "/settings/repositories.json"),
-    downloadedPath_(repositoriesPath_ + "_new")
+    downloadedPath_(repositoriesPath_ + "_new"),
+    sync_(sync)
 {}
 
 void JsonReader::fillEverything(RootItem* root)
@@ -74,7 +75,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
             const QString serverAddress = qvariant_cast<QString>(repository.value("serverAddress"));
             const unsigned serverPort = qvariant_cast<unsigned>(repository.value("serverPort"));
             const QString password = qvariant_cast<QString>(repository.value("password", ""));
-            repo = new Repository(repoName, serverAddress, serverPort, password, root);
+            //repo = new Repository(repoName, serverAddress, serverPort, password, root);
             LOG << "Appending repo name = " << repoName << " address = " << serverAddress
                 << " port = " << QString::number(serverPort);
             root->appendChild(repo);
@@ -199,6 +200,56 @@ QString JsonReader::updateUrl(const QVariantMap& jsonMap) const
 bool JsonReader::updateAvailable()
 {
     return bytesToJson(fetchJsonBytes(updateUrl(jsonMap_))) != jsonMap_;;
+}
+
+QList<IRepository*> JsonReader::repositories()
+{
+    QList<IRepository*> retVal;
+    jsonMap_ = qvariant_cast<QVariantMap>(readJsonFile(repositoriesPath_).toVariant());
+    const QVariantMap jsonMapUpdate = updateJson(updateUrl(jsonMap_));
+    if (jsonMapUpdate != QVariantMap())
+        jsonMap_ = jsonMapUpdate;
+
+    if (jsonMap_ == QVariantMap())
+    {
+        LOG_ERROR << "Json file parse failure. Exiting...";
+        exit(2);
+    }
+
+    const QList<QVariant> repositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
+    for (const QVariant& repoVar : repositories)
+    {
+        QVariantMap repository = qvariant_cast<QVariantMap>(repoVar);
+        QString repoName = qvariant_cast<QString>(repository.value("name"));
+        Repository* repo;
+        const QString serverAddress = qvariant_cast<QString>(repository.value("serverAddress"));
+        const unsigned serverPort = qvariant_cast<unsigned>(repository.value("serverPort"));
+        const QString password = qvariant_cast<QString>(repository.value("password", ""));
+        repo = new Repository(repoName, serverAddress, serverPort, password, sync_);
+        repo->setBattlEyeEnabled(qvariant_cast<bool>(repository.value("battlEyeEnabled", true)));
+
+        QList<QVariant> mods = qvariant_cast<QList<QVariant>>(repository.value("mods"));
+        for (int i = 0; i < mods.size(); ++i)
+        {
+            const QVariantMap mod = qvariant_cast<QVariantMap>(mods.at(i));
+            const QString key = qvariant_cast<QString>(mod.value("key")).toLower();
+            LOG << "key parsed. key = " << key;
+            if (repo->contains(key))
+            {
+                LOG << "Key " << key << " already in " << repoName;
+                continue;
+            }
+            Mod* newMod;
+            const QString modName = mod.value("name").toString().toLower();
+            newMod = new Mod(modName, key);
+            newMod->setFileSize(qvariant_cast<quint64>(mod.value("fileSize", "0")));
+            new ModAdapter(newMod, repo, mod.value("optional", false).toBool(), i);
+        }
+        repo->startUpdates();
+        retVal.append(repo);
+    }
+
+    return retVal;
 }
 
 QJsonDocument JsonReader::readJsonFile(const QString& path) const

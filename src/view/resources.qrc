@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>afisync_header.png</file>
+    </qresource>
+</RCC>

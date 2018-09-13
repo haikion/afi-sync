@@ -190,7 +190,6 @@ void SettingsModel::setTicked(const QString& modName, QString repoName, bool val
 
 bool SettingsModel::ticked(const QString& modName, QString repoName)
 {
-
     QString repoStr = repoName.replace("/| ","_");
     QString key = modName.isEmpty() ? repoName + "/checked" : modName + "/" + repoStr + "ticked";
     return settings()->value(key, false).toBool();

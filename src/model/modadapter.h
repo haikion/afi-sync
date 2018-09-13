@@ -25,7 +25,7 @@ public:
     virtual QString startText();
     virtual QString joinText();
     virtual QString statusStr() const;
-    virtual QString progressText();
+    virtual QString etaStr() const;
     virtual void checkboxClicked();
     virtual bool ticked() const;
     virtual void processCompletion();

@@ -23,7 +23,6 @@ public:
     virtual void setModDownloadPath(QString modDownloadPath) = 0;
 
     virtual QString launchParameters() = 0;
-    virtual void resetLaunchParameters() = 0;
     virtual void setLaunchParameters(QString launchParameters) = 0;
 
     virtual QString port() = 0;

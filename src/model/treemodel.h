@@ -1,22 +1,19 @@
 #ifndef TREEMODEL_H
 #define TREEMODEL_H
 
-#include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QVariant>
 #include <QVariant>
+#include <QObject>
 #include "apis/isync.h"
 #include "interfaces/ibandwidthmeter.h"
 
 class RootItem;
 class TreeItem;
 
-//! [0]
-class TreeModel : public QAbstractItemModel, public IBandwidthMeter
+class TreeModel : public QObject, virtual public IBandwidthMeter
 {
     Q_OBJECT
-    Q_PROPERTY(QString download READ downloadStr NOTIFY downloadChanged)
-    Q_PROPERTY(QString upload READ uploadStr NOTIFY uploadChanged)
 
 public:
     enum  {
@@ -33,15 +30,7 @@ public:
     explicit TreeModel(QObject* parent = 0, bool haltGui = false);
     ~TreeModel();
 
-    QVariant data(const QModelIndex& index, int role) const Q_DECL_OVERRIDE;
-    Qt::ItemFlags flags(const QModelIndex& index) const Q_DECL_OVERRIDE;
-    QModelIndex index(int row, int column,
-                      const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    QModelIndex parent(const QModelIndex& index) const Q_DECL_OVERRIDE;
-    int rowCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
     void updateView(TreeItem* item, int row = -1);
-    QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
     void reset();
     void enableRepositories();
     void setHaltGui(bool halt);
@@ -55,12 +44,9 @@ public slots:
     void rowsChanged();
     QString downloadStr() const;
     QString uploadStr() const;
-    bool isRepository(const QModelIndex& index) const;
     void checkboxClicked(const QModelIndex& index);
     void launch(const QModelIndex& repoIdx) const;
     void join(const QModelIndex& repoIdx) const;
-    void resetSync();
-    void processCompletion();
     void check(const QModelIndex& idx);
     QString versionString() const;
     void updateSpeed(qint64 downloadStr, qint64 uploadStr);
@@ -76,6 +62,5 @@ private:
     void postInit();
     QString bandwithString(int amount) const;
 };
-//! [0]
 
 #endif // TREEMODEL_H

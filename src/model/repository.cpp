@@ -13,9 +13,9 @@
 #include "settingsmodel.h"
 
 Repository::Repository(const QString& name, const QString& serverAddress, unsigned port,
-                      QString password, RootItem* parent):
-    SyncItem(name, parent),
-    sync_(parent->sync()),
+                      QString password, ISync* sync):
+    SyncItem(name),
+    sync_(sync),
     serverAddress_(serverAddress),
     port_(port),
     password_(password),
@@ -77,9 +77,6 @@ Repository::~Repository()
         //mod settings.
         removeMod(mod, false);
     }
-    RootItem* parent = parentItem();
-    parent->removeChild(this);
-    parent->rowsChanged();
 }
 
 void Repository::check()
@@ -103,7 +100,7 @@ void Repository::processCompletion()
 
 void Repository::updateView(TreeItem* item, int row)
 {
-    parentItem()->updateView(item, row);
+    //parentItem()->updateView(item, row);
 }
 
 void Repository::changed(bool offline)
@@ -138,6 +135,11 @@ void Repository::join()
 void Repository::start()
 {
     generalLaunch();
+}
+
+bool Repository::optional() const
+{
+    return true; //Repositories are always optional
 }
 
 void Repository::generalLaunch(const QStringList& extraParams)
@@ -361,7 +363,6 @@ bool Repository::removeMod(Mod* mod, bool removeFromSync)
         LOG_ERROR << "Unable to remove " << mod->name() << " from repository " << name();
         return false;
     }
-    parentItem()->rowsChanged();
     if (mod->repositories().size() == 0 && removeFromSync)
     {
         //Mod may not exist if it doesn't belong to any repo.
@@ -414,10 +415,4 @@ QList<ModAdapter*> Repository::modAdapters() const
         rVal.append(static_cast<ModAdapter*>(item));
     }
     return rVal;
-}
-
-
-RootItem* Repository::parentItem()
-{
-    return static_cast<RootItem*>(TreeItem::parentItem());
 }

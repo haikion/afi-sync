@@ -5,8 +5,10 @@
 #include <QVariantMap>
 #include <QString>
 #include <QHash>
+#include <QList>
 #include "mod.h"
 #include "syncnetworkaccessmanager.h"
+#include "interfaces/irepository.h"
 
 class RootItem;
 class Repository;
@@ -14,13 +16,14 @@ class Repository;
 class JsonReader
 {
 public:
-    JsonReader();
+    JsonReader(ISync* sync = nullptr);
 
     //Fills rootItem according to XML file
     void fillEverything(RootItem* root);
     //Enables better testability.
     void fillEverything(RootItem *root, const QString& jsonFilePath);
     bool updateAvailable();
+    QList<IRepository*> repositories();
 
 private:
     static const QString SEPARATOR;
@@ -29,6 +32,7 @@ private:
     SyncNetworkAccessManager nam_;
     QString repositoriesPath_; //Holds path to validated repositories.json
     QString downloadedPath_; //Holds path to downloaded but not validated repositories.json
+    ISync* sync_;
 
     QJsonDocument readJsonFile(const QString& path) const;
     QVariantMap updateJson(const QString& url);

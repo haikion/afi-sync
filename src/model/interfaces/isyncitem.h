@@ -4,6 +4,23 @@
 #include <QList>
 #include <QString>
 
+namespace SyncStatus {
+    static const QString DOWNLOADING = "Downloading...";
+    static const QString DOWNLOADING_PATCHES = "Downloading Patch...";
+    static const QString READY = "Ready";
+    static const QString READY_PAUSED = "Ready and Paused";
+    static const QString NO_SYNC_CONNECTION = "No Sync Connection.";
+    static const QString CHECKING = "Checking...";
+    static const QString WAITING = "Waiting...";
+    static const QString PATCHING = "Patching..";
+    static const QString NO_PEERS = "No Peers";
+    static const QString NO_FILES = "No Files";
+    static const QString NOT_IN_SYNC = "Not in Sync";
+    static const QString INACTIVE = "Inactive";
+    static const QString PAUSED = "Paused";
+    static const QString QUEUED = "Queued";
+}
+
 /**
  * @brief UI Representation of Sync Item
  */
@@ -14,7 +31,7 @@ public:
     virtual QString statusStr() = 0;
     virtual QString etaStr() const = 0;
     virtual QString sizeStr() const = 0;
-    virtual bool optional() = 0;
+    virtual bool optional() const = 0;
     virtual bool ticked() const = 0;
     virtual void checkboxClicked() = 0;
     virtual void check() = 0;

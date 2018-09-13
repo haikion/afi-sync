@@ -4,11 +4,8 @@
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QDir>
-#include <QQmlApplicationEngine>
-#include <QQuickItem>
 #include <QSettings>
 #include <QTextStream>
-#include <QtQml>
 #include "afisynclogger.h"
 #include "apis/libtorrent/deltapatcher.h"
 #include "constantsmodel.h"
@@ -18,6 +15,10 @@
 #include "processmonitor.h"
 #include "settingsmodel.h"
 #include "treemodel.h"
+#include "settingsuimodel.h"
+#include "jsonreader.h"
+#include "apis/libtorrent/libtorrentapi.h"
+#include "../view/mainwindow.h"
 
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
 
@@ -36,84 +37,41 @@ struct CleanExit
     }
 };
 
-static QObject* getTreeModel(QQmlEngine* engine, QJSEngine* scriptEngine)
-{
-    LOG;
-    Q_UNUSED(scriptEngine)
-    Global::model = new TreeModel(engine);
-
-    //This variable is used to locate afisync_header.png
-    engine->rootContext()->setContextProperty("applicationDirPath", QGuiApplication::applicationDirPath());
-
-    return Global::model;
-}
-
-static QObject* getSettingsModel(QQmlEngine* engine, QJSEngine* scriptEngine)
-{
-    Q_UNUSED(scriptEngine)
-
-    //QQmlEngine tries to destroy singletons on destruction so real C++ singletons cannot be used.
-    return new SettingsModel(engine);
-}
-
-static QObject* getConstantsModel(QQmlEngine* engine, QJSEngine* scriptEngine)
-{
-    Q_UNUSED(scriptEngine)
-
-    //QQmlEngine tries to destroy singletons on destruction so real C++ singletons cannot be used.
-    return new ConstantsModel(engine);
-}
-
-static QObject* getProcessMonitor(QQmlEngine* engine, QJSEngine* scriptEngine)
-{
-    Q_UNUSED(scriptEngine)
-
-    return new ProcessMonitor(engine);
-}
-
-void messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
-{
-    Q_UNUSED(type)
-    Q_UNUSED(context)
-
-    static QMutex mutex;
-    QMutexLocker locker(&mutex);
-
-    LOG << msg.toStdString() << "\n";
-}
-
 void initStandalone()
 {
     #ifdef Q_OS_WIN
         Breakpad::CrashHandler::instance()->Init(QStringLiteral("."));
     #endif
     AfiSyncLogger::initFileLogging();
-    qInstallMessageHandler(messageHandler);
 }
 
 int gui(int argc, char* argv[])
 {
     QApplication app(argc, argv);
+    Global::workerThread = new QThread();
+    Global::workerThread->setObjectName("workerThread");
+    Global::workerThread->start();
+    LOG << "Worker thread started";
+    MainWindow w;
+    w.show();
+    w.init(new TreeModel(&w), new SettingsUiModel());
+    LibTorrentApi sync;
+    JsonReader jsonReader(&sync);
+
+    w.treeWidget()->setRepositories(jsonReader.repositories());
 
     #ifndef QT_DEBUG
         initStandalone();
     #endif
-    LOG << "AFISync " << Constants::VERSION_STRING << " started";
-    qmlRegisterSingletonType<TreeModel>("org.AFISync", 0, 1, "TreeModel", getTreeModel);
-    qmlRegisterSingletonType<SettingsModel>("org.AFISync", 0, 1, "SettingsModel", getSettingsModel);
-    qmlRegisterSingletonType<ProcessMonitor>("org.AFISync", 0, 1, "ProcessMonitor", getProcessMonitor);
-    qmlRegisterSingletonType<ConstantsModel>("org.AFISync", 0, 1, "ConstantsModel", getConstantsModel);
-    LOG << "QML Singletons registered";
-    LOG << "QGuiApplication created";
-    QQmlApplicationEngine engine;
     #ifdef STATIC_BUILD
         engine.setImportPathList(QStringList(QStringLiteral("qrc:/qml")));
     #endif
-    engine.load(QUrl(QStringLiteral("qrc:/SplashScreen.qml")));
-    LOG << "QML Engine loaded";
 
     const int rVal = app.exec();
-    LOG << "END";
+    Global::workerThread->quit();
+    Global::workerThread->wait(1000);
+    Global::workerThread->terminate();
+    Global::workerThread->wait(1000);
     return rVal;
 }
 
@@ -152,7 +110,6 @@ int cli(int argc, char* argv[])
     {
         if (missingArgs.size() != 0)
         {
-            qDebug() << "ERROR: Missing arguments:" << missingArgs;
             return 2;
         }
         QString oldPath = parser.value(DELTA_ARGS.at(0));

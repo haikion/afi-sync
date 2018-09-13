@@ -653,7 +653,6 @@ void LibTorrentApi::handleAlerts()
     }
 
     alerts_ = new std::vector<lt::alert*>();
-    session_->wait_for_alert(lt::milliseconds(900));
     session_->pop_alerts(alerts_);
     for (lt::alert* alert : *alerts_)
     {

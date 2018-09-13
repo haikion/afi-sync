@@ -18,7 +18,7 @@ class Repository : public SyncItem, virtual public IRepository
 {
 public:
     Repository(const QString& name, const QString& serverAddress, unsigned port,
-               QString password, RootItem* parent);
+               QString password, ISync* sync);
     ~Repository();
 
     void check();
@@ -31,6 +31,7 @@ public:
     virtual QString joinText();
     virtual void join();
     virtual void start();
+    virtual bool optional() const;
     QList<Mod*> mods() const;
     QList<ISyncItem*> uiMods() const;
     void processCompletion();
@@ -60,7 +61,6 @@ private:
     QString modsParameter() const;
     QStringList joinParameters() const;
     void generalLaunch(const QStringList& extraParams = QStringList());
-    RootItem* parentItem();
     QString createParFile(const QString& parameters);
     void updateEtaAndStatus();
     void changed(bool offline = false);

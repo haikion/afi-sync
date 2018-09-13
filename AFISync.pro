@@ -1,7 +1,8 @@
 TEMPLATE = app
 
-QT += qml quick widgets
+QT += core gui network widgets
 CONFIG += c++14
+TARGET = AFISync
 
 win32 {
     #Google Crashpad crash reporting
@@ -62,15 +63,17 @@ SOURCES += src/model/main.cpp \
     src/model/szip.cpp \
     src/model/constantsmodel.cpp \
     src/model/qstreams.cpp \
-    src/model/settingsuimodel.cpp
-
-RESOURCES += qml.qrc
-
-# Additional import path used to resolve QML modules in Qt Creator's code model
-QML_IMPORT_PATH =
+    src/model/settingsuimodel.cpp \
+    src/view/asbannerbar.cpp \
+    src/view/assettingsview.cpp \
+    src/view/astreeitem.cpp \
+    src/view/astreewidget.cpp \
+    src/view/mainwindow.cpp \
+    src/view/optionalsetting.cpp \
+    src/view/pathsetting.cpp
 
 # Default rules for deployment.
-include(deployment.pri)
+#include(deployment.pri)
 
 HEADERS += \
     src/model/treeitem.h \
@@ -107,8 +110,25 @@ HEADERS += \
     src/model/interfaces/irepository.h \
     src/model/interfaces/isettings.h \
     src/model/interfaces/isyncitem.h \
-    src/model/settingsuimodel.h
+    src/model/settingsuimodel.h \
+    src/view/asbannerbar.h \
+    src/view/assettingsview.h \
+    src/view/astreeitem.h \
+    src/view/astreewidget.h \
+    src/view/mainwindow.h \
+    src/view/optionalsetting.h \
+    src/view/pathsetting.h
 
 DISTFILES += \
     AFISync.rc \
     manifest.xml
+
+FORMS += \
+    src/view/asbannerbar.ui \
+    src/view/assettingsview.ui \
+    src/view/mainwindow.ui \
+    src/view/optionalsetting.ui \
+    src/view/pathsetting.ui
+
+RESOURCES += \
+    src/view/resources.qrc
