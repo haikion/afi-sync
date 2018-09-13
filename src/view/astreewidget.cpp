@@ -54,7 +54,8 @@ void AsTreeWidget::setRepositories(QList<IRepository*> repositories)
     items.clear();
     addRepositories(repositories);
     header()->resizeSections(QHeaderView::ResizeToContents);
-    header()->resizeSection(4, header()->sectionSize(4) + 25);
+    header()->resizeSection(1, header()->sectionSize(1) + 50); //Name
+    header()->resizeSection(4, header()->sectionSize(4) + 25); //Size
 }
 
 void AsTreeWidget::addRepositories(QList<IRepository*> repositories)

@@ -1,5 +1,5 @@
-#include <QDebug>
 #include "mainwindow.h"
+#include "../model/version.h"
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->topBar->setSettingsView(ui->settingsView);
+    setWindowTitle("AFISync " VERSION_CHARS);
 }
 
 MainWindow::~MainWindow()

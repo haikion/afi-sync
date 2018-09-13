@@ -265,7 +265,7 @@ void RootItem::updateView(TreeItem* item, int row)
         //Wait for repos to load
         return;
     }
-    parent_->updateView(item, row);
+    //parent_->updateView(item, row);
 }
 
 ISync* RootItem::sync() const
