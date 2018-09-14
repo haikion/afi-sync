@@ -5,6 +5,8 @@
 #include <QVariant>
 #include <QVariant>
 #include <QObject>
+#include <QList>
+#include "repository.h"
 #include "apis/isync.h"
 #include "interfaces/ibandwidthmeter.h"
 
@@ -16,6 +18,7 @@ class TreeModel : public QObject, virtual public IBandwidthMeter
     Q_OBJECT
 
 public:
+    // TODO: Remove QML Specific
     enum  {
         Check = Qt::UserRole + 1,
         Name = Qt::UserRole + 2,
@@ -27,7 +30,7 @@ public:
     };
     static const QHash<int, QByteArray> ROLE_NAMES;
 
-    explicit TreeModel(QObject* parent = 0, bool haltGui = false);
+    explicit TreeModel(QObject* parent = 0, ISync* sync = nullptr, bool haltGui = false);
     ~TreeModel();
 
     void updateView(TreeItem* item, int row = -1);
@@ -35,13 +38,14 @@ public:
     void enableRepositories();
     void setHaltGui(bool halt);
     RootItem* rootItem() const;
+    QList<IRepository*> repositories() const;
 
 signals:
-    void uploadChanged(QString newVal);
-    void downloadChanged(QString newVal);
+    void uploadChanged(QString newVal); // TODO: Remove QML specific
+    void downloadChanged(QString newVal); // TODO: Remove QML specific
 
 public slots:
-    void rowsChanged();
+    void rowsChanged(); // TODO: Remove QML specific
     QString downloadStr() const;
     QString uploadStr() const;
     void checkboxClicked(const QModelIndex& index);
@@ -57,6 +61,7 @@ private:
     unsigned download_;
     unsigned upload_;
     bool haltGui_;
+    QList<Repository*> repositories_;
 
     void setupModelData(const QStringList& lines, TreeItem* parent);
     void postInit();

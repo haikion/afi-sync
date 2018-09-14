@@ -36,7 +36,7 @@ RootItem::RootItem(TreeModel* parentModel):
     initSync();
     Global::sync = sync_;
     LOG << "initSync completed";
-    jsonReader_.fillEverything(this);
+    //jsonReader_.fillEverything(this);
     printDeletables();
     LOG << "readJson completed";
     if (sync_->ready())
@@ -305,6 +305,7 @@ void RootItem::updateSpeed()
     parent_->updateSpeed(sync_->download(), sync_->upload());
 }
 
+//FIXME
 void RootItem::periodicRepoUpdate()
 {
     for (Repository* repo : childItems())
@@ -323,7 +324,7 @@ void RootItem::periodicRepoUpdate()
     if (jsonReader_.updateAvailable())
     {
         LOG << "Updating repo...";
-        jsonReader_.fillEverything(this);
+        //jsonReader_.fillEverything(this);
         return;
     }
     LOG << "No repo updates";

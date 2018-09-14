@@ -12,10 +12,10 @@
 
 const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 
-Mod::Mod(const QString& name, const QString& key):
+Mod::Mod(const QString& name, const QString& key, ISync* sync):
     SyncItem(name, 0),
     key_(key),
-    sync_(nullptr),
+    sync_(sync),
     updateTimer_(nullptr),
     waitTime_(0)
 {
@@ -48,7 +48,7 @@ void Mod::init()
 {
     repositoryChanged();
     update();
-    LOG << "name = " << name() << "key = " << key() << " Completed";
+    LOG << "name = " << name() << " key = " << key() << " Completed";
 }
 
 void Mod::update(bool force)
@@ -280,7 +280,6 @@ void Mod::appendRepository(Repository* repository)
     {
         //First repository added -> initialize mod.
         Repository* repo = *repositories_.begin();
-        sync_ = repo->sync();
         if (sync_->ready())
         {
             LOG << "name = " << name() << " Calling init directly";

@@ -12,7 +12,6 @@
 #include "interfaces/irepository.h"
 #include "syncitem.h"
 #include "mod.h"
-#include "rootitem.h"
 
 class Repository : public SyncItem, virtual public IRepository
 {
@@ -44,8 +43,6 @@ public:
     void stopUpdates();
     void setBattlEyeEnabled(bool battlEyeEnabled);
     virtual bool ticked() const;
-
-protected:
     virtual void setTicked(bool ticked);
 
 private:

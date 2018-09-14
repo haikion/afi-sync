@@ -23,7 +23,7 @@ public:
     //Enables better testability.
     void fillEverything(RootItem *root, const QString& jsonFilePath);
     bool updateAvailable();
-    QList<IRepository*> repositories();
+    QList<Repository*> repositories(ISync* sync);
 
 private:
     static const QString SEPARATOR;

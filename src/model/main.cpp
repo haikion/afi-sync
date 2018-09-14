@@ -45,20 +45,25 @@ void initStandalone()
     AfiSyncLogger::initFileLogging();
 }
 
-int gui(int argc, char* argv[])
+void generalInit(QObject* parent = nullptr)
 {
-    QApplication app(argc, argv);
     Global::workerThread = new QThread();
     Global::workerThread->setObjectName("workerThread");
     Global::workerThread->start();
     LOG << "Worker thread started";
-    MainWindow w;
-    w.show();
-    w.init(new TreeModel(&w), new SettingsUiModel());
-    LibTorrentApi sync;
-    JsonReader jsonReader(&sync);
+    Global::sync = new LibTorrentApi(parent);
+    Global::model = new TreeModel(parent, Global::sync);
+}
 
-    w.treeWidget()->setRepositories(jsonReader.repositories());
+int gui(int argc, char* argv[])
+{
+    QApplication app(argc, argv);
+    MainWindow w;
+    generalInit(&w);
+    w.show();
+    TreeModel* treeModel = new TreeModel(&w, Global::sync);
+    w.init(treeModel, new SettingsUiModel());
+    w.treeWidget()->setRepositories(treeModel->repositories());
 
     #ifndef QT_DEBUG
         initStandalone();
@@ -78,7 +83,7 @@ int gui(int argc, char* argv[])
 int cli(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
-
+    generalInit();
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
@@ -135,9 +140,8 @@ int cli(int argc, char* argv[])
     Global::guiless = true;
     SettingsModel::setDeltaPatchingEnabled(true);
     LOG << "Delta updates enabled due to the mirror mode.";
-    TreeModel* model = new TreeModel(&app, true);
+    TreeModel* model = new TreeModel(&app, Global::sync, true);
     SettingsModel::setPort(parser.value("port"), true);
-    LOG << "model created";
     model->enableRepositories();
     return app.exec();
 }

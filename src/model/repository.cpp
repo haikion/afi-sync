@@ -98,6 +98,7 @@ void Repository::processCompletion()
     SettingsModel::setInstallDate(name(), QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
 }
 
+// TODO: QML Thing remove
 void Repository::updateView(TreeItem* item, int row)
 {
     //parentItem()->updateView(item, row);

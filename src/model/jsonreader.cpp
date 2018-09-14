@@ -23,6 +23,8 @@ JsonReader::JsonReader(ISync* sync):
     sync_(sync)
 {}
 
+/*
+
 void JsonReader::fillEverything(RootItem* root)
 {
     fillEverything(root, repositoriesPath_);
@@ -131,6 +133,7 @@ void JsonReader::fillEverything(RootItem* root, const QString& jsonFilePath)
         root->startUpdates();
 
 }
+*/
 
 QHash<QString, Repository*> JsonReader::addedRepos(const RootItem* root) const
 {
@@ -202,9 +205,9 @@ bool JsonReader::updateAvailable()
     return bytesToJson(fetchJsonBytes(updateUrl(jsonMap_))) != jsonMap_;;
 }
 
-QList<IRepository*> JsonReader::repositories()
+QList<Repository*> JsonReader::repositories(ISync* sync)
 {
-    QList<IRepository*> retVal;
+    QList<Repository*> retVal;
     jsonMap_ = qvariant_cast<QVariantMap>(readJsonFile(repositoriesPath_).toVariant());
     const QVariantMap jsonMapUpdate = updateJson(updateUrl(jsonMap_));
     if (jsonMapUpdate != QVariantMap())
@@ -241,7 +244,7 @@ QList<IRepository*> JsonReader::repositories()
             }
             Mod* newMod;
             const QString modName = mod.value("name").toString().toLower();
-            newMod = new Mod(modName, key);
+            newMod = new Mod(modName, key, sync);
             newMod->setFileSize(qvariant_cast<quint64>(mod.value("fileSize", "0")));
             new ModAdapter(newMod, repo, mod.value("optional", false).toBool(), i);
         }

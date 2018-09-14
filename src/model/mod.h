@@ -16,7 +16,7 @@ class Mod : public SyncItem
     Q_OBJECT
 
 public:
-    Mod(const QString& name, const QString& key);
+    Mod(const QString& name, const QString& key, ISync* sync);
     ~Mod();
 
     void check();
