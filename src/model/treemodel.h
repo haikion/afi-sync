@@ -53,7 +53,7 @@ public slots:
     void join(const QModelIndex& repoIdx) const;
     void check(const QModelIndex& idx);
     QString versionString() const;
-    void updateSpeed(qint64 downloadStr, qint64 uploadStr);
+    void updateSpeed();
     bool ready(const QModelIndex& idx) const;
 
 private slots:
@@ -66,6 +66,7 @@ private:
     bool haltGui_;
     QList<Repository*> repositories_;
     QTimer updateTimer;
+    ISync* sync_;
 
     void setupModelData(const QStringList& lines, TreeItem* parent);
     void postInit();

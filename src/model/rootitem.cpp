@@ -302,7 +302,7 @@ void RootItem::updateSpeed()
         return;
     }
 
-    parent_->updateSpeed(sync_->download(), sync_->upload());
+//    parent_->updateSpeed(sync_->download(), sync_->upload());
 }
 
 //FIXME

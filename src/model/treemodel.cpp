@@ -36,7 +36,8 @@ TreeModel::TreeModel(QObject* parent, ISync* sync, bool haltGui):
     QObject(parent),
     download_(0),
     upload_(0),
-    haltGui_(haltGui)
+    haltGui_(haltGui),
+    sync_(sync)
 {
     LOG;
     JsonReader jsonReader;
@@ -135,18 +136,10 @@ QString TreeModel::versionString() const
     return Constants::VERSION_STRING;
 }
 
-void TreeModel::updateSpeed(qint64 download, qint64 upload)
+void TreeModel::updateSpeed()
 {
-    if (download != download_)
-    {
-        download_ = download;
-        emit downloadChanged(downloadStr());
-    }
-    if (upload != upload_)
-    {
-        upload_ = upload;
-        emit uploadChanged(uploadStr());
-    }
+    download_ = sync_->download();
+    upload_ = sync_->upload();
 }
 
 bool TreeModel::ready(const QModelIndex& idx) const
@@ -167,6 +160,7 @@ void TreeModel::update()
     {
         repository->update();
     }
+    updateSpeed();
 }
 
 QList<IRepository*> TreeModel::repositories() const
