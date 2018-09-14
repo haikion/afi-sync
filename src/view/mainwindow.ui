@@ -75,34 +75,6 @@
          </spacer>
         </item>
         <item>
-         <widget class="QLabel" name="ulTitleLabel">
-          <property name="font">
-           <font>
-            <family>Courier New</family>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Upload:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="ulValueLabel">
-          <property name="font">
-           <font>
-            <family>Courier New</family>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>0 kB/s</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QLabel" name="dlTitleLabel">
           <property name="font">
            <font>
@@ -121,6 +93,35 @@
         </item>
         <item>
          <widget class="QLabel" name="dlValueLabel">
+          <property name="font">
+           <font>
+            <family>Courier New</family>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>0 kB/s</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="ulTitleLabel">
+          <property name="font">
+           <font>
+            <family>Courier New</family>
+            <pointsize>9</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Upload:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="ulValueLabel">
           <property name="font">
            <font>
             <family>Courier New</family>

@@ -65,7 +65,7 @@ QString SettingsModel::setting(const QString& key, const QString& defaultValue)
 
 QString SettingsModel::arma3Path()
 {
-   return setting("arma3Dir", PathFinder::arma3Path());
+   return QDir::toNativeSeparators(setting("arma3Dir", PathFinder::arma3Path()));
 }
 
 void SettingsModel::setArma3Path(const QString& path)
@@ -80,7 +80,7 @@ void SettingsModel::resetArma3Path()
 
 QString SettingsModel::teamSpeak3Path()
 {
-   return setting("teamSpeak3Path", PathFinder::teamspeak3Path());
+   return QDir::toNativeSeparators(setting("teamSpeak3Path", PathFinder::teamspeak3Path()));
 }
 
 void SettingsModel::setTeamSpeak3Path(const QString& path)
@@ -96,7 +96,7 @@ void SettingsModel::resetTeamSpeak3Path()
 QString SettingsModel::steamPath()
 {
     LOG;
-    return settings()->value("steamPath", PathFinder::steamPath()).toString();
+    return QDir::toNativeSeparators(settings()->value("steamPath", PathFinder::steamPath()).toString());
 }
 
 void SettingsModel::setSteamPath(const QString& path)
@@ -246,7 +246,7 @@ void SettingsModel::setBattlEyeEnabled(bool enabled)
 
 QString SettingsModel::modDownloadPath()
 {
-    return QDir::fromNativeSeparators(settings()->value("modDownloadPath", PathFinder::arma3Path()).toString());
+    return QDir::toNativeSeparators(settings()->value("modDownloadPath", PathFinder::arma3Path()).toString());
 }
 
 void SettingsModel::setModDownloadPath(QString path)
