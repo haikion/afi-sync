@@ -166,6 +166,12 @@ void SettingsModel::setMaxDownloadEnabled(const bool maxDownloadEnabled)
     setMaxDownloadSync();
 }
 
+void SettingsModel::initBwLimits()
+{
+    setMaxDownloadSync();
+    setMaxUploadSync();
+}
+
 void SettingsModel::setMaxUploadEnabled(const bool maxUploadEnabled)
 {
     settings()->setValue("maxUploadEnabled", maxUploadEnabled);

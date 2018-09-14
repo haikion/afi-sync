@@ -52,6 +52,7 @@ public slots:
     static bool portEnabled();
     static void setMaxUploadEnabled(const bool maxUploadEnabled);
     static void setMaxDownloadEnabled(const bool maxDownloadEnabled);
+    static void initBwLimits();
 
 private:
     static QSettings* settings_;

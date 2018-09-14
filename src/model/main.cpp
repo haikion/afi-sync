@@ -53,6 +53,7 @@ void generalInit(QObject* parent = nullptr)
     LOG << "Worker thread started";
     Global::sync = new LibTorrentApi(parent);
     Global::model = new TreeModel(parent, Global::sync);
+    SettingsModel::initBwLimits();
 }
 
 int gui(int argc, char* argv[])

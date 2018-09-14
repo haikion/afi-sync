@@ -595,7 +595,6 @@ void LibTorrentApi::setMaxUpload(const unsigned limit)
 
 void LibTorrentApi::setMaxDownload(const unsigned limit)
 {
-    LOG << "Setting max download to " << limit;
     lt::settings_pack pack;
     pack.set_int(lt::settings_pack::download_rate_limit, limit * 1024);
     session_->apply_settings(pack);
