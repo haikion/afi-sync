@@ -67,9 +67,9 @@ public:
     virtual qint64 download() const;
     virtual qint64 upload();
     //Sets global max upload
-    virtual void setMaxUpload(unsigned limit);
+    virtual void setMaxUpload(const unsigned limit);
     //Sets global max download
-    virtual void setMaxDownload(unsigned limit);
+    virtual void setMaxDownload(const unsigned limit);
     //Returns true if the sync has loaded and is ready to take commands.
     virtual bool ready();
     //Sets outgoing port.

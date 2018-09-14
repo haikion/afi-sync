@@ -98,7 +98,7 @@ void SettingsUiModel::setMaxDownloadEnabled(const bool maxDownloadEnabled)
 
 void SettingsUiModel::setMaxDownload(QString downloadLimit)
 {
-    SettingsModel::setMaxDownload(downloadLimit, true);
+    SettingsModel::setMaxDownload(downloadLimit);
 }
 
 QString SettingsUiModel::maxUpload()
@@ -118,5 +118,5 @@ void SettingsUiModel::setMaxUploadEnabled(const bool maxUploadEnabled)
 
 void SettingsUiModel::setMaxUpload(QString uploadLimit)
 {
-    SettingsModel::setMaxUpload(uploadLimit, true);
+    SettingsModel::setMaxUpload(uploadLimit);
 }

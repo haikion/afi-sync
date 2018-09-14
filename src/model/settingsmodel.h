@@ -31,10 +31,10 @@ public slots:
     static QString steamPath();
     static void setSteamPath(const QString& path);
     static void resetSteamPath();
-    static void setMaxUpload(const QString& maxUpload, bool enabled);
+    static void setMaxUpload(const QString& maxUpload);
     static QString maxUpload();
     static bool maxUploadEnabled();
-    static void setMaxDownload(const QString& maxDownload, bool enabled);
+    static void setMaxDownload(const QString& maxDownload);
     static QString maxDownload();
     static bool maxDownloadEnabled();
     static void setInstallDate(const QString& repoName, const unsigned& value);
@@ -61,6 +61,8 @@ private:
     static QString settingsPath_;
     static QSettings* settings();
     static void createSettings();
+    static void setMaxUploadSync();
+    static void setMaxDownloadSync();
 };
 
 #endif // SETTINGSMODEL_H

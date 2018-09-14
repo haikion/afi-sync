@@ -50,12 +50,18 @@ void AsSettingsView::init(ISettings* settingsModel)
     });
 
     ui->downloadSetting->init("Download limit:", settingsModel->maxDownload(), settingsModel->maxDownloadEnabled());
-    connect(ui->downloadSetting, &OptionalSetting::checked, [=] (bool newValue) {
-        settingsModel->setMaxDownloadEnabled(newValue);
+    connect(ui->downloadSetting, &OptionalSetting::checked, [=] (bool ticked) {
+        settingsModel->setMaxDownloadEnabled(ticked);
+    });
+    connect(ui->downloadSetting, &OptionalSetting::valueChanged, [=] (QString newValue) {
+        settingsModel->setMaxDownload(newValue);
     });
     ui->uploadSetting->init("Upload limit:", settingsModel->maxUpload(), settingsModel->maxUploadEnabled());
-    connect(ui->uploadSetting, &OptionalSetting::checked, [=] (bool newValue) {
-        settingsModel->setMaxUploadEnabled(newValue);
+    connect(ui->uploadSetting, &OptionalSetting::checked, [=] (bool ticked) {
+        settingsModel->setMaxUploadEnabled(ticked);
+    });
+    connect(ui->uploadSetting, &OptionalSetting::valueChanged, [=] (QString newValue) {
+        settingsModel->setMaxUpload(newValue);
     });
 
     ui->portLineEdit->setText(settingsModel->port());

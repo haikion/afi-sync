@@ -117,11 +117,10 @@ QString SettingsModel::maxUpload()
     return rVal;
 }
 
-void SettingsModel::setMaxDownload(const QString& maxDownload, bool enabled)
+void SettingsModel::setMaxDownload(const QString& maxDownload)
 {
     settings()->setValue("maxDownload", maxDownload);
-    settings()->setValue("maxDownloadEnabled", enabled);
-    Global::sync->setMaxDownload(enabled ? maxDownload.toUInt() : 0);
+    setMaxDownloadSync();
 }
 
 QString SettingsModel::maxDownload()
@@ -164,11 +163,13 @@ bool SettingsModel::portEnabled()
 void SettingsModel::setMaxDownloadEnabled(const bool maxDownloadEnabled)
 {
     settings()->setValue("maxDownloadEnabled", maxDownloadEnabled);
+    setMaxDownloadSync();
 }
 
 void SettingsModel::setMaxUploadEnabled(const bool maxUploadEnabled)
 {
     settings()->setValue("maxUploadEnabled", maxUploadEnabled);
+    setMaxUploadSync();
 }
 
 QString SettingsModel::port()
@@ -210,11 +211,20 @@ QString SettingsModel::syncSettingsPath()
     return settingsPath() + "/sync";
 }
 
-void SettingsModel::setMaxUpload(const QString& maxUpload, bool enabled)
+void SettingsModel::setMaxUpload(const QString& maxUpload)
 {
     settings()->setValue("maxUpload", maxUpload);
-    settings()->setValue("maxUploadEnabled", enabled);
-    Global::sync->setMaxUpload(enabled ? maxUpload.toUInt() : 0);
+    setMaxUploadSync();
+}
+
+void SettingsModel::setMaxUploadSync()
+{
+    Global::sync->setMaxUpload(maxUploadEnabled() ? maxUpload().toInt() : 0);
+}
+
+void SettingsModel::setMaxDownloadSync()
+{
+    Global::sync->setMaxDownload(maxDownloadEnabled() ? maxDownload().toInt() : 0);
 }
 
 bool SettingsModel::battlEyeEnabled()

@@ -19,6 +19,7 @@ public:
 
 signals:
     void checked(bool value);
+    void valueChanged(QString value);
 
 private:
     Ui::optionalSetting *ui;

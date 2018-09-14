@@ -586,14 +586,14 @@ qint64 LibTorrentApi::download() const
     return session_->status().payload_download_rate;
 }
 
-void LibTorrentApi::setMaxUpload(unsigned limit)
+void LibTorrentApi::setMaxUpload(const unsigned limit)
 {
     lt::settings_pack pack;
     pack.set_int(lt::settings_pack::upload_rate_limit, limit * 1024);
     session_->apply_settings(pack);
 }
 
-void LibTorrentApi::setMaxDownload(unsigned limit)
+void LibTorrentApi::setMaxDownload(const unsigned limit)
 {
     LOG << "Setting max download to " << limit;
     lt::settings_pack pack;
