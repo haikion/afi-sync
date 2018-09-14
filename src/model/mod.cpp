@@ -261,7 +261,7 @@ void Mod::stopUpdates()
     //Updates need to be stopped before object destruction, hence blocking.
     QMetaObject::invokeMethod(this, "stopUpdatesSlot", Qt::BlockingQueuedConnection);
     //Process pending updateView request in UI Thread. (Prevents segfault)
-    QCoreApplication::processEvents();
+    //QCoreApplication::processEvents();
 }
 
 //This should always be run in workerThread
@@ -349,7 +349,7 @@ void Mod::updateStatus()
     }
     else if (!sync_->folderExists(key_))
     {
-        setStatus(SyncStatus::NOT_IN_SYNC);
+        setStatus(SyncStatus::ERRORED);
     }
     else if (sync_->folderQueued(key_))
     {
@@ -379,38 +379,48 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::WAITING);
     }
-    else if (sync_->folderPaused(key_))
+    else
     {
-        if (statusStr() == SyncStatus::READY)
+        //New block for error initialization
+        const QString error = sync_->folderError(key_);
+        if (error != QString())
         {
-            setStatus(SyncStatus::READY_PAUSED);
+            setStatus(SyncStatus::ERRORED + error);
         }
-        else
+        else if (sync_->folderPaused(key_))
         {
-            setStatus(SyncStatus::PAUSED);
+            if (statusStr() == SyncStatus::READY)
+            {
+                setStatus(SyncStatus::READY_PAUSED);
+            }
+            else
+            {
+                setStatus(SyncStatus::PAUSED);
+            }
         }
-    }
-    else if (sync_->folderNoPeers(key_))
-    {
-        setStatus(SyncStatus::NO_PEERS);
-    }
-    else if (sync_->folderPatching(key_))
-    {
-        setStatus(SyncStatus::PATCHING);
-    }
-    else if (sync_->folderDownloadingPatches(key_))
-    {
-        setStatus(SyncStatus::DOWNLOADING_PATCHES);
-    }
-    else if (eta() > 0)
-    {
-        if (statusStr() != SyncStatus::DOWNLOADING)
+        else if (sync_->folderNoPeers(key_))
         {
-            setStatus(SyncStatus::DOWNLOADING);
-            //Heavy operation -> only set when entering downloading state.
-            setProcessCompletion(true);
+            setStatus(SyncStatus::NO_PEERS);
+        }
+        else if (sync_->folderPatching(key_))
+        {
+            setStatus(SyncStatus::PATCHING);
+        }
+        else if (sync_->folderDownloadingPatches(key_))
+        {
+            setStatus(SyncStatus::DOWNLOADING_PATCHES);
+        }
+        else if (eta() > 0)
+        {
+            if (statusStr() != SyncStatus::DOWNLOADING)
+            {
+                setStatus(SyncStatus::DOWNLOADING);
+                //Heavy operation -> only set when entering downloading state.
+                setProcessCompletion(true);
+            }
         }
     }
+
 }
 
 void Mod::processCompletion()
@@ -445,7 +455,7 @@ bool Mod::reposInactive() const
 void Mod::updateEta()
 {
     if (statusStr() == SyncStatus::INACTIVE
-            || statusStr() == SyncStatus::NOT_IN_SYNC || statusStr() == SyncStatus::READY)
+            || statusStr() == SyncStatus::ERRORED || statusStr() == SyncStatus::READY)
     {
         setEta(0);
         return;

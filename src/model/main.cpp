@@ -58,21 +58,19 @@ void generalInit(QObject* parent = nullptr)
 int gui(int argc, char* argv[])
 {
     QApplication app(argc, argv);
-    MainWindow w;
-    generalInit(&w);
-    w.show();
-    TreeModel* treeModel = new TreeModel(&w, Global::sync);
-    w.init(treeModel, new SettingsUiModel());
-    w.treeWidget()->setRepositories(treeModel->repositories());
+    MainWindow* mainWindow = new MainWindow();
+    generalInit(mainWindow);
+    mainWindow->show();
+    TreeModel* treeModel = new TreeModel(mainWindow, Global::sync);
+    mainWindow->init(treeModel, new SettingsUiModel());
+    mainWindow->treeWidget()->setRepositories(treeModel->repositories());
 
     #ifndef QT_DEBUG
         initStandalone();
     #endif
-    #ifdef STATIC_BUILD
-        engine.setImportPathList(QStringList(QStringLiteral("qrc:/qml")));
-    #endif
 
     const int rVal = app.exec();
+    delete mainWindow;
     Global::workerThread->quit();
     Global::workerThread->wait(1000);
     Global::workerThread->terminate();

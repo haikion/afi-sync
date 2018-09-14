@@ -107,7 +107,7 @@ void ModAdapter::updateView(bool force)
         if (guiData == guiData_)
             return; //Avoid heavy UI updates when data has not been changed.
 
-        repo_->updateView(this, repo_->childItems().indexOf(this));
+        repo_->updateView(this, repo_->childItems().indexOf(this)); // TODO: Remove, QML
         guiData_ = guiData;
     }
 }

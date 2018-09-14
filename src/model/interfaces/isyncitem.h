@@ -15,7 +15,7 @@ namespace SyncStatus {
     static const QString PATCHING = "Patching..";
     static const QString NO_PEERS = "No Peers";
     static const QString NO_FILES = "No Files";
-    static const QString NOT_IN_SYNC = "Not in Sync";
+    static const QString ERRORED = "Error: ";
     static const QString INACTIVE = "Inactive";
     static const QString PAUSED = "Paused";
     static const QString QUEUED = "Queued";

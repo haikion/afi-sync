@@ -41,6 +41,9 @@ TreeModel::TreeModel(QObject* parent, ISync* sync, bool haltGui):
     LOG;
     JsonReader jsonReader;
     repositories_ = jsonReader.repositories(sync);
+    updateTimer.setInterval(1000);
+    connect(&updateTimer, &QTimer::timeout, this, &TreeModel::update);
+    updateTimer.start();
 }
 
 void TreeModel::setHaltGui(bool halt)
@@ -156,6 +159,14 @@ bool TreeModel::ready(const QModelIndex& idx) const
 
     LOG_ERROR << "Ticked asked from non-syncitem object: " << idx.internalPointer();
     return false;
+}
+
+void TreeModel::update()
+{
+    for (Repository* repository : repositories_)
+    {
+        repository->update();
+    }
 }
 
 QList<IRepository*> TreeModel::repositories() const

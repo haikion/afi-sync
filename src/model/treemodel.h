@@ -33,16 +33,16 @@ public:
     explicit TreeModel(QObject* parent = 0, ISync* sync = nullptr, bool haltGui = false);
     ~TreeModel();
 
-    void updateView(TreeItem* item, int row = -1);
+    void updateView(TreeItem* item, int row = -1); // TODO Remove, QML
     void reset();
     void enableRepositories();
     void setHaltGui(bool halt);
     RootItem* rootItem() const;
-    QList<IRepository*> repositories() const;
+    QList<IRepository*> repositories() const; // TODO Remove, QML
 
 signals:
-    void uploadChanged(QString newVal); // TODO: Remove QML specific
-    void downloadChanged(QString newVal); // TODO: Remove QML specific
+    void uploadChanged(QString newVal); // TODO: Remove, QML
+    void downloadChanged(QString newVal); // TODO: Remove, QML
 
 public slots:
     void rowsChanged(); // TODO: Remove QML specific
@@ -56,12 +56,16 @@ public slots:
     void updateSpeed(qint64 downloadStr, qint64 uploadStr);
     bool ready(const QModelIndex& idx) const;
 
+private slots:
+    void update();
+
 private:
     RootItem* rootItem_;
     unsigned download_;
     unsigned upload_;
     bool haltGui_;
     QList<Repository*> repositories_;
+    QTimer updateTimer;
 
     void setupModelData(const QStringList& lines, TreeItem* parent);
     void postInit();
