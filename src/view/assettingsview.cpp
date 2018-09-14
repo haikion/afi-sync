@@ -21,23 +21,28 @@ AsSettingsView::~AsSettingsView()
 void AsSettingsView::init(ISettings* settingsModel)
 {
     this->settingsModel = settingsModel;
+    ui->parametersLineEdit->setText(settingsModel->launchParameters());
+
     ui->steamPathSetting->init("Steam", settingsModel->steamPath());
     connect(ui->steamPathSetting, &PathSetting::textEdited, this, &AsSettingsView::setSteamPath);
-    connect(ui->steamPathSetting, &PathSetting::resetPressed, [=] {
+    connect(ui->steamPathSetting, &PathSetting::resetPressed, [=]
+    {
         settingsModel->resetSteamPath();
         ui->steamPathSetting->setValue(settingsModel->steamPath());
     });
 
     ui->modsPathSetting->init("Mod Download", settingsModel->modDownloadPath());
     connect(ui->modsPathSetting, &PathSetting::textEdited, this, &AsSettingsView::setModDownloadPath);
-    connect(ui->modsPathSetting, &PathSetting::resetPressed, [=] {
+    connect(ui->modsPathSetting, &PathSetting::resetPressed, [=]
+    {
         settingsModel->resetModDownloadPath();
         ui->modsPathSetting->setValue(settingsModel->modDownloadPath());
     });
 
     ui->teamspeakPathSetting->init("TeamSpeak 3", settingsModel->teamSpeak3Path());
     connect(ui->teamspeakPathSetting, &PathSetting::textEdited, this, &AsSettingsView::setTeamSpeak3Path);
-    connect(ui->teamspeakPathSetting, &PathSetting::resetPressed, [=] {
+    connect(ui->teamspeakPathSetting, &PathSetting::resetPressed, [=]
+    {
         settingsModel->resetTeamSpeak3Path();
         ui->teamspeakPathSetting->setValue(settingsModel->teamSpeak3Path());
     });
@@ -50,17 +55,20 @@ void AsSettingsView::init(ISettings* settingsModel)
     });
 
     ui->downloadSetting->init("Download limit:", settingsModel->maxDownload(), settingsModel->maxDownloadEnabled());
-    connect(ui->downloadSetting, &OptionalSetting::checked, [=] (bool ticked) {
+    connect(ui->downloadSetting, &OptionalSetting::checked, [=] (bool ticked)
+    {
         settingsModel->setMaxDownloadEnabled(ticked);
     });
-    connect(ui->downloadSetting, &OptionalSetting::valueChanged, [=] (QString newValue) {
+    connect(ui->downloadSetting, &OptionalSetting::valueChanged, [=] (QString newValue)
+    {
         settingsModel->setMaxDownload(newValue);
     });
     ui->uploadSetting->init("Upload limit:", settingsModel->maxUpload(), settingsModel->maxUploadEnabled());
     connect(ui->uploadSetting, &OptionalSetting::checked, [=] (bool ticked) {
         settingsModel->setMaxUploadEnabled(ticked);
     });
-    connect(ui->uploadSetting, &OptionalSetting::valueChanged, [=] (QString newValue) {
+    connect(ui->uploadSetting, &OptionalSetting::valueChanged, [=] (QString newValue)
+    {
         settingsModel->setMaxUpload(newValue);
     });
 
