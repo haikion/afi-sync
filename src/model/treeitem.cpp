@@ -35,11 +35,6 @@ int TreeItem::childCount() const
     return m_childItems.count();
 }
 
-int TreeItem::columnCount() const
-{
-    return TreeModel::ROLE_NAMES.size();
-}
-
 TreeItem* TreeItem::parentItem()
 {
     return m_parentItem;

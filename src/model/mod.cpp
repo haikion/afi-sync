@@ -51,20 +51,10 @@ void Mod::init()
     LOG << "name = " << name() << " key = " << key() << " Completed";
 }
 
-void Mod::update(bool force)
+void Mod::update()
 {
     updateStatus();
     updateEta();
-    updateView(force);
-}
-
-void Mod::updateView(bool force)
-{
-    for (ModAdapter* adp : adapters_)
-    {
-        //Run in main (UI) thread.
-        QMetaObject::invokeMethod(adp, "updateView", Qt::QueuedConnection, Q_ARG(bool, force));
-    }
 }
 
 //Removes mod which has same name but different key.
@@ -134,7 +124,7 @@ bool Mod::getProcessCompletion() const
 bool Mod::stop()
 {
     LOG << name();
-    //TODO: Might be too defensive
+    //TODO: Remove? Might be too defensive
     if (!sync_->folderExists(key_))
     {
         LOG_ERROR << "Folder" << name() << "does not exist.";
@@ -144,7 +134,7 @@ bool Mod::stop()
     LOG << "Stopping mod transfer. name = " << name();
     sync_->setFolderPaused(key_, true);
     stopUpdatesSlot();
-    update(true);
+    update();
 
     return true;
 }

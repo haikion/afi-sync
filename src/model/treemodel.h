@@ -18,18 +18,6 @@ class TreeModel : public QObject, virtual public IBandwidthMeter
     Q_OBJECT
 
 public:
-    // TODO: Remove QML Specific
-    enum  {
-        Check = Qt::UserRole + 1,
-        Name = Qt::UserRole + 2,
-        Status = Qt::UserRole + 3,
-        Progress = Qt::UserRole + 4,
-        Start = Qt::UserRole + 5,
-        Join = Qt::UserRole + 6,
-        FileSize = Qt::UserRole + 7
-    };
-    static const QHash<int, QByteArray> ROLE_NAMES;
-
     explicit TreeModel(QObject* parent = 0, ISync* sync = nullptr, bool haltGui = false);
     ~TreeModel();
 
@@ -39,10 +27,6 @@ public:
     void setHaltGui(bool halt);
     RootItem* rootItem() const;
     QList<IRepository*> repositories() const; // TODO Remove, QML
-
-signals:
-    void uploadChanged(QString newVal); // TODO: Remove, QML
-    void downloadChanged(QString newVal); // TODO: Remove, QML
 
 public slots:
     void rowsChanged(); // TODO: Remove QML specific

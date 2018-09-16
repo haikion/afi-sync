@@ -31,7 +31,6 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
 void Repository::update()
 {
     updateEtaAndStatus();
-    updateView(this);
 }
 
 void Repository::stopUpdates()
@@ -96,12 +95,6 @@ void Repository::processCompletion()
             mod->processCompletion();
     }
     SettingsModel::setInstallDate(name(), QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
-}
-
-// TODO: QML Thing remove
-void Repository::updateView(TreeItem* item, int row)
-{
-    //parentItem()->updateView(item, row);
 }
 
 void Repository::changed(bool offline)

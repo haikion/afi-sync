@@ -37,9 +37,6 @@ public:
 protected:
     virtual void setTicked(bool ticked);
 
-public slots:
-    void updateView(bool force);
-
 private:
     Mod* mod_;
     Repository* repo_;

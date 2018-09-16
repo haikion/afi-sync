@@ -6,7 +6,7 @@
 #include "apis/isync.h"
 
 //Impolements Qt tree model item
-
+//TODO: Remove, QML specific
 class TreeItem
 {
 public:
@@ -17,7 +17,6 @@ public:
     bool removeChild(TreeItem* child);
     TreeItem* child(int row);
     int childCount() const;
-    int columnCount() const;
     int row() const;
     QVariant data(int column) const;
     TreeItem* parentItem();

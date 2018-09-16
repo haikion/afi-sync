@@ -98,20 +98,6 @@ Mod* ModAdapter::mod() const
     return mod_;
 }
 
-void ModAdapter::updateView(bool force)
-{
-    //Only update if mod and its repo is active or when force == true
-    if ((ticked() && repo()->ticked()) || force)
-    {
-        QString guiData = checkText() + etaStr() + statusStr();
-        if (guiData == guiData_)
-            return; //Avoid heavy UI updates when data has not been changed.
-
-        repo_->updateView(this, repo_->childItems().indexOf(this)); // TODO: Remove, QML
-        guiData_ = guiData;
-    }
-}
-
 Repository* ModAdapter::repo() const
 {
     return repo_;

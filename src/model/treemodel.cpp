@@ -21,17 +21,6 @@
 #include "global.h"
 #include "modadapter.h"
 
-// TODO: Remove QML thing
-const QHash<int, QByteArray> TreeModel::ROLE_NAMES({
-                                   {TreeModel::Check, QByteArrayLiteral("check")},
-                                   {TreeModel::Name, QByteArrayLiteral("name")},
-                                   {TreeModel::Status, QByteArrayLiteral("status")},
-                                   {TreeModel::Progress, QByteArrayLiteral("progress")},
-                                   {TreeModel::Start, QByteArrayLiteral("start")},
-                                   {TreeModel::Join, QByteArrayLiteral("join")},
-                                   {TreeModel::FileSize, QByteArrayLiteral("fileSize")}
-                               });
-
 TreeModel::TreeModel(QObject* parent, ISync* sync, bool haltGui):
     QObject(parent),
     download_(0),

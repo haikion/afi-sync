@@ -226,8 +226,6 @@ void RootItem::resetSyncSettings()
         {
             //Disable repo
             repo->checkboxClicked(true);
-            //Display changes.
-            repo->updateView(this);
         }
     }
     sync_->shutdown();
