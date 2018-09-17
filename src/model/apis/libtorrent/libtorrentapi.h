@@ -53,6 +53,7 @@ public:
     virtual QSet<QString> folderFilesUpper(const QString& key);
     //Returns true if folder with specific key exists.
     virtual bool folderExists(const QString& key);
+    void setFolderPath(const QString& key, const QString& path);
     //Returns true if folder is paused
     virtual bool folderPaused(const QString& key);
     //Sets folder in paused mode or starts if if value is set to false.

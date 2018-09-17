@@ -44,6 +44,12 @@ void Mod::threadConstructor()
     updateTimer_->setInterval(1000);
 }
 
+
+QString Mod::path() const
+{
+    return SettingsModel::modDownloadPath() + "/" + name();
+}
+
 void Mod::init()
 {
     repositoryChanged();
@@ -72,11 +78,6 @@ void Mod::removeConflicting() const
             return;
         }
     }
-}
-
-QString Mod::path() const
-{
-    return SettingsModel::modDownloadPath() + "/" + name();
 }
 
 //Starts sync directory. If directory does not exist
@@ -108,6 +109,14 @@ void Mod::start()
     //Do the actual starting
     sync_->setFolderPaused(key_, false);
     startUpdates();
+}
+
+void Mod::moveFiles()
+{
+    if (sync_->folderExists(key_))
+    {
+        sync_->setFolderPath(key_, path());
+    }
 }
 
 void Mod::setProcessCompletion(bool value)

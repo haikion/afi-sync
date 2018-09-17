@@ -50,9 +50,12 @@ TreeModel::~TreeModel()
     }
 }
 
-//TODO: Remove, QML thing
-void TreeModel::reset()
+void TreeModel::moveFiles()
 {
+    for (Mod* mod : mods())
+    {
+        mod->moveFiles();
+    }
 }
 
 void TreeModel::enableRepositories()
@@ -83,6 +86,20 @@ QString TreeModel::bandwithString(int amount) const
         return QString::number(downloadDouble, 'g', 2) + " MB/s";
     }
     return QString::number(amount/1000) + " kB/s";
+}
+
+QSet<Mod*> TreeModel::mods() const
+{
+    // Filter duplicates
+    QSet<Mod*> mods;
+    for (Repository* repo : repositories_)
+    {
+        for (Mod* mod : repo->mods())
+        {
+            mods.insert(mod);
+        }
+    }
+    return mods;
 }
 
 QString TreeModel::downloadStr() const

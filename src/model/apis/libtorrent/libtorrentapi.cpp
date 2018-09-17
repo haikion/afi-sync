@@ -247,6 +247,12 @@ bool LibTorrentApi::folderQueued(const QString& key)
     return folderQueued(status);
 }
 
+void LibTorrentApi::setFolderPath(const QString& key, const QString& path)
+{
+    lt::torrent_handle handle = getHandle(key);
+    handle.move_storage(path.toStdString());
+}
+
 void LibTorrentApi::setFolderPaused(const QString& key, bool value)
 {
     lt::torrent_handle handle = getHandle(key);

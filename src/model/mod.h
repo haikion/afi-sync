@@ -19,6 +19,8 @@ public:
     Mod(const QString& name, const QString& key, ISync* sync);
     ~Mod();
 
+    // Moves files after mods download path has been changed
+    void moveFiles();
     void check();
     QString key() const;
     virtual Repository* parentItem();

@@ -72,9 +72,6 @@ SOURCES += src/model/main.cpp \
     src/view/optionalsetting.cpp \
     src/view/pathsetting.cpp
 
-# Default rules for deployment.
-#include(deployment.pri)
-
 HEADERS += \
     src/model/treeitem.h \
     src/model/treemodel.h \

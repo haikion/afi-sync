@@ -39,5 +39,6 @@ void PathSetting::on_browseButton_pressed()
 {
     fileDialog.setDirectory(ui->lineEdit->text());
     fileDialog.setFileMode(QFileDialog::Directory);
+    // "QObject::connect: invalid null" parameter is normal here
     fileDialog.show();
 }
