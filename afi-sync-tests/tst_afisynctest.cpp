@@ -28,7 +28,7 @@
 #include "../src/model/console.h"
 #include "../src/model/jsonreader.h"
 #include "../src/model/fileutils.h"
-#include "../src/model/debug.h"
+#include "../src/model/afisynclogger.h"
 #include "../src/model/modadapter.h"
 
 //File paths etc..
@@ -95,7 +95,6 @@ private Q_SLOTS:
     void sizeBasic();
     void repoSize();
     void noSize();
-    void jsonSize();
     void sizeStringB();
     void sizeStringMB();
     void sizeStringGB();
@@ -122,16 +121,6 @@ private Q_SLOTS:
     void managerPatch();
     void managerPatchNeg();
     void deltaNoPeers();
-
-    //JsonReader Tests
-    void jsonReaderBasic();
-    void jsonReader2Repos();
-    void jsonReaderModUpdate();
-    void jsonReaderModRemove();
-    void jsonReaderRepoRename();
-    void jsonReaderAddRepo();
-    void jsonReaderRemoveRepo();
-    void jsonReaderMoveMod();
 
 private:
     ISync* sync_;
@@ -166,7 +155,6 @@ void AfiSyncTest::startTest()
     {
         QDir(SettingsModel::syncSettingsPath()).removeRecursively();
         model_ = new TreeModel();
-        root_ = model_->rootItem();
         sync_ = root_->sync();
     }
     qDebug() << "END OF INIT TEST CASE";
@@ -471,12 +459,12 @@ void AfiSyncTest::deltaNoPeers()
     settings_->setModDownloadPath(modsPath);
     FileUtils::safeRemoveRecursively(modsPath + "/" + Constants::DELTA_PATCHES_NAME);
 
-    Repository* repo = new Repository("repo", "dummy", 21221, "", root_);
-    Mod* mod = new Mod("@mod1", TMP_PATH + "/@mod1_1.torrent");
+    Repository* repo = new Repository("repo", "dummy", 21221, "", Global::sync);
+    Mod* mod = new Mod("@mod1", TMP_PATH + "/@mod1_1.torrent", Global::sync);
     repo->checkboxClicked();
     new ModAdapter(mod, repo, false, 0);
     QThread::sleep(3); //Wait for workerThread to finish
-    QCOMPARE(mod->status(), SyncStatus::NO_PEERS);
+    QCOMPARE(mod->statusStr(), SyncStatus::NO_PEERS);
     mod->deleteLater();
 
     cleanupTest();
@@ -560,111 +548,6 @@ void AfiSyncTest::simpleCmdNeg()
     cmd->deleteLater();
 }
 
-
-//JsonReader Tests
-
-void AfiSyncTest::jsonReaderBasic()
-{
-    startTest();
-
-    reader_.fillEverything(root_, "repoBasic.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
-
-    cleanupTest();
-}
-
-void AfiSyncTest::jsonReader2Repos()
-{
-    startTest();
-
-    reader_.fillEverything(root_, "2repos1.json");
-    QCOMPARE(root_->childItems().size(), 2);
-
-    cleanupTest();
-}
-
-void AfiSyncTest::jsonReaderModUpdate()
-{
-    startTest();
-
-    reader_.fillEverything(root_, "repoBasic.json");
-    reader_.fillEverything(root_, "repoUp1.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
-    QCOMPARE(root_->childItems().at(0)->mods().at(1)->name(), QString("@st_nametags"));
-
-    cleanupTest();
-}
-
-void AfiSyncTest::jsonReaderModRemove()
-{
-    startTest();
-
-    reader_.fillEverything(root_, "repoUp1.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
-    reader_.fillEverything(root_, "repoBasic.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().at(0)->name(), QString("@cz75_nochain_a3"));
-
-    cleanupTest();
-}
-
-void AfiSyncTest::jsonReaderRepoRename()
-{
-    startTest();
-
-    reader_.fillEverything(root_, "repoBasic.json");
-    reader_.fillEverything(root_, "repoRename.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary 2"));
-
-    cleanupTest();
-}
-
-void AfiSyncTest::jsonReaderAddRepo()
-{
-    startTest();
-
-    reader_.fillEverything(root_, "repoBasic.json");
-    reader_.fillEverything(root_, "2repos1.json");
-    QCOMPARE(root_->childItems().size(), 2);
-
-    cleanupTest();
-}
-
-void AfiSyncTest::jsonReaderRemoveRepo()
-{
-    startTest();
-
-    reader_.fillEverything(root_, "2repos1.json");
-    //Produces getHandle error because fake torrents cannot be downloaded!
-    reader_.fillEverything(root_, "repoBasic.json");
-    QCOMPARE(root_->childItems().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->name(), QString("armafinland.fi Primary"));
-
-    cleanupTest();
-}
-
-void AfiSyncTest::jsonReaderMoveMod()
-{
-    startTest();
-
-    reader_.fillEverything(root_, "2repos1.json");
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 2);
-    QCOMPARE(root_->childItems().at(1)->mods().size(), 1);
-    QCOMPARE(root_->childItems().at(0)->mods().at(1)->name(), QString("@st_nametags"));
-    reader_.fillEverything(root_, "2repos2.json");
-    QCOMPARE(root_->childItems().at(0)->mods().size(), 1);
-    QCOMPARE(root_->childItems().at(1)->mods().size(), 2);
-    QCOMPARE(root_->childItems().at(1)->mods().at(1)->name(), QString("@st_nametags"));
-
-    cleanupTest();
-}
-
 //Sync tests
 
 void AfiSyncTest::addRemoveFolder()
@@ -711,17 +594,17 @@ void AfiSyncTest::modFilesRemoved()
     startTest();
     FileUtils::copy("mods", TMP_PATH);
     settings_->setModDownloadPath(TMP_PATH + "/1extraFile");
-    Repository* repo = new Repository("dummy2", "address", 1234, "", root_);
-    Mod* mod = new Mod("@mod1", TORRENT_PATH_MOD1_3);
+    Repository* repo = new Repository("dummy2", "address", 1234, "", Global::sync);
+    Mod* mod = new Mod("@mod1", TORRENT_PATH_MOD1_3, Global::sync);
     ModAdapter* adp = new ModAdapter(mod, repo, false, 0);
     Q_UNUSED(adp);
     repo->checkboxClicked();
     QSet<QString> readys;
     readys.insert(SyncStatus::READY);
     readys.insert(SyncStatus::READY_PAUSED);
-    while (!readys.contains(mod->status()))
+    while (!readys.contains(mod->statusStr()))
     {
-        DBG << "Wating... mod status =" << mod->status();
+        qDebug() << "Wating... mod status =" << mod->statusStr();
         QThread::sleep(1); //Wait for check to finish
     }
     const bool extraFileExists = QFileInfo(TMP_PATH + "/1extraFile/@mod1/extraFile.txt").exists();
@@ -737,7 +620,7 @@ void AfiSyncTest::repoTickedFalseDefault()
     cleanupTest();
     startTest();
 
-    Repository* repo = new Repository("dummy3", "address", 1234, "", root_);
+    Repository* repo = new Repository("dummy3", "address", 1234, "", Global::sync);
     QVERIFY(!repo->ticked());
 
     cleanupTest();
@@ -747,7 +630,7 @@ void AfiSyncTest::repoCheckboxClicked()
 {
     startTest();
 
-    Repository* repo = new Repository("dummy4", "address", 1234, "", root_);
+    Repository* repo = new Repository("dummy4", "address", 1234, "", Global::sync);
     repo->checkboxClicked();
     QVERIFY(repo->ticked());
 
@@ -760,7 +643,7 @@ void AfiSyncTest::sizeBasic()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH, Global::sync);
     mod->setFileSize(quint64(1000));
     QVERIFY(mod->fileSize() == quint64(1000));
     mod->deleteLater();
@@ -773,10 +656,10 @@ void AfiSyncTest::repoSize()
     QSKIP("Server down");
     startTest();
 
-    Repository* repo = new Repository("name", "address", 1234, "password", root_);
-    Mod* mod1 = new Mod("@vt5", VT5_TORRENT_PATH);
+    Repository* repo = new Repository("name", "address", 1234, "password", Global::sync);
+    Mod* mod1 = new Mod("@vt5", VT5_TORRENT_PATH, Global::sync);
     mod1->setFileSize(quint64(1000));
-    Mod* mod2 = new Mod("@vt5", VT5_TORRENT_PATH);
+    Mod* mod2 = new Mod("@vt5", VT5_TORRENT_PATH, Global::sync);
     mod2->setFileSize(quint64(3000));
     new ModAdapter(mod1, repo, false, 0);
     new ModAdapter(mod2, repo, false, 1);
@@ -791,19 +674,9 @@ void AfiSyncTest::noSize()
     QSKIP("Server down");
     startTest();
 
-    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
-    QVERIFY(mod->fileSize() == 0);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH, Global::sync);
+    QVERIFY(mod->sizeStr() == 0);
     mod->deleteLater();
-
-    cleanupTest();
-}
-
-void AfiSyncTest::jsonSize()
-{
-    startTest();
-
-    reader_.fillEverything(root_, "repoBasic.json");
-    QVERIFY(root_->childItems().at(0)->mods().at(0)->fileSize() == 1000);
 
     cleanupTest();
 }
@@ -812,9 +685,9 @@ void AfiSyncTest::sizeStringB()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH, Global::sync);
     mod->setFileSize(quint64(1000));
-    QCOMPARE(mod->fileSizeText(), QString("1000.00 B"));
+    QCOMPARE(mod->sizeStr(), QString("1000.00 B"));
     mod->deleteLater();
 
     cleanupTest();
@@ -824,9 +697,9 @@ void AfiSyncTest::sizeStringMB()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH, Global::sync);
     mod->setFileSize(quint64(21309));
-    QCOMPARE(mod->fileSizeText(), QString("20.81 kB"));
+    QCOMPARE(mod->sizeStr(), QString("20.81 kB"));
     mod->deleteLater();
 
     cleanupTest();
@@ -836,9 +709,9 @@ void AfiSyncTest::sizeStringGB()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH, Global::sync);
     mod->setFileSize(quint64(3376414));
-    QCOMPARE(mod->fileSizeText(), QString("3.22 MB"));
+    QCOMPARE(mod->sizeStr(), QString("3.22 MB"));
     mod->deleteLater();
 
     cleanupTest();
@@ -848,9 +721,9 @@ void AfiSyncTest::sizeStringGB2()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH, Global::sync);
     mod->setFileSize(quint64(33764140));
-    QCOMPARE(mod->fileSizeText(), QString("32.20 MB"));
+    QCOMPARE(mod->sizeStr(), QString("32.20 MB"));
     mod->deleteLater();
 
     cleanupTest();
@@ -860,8 +733,8 @@ void AfiSyncTest::sizeString0()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
-    QCOMPARE(mod->fileSizeText(), QString("??.?? MB"));
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH, Global::sync);
+    QCOMPARE(mod->sizeStr(), QString("??.?? MB"));
     mod->deleteLater();
 
     cleanupTest();
@@ -871,9 +744,9 @@ void AfiSyncTest::sizeOverflow()
 {
     startTest();
 
-    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH);
+    Mod* mod = new Mod("@vt5", VT5_TORRENT_PATH, Global::sync);
     mod->setFileSize(quint64(13770848165));
-    QCOMPARE(mod->fileSizeText(), QString("12.83 GB"));
+    QCOMPARE(mod->sizeStr(), QString("12.83 GB"));
     mod->deleteLater();
 
     cleanupTest();

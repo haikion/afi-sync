@@ -4,9 +4,9 @@
 #
 #-------------------------------------------------
 
-QT += qml quick testlib
+QT += core gui network widgets testlib
 
-CONFIG += c++11
+CONFIG += c++14
 
 win32 {
     DEFINES += _WIN32_WINNT=0x0501
@@ -18,7 +18,8 @@ win32 {
 }
 
 unix {
-    LIBS += -ltorrent-rasterbar -lboost_system
+   DEFINES += BOOST_LOG_DYN_LINK
+   LIBS += -lboost_system -lboost_atomic -lboost_random -lboost_date_time -lboost_log_setup -lboost_filesystem -lboost_log -lboost_thread -ltorrent-rasterbar
 }
 
 TARGET = tst_afisynctest
@@ -51,7 +52,12 @@ SOURCES += tst_afisynctest.cpp \
     ../src/model/apis/libtorrent/deltamanager.cpp \
     ../src/model/apis/libtorrent/deltapatcher.cpp \
     ../src/model/fileutils.cpp \
-    ../src/model/console.cpp
+    ../src/model/console.cpp \
+    ../src/model/szip.cpp \
+    ../src/model/settingsuimodel.cpp \
+    ../src/model/qstreams.cpp \
+    ../src/model/constantsmodel.cpp \
+    ../src/model/afisynclogger.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \
@@ -81,4 +87,12 @@ HEADERS += \
     ../src/model/apis/libtorrent/deltamanager.h \
     ../src/model/apis/libtorrent/deltapatcher.h \
     ../src/model/fileutils.h \
-    ../src/model/console.h
+    ../src/model/console.h \
+    ../src/model/version.h \
+    ../src/model/szip.h \
+    ../src/model/settingsuimodel.h \
+    ../src/model/settingsmodel.cpp.DK5272 \
+    ../src/model/repository.cpp.hT4328 \
+    ../src/model/qstreams.h \
+    ../src/model/constantsmodel.h \
+    ../src/model/afisynclogger.h

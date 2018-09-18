@@ -44,7 +44,7 @@ void AfiSyncLogger::initFileLogging()
     );
 }
 
-QProcess* AfiSyncLogger::rotateLogs()
+bool AfiSyncLogger::rotateLogs()
 {
     const QFile logFile(Constants::LOG_FILE);
     if (!logFile.exists())

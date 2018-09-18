@@ -1,8 +1,8 @@
 /*
  * Handles log rotation
  */
-#ifndef LOGMANAGER_H
-#define LOGMANAGER_H
+#ifndef AFISYNCLOGGER_H
+#define AFISYNCLOGGER_H
 
 #include <boost/log/trivial.hpp>
 #include <QSet>
@@ -28,7 +28,7 @@ private:
     static const QString SZIP_EXECUTABLE;
     Szip szip_; //Do not kill process when block ends
 
-    QProcess* rotateLogs();
+    bool rotateLogs();
 };
 
-#endif // LOGMANAGER_H
+#endif // AFISYNCLOGGER_H
