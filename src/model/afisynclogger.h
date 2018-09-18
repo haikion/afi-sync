@@ -9,7 +9,6 @@
 #include <QString>
 #include <QVector>
 #include "runningtime.h"
-#include "console.h"
 #include "szip.h"
 #include "qstreams.h"
 
@@ -19,14 +18,17 @@
 
 class AfiSyncLogger
 {
-public:    
-    static void initFileLogging();
+public:
+    AfiSyncLogger() = default;
+
+    void initFileLogging();
 
 private:
     static const int MAX_LOGS_SIZE;
     static const QString SZIP_EXECUTABLE;
+    Szip szip_; //Do not kill process when block ends
 
-    static bool rotateLogs();
+    QProcess* rotateLogs();
 };
 
 #endif // LOGMANAGER_H

@@ -37,12 +37,14 @@ struct CleanExit
     }
 };
 
-void initStandalone()
+AfiSyncLogger* initStandalone()
 {
     #ifdef Q_OS_WIN
         Breakpad::CrashHandler::instance()->Init(QStringLiteral("."));
     #endif
-    AfiSyncLogger::initFileLogging();
+    AfiSyncLogger* logger = new AfiSyncLogger();
+    logger->initFileLogging();
+    return logger;
 }
 
 void generalInit(QObject* parent = nullptr)
@@ -59,6 +61,9 @@ void generalInit(QObject* parent = nullptr)
 int gui(int argc, char* argv[])
 {
     QApplication app(argc, argv);
+    #ifndef QT_DEBUG
+            AfiSyncLogger* logger = initStandalone();
+    #endif
     MainWindow* mainWindow = new MainWindow();
     generalInit(mainWindow);
     mainWindow->show();
@@ -66,11 +71,10 @@ int gui(int argc, char* argv[])
     mainWindow->init(treeModel, new SettingsUiModel());
     mainWindow->treeWidget()->setRepositories(treeModel->repositories());
 
-    #ifndef QT_DEBUG
-        initStandalone();
-    #endif
-
     const int rVal = app.exec();
+    #ifndef QT_DEBUG
+        delete logger;
+    #endif
     delete mainWindow;
     Global::workerThread->quit();
     Global::workerThread->wait(1000);

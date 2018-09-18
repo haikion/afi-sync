@@ -44,7 +44,7 @@ void AfiSyncLogger::initFileLogging()
     );
 }
 
-bool AfiSyncLogger::rotateLogs()
+QProcess* AfiSyncLogger::rotateLogs()
 {
     const QFile logFile(Constants::LOG_FILE);
     if (!logFile.exists())
@@ -63,6 +63,5 @@ bool AfiSyncLogger::rotateLogs()
     const QString filePrefix = QString(Constants::LOG_FILE) + "_" + QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss");
     const QString logName =  filePrefix + ".log";
     FileUtils::move(Constants::LOG_FILE, logName);
-    Szip szip;
-    return szip.compressAsync(logName, filePrefix + ".7z");
+    return szip_.compressAsync(logName, filePrefix + ".7z");
 }
