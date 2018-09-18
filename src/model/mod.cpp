@@ -19,7 +19,7 @@ Mod::Mod(const QString& name, const QString& key, ISync* sync):
     updateTimer_(nullptr),
     waitTime_(0)
 {
-    LOG;
+    LOG << "key = " << key;
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
     //Enables non lagging UI
     moveToThread(Global::workerThread);

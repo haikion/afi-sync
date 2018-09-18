@@ -220,6 +220,7 @@ QList<Repository*> JsonReader::repositories(ISync* sync)
     }
 
     const QList<QVariant> repositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
+    QMap<QString, Mod*> modMap; // Add same key mods only once
     for (const QVariant& repoVar : repositories)
     {
         QVariantMap repository = qvariant_cast<QVariantMap>(repoVar);
@@ -242,9 +243,10 @@ QList<Repository*> JsonReader::repositories(ISync* sync)
                 LOG << "Key " << key << " already in " << repoName;
                 continue;
             }
-            Mod* newMod;
+
             const QString modName = mod.value("name").toString().toLower();
-            newMod = new Mod(modName, key, sync);
+            Mod* newMod = modMap.contains(key) ? modMap.value(key) : new Mod(modName, key, sync);
+            modMap.insert(key, newMod); //add if doesn't already exist
             newMod->setFileSize(qvariant_cast<quint64>(mod.value("fileSize", "0")));
             new ModAdapter(newMod, repo, mod.value("optional", false).toBool(), i);
         }
