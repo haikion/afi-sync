@@ -42,7 +42,10 @@ public:
     virtual QString maxUpload();
     virtual bool maxUploadEnabled();
     virtual void setMaxUploadEnabled(const bool maxUploadEnabled);
-    virtual void setMaxUpload(QString maxUpload);
+    virtual void setMaxUpload(const QString& maxUpload);
+
+    virtual bool deltaPatchingEnabled() const;
+    virtual void setDeltaPatchingEnabled(const bool enabled);
 
 private:
     TreeModel* treeModel;

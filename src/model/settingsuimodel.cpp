@@ -116,7 +116,17 @@ void SettingsUiModel::setMaxUploadEnabled(const bool maxUploadEnabled)
     SettingsModel::setMaxUploadEnabled(maxUploadEnabled);
 }
 
-void SettingsUiModel::setMaxUpload(QString uploadLimit)
+void SettingsUiModel::setMaxUpload(const QString& uploadLimit)
 {
     SettingsModel::setMaxUpload(uploadLimit);
+}
+
+bool SettingsUiModel::deltaPatchingEnabled() const
+{
+    return SettingsModel::deltaPatchingEnabled();
+}
+
+void SettingsUiModel::setDeltaPatchingEnabled(const bool enabled)
+{
+    SettingsModel::setDeltaPatchingEnabled(enabled);
 }

@@ -36,7 +36,10 @@ public:
     virtual QString maxUpload() = 0;
     virtual bool maxUploadEnabled() = 0;
     virtual void setMaxUploadEnabled(bool enabled) = 0;
-    virtual void setMaxUpload(QString maxUpload) = 0;
+    virtual void setMaxUpload(const QString& maxUpload) = 0;
+
+    virtual bool deltaPatchingEnabled() const = 0;
+    virtual void setDeltaPatchingEnabled(bool enabled) = 0;
 };
 
 #endif // ISETTINGS_H

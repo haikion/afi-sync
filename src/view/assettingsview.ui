@@ -120,6 +120,13 @@ QGroupBox::title {
         </item>
        </layout>
       </item>
+      <item>
+       <widget class="QCheckBox" name="deltaPatchingCheckbox">
+        <property name="text">
+         <string>Delta Patching</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

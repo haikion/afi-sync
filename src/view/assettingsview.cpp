@@ -74,6 +74,7 @@ void AsSettingsView::init(ISettings* settingsModel)
 
     ui->portLineEdit->setText(settingsModel->port());
     ui->portLineEdit->setValidator(new QIntValidator(0, 65535, this));
+    ui->deltaPatchingCheckbox->setChecked(settingsModel->deltaPatchingEnabled());
 }
 
 void AsSettingsView::setArma3Path(QString path)
@@ -109,4 +110,9 @@ void AsSettingsView::on_portLineEdit_editingFinished()
 void AsSettingsView::on_reportButton_clicked()
 {
     QDesktopServices::openUrl(QUrl::fromEncoded("https://www.google.fi"));
+}
+
+void AsSettingsView::on_deltaPatchingCheckbox_toggled(const bool checked)
+{
+    settingsModel->setDeltaPatchingEnabled(checked);
 }

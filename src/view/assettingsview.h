@@ -15,7 +15,7 @@ class AsSettingsView : public QWidget
     Q_OBJECT
 
 public:
-    explicit AsSettingsView(QWidget *parent = 0);
+    explicit AsSettingsView(QWidget *parent = nullptr);
     ~AsSettingsView();
 
     void init(ISettings* settingsModel);
@@ -29,6 +29,7 @@ private slots:
     void on_parametersLineEdit_editingFinished();
     void on_portLineEdit_editingFinished();
     void on_reportButton_clicked();
+    void on_deltaPatchingCheckbox_toggled(const bool checked);
 
 private:
     Ui::AsSettingsView *ui;

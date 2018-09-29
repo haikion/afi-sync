@@ -241,7 +241,7 @@ bool SettingsModel::battlEyeEnabled()
 void SettingsModel::setDeltaPatchingEnabled(bool enabled)
 {
     settings()->setValue("deltaPatchingEnabled", enabled);
-    if (Global::sync)
+    if (Global::sync) //TODO: Remove might be too defensive
     {
         if (enabled)
             Global::sync->enableDeltaUpdates();
