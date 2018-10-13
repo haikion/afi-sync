@@ -396,7 +396,7 @@ QList<ISyncItem*> Repository::uiMods() const
     QList<ISyncItem*> rVal;
     for (TreeItem* item : TreeItem::childItems())
     {
-        rVal.append(static_cast<ModAdapter*>(item)->mod());
+        rVal.append(static_cast<ModAdapter*>(item));
     }
     return rVal;
 }

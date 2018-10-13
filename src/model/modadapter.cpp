@@ -42,7 +42,7 @@ QString ModAdapter::joinText()
     return mod_->joinText();
 }
 
-QString ModAdapter::statusStr() const
+QString ModAdapter::statusStr()
 {
     return mod_->statusStr();
 }
