@@ -76,7 +76,6 @@ private Q_SLOTS:
     void copyDeepOverwrite();
 
     //LibTorrent API tests
-    void saveAndLoad();
     void getEta();
     void setFolderPaused();
     void getFolderKeys();
@@ -145,17 +144,24 @@ AfiSyncTest::AfiSyncTest():
 {
    handle_ = createHandle();
    settings_->setModDownloadPath(TMP_PATH + "/1");
+
+   Global::workerThread = new QThread();
+   Global::workerThread->setObjectName("workerThread");
+   Global::workerThread->start();
+   LOG << "Worker thread started";
+   Global::sync = new LibTorrentApi();
+   Global::model = new TreeModel(nullptr, Global::sync);
+   SettingsModel::initBwLimits();
 }
 
 //Helper functions
 
 void AfiSyncTest::startTest()
 {
-    if (!model_)
+    if (!sync_)
     {
         QDir(SettingsModel::syncSettingsPath()).removeRecursively();
-        model_ = new TreeModel();
-        sync_ = root_->sync();
+        sync_ = new LibTorrentApi();
     }
     qDebug() << "END OF INIT TEST CASE";
 }
@@ -220,27 +226,6 @@ libtorrent::torrent_handle AfiSyncTest::createHandle(const QString& url, const Q
     }
 
     return handle;
-}
-
-//Creates model, adds folder, deletes model, creates model again. Added folder should still exist.
-void AfiSyncTest::saveAndLoad()
-{
-    ISync* sync = new LibTorrentApi();
-
-    QDir().mkpath(TMP_PATH);
-    settings_->setModDownloadPath(TMP_PATH);
-    sync->addFolder(VT5_TORRENT_PATH, "@vt5");
-    delete sync;
-    QThread::sleep(10);
-    sync = new LibTorrentApi();
-
-    bool exists = sync->folderExists(VT5_TORRENT_PATH);
-    bool rVal = sync->removeFolder(VT5_TORRENT_PATH);
-    bool existsAfterDelete = sync->folderExists(VT5_TORRENT_PATH);
-    FileUtils::safeRemoveRecursively(TMP_PATH);
-    QVERIFY(exists);
-    QVERIFY(rVal);
-    QVERIFY(!existsAfterDelete);
 }
 
 //LibTorrent Delta Patching Tests
@@ -549,7 +534,6 @@ void AfiSyncTest::simpleCmdNeg()
 }
 
 //Sync tests
-
 void AfiSyncTest::addRemoveFolder()
 {
     startTest();
@@ -573,17 +557,14 @@ void AfiSyncTest::addRemoveFolder()
     cleanupTest();
 }
 
+
 void AfiSyncTest::addRemoveFolderKey()
 {
-    ISync* sync = new LibTorrentApi();
-    sync->addFolder(VT5_TORRENT_PATH, "@vt5");
-    QCOMPARE(sync->folderExists(VT5_TORRENT_PATH), true);
-    QCOMPARE(sync->removeFolder(VT5_TORRENT_PATH), true);
-    QCOMPARE(sync->folderExists(VT5_TORRENT_PATH), false);
-
-    delete sync;
+    sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
+    QCOMPARE(sync_->folderExists(VT5_TORRENT_PATH), true);
+    QCOMPARE(sync_->removeFolder(VT5_TORRENT_PATH), true);
+    QCOMPARE(sync_->folderExists(VT5_TORRENT_PATH), false);
 }
-
 //Mod tests
 
 //Tests if files get removed from mod directory
