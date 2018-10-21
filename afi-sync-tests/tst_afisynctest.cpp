@@ -30,6 +30,7 @@
 #include "../src/model/fileutils.h"
 #include "../src/model/afisynclogger.h"
 #include "../src/model/modadapter.h"
+#include "../src/model/deletabledetector.h"
 
 //File paths etc..
 static const QString PATCHING_FILES_PATH = "patching";
@@ -121,6 +122,9 @@ private Q_SLOTS:
     void managerPatchNeg();
     void deltaNoPeers();
 
+    //DeletableDetector tests
+    void deletables();
+
 private:
     ISync* sync_;
     TreeModel* model_;
@@ -142,7 +146,7 @@ AfiSyncTest::AfiSyncTest():
    session_(nullptr),
    settings_(new SettingsModel())
 {
-   handle_ = createHandle();
+//   handle_ = createHandle();
    settings_->setModDownloadPath(TMP_PATH + "/1");
 
    Global::workerThread = new QThread();
@@ -150,7 +154,7 @@ AfiSyncTest::AfiSyncTest():
    Global::workerThread->start();
    LOG << "Worker thread started";
    Global::sync = new LibTorrentApi();
-   Global::model = new TreeModel(nullptr, Global::sync);
+   //Global::model = new TreeModel(nullptr, Global::sync);
    SettingsModel::initBwLimits();
 }
 
@@ -454,6 +458,26 @@ void AfiSyncTest::deltaNoPeers()
 
     cleanupTest();
     afterDelta();
+}
+
+void AfiSyncTest::deletables()
+{
+    Mod* commonMod = new Mod("name1", "key2", Global::sync);
+    Mod* mod1 = new Mod(MOD_NAME_1, "key2", Global::sync);
+    Mod* mod2 = new Mod("name3", "key3", Global::sync);
+    Repository* repo1 = new Repository("repo1", "address", 1024, "password1", Global::sync);
+    Repository* repo2 = new Repository("repo2", "address", 1024, "password1", Global::sync);
+    ModAdapter* commonMod1 = new ModAdapter(commonMod, repo1, false, 0);
+    ModAdapter* commonMod2 = new ModAdapter(commonMod, repo2, false, 0);
+    ModAdapter* modAdapter1 = new ModAdapter(mod1, repo1, false, 0);
+    ModAdapter* modAdapter2 = new ModAdapter(mod2, repo1, false, 0);
+    QList<Repository*> repositories;
+    repositories.append(repo1);
+    repositories.append(repo2);
+
+    DeletableDetector::printDeletables(repositories);
+    delete mod1;
+    delete mod2;
 }
 
 //FileUtils tests

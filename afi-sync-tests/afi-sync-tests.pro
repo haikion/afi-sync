@@ -57,13 +57,14 @@ SOURCES += tst_afisynctest.cpp \
     ../src/model/settingsuimodel.cpp \
     ../src/model/qstreams.cpp \
     ../src/model/constantsmodel.cpp \
-    ../src/model/afisynclogger.cpp
+    ../src/model/afisynclogger.cpp \
+    ../src/model/deletabledetector.cpp
+
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \
     ../src/model/cihash.h \
     ../src/model/customdebug.h \
-    ../src/model/debug.h \
     ../src/model/global.h \
     ../src/model/installer.h \
     ../src/model/jsonreader.h \
@@ -91,8 +92,7 @@ HEADERS += \
     ../src/model/version.h \
     ../src/model/szip.h \
     ../src/model/settingsuimodel.h \
-    ../src/model/settingsmodel.cpp.DK5272 \
-    ../src/model/repository.cpp.hT4328 \
     ../src/model/qstreams.h \
     ../src/model/constantsmodel.h \
-    ../src/model/afisynclogger.h
+    ../src/model/afisynclogger.h \
+    ../src/model/deletabledetector.cpp

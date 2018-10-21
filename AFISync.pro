@@ -64,6 +64,7 @@ SOURCES += src/model/main.cpp \
     src/model/constantsmodel.cpp \
     src/model/qstreams.cpp \
     src/model/settingsuimodel.cpp \
+    src/model/deletabledetector.cpp \
     src/view/asbannerbar.cpp \
     src/view/assettingsview.cpp \
     src/view/astreeitem.cpp \
@@ -108,6 +109,7 @@ HEADERS += \
     src/model/interfaces/isettings.h \
     src/model/interfaces/isyncitem.h \
     src/model/settingsuimodel.h \
+    src/model/deletabledetector.h \
     src/view/asbannerbar.h \
     src/view/assettingsview.h \
     src/view/astreeitem.h \

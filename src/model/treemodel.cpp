@@ -17,9 +17,9 @@
 #include "repository.h"
 #include "mod.h"
 #include "treemodel.h"
-#include "rootitem.h"
 #include "global.h"
 #include "modadapter.h"
+#include "deletabledetector.h"
 
 TreeModel::TreeModel(QObject* parent, ISync* sync, bool haltGui):
     QObject(parent),
@@ -44,6 +44,7 @@ void TreeModel::setHaltGui(bool halt)
 TreeModel::~TreeModel()
 {
     LOG;
+    DeletableDetector::printDeletables(repositories_);
     for (Repository* repo : repositories_)
     {
         repo->stopUpdates();
