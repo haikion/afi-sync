@@ -109,7 +109,7 @@ void AsSettingsView::on_portLineEdit_editingFinished()
 
 void AsSettingsView::on_reportButton_clicked()
 {
-    QDesktopServices::openUrl(QUrl::fromEncoded("https://www.google.fi"));
+    QDesktopServices::openUrl(QUrl::fromEncoded("https://form.jotformeu.com/61187638191361"));
 }
 
 void AsSettingsView::on_deltaPatchingCheckbox_toggled(const bool checked)
