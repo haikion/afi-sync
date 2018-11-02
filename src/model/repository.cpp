@@ -11,6 +11,7 @@
 #include "repository.h"
 #include "settingsmodel.h"
 #include "settingsmodel.h"
+#include "global.h"
 
 Repository::Repository(const QString& name, const QString& serverAddress, unsigned port,
                       QString password, ISync* sync):
@@ -56,6 +57,25 @@ void Repository::setTicked(bool ticked)
 {
     SettingsModel::setTicked("", name(), ticked);
     update();
+}
+
+QString Repository::progressStr() const
+{
+    if (!ticked())
+        return "???";
+
+    qint64 totalWanted = 0;
+    qint64 totalWantedDone = 0;
+    for (const Mod* mod : mods())
+    {
+        if (!mod->ticked())
+            continue;
+
+        totalWanted += mod->totalWanted();
+        totalWantedDone += mod->totalWantedDone();
+    }
+
+    return Mod::toProgressStr(totalWanted, totalWantedDone);
 }
 
 void Repository::startUpdates()

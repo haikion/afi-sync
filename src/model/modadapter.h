@@ -31,6 +31,7 @@ public:
     virtual void processCompletion();
     virtual int eta() const;
     virtual bool optional() const;
+    virtual QString progressStr() const;
     Mod* mod() const;
     Repository* repo() const;
     void forceCheck() const;

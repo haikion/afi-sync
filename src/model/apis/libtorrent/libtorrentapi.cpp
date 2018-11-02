@@ -25,7 +25,7 @@
 namespace lt = libtorrent;
 
 const int LibTorrentApi::NOT_FOUND = -404;
-const QString LibTorrentApi::ERROR_KEY_NOT_FOUND = "ERROR: not found. key =";
+const QString LibTorrentApi::ERROR_KEY_NOT_FOUND = "ERROR: not found. key = ";
 const QString LibTorrentApi::ERROR_SESSION_NULL = "ERROR: session is null.";
 
 LibTorrentApi::LibTorrentApi(QObject *parent) :
@@ -432,6 +432,18 @@ void LibTorrentApi::disableQueue(const QString& key)
     handle.queue_position_top();
     handle.auto_managed(false);
     handle.resume();
+}
+
+qint64 LibTorrentApi::folderTotalWanted(const QString& key)
+{
+    lt::torrent_status status = getHandle(key).status();
+    return status.total_wanted;
+}
+
+qint64 LibTorrentApi::folderTotalWantedDone(const QString& key)
+{
+    lt::torrent_status status = getHandle(key).status();
+    return status.total_wanted_done;
 }
 
 int64_t LibTorrentApi::bytesToCheck(const lt::torrent_status& status) const
@@ -877,7 +889,9 @@ lt::torrent_handle LibTorrentApi::getHandle(const QString& key)
 {
     lt::torrent_handle rVal = getHandleSilent(key);
     if (!rVal.is_valid())
+    {
         LOG << ERROR_KEY_NOT_FOUND << key;
+    }
 
     return rVal;
 }

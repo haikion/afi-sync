@@ -44,6 +44,7 @@ public:
     void setBattlEyeEnabled(bool battlEyeEnabled);
     virtual bool ticked() const;
     virtual void setTicked(bool ticked);
+    virtual QString progressStr() const;
 
 private:
     ISync* sync_;

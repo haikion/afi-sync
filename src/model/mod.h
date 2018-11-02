@@ -39,6 +39,11 @@ public:
     void startUpdates();
     void updateStatus();
     void forceCheck();
+    qint64 totalWanted() const;
+    qint64 totalWantedDone() const;
+    virtual QString progressStr() const;
+    static QString bytesToMegasStr(const qint64 bytes);
+    static QString toProgressStr(const qint64 totalWanted, const qint64 totalWantedDone);
 
 public slots:
     void repositoryChanged(bool offline = false);

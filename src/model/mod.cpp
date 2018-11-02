@@ -1,6 +1,7 @@
 #include <QCoreApplication>
 #include <QDirIterator>
 #include <QTimer>
+#include <QtMath>
 #include "afisynclogger.h"
 #include "fileutils.h"
 #include "global.h"
@@ -128,6 +129,22 @@ void Mod::setProcessCompletion(bool value)
 bool Mod::getProcessCompletion() const
 {
     return SettingsModel::process(name());
+}
+
+qint64 Mod::totalWanted() const
+{
+    if (!sync_->folderExists(key_))
+        return -1;
+
+    return sync_->folderTotalWantedDone(key_);
+}
+
+qint64 Mod::totalWantedDone() const
+{
+    if (!sync_->folderExists(key_))
+        return -1;
+
+    return sync_->folderTotalWanted(key_);
 }
 
 bool Mod::stop()
@@ -427,6 +444,24 @@ void Mod::forceCheck()
     // Hack to manually fix LibTorrent 1.1.7 eternal queue bug
     sync_->disableQueue(key_);
     check();
+}
+
+QString Mod::progressStr() const
+{
+    if (!ticked())
+        return "???";
+
+    return toProgressStr(totalWanted(), totalWantedDone());
+}
+
+QString Mod::bytesToMegasStr(const qint64 bytes)
+{
+    return QString::number(qMax(qint64(1), bytes / Constants::MILLION));  // Size should never be 0
+}
+
+QString Mod::toProgressStr(const qint64 totalWanted, const qint64 totalWantedDone)
+{
+    return QString("%1 / %2").arg(bytesToMegasStr(totalWanted)).arg(bytesToMegasStr(totalWantedDone));
 }
 
 void Mod::processCompletion()

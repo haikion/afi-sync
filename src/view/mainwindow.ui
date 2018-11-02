@@ -39,7 +39,7 @@
         </column>
         <column>
          <property name="text">
-          <string>ETA</string>
+          <string>Progress (MB)</string>
          </property>
         </column>
         <column>

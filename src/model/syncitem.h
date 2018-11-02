@@ -34,6 +34,7 @@ public:
     void setFileSize(const quint64 size);
     virtual QString sizeStr() const;
     virtual bool active() const;
+    virtual QString progressStr() const = 0;
 
 protected:
     virtual void setEta(const int& eta);

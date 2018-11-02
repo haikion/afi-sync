@@ -93,6 +93,11 @@ bool ModAdapter::optional() const
     return isOptional_;
 }
 
+QString ModAdapter::progressStr() const
+{
+    return mod_->progressStr();
+}
+
 Mod* ModAdapter::mod() const
 {
     return mod_;

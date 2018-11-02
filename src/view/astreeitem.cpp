@@ -38,7 +38,7 @@ void AsTreeItem::init()
 void AsTreeItem::update()
 {
     setText(2, syncItem_->statusStr());
-    setText(3, syncItem_->etaStr());
+    setText(3, syncItem_->progressStr());
     updateCheckBox();
     updateButtons();
 }
