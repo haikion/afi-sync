@@ -38,6 +38,7 @@ public:
     void stopUpdates();
     void startUpdates();
     void updateStatus();
+    void forceCheck();
 
 public slots:
     void repositoryChanged(bool offline = false);

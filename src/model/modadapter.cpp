@@ -102,3 +102,8 @@ Repository* ModAdapter::repo() const
 {
     return repo_;
 }
+
+void ModAdapter::forceCheck() const
+{
+    mod_->forceCheck();
+}

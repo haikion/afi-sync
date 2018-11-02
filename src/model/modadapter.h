@@ -33,6 +33,7 @@ public:
     virtual bool optional() const;
     Mod* mod() const;
     Repository* repo() const;
+    void forceCheck() const;
 
 protected:
     virtual void setTicked(bool ticked);

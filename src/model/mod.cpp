@@ -422,6 +422,13 @@ void Mod::updateStatus()
 
 }
 
+void Mod::forceCheck()
+{
+    // Hack to manually fix LibTorrent 1.1.7 eternal queue bug
+    sync_->disableQueue(key_);
+    check();
+}
+
 void Mod::processCompletion()
 {
     deleteExtraFiles();
@@ -431,7 +438,8 @@ void Mod::processCompletion()
 void Mod::check()
 {
     sync_->checkFolder(key_);
-    processCompletion();
+    // Process completion when checking is done
+    setProcessCompletion(true);
 }
 
 void Mod::checkboxClicked()

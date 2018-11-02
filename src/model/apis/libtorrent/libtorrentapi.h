@@ -78,6 +78,7 @@ public:
     //Restarts sync
     virtual void start();    
     virtual bool folderDownloadingPatches(const QString& key);
+    virtual void disableQueue(const QString& key);
 
 private slots:
     void handleAlerts();

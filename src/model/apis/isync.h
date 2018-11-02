@@ -68,6 +68,7 @@ public:
     virtual bool addFolder(const QString& key, const QString& name) = 0;
     //Restarts sync
     virtual void start() = 0;
+    virtual void disableQueue(const QString& key) = 0;
 
 signals: // <- ignored by moc and only serves as documentation aid
     // The code will work exactly the same if signals: is absent.

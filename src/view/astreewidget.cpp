@@ -3,6 +3,7 @@
 #include <QContextMenuEvent>
 #include <QMenu>
 #include <QHeaderView>
+#include "../model/modadapter.h"
 #include "astreewidget.h"
 #include "astreeitem.h"
 
@@ -28,10 +29,6 @@ void AsTreeWidget::showContextMenu(const QPoint& point)
     {
         QMenu menu(this);
         ISyncItem* syncItem = item->syncItem();
-        menu.addAction("Recheck", [=] ()
-        {
-            syncItem->check();
-        });
         IRepository* repository = dynamic_cast<IRepository*>(syncItem);
         if(repository != nullptr)
         {
@@ -42,6 +39,17 @@ void AsTreeWidget::showContextMenu(const QPoint& point)
             menu.addAction("Force start", [=] ()
             {
                 repository->start();
+            });
+            menu.addAction("Recheck", [=] ()
+            {
+                syncItem->check();
+            });
+        }
+        else
+        {
+            const ModAdapter* modAdapter = dynamic_cast<ModAdapter*>(syncItem);
+            menu.addAction("Recheck", [=] () {
+                modAdapter->forceCheck();
             });
         }
         menu.exec(QCursor::pos());
