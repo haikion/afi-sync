@@ -7,8 +7,8 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define MAJOR_VERSION 1
-#define MINOR_VERSION 0
-#define VERSION_CHARS "v" STR(MAJOR_VERSION) "." STR(MINOR_VERSION) ".0rc"
+#define MAJOR_VERSION 0
+#define MINOR_VERSION 45
+#define VERSION_CHARS "v" STR(MAJOR_VERSION) "." STR(MINOR_VERSION)
 
 #endif // VERSION_H
