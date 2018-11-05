@@ -232,15 +232,8 @@ QString Mod::joinText()
 
 //If all repositories this mod is included in are disabled then stop the
 //download.
-void Mod::repositoryChanged(bool offline)
+void Mod::repositoryChanged(const bool offline)
 {
-    //just in case
-    if (!sync_)
-    {
-        LOG_ERROR << "Sync is null " << name();
-        return;
-    }
-
     if (offline)
     {
         LOG << "Offline, not updating Sync " << name();
@@ -248,7 +241,7 @@ void Mod::repositoryChanged(bool offline)
     }
     if (reposInactive() || !ticked())
     {
-        if (sync_->folderExists(key_))
+        if (sync_->folderExists(key_) && !sync_->folderPaused(key_))
         {
             LOG << "All repositories inactive or mod unchecked. Stopping " << name();
             stop();
@@ -256,8 +249,11 @@ void Mod::repositoryChanged(bool offline)
         return;
     }
     //At least one repo active and mod checked
-    LOG << "Starting mod transfer. name = " << name();
-    start();
+    if (!sync_->folderExists(key_) || sync_->folderPaused(key_))
+    {
+        LOG << "Starting mod transfer. name = " << name();
+        start();
+    }
 }
 
 QSet<Repository*> Mod::repositories() const

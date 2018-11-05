@@ -46,7 +46,7 @@ public:
     static QString toProgressStr(const qint64 totalWanted, const qint64 totalWantedDone);
 
 public slots:
-    void repositoryChanged(bool offline = false);
+    void repositoryChanged(const bool offline = false);
     bool removeRepository(Repository* repository);
 
 private:
