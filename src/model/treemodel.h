@@ -10,6 +10,7 @@
 #include "repository.h"
 #include "apis/isync.h"
 #include "interfaces/ibandwidthmeter.h"
+#include "jsonreader.h"
 
 class RootItem;
 class TreeItem;
@@ -58,6 +59,7 @@ private:
     void postInit();
     QString bandwithString(int amount) const;
     QSet<Mod*> mods() const;
+    void manageDeltaUpdates(const JsonReader& jsonReader);
 };
 
 #endif // TREEMODEL_H

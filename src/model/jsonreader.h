@@ -24,6 +24,7 @@ public:
     void fillEverything(RootItem *root, const QString& jsonFilePath);
     bool updateAvailable();
     QList<Repository*> repositories(ISync* sync);
+    QString deltaUpdatesKey() const;
 
 private:
     static const QString SEPARATOR;

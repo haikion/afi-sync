@@ -16,7 +16,6 @@
 #include "settingsmodel.h"
 #include "treemodel.h"
 #include "settingsuimodel.h"
-#include "jsonreader.h"
 #include "apis/libtorrent/libtorrentapi.h"
 #include "../view/mainwindow.h"
 

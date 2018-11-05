@@ -133,7 +133,7 @@ bool Mod::getProcessCompletion() const
 
 qint64 Mod::totalWanted() const
 {
-    return totalWantedDone_;
+    return totalWanted_;
 }
 
 qint64 Mod::totalWantedDone() const
@@ -148,10 +148,6 @@ void Mod::updateProgress()
         totalWanted_ =  -1;
         totalWantedDone_ = -1;
         return;
-    }
-    if (key_ == "http://armafinland.fi/afisync/torrents/@afi_editor_enhancements_2.torrent")
-    {
-        LOG << active();
     }
 
     totalWanted_ = sync_->folderTotalWanted(key_);
@@ -472,7 +468,7 @@ QString Mod::bytesToMegasStr(const qint64 bytes)
 
 QString Mod::toProgressStr(const qint64 totalWanted, const qint64 totalWantedDone)
 {
-    return QString("%1 / %2").arg(bytesToMegasStr(totalWanted)).arg(bytesToMegasStr(totalWantedDone));
+    return QString("%1 / %2").arg(bytesToMegasStr(totalWantedDone)).arg(bytesToMegasStr(totalWanted));
 }
 
 void Mod::processCompletion()

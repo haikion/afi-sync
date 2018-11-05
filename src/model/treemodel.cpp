@@ -12,7 +12,6 @@
 #include <QStringList>
 #include <QFile>
 #include <QCoreApplication>
-#include "jsonreader.h"
 #include "treeitem.h"
 #include "repository.h"
 #include "mod.h"
@@ -20,6 +19,7 @@
 #include "global.h"
 #include "modadapter.h"
 #include "deletabledetector.h"
+#include "settingsmodel.h"
 
 TreeModel::TreeModel(QObject* parent, ISync* sync, bool haltGui):
     QObject(parent),
@@ -31,9 +31,24 @@ TreeModel::TreeModel(QObject* parent, ISync* sync, bool haltGui):
     LOG;
     JsonReader jsonReader;
     repositories_ = jsonReader.repositories(sync);
+    manageDeltaUpdates(jsonReader);
+
     updateTimer.setInterval(1000);
     connect(&updateTimer, &QTimer::timeout, this, &TreeModel::update);
     updateTimer.start();
+}
+
+void TreeModel::manageDeltaUpdates(const JsonReader& jsonReader)
+{
+    const QString deltaUpdatesKey = jsonReader.deltaUpdatesKey();
+    if (deltaUpdatesKey != QString())
+    {
+        sync_->setDeltaUpdatesFolder(deltaUpdatesKey);
+        if (SettingsModel::deltaPatchingEnabled())
+        {
+            sync_->enableDeltaUpdates();
+        }
+    }
 }
 
 void TreeModel::setHaltGui(bool halt)
@@ -72,11 +87,13 @@ void TreeModel::enableRepositories()
     }
 }
 
+// TODO: Delete, QML specific
 void TreeModel::rowsChanged()
 {
     LOG;
 }
 
+// TODO: Delete, QML specific
 void TreeModel::checkboxClicked(const QModelIndex& index)
 {
     SyncItem* item = static_cast<SyncItem*>(index.internalPointer());
