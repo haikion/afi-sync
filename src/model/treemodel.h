@@ -29,7 +29,7 @@ public:
     RootItem* rootItem() const;
     QList<IRepository*> repositories() const; // TODO Remove, QML
     void moveFiles();
-
+    void stopUpdates();
 public slots:
     void rowsChanged(); // TODO: Remove QML specific
     QString downloadStr() const;

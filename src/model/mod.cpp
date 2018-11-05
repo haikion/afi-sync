@@ -61,7 +61,7 @@ void Mod::init()
 void Mod::update()
 {
     updateStatus();
-    updateEta();
+    updateProgress();
 }
 
 //Removes mod which has same name but different key.
@@ -133,18 +133,29 @@ bool Mod::getProcessCompletion() const
 
 qint64 Mod::totalWanted() const
 {
-    if (!sync_->folderExists(key_))
-        return -1;
-
-    return sync_->folderTotalWantedDone(key_);
+    return totalWantedDone_;
 }
 
 qint64 Mod::totalWantedDone() const
 {
-    if (!sync_->folderExists(key_))
-        return -1;
+    return totalWantedDone_;
+}
 
-    return sync_->folderTotalWanted(key_);
+void Mod::updateProgress()
+{
+    if (!active() || !sync_->folderExists(key_))
+    {
+        totalWanted_ =  -1;
+        totalWantedDone_ = -1;
+        return;
+    }
+    if (key_ == "http://armafinland.fi/afisync/torrents/@afi_editor_enhancements_2.torrent")
+    {
+        LOG << active();
+    }
+
+    totalWanted_ = sync_->folderTotalWanted(key_);
+    totalWantedDone_ = sync_->folderTotalWantedDone(key_);
 }
 
 bool Mod::stop()

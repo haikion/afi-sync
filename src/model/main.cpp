@@ -75,11 +75,13 @@ int gui(int argc, char* argv[])
     #ifndef QT_DEBUG
         delete logger;
     #endif
-    delete mainWindow;
+    // Needs to be done before shutting down workerThread
+    treeModel->stopUpdates();
     Global::workerThread->quit();
     Global::workerThread->wait(1000);
     Global::workerThread->terminate();
     Global::workerThread->wait(1000);
+    delete mainWindow;
     return rVal;
 }
 

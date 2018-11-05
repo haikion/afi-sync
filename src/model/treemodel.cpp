@@ -45,6 +45,10 @@ TreeModel::~TreeModel()
 {
     LOG;
     DeletableDetector::printDeletables(repositories_);
+}
+
+void TreeModel::stopUpdates()
+{
     for (Repository* repo : repositories_)
     {
         repo->stopUpdates();

@@ -58,6 +58,8 @@ private:
     QSet<Repository*> repositories_;
     unsigned waitTime_;
     QVector<ModAdapter*> adapters_;
+    QAtomicInteger<qint64> totalWantedDone_;
+    QAtomicInteger<qint64> totalWanted_;
 
     void buildPathHash();
     void updateEta();
@@ -68,7 +70,7 @@ private:
     QString path() const;
     void setProcessCompletion(bool value);
     bool getProcessCompletion() const;
-
+    void updateProgress();
 private slots:
     void update();
     void init();
