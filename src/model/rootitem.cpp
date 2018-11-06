@@ -36,7 +36,6 @@ RootItem::RootItem(TreeModel* parentModel):
     initSync();
     Global::sync = sync_;
     LOG << "initSync completed";
-    //jsonReader_.fillEverything(this);
     printDeletables();
     LOG << "readJson completed";
     if (sync_->ready())
@@ -225,7 +224,7 @@ void RootItem::resetSyncSettings()
         if (repo->ticked())
         {
             //Disable repo
-            repo->checkboxClicked(true);
+            //repo->checkboxClicked(true);
         }
     }
     sync_->shutdown();

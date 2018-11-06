@@ -232,13 +232,9 @@ QString Mod::joinText()
 
 //If all repositories this mod is included in are disabled then stop the
 //download.
-void Mod::repositoryChanged(const bool offline)
+void Mod::repositoryChanged()
 {
-    if (offline)
-    {
-        LOG << "Offline, not updating Sync " << name();
-        return;
-    }
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
     if (reposInactive() || !ticked())
     {
         if (sync_->folderExists(key_) && !sync_->folderPaused(key_))

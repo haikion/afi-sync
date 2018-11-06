@@ -24,10 +24,9 @@ public:
     void appendModAdapter(ModAdapter* adp, int index);
     void updateView(TreeItem* item, int row = -1);
     virtual void checkboxClicked();
-    void checkboxClicked(bool offline);
     ISync* sync() const;
-    virtual QString startText();
-    virtual QString joinText();
+    virtual QString startText(); // TODO: Remove, QML
+    virtual QString joinText(); // TODO: Remove, QML
     virtual void join();
     virtual void start();
     virtual bool optional() const;
@@ -61,7 +60,7 @@ private:
     void generalLaunch(const QStringList& extraParams = QStringList());
     QString createParFile(const QString& parameters);
     void updateEtaAndStatus();
-    void changed(bool offline = false);
+    void changed();
     QList<ModAdapter*> modAdapters() const;
     int calculateEta() const;
 };

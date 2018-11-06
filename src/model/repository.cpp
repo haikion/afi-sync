@@ -117,28 +117,22 @@ void Repository::processCompletion()
     SettingsModel::setInstallDate(name(), QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
 }
 
-void Repository::changed(bool offline)
+void Repository::changed()
 {
     for (Mod* mod : mods())
     {
-        mod->repositoryChanged(offline);
+        QMetaObject::invokeMethod(mod, "repositoryChanged", Qt::QueuedConnection);
     }
-}
-
-void Repository::checkboxClicked(bool offline)
-{
-    stopUpdates();
-    setTicked(!ticked());
-    setStatus("Processing new mods...");
-    update();
-    changed(offline);
-    if (ticked())
-        startUpdates();
 }
 
 void Repository::checkboxClicked()
 {
-    checkboxClicked(false);
+    setTicked(!ticked());
+    setStatus("Processing new mods...");
+    update();
+    changed();
+    if (ticked())
+        startUpdates();
 }
 
 void Repository::join()
