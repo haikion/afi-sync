@@ -455,11 +455,14 @@ QString Mod::progressStr() const
 
 QString Mod::bytesToMegasStr(const qint64 bytes)
 {
-    return QString::number(qMax(qint64(1), bytes / Constants::MILLION));  // Size should never be 0
+    return QString::number(qMax(qint64(1), bytes / Constants::MEGA_DIVIDER));  // Size should never be 0
 }
 
 QString Mod::toProgressStr(const qint64 totalWanted, const qint64 totalWantedDone)
 {
+    if (totalWanted == -1 || totalWantedDone == -1)
+        return "???";
+
     return QString("%1 / %2").arg(bytesToMegasStr(totalWantedDone)).arg(bytesToMegasStr(totalWanted));
 }
 

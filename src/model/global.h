@@ -16,7 +16,7 @@ namespace Constants
     static const QString LOG_FILE = "afisync.log";
     static const QString VERSION_STRING = VERSION_CHARS;
     static const int MAX_ETA = std::numeric_limits<int>::max()/100;
-    static const qint64 MILLION = 1000000;
+    static const qint64 MEGA_DIVIDER = 1024*1024;
 }
 
 namespace Global
