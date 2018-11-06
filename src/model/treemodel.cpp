@@ -33,9 +33,48 @@ TreeModel::TreeModel(QObject* parent, ISync* sync, bool haltGui):
     repositories_ = jsonReader.repositories(sync);
     manageDeltaUpdates(jsonReader);
 
+    LOG << "readJson completed";
+    // TODO: Simply do not add torrents that are not in repositories.json
+    if (sync_->ready())
+    {
+        removeOrphans();
+    }
+    else
+    {
+        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(removeOrphans()));
+    }
+
     updateTimer.setInterval(1000);
     connect(&updateTimer, &QTimer::timeout, this, &TreeModel::update);
     updateTimer.start();
+}
+
+// Removes sync dirs which
+// are not active in any repository in this program.
+void TreeModel::removeOrphans()
+{
+    QSet<QString> keys;
+
+    for (const Repository* repository : repositories_)
+    {
+        for (const Mod* mod : repository->mods())
+        {
+            LOG << "Processing mod = " << mod->name()
+                     << " key = " << mod->key()
+                     << " repository = " << repository->name();
+            keys.insert(mod->key());
+        }
+    }
+    for (const QString& key : sync_->folderKeys())
+    {
+        if (!keys.contains(key))
+        {
+            //Not found
+            LOG << "Deleting folder with key: " << key;
+            sync_->removeFolder(key);
+        }
+    }
+    LOG << "Done";
 }
 
 void TreeModel::manageDeltaUpdates(const JsonReader& jsonReader)

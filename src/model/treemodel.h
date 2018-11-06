@@ -60,6 +60,7 @@ private:
     QString bandwithString(int amount) const;
     QSet<Mod*> mods() const;
     void manageDeltaUpdates(const JsonReader& jsonReader);
+    void removeOrphans();
 };
 
 #endif // TREEMODEL_H

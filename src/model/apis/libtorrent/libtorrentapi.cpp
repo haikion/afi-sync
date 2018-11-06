@@ -1049,6 +1049,7 @@ void LibTorrentApi::createDeltaManager(lt::torrent_handle handle, const QString&
             this, SLOT(handlePatched(QString, QString, bool)));
 }
 
+// TODO: Instead of loading, simply cache.
 void LibTorrentApi::loadTorrentFiles(const QDir& dir)
 {
     if (!dir.isReadable())
