@@ -1142,28 +1142,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         }
         QString name = QString::fromStdString(params.ti->name());
         LOG << "Appending " << name;
-        torrentParams_.insert(url, params);
-
-
-
-        //lt::torrent_handle handle = session_->add_torrent(params);
-        //keyHash_.insert(url, handle);
-        /*
-        if (name == Constants::DELTA_PATCHES_NAME)
-        {
-            if (SettingsModel::deltaPatchingEnabled())
-            {
-                lt::torrent_handle handle = session_->add_torrent(params);
-                LOG << "Loading delta patches torrent.";
-                createDeltaManager(handle, url);
-            }
-        }
-        else
-        {
-
-        }
-        */
-
+        torrentParams_.insert(url, params); // Used in addFolder()
         it.next();
     }
 }
