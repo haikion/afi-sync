@@ -446,6 +446,19 @@ qint64 LibTorrentApi::folderTotalWantedDone(const QString& key)
     return status.total_wanted_done;
 }
 
+// Cleans unused torrent, link and resume datas
+void LibTorrentApi::cleanUnusedFiles(const QSet<QString> usedKeys)
+{
+    for (const QString& key : torrentParams_.keys())
+    {
+        if (!usedKeys.contains(key) && key != deltaUpdatesKey_)
+        {
+            removeFiles(prefixMap_.find(key).value());
+            torrentParams_.remove(key); // No longer valid
+        }
+    }
+}
+
 int64_t LibTorrentApi::bytesToCheck(const lt::torrent_status& status) const
 {
     if (!session_)
@@ -582,6 +595,8 @@ void LibTorrentApi::shutdown()
     }
     if (deltaManager_)
     {
+        auto file = deltaManager_->handle().torrent_file();
+        auto status = deltaManager_->handle().status();
         saveTorrentFile(deltaManager_->handle());
         delete deltaManager_;
         deltaManager_ = nullptr;
@@ -694,10 +709,21 @@ QString LibTorrentApi::deltaUpdatesKey()
     return deltaUpdatesKey_;
 }
 
+void LibTorrentApi::removeFiles(const QString& hashString)
+{
+    QString filePrefix = SettingsModel::syncSettingsPath() + "/" + hashString;
+    //Delete saved data
+    QString urlPath = filePrefix + ".link";
+    FileUtils::safeRemove(urlPath);
+    QString torrentPath = filePrefix + ".torrent";
+    FileUtils::safeRemove(torrentPath);
+    QString fastresumePath = filePrefix + ".fastresume";
+    FileUtils::safeRemove(fastresumePath);
+}
+
+
 bool LibTorrentApi::removeFolder(const QString& key)
 {
-    static const QString MSG_DELETING_FILE = "Deleting file:";
-
     LOG << "key = " << key;
     if (!session_)
         return false;
@@ -714,6 +740,10 @@ bool LibTorrentApi::removeFolder(const QString& key)
             << " state = " << sta.state;
         return false;
     }
+    session_->remove_torrent(handle);
+    removeFiles(getHashString(handle));
+    keyHash_.remove(key);
+    /*
     QString filePrefix = SettingsModel::syncSettingsPath() + "/" + getHashString(handle);
     session_->remove_torrent(handle);
     keyHash_.remove(key);
@@ -724,11 +754,11 @@ bool LibTorrentApi::removeFolder(const QString& key)
     QString torrentPath = filePrefix + ".torrent";
     LOG << MSG_DELETING_FILE << " " << torrentPath;
     FileUtils::safeRemove(torrentPath);
-
-    std::vector<lt::alert*>* alerts = new std::vector<lt::alert*>();
     QString fastresumePath = filePrefix + ".fastresume";
     LOG << MSG_DELETING_FILE << fastresumePath;
     FileUtils::safeRemove(fastresumePath);
+    */
+    std::vector<lt::alert*>* alerts = new std::vector<lt::alert*>();
     //Wait for removed alert (5s)
     //50 alert chunks may be received before torrent removed alert.
     for (int i = 0; i < 50; ++i)
@@ -795,13 +825,18 @@ bool LibTorrentApi::enableDeltaUpdates()
         LOG << "Delta updates already active, doing nothing.";
         return false;
     }
-    //Create new deltaManager_;
-    lt::torrent_handle handle = addFolderGeneric(deltaUpdatesKey_);
+    lt::torrent_handle handle = addFolderFromParams(deltaUpdatesKey_);
     if (!handle.is_valid())
     {
-        LOG_WARNING << "Torrent is invalid. Delta patching disabled.";
-        return false;
+        //Create new deltaManager_;
+        handle = addFolderGeneric(deltaUpdatesKey_);
+        if (!handle.is_valid())
+        {
+            LOG_WARNING << "Torrent is invalid. Delta patching disabled.";
+            return false;
+        }
     }
+
     createDeltaManager(handle, deltaUpdatesKey_);
     return true;
 }
@@ -824,10 +859,30 @@ lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key)
     return handle;
 }
 
+lt::torrent_handle LibTorrentApi::addFolderFromParams(const QString& key)
+{
+    auto it = torrentParams_.find(key);
+    if (it != torrentParams_.end())
+    {
+        lt::torrent_handle handle = session_->add_torrent(it.value());
+        auto status = handle.status();
+        if (key != deltaUpdatesKey_)
+            keyHash_.insert(key, handle);
+        return handle;
+    }
+
+    return lt::torrent_handle();
+}
+
 //Does not wait for torrent-file download to finish.
 lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key)
 {
     LOG << "key = " << key;
+    lt::torrent_handle handle = addFolderFromParams(key);
+    if (handle.is_valid())
+    {
+        return handle;
+    }
 
     if (!session_)
     {
@@ -862,7 +917,7 @@ lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key)
     LOG << "url = " << QString::fromStdString(atp.url)
         << " save_path = " << QString::fromStdString(atp.save_path);
     lt::error_code ec;
-    libtorrent::torrent_handle handle = session_->add_torrent(atp, ec);
+    handle = session_->add_torrent(atp, ec);
     if (ec)
     {
         LOG_ERROR << "Adding torrent failed: " << ec.message().c_str();
@@ -1077,6 +1132,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         params.resume_data = loadResumeData(pathPrefix + ".fastresume");
         //FIXME: Sometimes this becomes off as empty.
         QString url = QString::fromLocal8Bit(FileUtils::readFile(pathPrefix + ".link")).toLower();
+        prefixMap_.insert(url, it.fileName().remove(".torrent"));
         LOG << url << (params.ti == 0) << params.resume_data.size();
         if (params.ti == 0 || url.isEmpty() || !params.ti->is_valid())
         {
@@ -1085,6 +1141,14 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
             continue;
         }
         QString name = QString::fromStdString(params.ti->name());
+        LOG << "Appending " << name;
+        torrentParams_.insert(url, params);
+
+
+
+        //lt::torrent_handle handle = session_->add_torrent(params);
+        //keyHash_.insert(url, handle);
+        /*
         if (name == Constants::DELTA_PATCHES_NAME)
         {
             if (SettingsModel::deltaPatchingEnabled())
@@ -1096,10 +1160,9 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         }
         else
         {
-            LOG << "Appending " << name;
-            lt::torrent_handle handle = session_->add_torrent(params);
-            keyHash_.insert(url, handle);
+
         }
+        */
 
         it.next();
     }

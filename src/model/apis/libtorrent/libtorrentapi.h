@@ -13,6 +13,7 @@
 #include <QDir>
 #include <QTimer>
 #include <QSet>
+#include <QMap>
 #include "../../cihash.h"
 #include "../isync.h"
 #include "speedestimator.h"
@@ -81,6 +82,7 @@ public:
     virtual void disableQueue(const QString& key);
     virtual qint64 folderTotalWanted(const QString& key);
     virtual qint64 folderTotalWantedDone(const QString& key);
+    virtual void cleanUnusedFiles(const QSet<QString> usedKeys);
 
 private slots:
     void handleAlerts();
@@ -97,6 +99,8 @@ private:
     QTimer alertTimer_;
     libtorrent::session* session_;
     CiHash<libtorrent::torrent_handle> keyHash_;
+    CiHash<libtorrent::add_torrent_params> torrentParams_;
+    CiHash<QString> prefixMap_;
     DeltaManager* deltaManager_;
     int numResumeData_;
     std::vector<libtorrent::alert*>* alerts_;
@@ -139,7 +143,9 @@ private:
     int queuedCheckingEta(const libtorrent::torrent_status& status) const;
     int queuedDownloadEta(const libtorrent::torrent_status& status) const;
     int downloadEta(const libtorrent::torrent_status& status) const;
-    int checkingEta(const libtorrent::torrent_status& status);
+    int checkingEta(const libtorrent::torrent_status& status); //TODO: Deleta, ETA no longer used
+    lt::torrent_handle addFolderFromParams(const QString& key);
+    void removeFiles(const QString& hashString);
 };
 
 #endif // LIBTORRENTAPI_H

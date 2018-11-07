@@ -74,6 +74,7 @@ void TreeModel::removeOrphans()
             sync_->removeFolder(key);
         }
     }
+    sync_->cleanUnusedFiles(keys);
     LOG << "Done";
 }
 
