@@ -9,6 +9,8 @@
 #include <boost/log/utility/setup/file.hpp>
 #include <boost/log/expressions/attr_fwd.hpp>
 #include <boost/log/expressions/attr.hpp>
+#include <boost/log/expressions/formatters/date_time.hpp>
+#include <boost/log/support/date_time.hpp>
 #include <QFile>
 #include <QDateTime>
 #include <QDirIterator>
@@ -30,6 +32,7 @@ const int MAX_LOG_FILES = 3;
 void AfiSyncLogger::initFileLogging()
 {
     rotateLogs();
+    boost::log::add_common_attributes();
 
     add_file_log
     (
@@ -39,7 +42,9 @@ void AfiSyncLogger::initFileLogging()
         // 2: [error] An error severity message
         keywords::format =
         (
-            expressions::stream << " [" << trivial::severity << "] " << expressions::smessage
+            expressions::stream
+                <<  expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%H:%M:%S.%f")
+                << " [" << trivial::severity << "] " << expressions::smessage
         )
     );
 }
