@@ -30,8 +30,8 @@ TreeModel::TreeModel(QObject* parent, ISync* sync, bool haltGui):
 {
     LOG;
     JsonReader jsonReader;
-    repositories_ = jsonReader.repositories(sync);
     manageDeltaUpdates(jsonReader);
+    repositories_ = jsonReader.repositories(sync);
 
     LOG << "readJson completed";
     // TODO: Simply do not add torrents that are not in repositories.json

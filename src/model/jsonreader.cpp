@@ -167,7 +167,7 @@ QJsonDocument JsonReader::readJsonFile(const QString& path) const
 QString JsonReader::deltaUpdatesKey() const
 {
     const QVariantMap jsonMap = qvariant_cast<QVariantMap>(readJsonFile(repositoriesPath_).toVariant());
-    return qvariant_cast<QString>(jsonMap_.value("deltaUpdates"));
+    return jsonMap.value("deltaUpdates").toString();
 }
 
 QByteArray JsonReader::fetchJsonBytes(QString url)
