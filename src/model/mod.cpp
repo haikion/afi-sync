@@ -93,9 +93,7 @@ void Mod::start()
     {
         removeConflicting();
         //Add folder
-        LOG << "Adding " << name() << " to sync.";
         sync_->addFolder(key_, name());
-        setProcessCompletion(true);
     }
     //Sanity checks
     QString error = sync_->folderError(key_);
@@ -120,15 +118,15 @@ void Mod::moveFiles()
     }
 }
 
-void Mod::setProcessCompletion(bool value)
+void Mod::setProcessCompletion(const bool value)
 {
-    SettingsModel::setProcess(name(), value);
+    SettingsModel::setProcessed(name(), !value ? key_ : "");
     LOG << "Process (completion) set to " << value << " for " << name();
 }
 
 bool Mod::getProcessCompletion() const
 {
-    return SettingsModel::process(name());
+    return SettingsModel::processed(name()) != key_;
 }
 
 qint64 Mod::totalWanted() const
@@ -455,7 +453,7 @@ QString Mod::progressStr() const
 
 QString Mod::bytesToMegasStr(const qint64 bytes)
 {
-    return QString::number(qMax(qint64(1), bytes / Constants::MEGA_DIVIDER));  // Size should never be 0
+    return QString::number(1 + ((bytes - 1) / Constants::MEGA_DIVIDER));  // Ceil division
 }
 
 QString Mod::toProgressStr(const qint64 totalWanted, const qint64 totalWantedDone)

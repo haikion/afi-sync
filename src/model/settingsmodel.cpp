@@ -202,14 +202,14 @@ bool SettingsModel::ticked(const QString& modName, QString repoName)
     return settings()->value(key, false).toBool();
 }
 
-void SettingsModel::setProcess(const QString& name, bool value)
+void SettingsModel::setProcessed(const QString& name, const QString& value)
 {
-    settings()->setValue(name + "/process", value);
+    settings()->setValue(name + "/processed", value);
 }
 
-bool SettingsModel::process(const QString& name)
+QString SettingsModel::processed(const QString& name)
 {
-    return settings()->value(name + "/process", true).toBool();
+    return settings()->value(name + "/processed").toString();
 }
 
 QString SettingsModel::syncSettingsPath()

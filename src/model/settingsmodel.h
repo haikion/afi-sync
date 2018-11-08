@@ -47,8 +47,8 @@ public slots:
     static void setTicked(const QString& modName, QString repoName, bool value);
     static bool ticked(const QString& modName, QString repoName);
     //Tells if process completion (file checking, installation) is needed
-    static void setProcess(const QString& name, bool value);
-    static bool process(const QString& name);
+    static void setProcessed(const QString& name, const QString& value);
+    static QString processed(const QString& name);
     static bool portEnabled();
     static void setMaxUploadEnabled(const bool maxUploadEnabled);
     static void setMaxDownloadEnabled(const bool maxDownloadEnabled);

@@ -864,6 +864,7 @@ lt::torrent_handle LibTorrentApi::addFolderFromParams(const QString& key)
     auto it = torrentParams_.find(key);
     if (it != torrentParams_.end())
     {
+        LOG << "Adding " << key << " to sync";
         lt::torrent_handle handle = session_->add_torrent(it.value());
         auto status = handle.status();
         if (key != deltaUpdatesKey_)
@@ -917,6 +918,7 @@ lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key)
     LOG << "url = " << QString::fromStdString(atp.url)
         << " save_path = " << QString::fromStdString(atp.save_path);
     lt::error_code ec;
+    LOG << "Adding " << key << " to sync";
     handle = session_->add_torrent(atp, ec);
     if (ec)
     {

@@ -68,7 +68,7 @@ private:
     bool stop();
     void removeConflicting() const;
     QString path() const;
-    void setProcessCompletion(bool value);
+    void setProcessCompletion(const bool value);
     bool getProcessCompletion() const;
     void updateProgress();
 private slots:
