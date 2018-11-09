@@ -48,7 +48,7 @@ void Repository::setBattlEyeEnabled(bool battleEyeEnabled)
     battlEyeEnabled_ = battleEyeEnabled;
 }
 
-bool Repository::ticked() const
+bool Repository::ticked()
 {
     return SettingsModel::ticked("", name());
 }
@@ -59,14 +59,14 @@ void Repository::setTicked(bool ticked)
     update();
 }
 
-QString Repository::progressStr() const
+QString Repository::progressStr()
 {
     if (!ticked())
         return "???";
 
     qint64 totalWanted = 0;
     qint64 totalWantedDone = 0;
-    for (const Mod* mod : mods())
+    for (Mod* mod : mods())
     {
         if (!mod->ticked())
             continue;
@@ -232,7 +232,7 @@ void Repository::updateEtaAndStatus()
     static QSet<QString> readyStatuses = createReadyStatuses();
 
     QSet<QString> modStatuses;
-    for (const Mod* item : mods())
+    for (Mod* item : mods())
     {
         modStatuses.insert(item->statusStr());
     }
@@ -273,14 +273,14 @@ void Repository::updateEtaAndStatus()
     }
 }
 
-QString Repository::modsParameter() const
+QString Repository::modsParameter()
 {
     if (childItems().size() == 0)
     {
-        return "";
+        return QString();
     }
     QString rVal = "-mod=";
-    for (const ModAdapter* modAdapter : modAdapters())
+    for (ModAdapter* modAdapter : modAdapters())
     {
         if (modAdapter->ticked())
         {

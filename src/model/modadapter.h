@@ -27,11 +27,11 @@ public:
     virtual QString statusStr();
     virtual QString etaStr() const;
     virtual void checkboxClicked();
-    virtual bool ticked() const;
+    virtual bool ticked();
     virtual void processCompletion();
     virtual int eta() const;
     virtual bool optional() const;
-    virtual QString progressStr() const;
+    virtual QString progressStr();
     Mod* mod() const;
     Repository* repo() const;
     void forceCheck() const;

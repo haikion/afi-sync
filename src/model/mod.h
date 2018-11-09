@@ -30,7 +30,7 @@ public:
     virtual QString joinText();
     QSet<Repository*> repositories() const;
     void deleteExtraFiles();
-    virtual bool ticked() const;
+    virtual bool ticked();
     void processCompletion();
     QVector<ModAdapter*> modAdapters() const;
     void appendModAdapter(ModAdapter* adapter);
@@ -41,7 +41,7 @@ public:
     void forceCheck();
     qint64 totalWanted() const;
     qint64 totalWantedDone() const;
-    virtual QString progressStr() const;
+    virtual QString progressStr();
     static QString bytesToMegasStr(const qint64 bytes);
     static QString toProgressStr(const qint64 totalWanted, const qint64 totalWantedDone);
 
@@ -63,7 +63,7 @@ private:
 
     void buildPathHash();
     void updateEta();
-    bool reposInactive() const;
+    bool reposInactive();
     void start();
     bool stop();
     void removeConflicting() const;

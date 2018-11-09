@@ -58,7 +58,7 @@ void ModAdapter::checkboxClicked()
     mod_->checkboxClicked();
 }
 
-bool ModAdapter::ticked() const
+bool ModAdapter::ticked()
 {
     if (!isOptional_)
         return true;
@@ -93,7 +93,7 @@ bool ModAdapter::optional() const
     return isOptional_;
 }
 
-QString ModAdapter::progressStr() const
+QString ModAdapter::progressStr()
 {
     return mod_->progressStr();
 }

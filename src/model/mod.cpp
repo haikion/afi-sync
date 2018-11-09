@@ -205,7 +205,7 @@ void Mod::deleteExtraFiles()
 }
 
 //Returns true if at least one adapter is active.
-bool Mod::ticked() const
+bool Mod::ticked()
 {
     if (!optional() && !reposInactive())
         return true;
@@ -443,7 +443,7 @@ void Mod::forceCheck()
     check();
 }
 
-QString Mod::progressStr() const
+QString Mod::progressStr()
 {
     if (!ticked())
         return "???";
@@ -484,9 +484,9 @@ void Mod::checkboxClicked()
     QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
 }
 
-bool Mod::reposInactive() const
+bool Mod::reposInactive()
 {
-    for (const Repository* repo : repositories_)
+    for (Repository* repo : repositories_)
     {
         if (repo->statusStr() != SyncStatus::INACTIVE)
             return false;

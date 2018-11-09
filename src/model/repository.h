@@ -41,9 +41,9 @@ public:
     void startUpdates();
     void stopUpdates();
     void setBattlEyeEnabled(bool battlEyeEnabled);
-    virtual bool ticked() const;
+    virtual bool ticked();
     virtual void setTicked(bool ticked);
-    virtual QString progressStr() const;
+    virtual QString progressStr();
 
 private:
     ISync* sync_;
@@ -55,7 +55,7 @@ private:
     bool ready_;
     bool battlEyeEnabled_;
 
-    QString modsParameter() const;
+    QString modsParameter();
     QStringList joinParameters() const;
     void generalLaunch(const QStringList& extraParams = QStringList());
     QString createParFile(const QString& parameters);

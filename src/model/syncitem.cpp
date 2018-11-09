@@ -7,10 +7,10 @@
 SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
     TreeItem(name, parentItem),
     name_(name),
-    status_(SyncStatus::NO_SYNC_CONNECTION),
-    eta_(Constants::MAX_ETA),
+    eta_(Constants::MAX_ETA), //TODO: Remove, eta
     fileSize_(0)
 {
+    setStatus(SyncStatus::NO_SYNC_CONNECTION);
 }
 
 QString SyncItem::checkText()
@@ -24,9 +24,14 @@ QString SyncItem::nameText()
     return name_;
 }
 
+// Creates a copy of status due to concurrency
 QString SyncItem::statusStr()
 {
-    return status_;
+    QString retVal;
+    statusMutex_.lock();
+    retVal = status_;
+    statusMutex_.unlock();
+    return retVal;
 }
 
 QString SyncItem::sizeStr() const
@@ -112,10 +117,7 @@ void SyncItem::setFileSize(const quint64 size)
 
 void SyncItem::setStatus(const QString& status)
 {
+    statusMutex_.lock();
     status_ = status;
-}
-
-QString SyncItem::statusStr() const
-{
-    return status_;
+    statusMutex_.unlock();
 }

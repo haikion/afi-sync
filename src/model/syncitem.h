@@ -3,8 +3,11 @@
 #ifndef ABSTRACTITEM_H
 #define ABSTRACTITEM_H
 
+#include <atomic>
 #include <QObject>
 #include <QSet>
+#include <QAtomicPointer>
+#include <QMutex>
 #include "interfaces/isyncitem.h"
 #include "treeitem.h"
 
@@ -13,18 +16,17 @@ class SyncItem : public TreeItem, public QObject, virtual public ISyncItem
 public:
     explicit SyncItem(const QString& name, TreeItem* parentItem = nullptr);
 
-    virtual QString checkText();
+    virtual QString checkText(); //TODO: Remove, QML
     virtual QString nameText();
     virtual QString statusStr();
-    virtual QString startText() = 0;
-    virtual QString joinText() = 0;
+    virtual QString startText() = 0; //TODO: Remove, QML
+    virtual QString joinText() = 0; //TODO: Remove, QML
     virtual void processCompletion() = 0;
     virtual void check() = 0;
     virtual int eta() const;
     virtual QString etaStr() const;
     virtual bool optional() const = 0;
-    virtual QString statusStr() const;
-    virtual bool ticked() const = 0;
+    virtual bool ticked() = 0;
     virtual void checkboxClicked() = 0;
     virtual QString name() const;
 
@@ -34,7 +36,7 @@ public:
     void setFileSize(const quint64 size);
     virtual QString sizeStr() const;
     virtual bool active() const;
-    virtual QString progressStr() const = 0;
+    virtual QString progressStr() = 0;
 
 protected:
     virtual void setEta(const int& eta);
@@ -42,8 +44,9 @@ protected:
 private:
     QString name_;
     QString status_;
-    int eta_;
+    int eta_; //TODO: Remove, eta
     quint64 fileSize_;
+    QMutex statusMutex_;
 
     static QSet<QString> createActiveStatuses();
 };
