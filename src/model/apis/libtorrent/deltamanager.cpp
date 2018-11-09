@@ -103,7 +103,7 @@ int64_t DeltaManager::totalWanted(const QString& key)
     if (it == keyHash_.end())
     {
         LOG_ERROR << "Key " << key << " not found.";
-        return 99999999;
+        return -1;
     }
 
     return downloader_->totalWanted(it.value());
@@ -115,7 +115,7 @@ int64_t DeltaManager::totalWantedDone(const QString& key)
     if (it == keyHash_.end())
     {
         LOG_ERROR << "Key" << key << "not found.";
-        return 99999999;
+        return -1;
     }
 
     return downloader_->totalWantedDone(it.value());

@@ -11,6 +11,7 @@ namespace SyncStatus {
     static const QString READY_PAUSED = "Ready and Paused";
     static const QString NO_SYNC_CONNECTION = "No Sync Connection.";
     static const QString CHECKING = "Checking...";
+    static const QString CHECKING_PATCHES = "Checking patches ...";
     static const QString WAITING = "Waiting...";
     static const QString PATCHING = "Patching..";
     static const QString NO_PEERS = "No Peers";

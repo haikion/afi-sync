@@ -370,7 +370,7 @@ void Mod::updateStatus()
     }
     else if (sync_->folderChecking(key_))
     {
-        setStatus(SyncStatus::CHECKING);
+        setStatus(sync_->folderPatching(key_) ? SyncStatus::CHECKING_PATCHES : SyncStatus::CHECKING);
     }
     //Hack to fix BtSync reporting ready when it's not... :D (oh my god...)
     else if (statusStr() == SyncStatus::WAITING)

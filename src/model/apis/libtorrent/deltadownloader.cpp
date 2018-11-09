@@ -109,6 +109,12 @@ libtorrent::torrent_handle DeltaDownloader::handle()
 
 boost::int64_t DeltaDownloader::totalWantedDone(const QVector<int>& indexes)
 {
+    const libtorrent::torrent_status status = handle_.status();
+    if (status.state != libtorrent::torrent_status::state_t::downloading)
+    {
+        return status.total_wanted_done;
+    }
+
     boost::int64_t downloaded = 0;
     std::vector<boost::int64_t> progresses;
 
@@ -126,6 +132,12 @@ boost::int64_t DeltaDownloader::totalWantedDone(const QString& modName)
 
 boost::int64_t DeltaDownloader::totalWanted(const QVector<int>& indexes)
 {
+    const libtorrent::torrent_status status = handle_.status();
+    if (status.state != libtorrent::torrent_status::state_t::downloading)
+    {
+        return status.total_wanted;
+    }
+
     boost::int64_t bytesWanted = 0;
     for (int i : indexes)
         bytesWanted += fileStorage_.file_size(i);
