@@ -57,9 +57,9 @@ public:
     //Shutdowns the sync
     virtual void shutdown() = 0;
     //Sets global max upload
-    virtual void setMaxUpload(unsigned limit) = 0;
+    virtual void setMaxUpload(const unsigned limit) = 0;
     //Sets global max download
-    virtual void setMaxDownload(unsigned limit) = 0;
+    virtual void setMaxDownload(const unsigned limit) = 0;
     //Returns true if the sync has loaded and is ready to take commands.
     virtual bool ready() = 0;
     //Sets outgoing port.

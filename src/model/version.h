@@ -9,6 +9,6 @@
 
 #define MAJOR_VERSION 0
 #define MINOR_VERSION 46
-#define VERSION_CHARS "v" STR(MAJOR_VERSION) "." STR(MINOR_VERSION) "rc"
+#define VERSION_CHARS "v" STR(MAJOR_VERSION) "." STR(MINOR_VERSION) "rc " __DATE__ " " __TIME__
 
 #endif // VERSION_H

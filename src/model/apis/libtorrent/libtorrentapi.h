@@ -25,7 +25,7 @@ class LibTorrentApi : public QObject, public ISync
     Q_INTERFACES(ISync)
 
 public:
-    explicit LibTorrentApi(QObject *parent = 0);
+    explicit LibTorrentApi(QObject *parent = nullptr);
     ~LibTorrentApi();
 
     virtual void setDeltaUpdatesFolder(const QString& key);

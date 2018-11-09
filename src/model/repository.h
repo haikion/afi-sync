@@ -63,6 +63,7 @@ private:
     void changed();
     QList<ModAdapter*> modAdapters() const;
     int calculateEta() const;
+    static QSet<QString> createReadyStatuses();
 };
 
 #endif // REPOSITORYITEM_H

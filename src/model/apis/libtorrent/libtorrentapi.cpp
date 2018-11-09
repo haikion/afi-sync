@@ -436,12 +436,22 @@ void LibTorrentApi::disableQueue(const QString& key)
 
 qint64 LibTorrentApi::folderTotalWanted(const QString& key)
 {
+    if (deltaManager_ && deltaManager_->contains(key))
+    {
+        return deltaManager_->totalWanted(key);
+    }
+
     lt::torrent_status status = getHandle(key).status();
     return status.total_wanted;
 }
 
 qint64 LibTorrentApi::folderTotalWantedDone(const QString& key)
 {
+    if (deltaManager_ && deltaManager_->contains(key))
+    {
+        return deltaManager_->totalWantedDone(key);
+    }
+
     lt::torrent_status status = getHandle(key).status();
     return status.total_wanted_done;
 }

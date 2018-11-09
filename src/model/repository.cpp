@@ -218,19 +218,25 @@ int Repository::calculateEta() const
     return maxEta;
 }
 
-void Repository::updateEtaAndStatus()
+QSet<QString> Repository::createReadyStatuses()
 {
-    QSet<QString> modStatuses;
-
-    for (const Mod* item : mods())
-    {
-        modStatuses.insert(item->statusStr());
-    }
-    //Status
     QSet<QString> readyStatuses;
     readyStatuses.insert(SyncStatus::READY);
     readyStatuses.insert(SyncStatus::INACTIVE);
     readyStatuses.insert(SyncStatus::READY_PAUSED);
+    return readyStatuses;
+}
+
+void Repository::updateEtaAndStatus()
+{
+    static QSet<QString> readyStatuses = createReadyStatuses();
+
+    QSet<QString> modStatuses;
+    for (const Mod* item : mods())
+    {
+        modStatuses.insert(item->statusStr());
+    }
+
     if (!ticked())
     {
         setStatus(SyncStatus::INACTIVE);
