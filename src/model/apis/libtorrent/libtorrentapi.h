@@ -144,7 +144,7 @@ private:
     int queuedDownloadEta(const libtorrent::torrent_status& status) const;
     int downloadEta(const libtorrent::torrent_status& status) const;
     int checkingEta(const libtorrent::torrent_status& status); //TODO: Deleta, ETA no longer used
-    lt::torrent_handle addFolderFromParams(const QString& key);
+    libtorrent::torrent_handle addFolderFromParams(const QString& key);
     void removeFiles(const QString& hashString);
 };
 
