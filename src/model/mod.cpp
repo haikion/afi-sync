@@ -300,7 +300,7 @@ void Mod::appendRepository(Repository* repository)
         }
         else
         {
-            connect(sync_, &ISync::initCompleted, this, &Mod::init);
+            connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(init()));
             LOG << "name = " << name() << " initCompleted connection created";
         }
     }

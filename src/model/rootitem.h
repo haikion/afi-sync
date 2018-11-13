@@ -11,6 +11,7 @@
 class Repository;
 class JsonReader;
 
+// TODO: Remove, QML
 class RootItem : public QObject, public TreeItem
 {
     Q_OBJECT

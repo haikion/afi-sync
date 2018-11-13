@@ -391,7 +391,7 @@ int LibTorrentApi::queuedCheckingEta(const lt::torrent_status& status) const
             break;
         }
     }
-    cache[status.info_hash] = std::pair<int, unsigned>(rVal, runningTimeS());
+    cache[status.info_hash] = std::pair<int, int64_t>(rVal, runningTimeS());
 
     return rVal;
 }
