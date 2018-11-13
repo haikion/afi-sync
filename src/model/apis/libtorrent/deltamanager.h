@@ -9,7 +9,9 @@
 #include <QList>
 #include <QTimer>
 
+#pragma warning(push, 0)
 #include "libtorrent/torrent_handle.hpp"
+#pragma warning(pop)
 
 #include "../../cihash.h"
 #include "deltapatcher.h"

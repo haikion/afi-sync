@@ -3,17 +3,19 @@
 
 #include <vector>
 
-#include <libtorrent/session.hpp>
-#include <libtorrent/torrent_handle.hpp>
-#include <libtorrent/alert_types.hpp>
-#include <libtorrent/alert.hpp>
-
 #include <QObject>
 #include <QHash>
 #include <QDir>
 #include <QTimer>
 #include <QSet>
-#include <QMap>
+
+#pragma warning(push, 0)
+#include <libtorrent/session.hpp>
+#include <libtorrent/torrent_handle.hpp>
+#include <libtorrent/alert_types.hpp>
+#include <libtorrent/alert.hpp>
+#pragma warning(pop)
+
 #include "../../cihash.h"
 #include "../isync.h"
 #include "speedestimator.h"
@@ -143,7 +145,7 @@ private:
     int queuedCheckingEta(const libtorrent::torrent_status& status) const;
     int queuedDownloadEta(const libtorrent::torrent_status& status) const;
     int downloadEta(const libtorrent::torrent_status& status) const;
-    int checkingEta(const libtorrent::torrent_status& status); //TODO: Deleta, ETA no longer used
+    int64_t checkingEta(const libtorrent::torrent_status& status); //TODO: Deleta, ETA no longer used
     lt::torrent_handle addFolderFromParams(const QString& key);
     void removeFiles(const QString& hashString);
 };

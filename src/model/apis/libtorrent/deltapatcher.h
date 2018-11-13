@@ -13,7 +13,9 @@
 #include <QDir>
 #include <QQueue>
 
+#pragma warning(push, 0)
 #include "libtorrent/torrent_handle.hpp"
+#pragma warning(pop)
 
 #include "../../console.h"
 

@@ -30,16 +30,18 @@ public:
 
     virtual QString maxDownload() = 0;
     virtual bool maxDownloadEnabled() = 0;
-    virtual void setMaxDownloadEnabled(bool enabled) = 0;
+    virtual void setMaxDownloadEnabled(const bool enabled) = 0;
     virtual void setMaxDownload(QString maxDownload) = 0;
 
     virtual QString maxUpload() = 0;
     virtual bool maxUploadEnabled() = 0;
-    virtual void setMaxUploadEnabled(bool enabled) = 0;
+    virtual void setMaxUploadEnabled(const bool enabled) = 0;
     virtual void setMaxUpload(const QString& maxUpload) = 0;
 
     virtual bool deltaPatchingEnabled() const = 0;
-    virtual void setDeltaPatchingEnabled(bool enabled) = 0;
+    virtual void setDeltaPatchingEnabled(const bool enabled) = 0;
+
+    virtual ~ISettings() {}
 };
 
 #endif // ISETTINGS_H

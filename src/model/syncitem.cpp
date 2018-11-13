@@ -1,6 +1,5 @@
 #include <limits>
 #include <QTime>
-#include "afisynclogger.h"
 #include "global.h"
 #include "syncitem.h"
 

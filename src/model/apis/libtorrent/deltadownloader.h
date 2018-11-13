@@ -9,9 +9,11 @@
 #include <QHash>
 #include <QSet>
 #include <QObject>
+#pragma warning(push, 0)
 #include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/file_storage.hpp>
 #include <libtorrent/alert_types.hpp>
+#pragma warning(pop)
 #include "../../cihash.h"
 #include "deltapatcher.h"
 

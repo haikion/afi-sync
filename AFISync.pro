@@ -13,7 +13,7 @@ win32 {
     RC_ICONS = src/view/armafin-logo-64px2.ico
     LIBS += -L..\lib
     !Release {
-        #Dynamic build
+        QMAKE_CXXFLAGS += -wd4250
         DEFINES += BOOST_ALL_DYN_LINK
         POSTFIX = vc140-mt-gd-x64-1_66
         LIBS += -lboost_log_setup-$${POSTFIX} -lboost_log-$${POSTFIX} -lboost_filesystem-$${POSTFIX} -lboost_system-$${POSTFIX} -lboost_date_time-$${POSTFIX} -lboost_thread-$${POSTFIX} -lboost_regex-$${POSTFIX} -lboost_atomic-$${POSTFIX} -lboost_random-$${POSTFIX} -lws2_32 -ltorrent

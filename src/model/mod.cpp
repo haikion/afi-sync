@@ -263,7 +263,8 @@ QString Mod::key() const
 void Mod::startUpdates()
 {
     LOG << name();
-    connect(updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
+    connect(updateTimer_, &QTimer::timeout, this, &Mod::update);
+    // &QTimer::start doesn't compile
     QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
 }
 
@@ -272,7 +273,7 @@ void Mod::stopUpdates()
 {
     LOG << name();
     //Updates need to be stopped before object destruction, hence blocking.
-    QMetaObject::invokeMethod(this, "stopUpdatesSlot", Qt::BlockingQueuedConnection);
+    QMetaObject::invokeMethod(this, &Mod::stopUpdatesSlot, Qt::BlockingQueuedConnection);
     //Process pending updateView request in UI Thread. (Prevents segfault)
     //QCoreApplication::processEvents();
 }
@@ -292,15 +293,14 @@ void Mod::appendRepository(Repository* repository)
     if (repositories().size() == 1)
     {
         //First repository added -> initialize mod.
-        Repository* repo = *repositories_.begin();
         if (sync_->ready())
         {
             LOG << "name = " << name() << " Calling init directly";
-            QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
+            QMetaObject::invokeMethod(this, &Mod::init, Qt::QueuedConnection);
         }
         else
         {
-            connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(init()));
+            connect(sync_, &ISync::initCompleted, this, &Mod::init);
             LOG << "name = " << name() << " initCompleted connection created";
         }
     }
@@ -481,7 +481,7 @@ void Mod::checkboxClicked()
 {
     LOG << name() << " checked state set to " << ticked();
     //Below cmd will start the download if repository is active.
-    QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, &Mod::repositoryChanged, Qt::QueuedConnection);
 }
 
 bool Mod::reposInactive()

@@ -1,5 +1,12 @@
 #include <fstream>
 #include <map>
+
+#include <QDirIterator>
+#include <QFile>
+#include <QFileInfo>
+#include <QThread>
+
+#pragma warning(push, 0)
 #include <libtorrent/alert_manager.hpp>
 #include <libtorrent/bdecode.hpp>
 #include <libtorrent/bencode.hpp>
@@ -13,10 +20,8 @@
 #include <libtorrent/settings_pack.hpp>
 #include <libtorrent/time.hpp>
 #include <libtorrent/torrent_info.hpp>
-#include <QDirIterator>
-#include <QFile>
-#include <QFileInfo>
-#include <QThread>
+#pragma warning(pop)
+
 #include "../../fileutils.h"
 #include "../../global.h"
 #include "../../settingsmodel.h"
@@ -307,7 +312,7 @@ int LibTorrentApi::folderEta(const QString& key)
    return downloadEta(status);
 }
 
-int LibTorrentApi::checkingEta(const lt::torrent_status& status)
+int64_t LibTorrentApi::checkingEta(const lt::torrent_status& status)
 {
     static QMap<lt::sha1_hash, int64_t> lastBytesMap;
     static QMap<lt::sha1_hash, int64_t> lastTime;
@@ -366,7 +371,7 @@ int LibTorrentApi::queuedDownloadEta(const lt::torrent_status& status) const
 int LibTorrentApi::queuedCheckingEta(const lt::torrent_status& status) const
 {
     //Caching
-    static QMap<lt::sha1_hash, std::pair<int, unsigned>> cache;
+    static QMap<lt::sha1_hash, std::pair<int, int64_t>> cache;
     if (cache.contains(status.info_hash)
             && (runningTimeS() - cache[status.info_hash].second) < 1 )
     {
