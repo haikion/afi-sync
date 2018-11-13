@@ -129,24 +129,26 @@ void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches, int
     }
 }
 
+// TODO: Move to DeltaUtils
 QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringList& allPatches)
 {
-    QString modName = QFileInfo(modPath).fileName();
-    int ltstVersion = latestVersion(modName, allPatches);
+    const QString modName = QFileInfo(modPath).fileName();
+    const int ltstVersion = latestVersion(modName, allPatches);
     if (ltstVersion == -1)
     {
         //Function used for patchAvailable() so no error is printed here.
         return QStringList();
     }
     QStringList patches;
-    QString hash = AHasher::hash(modPath);
-    QRegExp regEx(modName + ".*" + hash + "\\" + SEPARATOR + "7z");
-    QStringList matches = allPatches.filter(regEx);
+    const QString hash = AHasher::hash(modPath);
+    LOG << "Calculated hash for " << modPath << ". Result: " << hash;
+    const QRegExp regEx(modName + ".*" + hash + "\\" + SEPARATOR + "7z");
+    const QStringList matches = allPatches.filter(regEx);
     if (matches.size() == 0)
         return QStringList();
 
-    QString patchName = matches.at(0);
-    //First version.
+    const QString patchName = matches.at(0);
+    //First version. TODO: Why not just match hashes in recursive manner?
     int version = patchName.split(SEPARATOR).at(1).toInt();
     patches.append(patchName);
     while (version != ltstVersion)

@@ -66,16 +66,24 @@ QString Repository::progressStr()
 
     qint64 totalWanted = 0;
     qint64 totalWantedDone = 0;
+    // Mods share the same delta patches torrent
+    qint64 totalWantedDelta = 0;
+    qint64 totalWantedDoneDelta = 0;
     for (Mod* mod : mods())
     {
         if (!mod->ticked())
             continue;
 
+        if (totalWantedDelta == 0 && mod->statusStr() == SyncStatus::CHECKING_PATCHES)
+        {
+            totalWantedDelta = mod->totalWanted();
+            totalWantedDoneDelta = mod->totalWantedDone();
+        }
         totalWanted += mod->totalWanted();
         totalWantedDone += mod->totalWantedDone();
     }
 
-    return Mod::toProgressStr(totalWanted, totalWantedDone);
+    return Mod::toProgressStr(totalWanted + totalWantedDelta, totalWantedDone + totalWantedDoneDelta);
 }
 
 void Repository::startUpdates()
