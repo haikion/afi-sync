@@ -758,21 +758,6 @@ bool LibTorrentApi::removeFolder(const QString& key)
     session_->remove_torrent(handle);
     removeFiles(getHashString(handle));
     keyHash_.remove(key);
-    /*
-    QString filePrefix = SettingsModel::syncSettingsPath() + "/" + getHashString(handle);
-    session_->remove_torrent(handle);
-    keyHash_.remove(key);
-    //Delete saved data
-    QString urlPath = filePrefix + ".link";
-    LOG << MSG_DELETING_FILE << " " << urlPath;
-    FileUtils::safeRemove(urlPath);
-    QString torrentPath = filePrefix + ".torrent";
-    LOG << MSG_DELETING_FILE << " " << torrentPath;
-    FileUtils::safeRemove(torrentPath);
-    QString fastresumePath = filePrefix + ".fastresume";
-    LOG << MSG_DELETING_FILE << fastresumePath;
-    FileUtils::safeRemove(fastresumePath);
-    */
     std::vector<lt::alert*>* alerts = new std::vector<lt::alert*>();
     //Wait for removed alert (5s)
     //50 alert chunks may be received before torrent removed alert.

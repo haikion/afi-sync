@@ -74,11 +74,16 @@ QString Repository::progressStr()
         if (!mod->ticked())
             continue;
 
-        if (totalWantedDelta == 0 && mod->statusStr() == SyncStatus::CHECKING_PATCHES)
+        if (mod->statusStr() == SyncStatus::CHECKING_PATCHES)
         {
-            totalWantedDelta = mod->totalWanted();
-            totalWantedDoneDelta = mod->totalWantedDone();
+            if (totalWantedDelta == 0)
+            {
+                totalWantedDelta = mod->totalWanted();
+                totalWantedDoneDelta = mod->totalWantedDone();
+            }
+            continue;
         }
+
         totalWanted += mod->totalWanted();
         totalWantedDone += mod->totalWantedDone();
     }

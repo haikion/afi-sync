@@ -150,7 +150,7 @@ boost::int64_t DeltaDownloader::totalWanted(const QString& modName)
     return totalWanted(patchIndexes(modName));
 }
 
-//Returns list of patch file indexes that are applyable.
+// Returns list of patch file indexes that are applyable to the mod.
 QVector<int> DeltaDownloader::patchIndexes(const QString& modName)
 {
     //Try to return cached value
@@ -163,13 +163,7 @@ QVector<int> DeltaDownloader::patchIndexes(const QString& modName)
     QStringList modPatches = patches(modName);
     for (const QString& patchName : modPatches)
     {
-        int i = patches_.indexOf(patchName);
-        if (i == -1) //Fail safe TODO: Might be too defensive
-        {
-            LOG_ERROR << "Index == -1 for" << patchName;
-            continue;
-        }
-        indexes.append(i);
+        indexes.append(patches_.indexOf(patchName));
     }
     fileIndexCache_.insert(modName, indexes);
     return indexes;
@@ -177,7 +171,7 @@ QVector<int> DeltaDownloader::patchIndexes(const QString& modName)
 
 QStringList DeltaDownloader::patches(const QString& modName) const
 {
-    QString modPath = SettingsModel::modDownloadPath() + "/" + modName;
+    const QString modPath = SettingsModel::modDownloadPath() + "/" + modName;
     return DeltaPatcher::filterPatches(modPath, patches_);
 }
 

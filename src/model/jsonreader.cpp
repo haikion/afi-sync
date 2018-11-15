@@ -21,7 +21,18 @@ JsonReader::JsonReader(ISync* sync):
     repositoriesPath_(QCoreApplication::applicationDirPath() + "/settings/repositories.json"),
     downloadedPath_(repositoriesPath_ + "_new"),
     sync_(sync)
-{}
+{
+    jsonMap_ = qvariant_cast<QVariantMap>(readJsonFile(repositoriesPath_).toVariant());
+    const QVariantMap jsonMapUpdate = updateJson(updateUrl(jsonMap_));
+    if (jsonMapUpdate != QVariantMap())
+        jsonMap_ = jsonMapUpdate;
+
+    if (jsonMap_ == QVariantMap())
+    {
+        LOG_ERROR << "Json file parse failure. Exiting...";
+        exit(2);
+    }
+}
 
 QHash<QString, Repository*> JsonReader::addedRepos(const RootItem* root) const
 {
@@ -96,17 +107,6 @@ bool JsonReader::updateAvailable()
 QList<Repository*> JsonReader::repositories(ISync* sync)
 {
     QList<Repository*> retVal;
-    jsonMap_ = qvariant_cast<QVariantMap>(readJsonFile(repositoriesPath_).toVariant());
-    const QVariantMap jsonMapUpdate = updateJson(updateUrl(jsonMap_));
-    if (jsonMapUpdate != QVariantMap())
-        jsonMap_ = jsonMapUpdate;
-
-    if (jsonMap_ == QVariantMap())
-    {
-        LOG_ERROR << "Json file parse failure. Exiting...";
-        exit(2);
-    }
-
     const QList<QVariant> repositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
     QMap<QString, Mod*> modMap; // Add same key mods only once
     for (const QVariant& repoVar : repositories)
