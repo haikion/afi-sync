@@ -26,7 +26,7 @@ Mod::Mod(const QString& name, const QString& key, ISync* sync):
     moveToThread(Global::workerThread);
     qRegisterMetaType<QVector<int>>("QVector<int>");
     //Blocking is required, because otherwise startUpdates might be called before updateTimer_ is initialized.
-    QMetaObject::invokeMethod(this, "threadConstructor", Qt::BlockingQueuedConnection);
+    QMetaObject::invokeMethod(this, &Mod::threadConstructor, Qt::BlockingQueuedConnection);
 }
 
 Mod::~Mod()
@@ -96,7 +96,7 @@ void Mod::start()
         sync_->addFolder(key_, name());
     }
     //Sanity checks
-    QString error = sync_->folderError(key_);
+    const QString error = sync_->folderError(key_);
     if (!error.isEmpty())
     {
         LOG << "name = " << name() << " Re-adding directory. error = " << error;
@@ -218,12 +218,12 @@ bool Mod::ticked()
     return false;
 }
 
-QString Mod::startText()
+QString Mod::startText() //TODO: Remove, QML
 {
     return "hidden";
 }
 
-QString Mod::joinText()
+QString Mod::joinText() //TODO: Remove, QML
 {
     return "hidden";
 }
@@ -273,9 +273,7 @@ void Mod::stopUpdates()
 {
     LOG << name();
     //Updates need to be stopped before object destruction, hence blocking.
-    QMetaObject::invokeMethod(this, "stopUpdatesSlot", Qt::BlockingQueuedConnection);
-    //Process pending updateView request in UI Thread. (Prevents segfault)
-    //QCoreApplication::processEvents();
+    QMetaObject::invokeMethod(this, &Mod::stopUpdatesSlot, Qt::BlockingQueuedConnection);
 }
 
 //This should always be run in workerThread
@@ -296,7 +294,7 @@ void Mod::appendRepository(Repository* repository)
         if (sync_->ready())
         {
             LOG << "name = " << name() << " Calling init directly";
-            QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
+            QMetaObject::invokeMethod(this, &Mod::init, Qt::QueuedConnection);
         }
         else
         {
@@ -309,8 +307,7 @@ void Mod::appendRepository(Repository* repository)
 
 bool Mod::removeRepository(Repository* repository)
 {
-
-    QString errorMsg = QString("ERROR: Mod %1 not found in repository %2.").
+    const QString errorMsg = QString("ERROR: Mod %1 not found in repository %2.").
             arg(name()).arg(repository->name());
 
     auto it = repositories_.find(repository);
@@ -372,7 +369,7 @@ void Mod::updateStatus()
     {
         setStatus(sync_->folderPatching(key_) ? SyncStatus::CHECKING_PATCHES : SyncStatus::CHECKING);
     }
-    //Hack to fix BtSync reporting ready when it's not... :D (oh my god...)
+    //Wait for ready just in case
     else if (statusStr() == SyncStatus::WAITING)
     {
         ++waitTime_;
@@ -438,7 +435,6 @@ void Mod::updateStatus()
 
 void Mod::forceCheck()
 {
-    // Hack to manually fix LibTorrent 1.1.7 eternal queue bug
     sync_->disableQueue(key_);
     check();
 }
@@ -481,7 +477,7 @@ void Mod::checkboxClicked()
 {
     LOG << name() << " checked state set to " << ticked();
     //Below cmd will start the download if repository is active.
-    QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, &Mod::repositoryChanged, Qt::QueuedConnection);
 }
 
 bool Mod::reposInactive()
@@ -494,7 +490,7 @@ bool Mod::reposInactive()
     return true;
 }
 
-void Mod::updateEta()
+void Mod::updateEta() //TODO: Remove, ETA
 {
     if (statusStr() == SyncStatus::INACTIVE
             || statusStr() == SyncStatus::ERRORED || statusStr() == SyncStatus::READY)
@@ -505,7 +501,7 @@ void Mod::updateEta()
     setEta(sync_->folderEta(key_));
 }
 
-Repository* Mod::parentItem()
+Repository* Mod::parentItem() //TODO: Remove, QML
 {
     return static_cast<Repository*>(TreeItem::parentItem());
 }

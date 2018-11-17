@@ -1,7 +1,7 @@
-:Compiles static 64 bit single exe build of AFISync with MSVC-14
+:Compiles static 64 bit single exe build of AFISync with MSVC-17
 set QT_PATH=C:\Qt
-set QT_STATIC_BINS=D:\qts\5.8\bin
-set VS_DIR=D:\Microsoft Visual Studio 14.0
+set QT_STATIC_BINS=D:\qts\bin
+set VS_DIR=D:\Microsoft Visual Studio\2017\Community
 
 set CURRDIR=%cd%
 cd %~dp0%..\..
@@ -12,7 +12,7 @@ set BUILD_DIR=%ROOT_DIR%\build-AFISync-static
 set RELEASE_DIR=%ROOT_DIR%\AFISync
 set PERSONAL_DIR=%ROOT_DIR%\personal
 set JSON_FILE=%PERSONAL_DIR%\settings\repositories.json
-set PATH=%QT_STATIC_BINS%;%VS_DIR%\VC;%VS_DIR%\Common7\Tools;%QT_PATH%\5.8\msvc2015_64\bin;%ROOT_DIR%;%systemroot%;%systemroot%\System32
+set PATH=%QT_STATIC_BINS%;%VS_DIR%\VC\Auxiliary\Build;%QT_PATH%\5.8\msvc2015_64\bin;%ROOT_DIR%;%systemroot%;%systemroot%\System32
 
 rmdir /S %BUILD_DIR%
 rmdir /S %RELEASE_DIR%

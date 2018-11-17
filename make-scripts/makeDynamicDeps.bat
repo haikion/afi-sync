@@ -20,7 +20,9 @@ rmdir /s %LIBTORRENT_BUILD_PATH%
 7za x %LIBTORRENT_BUILD_PATH%.7z
 mkdir ..\lib
 
-goto msvc-dynamic
+C:\Users\Niko\AppData\Local\Programs\Python\Python36-32\Scripts\;C:\Users\Niko\AppData\Local\Programs\Python\Python36-32\;C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x64;C:\Qt\Tools\QtCreator\bin;C:\Users\Niko\AppData\Local\GitHub\PortableGit_284a859b0e6deba86edc624fef1e4db2aa8241a9\mingw32\bin;C:\cygwin64\bin
+
+goto msvc-static
 
 :msvc-dynamic
 cd %BOOST_BUILD_PATH%
@@ -49,8 +51,6 @@ b2 %MSVC_PARAMS_STATIC%
 :msvc-static-install
 copy %BOOST_BUILD_PATH%\stage\lib\* %LIB_PATH%
 copy %LIBTORRENT_BUILD_PATH%\bin\msvc-14.0\release\address-model-64\architecture-x86\link-static\runtime-link-static\threading-multi\libtorrent.lib %LIB_PATH%
-
-goto end
 
 :end
 cd %OLD_DIR%

@@ -20,7 +20,7 @@ win32 {
     }
     Release {
         #Static build
-        LIBS += -llibboost_system-vc140-mt-s-x64-1_66 -llibboost_atomic-vc140-mt-s-x64-1_66 -llibboost_random-vc140-mt-s-x64-1_66 -lws2_32 -llibtorrent
+        LIBS += -llibboost_system-vc141-mt-s-x64-1_66 -llibboost_atomic-vc141-mt-s-x64-1_66 -llibboost_random-vc141-mt-s-x64-1_66 -lws2_32 -llibtorrent
         DEFINES += STATIC_BUILD=1
         #Generate pdb debug symbols for crash dumps
         QMAKE_CXXFLAGS+=/Zi
