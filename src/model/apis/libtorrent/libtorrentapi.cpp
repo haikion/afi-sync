@@ -41,16 +41,17 @@ LibTorrentApi::LibTorrentApi(QObject *parent) :
     settingsPath_(SettingsModel::syncSettingsPath() + "/libtorrent.dat"),
     checkingSpeed_(20000000)
 {
-    init();
-    emit initCompleted();
+    moveToThread(Global::workerThread);
+    QMetaObject::invokeMethod(this, &LibTorrentApi::init, Qt::QueuedConnection);
 }
 
 void LibTorrentApi::init()
 {
     createSession();
-    connect(&alertTimer_, SIGNAL(timeout()), this, SLOT(handleAlerts()));
+    connect(&alertTimer_, &QTimer::timeout, this, &LibTorrentApi::handleAlerts);
     alertTimer_.setInterval(1000);
     alertTimer_.start();
+    emit initCompleted();
 }
 
 LibTorrentApi::~LibTorrentApi()
@@ -161,6 +162,7 @@ bool LibTorrentApi::loadLtSettings()
     return true;
 }
 
+// TODO: Use mutexes here as keyHash is written in worker thread and read in ui thread.
 QList<QString> LibTorrentApi::folderKeys()
 {
     QList<QString> rVal = keyHash_.keys();
@@ -312,6 +314,7 @@ int LibTorrentApi::folderEta(const QString& key)
    return downloadEta(status);
 }
 
+// TODO: Remove, ETA
 int64_t LibTorrentApi::checkingEta(const lt::torrent_status& status)
 {
     static QMap<lt::sha1_hash, int64_t> lastBytesMap;
@@ -501,7 +504,7 @@ boost::shared_ptr<const lt::torrent_info> LibTorrentApi::getTorrentFile(
         QThread::sleep(1);
         torrentFile = handle.torrent_file();
         if (i >= 5)
-            return 0;
+            return nullptr;
     }
     return torrentFile;
 }
@@ -645,14 +648,25 @@ qint64 LibTorrentApi::download() const
     return session_->status().payload_download_rate;
 }
 
-void LibTorrentApi::setMaxUpload(const unsigned limit)
+void LibTorrentApi::setMaxUpload(const int limit)
+{
+    QMetaObject::invokeMethod(this, "setMaxUploadSlot", Qt::QueuedConnection, Q_ARG(int, limit));
+}
+
+
+void LibTorrentApi::setMaxUploadSlot(const int limit)
 {
     lt::settings_pack pack;
     pack.set_int(lt::settings_pack::upload_rate_limit, limit * 1024);
     session_->apply_settings(pack);
 }
 
-void LibTorrentApi::setMaxDownload(const unsigned limit)
+void LibTorrentApi::setMaxDownload(const int limit)
+{
+    QMetaObject::invokeMethod(this, "setMaxDownloadSlot", Qt::QueuedConnection, Q_ARG(int, limit));
+}
+
+void LibTorrentApi::setMaxDownloadSlot(const int limit)
 {
     lt::settings_pack pack;
     pack.set_int(lt::settings_pack::download_rate_limit, limit * 1024);
@@ -661,11 +675,15 @@ void LibTorrentApi::setMaxDownload(const unsigned limit)
 
 bool LibTorrentApi::ready()
 {
-    bool rVal = session_->is_valid();
-    return rVal;
+    return session_ != nullptr && session_->is_valid();
 }
 
 void LibTorrentApi::setPort(int port)
+{
+    QMetaObject::invokeMethod(this, SLOT(setPortSlot), Qt::QueuedConnection, Q_ARG(int, port));
+}
+
+void LibTorrentApi::setPortSlot(int port)
 {
     if (!session_)
     {
@@ -736,8 +754,12 @@ void LibTorrentApi::removeFiles(const QString& hashString)
     FileUtils::safeRemove(fastresumePath);
 }
 
+void LibTorrentApi::removeFolder(const QString& key)
+{
+    QMetaObject::invokeMethod(this, "removeFolderSlot", Qt::QueuedConnection, Q_ARG(QString, key));
+}
 
-bool LibTorrentApi::removeFolder(const QString& key)
+bool LibTorrentApi::removeFolderSlot(const QString& key)
 {
     LOG << "key = " << key;
     if (!session_)

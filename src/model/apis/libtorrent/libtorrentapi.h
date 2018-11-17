@@ -51,7 +51,7 @@ public:
     //Adds folder, path is local system directory, key is source.
     virtual bool addFolder(const QString& key, const QString& name);
     //Removes folder with specific key.
-    virtual bool removeFolder(const QString& key);
+    virtual void removeFolder(const QString& key);
     //Returns list of files in folder in upper case format.
     virtual QSet<QString> folderFilesUpper(const QString& key);
     //Returns true if folder with specific key exists.
@@ -71,9 +71,9 @@ public:
     virtual qint64 download() const;
     virtual qint64 upload();
     //Sets global max upload
-    virtual void setMaxUpload(const unsigned limit);
+    virtual void setMaxUpload(const int limit);
     //Sets global max download
-    virtual void setMaxDownload(const unsigned limit);
+    virtual void setMaxDownload(const int limit);
     //Returns true if the sync has loaded and is ready to take commands.
     virtual bool ready();
     //Sets outgoing port.
@@ -89,6 +89,11 @@ public:
 private slots:
     void handleAlerts();
     void handlePatched(const QString& key, const QString& modName, bool success);
+    void init();
+    bool removeFolderSlot(const QString& key);    
+    void setMaxUploadSlot(const int limit);
+    void setMaxDownloadSlot(const int limit);
+    void setPortSlot(int port);
 
 signals:
     void initCompleted();
@@ -111,7 +116,6 @@ private:
     QString settingsPath_;
     int64_t checkingSpeed_;
 
-    void init();
     bool loadLtSettings();
     void saveSettings();
     boost::shared_ptr<libtorrent::torrent_info> loadFromFile(const QString& path) const;

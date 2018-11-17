@@ -14,7 +14,7 @@
 const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 
 Mod::Mod(const QString& name, const QString& key, ISync* sync):
-    SyncItem(name, 0),
+    SyncItem(name, nullptr),
     key_(key),
     sync_(sync),
     updateTimer_(nullptr),
@@ -285,10 +285,12 @@ void Mod::stopUpdatesSlot()
 
 void Mod::appendRepository(Repository* repository)
 {
-    LOG << "mod name = " << name() << " repo name = " << repository->name();
-
+    repositoriesMutex_.lock();
     repositories_.insert(repository);
-    if (repositories().size() == 1)
+    const int size = repositories_.size();
+    repositoriesMutex_.unlock();
+
+    if (size == 1)
     {
         //First repository added -> initialize mod.
         if (sync_->ready())
@@ -302,7 +304,7 @@ void Mod::appendRepository(Repository* repository)
             LOG << "name = " << name() << " initCompleted connection created";
         }
     }
-    QMetaObject::invokeMethod(this, "repositoryChanged", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, &Mod::repositoryChanged, Qt::QueuedConnection);
 }
 
 bool Mod::removeRepository(Repository* repository)
@@ -310,13 +312,10 @@ bool Mod::removeRepository(Repository* repository)
     const QString errorMsg = QString("ERROR: Mod %1 not found in repository %2.").
             arg(name()).arg(repository->name());
 
-    auto it = repositories_.find(repository);
-    if (it == repositories_.end())
-    {
-        LOG << errorMsg;
-        return false;
-    }
-    repositories_.erase(it);
+    repositoriesMutex_.lock();
+    repositories_.remove(repository);
+    repositoriesMutex_.unlock();
+
     for (ModAdapter* adp : adapters_)
     {
         if (adp->parentItem() == repository)
@@ -482,11 +481,16 @@ void Mod::checkboxClicked()
 
 bool Mod::reposInactive()
 {
+    repositoriesMutex_.lock();
     for (Repository* repo : repositories_)
     {
         if (repo->statusStr() != SyncStatus::INACTIVE)
+        {
+            repositoriesMutex_.unlock();
             return false;
+        }
     }
+    repositoriesMutex_.unlock();
     return true;
 }
 

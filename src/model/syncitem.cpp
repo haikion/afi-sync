@@ -4,7 +4,7 @@
 #include "syncitem.h"
 
 SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
-    TreeItem(name, parentItem),
+    TreeItem(name, parentItem), //TOD: Remove, QML
     name_(name),
     eta_(Constants::MAX_ETA), //TODO: Remove, eta
     fileSize_(0)
@@ -12,7 +12,7 @@ SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
 }
 
-QString SyncItem::checkText()
+QString SyncItem::checkText() // TODO: Remove, QML
 {
     QString rVal = ticked() ? "true" : "false";
     return rVal;
@@ -60,12 +60,12 @@ QString SyncItem::startText()
     return "uploadText()"; //TODO: Wtf??
 }
 
-int SyncItem::eta() const
+int SyncItem::eta() const //TODO: Remove, ETA
 {
     return eta_;
 }
 
-QString SyncItem::etaStr() const
+QString SyncItem::etaStr() const //TODO: Remove, ETA
 {
     //In repository multiple MAX_ETA maybe summed so we use >=.
     if (eta_ >= Constants::MAX_ETA)
@@ -74,7 +74,7 @@ QString SyncItem::etaStr() const
     return QTime(0,0,0).addSecs(eta_).toString();
 }
 
-void SyncItem::setEta(const int& eta)
+void SyncItem::setEta(const int& eta) //TODO: Remove, ETA
 {
     eta_ = eta;
 }

@@ -37,7 +37,7 @@ public:
     //Returns true if downloading patches for specific folder.
     virtual bool folderDownloadingPatches(const QString& key) = 0;
     //Removes folder with specific key.
-    virtual bool removeFolder(const QString& key) = 0;
+    virtual void removeFolder(const QString& key) = 0;
     //Returns list of files in folder in upper case unix (separator = /) format. Example: "C:/MODS/@MOD/FILE.PBO"
     virtual QSet<QString> folderFilesUpper(const QString& key) = 0;
     //Returns true if folder with specific key exists.
@@ -57,9 +57,9 @@ public:
     //Shutdowns the sync
     virtual void shutdown() = 0;
     //Sets global max upload
-    virtual void setMaxUpload(const unsigned limit) = 0;
+    virtual void setMaxUpload(const int limit) = 0;
     //Sets global max download
-    virtual void setMaxDownload(const unsigned limit) = 0;
+    virtual void setMaxDownload(const int limit) = 0;
     //Returns true if the sync has loaded and is ready to take commands.
     virtual bool ready() = 0;
     //Sets outgoing port.
