@@ -39,7 +39,8 @@ public:
     //Returns zero otherwise.
     qint64 totalBytes(const QString& modName = "") const;
     bool notPatching();
-    void stop();
+    void stop();    
+    bool patching(const QString& modName) const;
 
 signals:
     void patched(QString modPath, bool success);

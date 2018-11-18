@@ -34,24 +34,54 @@ const QString LibTorrentApi::ERROR_KEY_NOT_FOUND = "ERROR: not found. key = ";
 const QString LibTorrentApi::ERROR_SESSION_NULL = "ERROR: session is null.";
 
 LibTorrentApi::LibTorrentApi(QObject *parent) :
-    QObject(parent),
-    session_(nullptr),
-    deltaManager_(nullptr),
-    numResumeData_(0),
-    settingsPath_(SettingsModel::syncSettingsPath() + "/libtorrent.dat"),
-    checkingSpeed_(20000000)
+    QObject(parent)
 {
-    moveToThread(Global::workerThread);
+    generalInit();
     QMetaObject::invokeMethod(this, &LibTorrentApi::init, Qt::QueuedConnection);
 }
 
+LibTorrentApi::LibTorrentApi(const QString& deltaUpdatesKey, QObject *parent):
+    QObject(parent),
+    deltaUpdatesKey_(deltaUpdatesKey)
+{
+    generalInit();
+    if (SettingsModel::deltaPatchingEnabled())
+    {
+        QMetaObject::invokeMethod(this, &LibTorrentApi::initDelta, Qt::QueuedConnection);
+        return;
+    }
+    QMetaObject::invokeMethod(this, &LibTorrentApi::init, Qt::QueuedConnection);
+}
+
+void LibTorrentApi::initDelta()
+{
+    generalThreadInit();
+    enableDeltaUpdatesSlot();
+    emit initCompleted();
+}
+
 void LibTorrentApi::init()
+{
+    generalThreadInit();
+    emit initCompleted();
+}
+
+void LibTorrentApi::generalInit()
+{
+    session_ = nullptr;
+    deltaManager_ = nullptr;
+    numResumeData_ = 0;
+    settingsPath_ = SettingsModel::syncSettingsPath() + "/libtorrent.dat";
+    checkingSpeed_ = 20000000;
+    moveToThread(Global::workerThread);
+}
+
+void LibTorrentApi::generalThreadInit()
 {
     createSession();
     connect(&alertTimer_, &QTimer::timeout, this, &LibTorrentApi::handleAlerts);
     alertTimer_.setInterval(1000);
     alertTimer_.start();
-    emit initCompleted();
 }
 
 LibTorrentApi::~LibTorrentApi()
@@ -179,7 +209,8 @@ bool LibTorrentApi::folderNoPeers(const QString& key)
         return true;
 
     lt::torrent_status status = handle.status();
-    return status.num_peers == 0;
+    return status.num_peers == 0 && (status.state == libtorrent::torrent_status::state_t::downloading
+            || status.state == libtorrent::torrent_status::state_t::downloading_metadata);
 }
 
 bool LibTorrentApi::folderReady(const QString& key)
@@ -247,7 +278,9 @@ bool LibTorrentApi::folderQueued(const lt::torrent_status& status) const
 bool LibTorrentApi::folderQueued(const QString& key)
 {
     if (deltaManager_ && deltaManager_->contains(key))
-        return false;
+    {
+        return deltaManager_->queued(key);;
+    }
 
     lt::torrent_handle handle = keyHash_.value(key);
     lt::torrent_status status = handle.status();
@@ -450,6 +483,10 @@ qint64 LibTorrentApi::folderTotalWanted(const QString& key)
     }
 
     lt::torrent_status status = getHandle(key).status();
+    if (status.state == lt::torrent_status::downloading_metadata)
+    {
+        return -1;
+    }
     return status.total_wanted;
 }
 
@@ -461,6 +498,10 @@ qint64 LibTorrentApi::folderTotalWantedDone(const QString& key)
     }
 
     lt::torrent_status status = getHandle(key).status();
+    if (status.state == lt::torrent_status::downloading_metadata)
+    {
+        return -1;
+    }
     return status.total_wanted_done;
 }
 
@@ -702,6 +743,7 @@ void LibTorrentApi::setPortSlot(int port)
     session_->apply_settings(pack);
 }
 
+// TODO: Remove deprecated
 void LibTorrentApi::start()
 {
     LOG << "Reloading settings...";
@@ -833,19 +875,24 @@ bool LibTorrentApi::disableDeltaUpdatesNoTorrents()
     return true;
 }
 
-bool LibTorrentApi::enableDeltaUpdates()
+void LibTorrentApi::enableDeltaUpdates()
+{
+    QMetaObject::invokeMethod(this, &LibTorrentApi::enableDeltaUpdatesSlot, Qt::QueuedConnection);
+}
+
+void LibTorrentApi::enableDeltaUpdatesSlot()
 {
     LOG;
 
     if (deltaUpdatesKey_.isEmpty())
     {
         LOG_ERROR << "Unable to enable delta updates: deltaUpdatesKey_ is empty.";
-        return false;
+        return;
     }
     if (deltaManager_)
     {
         LOG << "Delta updates already active, doing nothing.";
-        return false;
+        return;
     }
     lt::torrent_handle handle = addFolderFromParams(deltaUpdatesKey_);
     if (!handle.is_valid())
@@ -855,12 +902,11 @@ bool LibTorrentApi::enableDeltaUpdates()
         if (!handle.is_valid())
         {
             LOG_WARNING << "Torrent is invalid. Delta patching disabled.";
-            return false;
+            return;
         }
     }
 
     createDeltaManager(handle, deltaUpdatesKey_);
-    return true;
 }
 
 lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key)

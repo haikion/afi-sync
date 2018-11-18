@@ -21,12 +21,12 @@ Mod::Mod(const QString& name, const QString& key, ISync* sync):
     waitTime_(0)
 {
     LOG << "key = " << key;
-    setStatus(SyncStatus::NO_SYNC_CONNECTION);
+    setStatus(SyncStatus::STARTING);
     //Enables non lagging UI
     moveToThread(Global::workerThread);
     qRegisterMetaType<QVector<int>>("QVector<int>");
-    //Blocking is required, because otherwise startUpdates might be called before updateTimer_ is initialized.
-    QMetaObject::invokeMethod(this, &Mod::threadConstructor, Qt::BlockingQueuedConnection);
+    connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(repositoryChanged()));
+    QMetaObject::invokeMethod(this, &Mod::threadConstructor, Qt::QueuedConnection);
 }
 
 Mod::~Mod()
@@ -43,6 +43,7 @@ void Mod::threadConstructor()
     updateTimer_ = new QTimer(this);
     updateTimer_->setTimerType(Qt::VeryCoarseTimer);
     updateTimer_->setInterval(1000);
+    connect(updateTimer_, &QTimer::timeout, this, &Mod::update);
 }
 
 
@@ -233,6 +234,11 @@ QString Mod::joinText() //TODO: Remove, QML
 void Mod::repositoryChanged()
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
+
+    if (!sync_->ready())
+    {
+        return;
+    }
     if (reposInactive() || !ticked())
     {
         if (sync_->folderExists(key_) && !sync_->folderPaused(key_))
@@ -262,10 +268,19 @@ QString Mod::key() const
 
 void Mod::startUpdates()
 {
-    LOG << name();
-    connect(updateTimer_, &QTimer::timeout, this, &Mod::update);
-    // &QTimer::start doesn't compile
-    QMetaObject::invokeMethod(updateTimer_, "start", Qt::QueuedConnection);
+    if (sync_->ready())
+    {
+        QMetaObject::invokeMethod(this, &Mod::startUpdatesSlot, Qt::QueuedConnection);
+    }
+    else
+    {
+        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(startUpdatesSlot()));
+    }
+}
+
+void Mod::startUpdatesSlot()
+{
+    updateTimer_->start();
 }
 
 //This should always be run in UI Thread
@@ -280,7 +295,6 @@ void Mod::stopUpdates()
 void Mod::stopUpdatesSlot()
 {
     updateTimer_->stop();
-    updateTimer_->disconnect();
 }
 
 void Mod::appendRepository(Repository* repository)
@@ -303,6 +317,7 @@ void Mod::appendRepository(Repository* repository)
             connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(init()));
             LOG << "name = " << name() << " initCompleted connection created";
         }
+        return;
     }
     QMetaObject::invokeMethod(this, &Mod::repositoryChanged, Qt::QueuedConnection);
 }
@@ -440,10 +455,10 @@ void Mod::forceCheck()
 
 QString Mod::progressStr()
 {
-    if (!ticked())
+    if (!ticked() || statusStr() == SyncStatus::STARTING)
         return "???";
 
-    return toProgressStr(totalWanted(), totalWantedDone());
+    return toProgressStr(totalWanted_, totalWantedDone_);
 }
 
 QString Mod::bytesToMegasStr(const qint64 bytes)

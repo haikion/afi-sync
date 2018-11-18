@@ -20,7 +20,7 @@ class TreeModel : public QObject, virtual public IBandwidthMeter
     Q_OBJECT
 
 public:
-    explicit TreeModel(QObject* parent = 0, ISync* sync = nullptr, bool haltGui = false);
+    explicit TreeModel(QObject* parent = 0);
     ~TreeModel();
 
     void updateView(TreeItem* item, int row = -1); // TODO Remove, QML
@@ -61,6 +61,7 @@ private:
     QString bandwithString(int amount) const;
     QSet<Mod*> mods() const;
     void manageDeltaUpdates(const JsonReader& jsonReader);
+    void createSync(const JsonReader& jsonReader);
 };
 
 #endif // TREEMODEL_H

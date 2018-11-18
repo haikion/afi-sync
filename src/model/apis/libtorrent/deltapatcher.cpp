@@ -195,10 +195,15 @@ qint64 DeltaPatcher::bytesPatched(const QString& modName) const
 
 qint64 DeltaPatcher::totalBytes(const QString& modName) const
 {
-    if (patchingMod_ == modName)
+    if (patching(modName))
         return totalBytes_;
 
-    return 0;
+    return -1;
+}
+
+bool DeltaPatcher::patching(const QString& modName) const
+{
+    return patchingMod_ == modName;
 }
 
 bool DeltaPatcher::notPatching()
@@ -257,6 +262,7 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
         {
             LOG << "Moving " << diffPath << " to " << patchedPath;
             QFile::rename(diffPath, patchedPath);
+            bytesPatched_ += patchFile.size();
             continue;
         }
         QString targetFilePath = targetPath + relPath;

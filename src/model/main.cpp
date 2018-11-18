@@ -52,8 +52,7 @@ TreeModel* generalInit(QObject* parent = nullptr)
     Global::workerThread->setObjectName("workerThread");
     Global::workerThread->start();
     LOG << "Worker thread started";
-    Global::sync = new LibTorrentApi(parent);
-    Global::model = new TreeModel(parent, Global::sync);
+    Global::model = new TreeModel(parent);
     SettingsModel::initBwLimits();
     return Global::model;
 }

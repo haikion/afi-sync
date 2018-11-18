@@ -37,6 +37,7 @@ public:
     //Helper function to get a mod name.
     QString name(const QString& key);
     bool patchDownloading(const QString& key) const;
+    bool queued(const QString& key);
 
 signals:
     void patched(QString key, QString modName, bool success);
@@ -54,5 +55,6 @@ private:
     QTimer updateTimer_;
     QSet<QString> torrentFilesUpper();
     void deleteExtraFiles();
+    QString status();
 };
 #endif // DELTAMANAGER_H

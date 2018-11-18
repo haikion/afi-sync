@@ -28,13 +28,14 @@ class LibTorrentApi : public QObject, public ISync
 
 public:
     explicit LibTorrentApi(QObject *parent = nullptr);
+    explicit LibTorrentApi(const QString& deltaUpdatesKey, QObject *parent = nullptr);
     ~LibTorrentApi();
 
     virtual void setDeltaUpdatesFolder(const QString& key);
     virtual QString deltaUpdatesKey();
     virtual bool disableDeltaUpdates();
     bool disableDeltaUpdatesNoTorrents();
-    virtual bool enableDeltaUpdates();
+    virtual void enableDeltaUpdates();
 
     virtual void checkFolder(const QString& key);
     //Returns true if there are no peers.
@@ -94,6 +95,8 @@ private slots:
     void setMaxUploadSlot(const int limit);
     void setMaxDownloadSlot(const int limit);
     void setPortSlot(int port);
+    void enableDeltaUpdatesSlot();
+    void initDelta();
 
 signals:
     void initCompleted();
@@ -152,6 +155,8 @@ private:
     int64_t checkingEta(const libtorrent::torrent_status& status); //TODO: Deleta, ETA no longer used
     libtorrent::torrent_handle addFolderFromParams(const QString& key);
     void removeFiles(const QString& hashString);
+    void generalThreadInit();
+    void generalInit();
 };
 
 #endif // LIBTORRENTAPI_H

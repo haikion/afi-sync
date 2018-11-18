@@ -7,6 +7,7 @@
 
 #include <sys/types.h>
 #include <signal.h>
+#include <src/model/apis/libtorrent/libtorrentapi.h>
 #include "afisynclogger.h"
 #include <QDir>
 #include <QStringList>
@@ -21,17 +22,17 @@
 #include "deletabledetector.h"
 #include "settingsmodel.h"
 
-TreeModel::TreeModel(QObject* parent, ISync* sync, bool haltGui):
+TreeModel::TreeModel(QObject* parent):
     QObject(parent),
     download_(0),
     upload_(0),
-    haltGui_(haltGui),
-    sync_(sync)
+    haltGui_(false), //TODO: Remove, QML
+    sync_(nullptr)
 {
     LOG;
     JsonReader jsonReader;
-    manageDeltaUpdates(jsonReader);
-    repositories_ = jsonReader.repositories(sync);
+    createSync(jsonReader);
+    repositories_ = jsonReader.repositories(sync_);
 
     LOG << "readJson completed";
     // TODO: Simply do not add torrents that are not in repositories.json
@@ -78,6 +79,7 @@ void TreeModel::removeOrphans()
     LOG << "Done";
 }
 
+//TODO: Remove
 void TreeModel::manageDeltaUpdates(const JsonReader& jsonReader)
 {
     const QString deltaUpdatesKey = jsonReader.deltaUpdatesKey();
@@ -89,6 +91,19 @@ void TreeModel::manageDeltaUpdates(const JsonReader& jsonReader)
             sync_->enableDeltaUpdates();
         }
     }
+}
+
+void TreeModel::createSync(const JsonReader& jsonReader)
+{
+    const QString deltaUpdatesKey = jsonReader.deltaUpdatesKey();
+    if (deltaUpdatesKey != QString())
+    {
+        Global::sync = new LibTorrentApi(deltaUpdatesKey, this);
+        sync_ = Global::sync;
+        return;
+    }
+    Global::sync = new LibTorrentApi(this);
+    sync_ = Global::sync;
 }
 
 void TreeModel::setHaltGui(bool halt)

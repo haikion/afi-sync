@@ -14,7 +14,7 @@ public:
     virtual void setDeltaUpdatesFolder(const QString& key) = 0;
     virtual QString deltaUpdatesKey() = 0;
     virtual bool disableDeltaUpdates() = 0;
-    virtual bool enableDeltaUpdates() = 0;
+    virtual void enableDeltaUpdates() = 0;
 
     //Rechecks folder
     virtual void checkFolder(const QString& key) = 0;

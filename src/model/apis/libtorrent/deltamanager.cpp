@@ -105,8 +105,12 @@ int64_t DeltaManager::totalWanted(const QString& key)
         LOG_ERROR << "Key " << key << " not found.";
         return -1;
     }
-
-    return downloader_->totalWanted(it.value());
+    const QString modName = it.value();
+    if (downloader_->patchDownloaded(modName))
+    {
+        return patcher_->totalBytes(modName);
+    }
+    return downloader_->totalWanted(modName);
 }
 
 int64_t DeltaManager::totalWantedDone(const QString& key)
@@ -117,10 +121,15 @@ int64_t DeltaManager::totalWantedDone(const QString& key)
         LOG_ERROR << "Key" << key << "not found.";
         return -1;
     }
-
-    return downloader_->totalWantedDone(it.value());
+    const QString modName = it.value();
+    if (downloader_->patchDownloaded(modName))
+    {
+        return patcher_->bytesPatched(modName);
+    }
+    return downloader_->totalWantedDone(modName);
 }
 
+// TODO: Remove, ETA
 int DeltaManager::patchingEta(const QString& key)
 {
     static const qint64 SPEED =  600000;
@@ -175,6 +184,16 @@ void DeltaManager::deleteExtraFiles()
         LOG << "Deleting " << filePath;
         FileUtils::rmCi(filePath);
     }
+}
+
+bool DeltaManager::queued(const QString& key)
+{
+    auto it = keyHash_.find(key);
+    if (it == keyHash_.end())
+        return false;
+
+    const QString modName = it.value();
+    return downloader_->patchDownloaded(modName) && !patcher_->patching(modName);
 }
 
 QSet<QString> DeltaManager::torrentFilesUpper()
