@@ -18,7 +18,9 @@ Mod::Mod(const QString& name, const QString& key, ISync* sync):
     key_(key),
     sync_(sync),
     updateTimer_(nullptr),
-    waitTime_(0)
+    waitTime_(0),
+    totalWanted_(-1),
+    totalWantedDone_(-1)
 {
     LOG << "key = " << key;
     setStatus(SyncStatus::STARTING);
@@ -468,7 +470,7 @@ QString Mod::bytesToMegasCeilStr(const qint64 bytes)
 
 QString Mod::toProgressStr(const qint64 totalWanted, qint64 totalWantedDone)
 {
-    if (totalWanted == -1 || totalWantedDone == -1)
+    if (totalWanted < 0 || totalWantedDone < 0)
         return "???";
 
     // Do not ceil to 100 %
