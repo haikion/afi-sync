@@ -482,7 +482,7 @@ qint64 LibTorrentApi::folderTotalWanted(const QString& key)
         return deltaManager_->totalWanted(key);
     }
 
-    lt::torrent_status status = getHandle(key).status();
+    const lt::torrent_status status = getHandle(key).status();
     if (status.state == lt::torrent_status::downloading_metadata)
     {
         return -1;

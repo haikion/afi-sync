@@ -42,9 +42,8 @@ public:
     qint64 totalWanted() const;
     qint64 totalWantedDone() const;
     virtual QString progressStr();
-    static QString bytesToMegasStr(const qint64 bytes);
-    static QString toProgressStr(const qint64 totalWanted, const qint64 totalWantedDone);
-
+    static QString bytesToMegasCeilStr(const qint64 bytes);
+    static QString toProgressStr(const qint64 totalWanted, qint64 totalWantedDone);
 public slots:
     void repositoryChanged();
     bool removeRepository(Repository* repository);

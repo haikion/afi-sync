@@ -34,14 +34,14 @@ DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle):
     handle.set_sequential_download(true); //Download patches one by one
     for (int i = 0; i < fileStorage_.num_files(); ++i)
     {
-        if (QFileInfo(fileStorage_.file_path(i, handle_.status().save_path).c_str()).exists()
-                || Global::guiless) //Seed everything in mirror mode.
+        if (Global::guiless) //Seed everything in mirror mode.
         {
                 continue;
         }
         //Do not download anything. Sets priority to 0 whenever file does not exist.
         handle_.file_priority(i, DownloadPriority::NO_DOWNLOAD);
     }
+    auto priors = handle_.file_priorities();
     handle_.resume();
 }
 
@@ -121,6 +121,13 @@ boost::int64_t DeltaDownloader::totalWantedDone(const QVector<int>& indexes)
 
 boost::int64_t DeltaDownloader::totalWantedDone(const QString& modName)
 {
+    const libtorrent::torrent_status status = handle_.status();
+    const libtorrent::torrent_status::state_t state = status.state;
+    if (state == libtorrent::torrent_status::state_t::checking_files ||
+            state == libtorrent::torrent_status::state_t::checking_resume_data)
+    {
+        return status.total_wanted_done;
+    }
     return totalWantedDone(patchIndexes(modName));
 }
 
@@ -135,6 +142,13 @@ boost::int64_t DeltaDownloader::totalWanted(const QVector<int>& indexes)
 
 boost::int64_t DeltaDownloader::totalWanted(const QString& modName)
 {
+    const libtorrent::torrent_status status = handle_.status();
+    const libtorrent::torrent_status::state_t state = status.state;
+    if (state == libtorrent::torrent_status::state_t::checking_files ||
+            state == libtorrent::torrent_status::state_t::checking_resume_data)
+    {
+        return status.total_wanted;
+    }
     return totalWanted(patchIndexes(modName));
 }
 

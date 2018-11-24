@@ -426,13 +426,13 @@ void Mod::updateStatus()
         {
             setStatus(SyncStatus::NO_PEERS);
         }
-        else if (sync_->folderPatching(key_))
-        {
-            setStatus(SyncStatus::PATCHING);
-        }
         else if (sync_->folderDownloadingPatches(key_))
         {
             setStatus(SyncStatus::DOWNLOADING_PATCHES);
+        }
+        else if (sync_->folderPatching(key_))
+        {
+            setStatus(SyncStatus::PATCHING);
         }
         else if (eta() > 0)
         {
@@ -461,17 +461,22 @@ QString Mod::progressStr()
     return toProgressStr(totalWanted_, totalWantedDone_);
 }
 
-QString Mod::bytesToMegasStr(const qint64 bytes)
+QString Mod::bytesToMegasCeilStr(const qint64 bytes)
 {
     return QString::number(1 + ((bytes - 1) / Constants::MEGA_DIVIDER));  // Ceil division
 }
 
-QString Mod::toProgressStr(const qint64 totalWanted, const qint64 totalWantedDone)
+QString Mod::toProgressStr(const qint64 totalWanted, qint64 totalWantedDone)
 {
     if (totalWanted == -1 || totalWantedDone == -1)
         return "???";
 
-    return QString("%1 / %2").arg(bytesToMegasStr(totalWantedDone)).arg(bytesToMegasStr(totalWanted));
+    // Do not ceil to 100 %
+    if (totalWantedDone < totalWanted)
+    {
+        totalWantedDone = totalWantedDone > Constants::MEGA_DIVIDER ? totalWantedDone - Constants::MEGA_DIVIDER : 0;
+    }
+    return QString("%1 / %2").arg(bytesToMegasCeilStr(totalWantedDone)).arg(bytesToMegasCeilStr(totalWanted));
 }
 
 void Mod::processCompletion()
