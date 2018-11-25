@@ -62,14 +62,13 @@ bool DeltaManager::patch(const QString& modName, const QString& key)
     keyHash_.insert(key, modName);
     LOG << "Starting updates";
     QMetaObject::invokeMethod(&updateTimer_, "start", Qt::QueuedConnection);
+    inDownload_.insert(modName);
+    downloader_->downloadPatch(modName);
     if (downloader_->patchDownloaded(modName))
     {
         inDownload_.remove(modName);
         patcher_->patch(SettingsModel::modDownloadPath() + "/" + modName);
-        return true;
     }
-    inDownload_.insert(modName);
-    downloader_->downloadPatch(modName);
     return true;
     //Patch will be recalled once download is completed.
 }

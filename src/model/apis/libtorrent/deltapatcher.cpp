@@ -134,6 +134,7 @@ void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches, int
         //Try as long as downloading and after that 10 times with 10s delays.
         if (handle_.status().is_finished)
         {
+            handle_.force_recheck();
             ++attempts;
         }
         QTimer::singleShot(10000, [=] {applyPatches(modPath, patches, attempts);});
