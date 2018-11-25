@@ -54,8 +54,6 @@ public:
     //Returns total bandwidths
     virtual qint64 download() const = 0;
     virtual qint64 upload() = 0;
-    //Shutdowns the sync
-    virtual void shutdown() = 0;
     //Sets global max upload
     virtual void setMaxUpload(const int limit) = 0;
     //Sets global max download

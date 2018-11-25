@@ -26,7 +26,7 @@ Mod::Mod(const QString& name, const QString& key, ISync* sync):
     setStatus(SyncStatus::STARTING);
     //Enables non lagging UI
     moveToThread(Global::workerThread);
-    qRegisterMetaType<QVector<int>>("QVector<int>");
+    qRegisterMetaType<QVector<int>>("QVector<int>"); //TODO: Remove, QML ?
     connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(repositoryChanged()));
     QMetaObject::invokeMethod(this, &Mod::threadConstructor, Qt::QueuedConnection);
 }
@@ -465,6 +465,9 @@ QString Mod::progressStr()
 
 QString Mod::bytesToMegasCeilStr(const qint64 bytes)
 {
+    if (bytes == 0)
+        return QString::number(0);
+
     return QString::number(1 + ((bytes - 1) / Constants::MEGA_DIVIDER));  // Ceil division
 }
 

@@ -12,6 +12,7 @@
 #include <QThread>
 #include <QDir>
 #include <QQueue>
+#include <QMutex>
 
 #pragma warning(push, 0)
 #include "libtorrent/torrent_handle.hpp"
@@ -32,15 +33,14 @@ public:
     //Creates a patch file synchronously.
     //Patch file is a 7zip archive consisting of all xdelta patches.
     bool delta(const QString& oldPath, QString laterDir);
-    static int latestVersion(const QString& modName, const QStringList& fileNames);
     static QStringList filterPatches(const QString& modPath, const QStringList& allPatches);
-    qint64 bytesPatched(const QString& modName) const;
+    qint64 bytesPatched(const QString& modName);
     //Returns total number of bytes in a patch when patch is being applied.
     //Returns zero otherwise.
-    qint64 totalBytes(const QString& modName = "") const;
+    qint64 totalBytes(const QString& modName);
     bool notPatching();
     void stop();    
-    bool patching(const QString& modName) const;
+    bool patching(const QString& modName);
 
 signals:
     void patched(QString modPath, bool success);
@@ -54,20 +54,22 @@ private:
     static const QString SEPARATOR;
     static const QString PATCH_DIR;
 
-    qint64 bytesPatched_;
-    qint64 totalBytes_;
+    QAtomicInteger<qint64> bytesPatched_;
+    QAtomicInteger<qint64> totalBytes_;
     QFileInfo* patchesFi_;
     QThread thread_;
     //Contains the name of the mod being patched.
     QString patchingMod_;
     Console* console_;
     libtorrent::torrent_handle handle_;
+    QMutex mutex_;
 
     bool extract(const QString& zipPath);
     bool createEmptyDir(QDir dir) const;
     bool patchExtracted(const QString& extractedPath, const QString& targetPath);
     void cleanUp(QDir& deltaDir, QDir& tmpDir);
     int latestVersion(const QString& modName) const;
+    static int latestVersion(const QString& modName, const QStringList& fileNames);
     //Applies single patch to mod dir
     bool patch(const QString& patch, const QString& modPath);
     QStringList removePatchesFromLatest(const QString& latestPath, const QString& deltaPath) const;

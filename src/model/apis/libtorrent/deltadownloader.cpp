@@ -72,8 +72,6 @@ bool DeltaDownloader::patchDownloaded(const QString& modName)
     const QVector<int> indexes = patchIndexes(modName);
     const boost::int64_t done = totalWantedDone(indexes);
     const boost::int64_t wanted = totalWanted(indexes);
-
-    LOG << modName << " download process: " << done << "/" << wanted;
     return done >= wanted;
 }
 

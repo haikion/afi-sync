@@ -66,8 +66,7 @@ void DeltaPatcher::stop()
 
 void DeltaPatcher::patch(const QString& modPath)
 {
-    QMetaObject::invokeMethod(this, "patchDirSync", Qt::QueuedConnection,
-                              Q_ARG(QString, modPath));
+    QMetaObject::invokeMethod(this, "patchDirSync", Qt::QueuedConnection, Q_ARG(QString, modPath));
 }
 
 void DeltaPatcher::patchDirSync(const QString& modPath)
@@ -77,7 +76,11 @@ void DeltaPatcher::patchDirSync(const QString& modPath)
     LOG << allPatches << " " << patchesDir.absolutePath()
         << " " << patchesFi_->absoluteFilePath() << modPath;
     QString modName = QFileInfo(modPath).fileName();
-    patchingMod_ = modName; //Needed for eta
+
+    mutex_.lock();
+    patchingMod_ = modName;
+    mutex_.unlock();
+
     QStringList patches = filterPatches(modPath, allPatches);
     if (patches.size() == 0)
     {
@@ -102,7 +105,11 @@ void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches, int
         //FAIL
         emit patched(modPath, false);
         bytesPatched_ = 0;
+
+        mutex_.lock();
         patchingMod_ = "";
+        mutex_.unlock();
+
         return;
     }
     if (patch(patches.first(), modPath))
@@ -113,7 +120,11 @@ void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches, int
             //SUCCESS
             emit patched(modPath, true);
             bytesPatched_ = 0;
+
+            mutex_.lock();
             patchingMod_ = "";
+            mutex_.unlock();
+
             return;
         }
         applyPatches(modPath, patches, attempts);
@@ -167,33 +178,15 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
     return patches;
 }
 
-qint64 DeltaPatcher::bytesPatched(const QString& modName) const
+qint64 DeltaPatcher::bytesPatched(const QString& modName)
 {
-    static const qint64 INTERVAL = 10;
-    static qint64 speed = 250;
-    static qint64 startTime = runningTimeS();
-    static qint64 prevBytesPatched = 0;
+    if (patching(modName))
+        return bytesPatched_;
 
-    if (bytesPatched_ == 0)
-        prevBytesPatched = 0; //bytesPatched was reseted
-    if (modName != patchingMod_)
-        return 0;
-
-    qint64 currentTime = runningTimeS();
-    //Step completed, re-estimate speed.
-    qint64 dTime = currentTime - startTime;
-    if (dTime > INTERVAL)
-    {
-        //FIXME: This reports 0 always?
-        speed = (bytesPatched_ - prevBytesPatched) / dTime;
-        startTime = currentTime;
-        LOG << "New patching speed estimation: " << speed << " bytes per second. patchingMod_ = " + patchingMod_;
-    }
-    prevBytesPatched = bytesPatched_;
-    return std::min(bytesPatched_, totalBytes_);
+    return 0;
 }
 
-qint64 DeltaPatcher::totalBytes(const QString& modName) const
+qint64 DeltaPatcher::totalBytes(const QString& modName)
 {
     if (patching(modName))
         return totalBytes_;
@@ -201,14 +194,20 @@ qint64 DeltaPatcher::totalBytes(const QString& modName) const
     return -1;
 }
 
-bool DeltaPatcher::patching(const QString& modName) const
+bool DeltaPatcher::patching(const QString& modName)
 {
-    return patchingMod_ == modName;
+    mutex_.lock();
+    const bool retVal = patchingMod_ == modName;
+    mutex_.unlock();
+    return retVal;
 }
 
 bool DeltaPatcher::notPatching()
 {
-    return patchingMod_.size() == 0;
+    mutex_.lock();
+    const bool retVal = patchingMod_.size() == 0;
+    mutex_.unlock();
+    return retVal;
 }
 
 //Synchronous patch function

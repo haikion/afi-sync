@@ -58,15 +58,17 @@ bool DeltaManager::patch(const QString& modName, const QString& key)
         return false;
     }
 
+    Q_ASSERT(key.size() > 0);
     keyHash_.insert(key, modName);
-    inDownload_.insert(modName);
     LOG << "Starting updates";
     QMetaObject::invokeMethod(&updateTimer_, "start", Qt::QueuedConnection);
     if (downloader_->patchDownloaded(modName))
     {
+        inDownload_.remove(modName);
         patcher_->patch(SettingsModel::modDownloadPath() + "/" + modName);
         return true;
     }
+    inDownload_.insert(modName);
     downloader_->downloadPatch(modName);
     return true;
     //Patch will be recalled once download is completed.
@@ -152,8 +154,8 @@ QStringList DeltaManager::folderKeys()
 
 void DeltaManager::handlePatched(const QString& modPath, bool success)
 {
-    QString modName = QFileInfo(modPath).fileName();
-    QString key = keyHash_.key(modName);
+    const QString modName = QFileInfo(modPath).fileName();
+    const QString key = keyHash_.key(modName);
     LOG << key << " " << modName;
     keyHash_.remove(key);
     if (keyHash_.empty())

@@ -33,15 +33,15 @@ const int LibTorrentApi::NOT_FOUND = -404;
 const QString LibTorrentApi::ERROR_KEY_NOT_FOUND = "ERROR: not found. key = ";
 const QString LibTorrentApi::ERROR_SESSION_NULL = "ERROR: session is null.";
 
-LibTorrentApi::LibTorrentApi(QObject *parent) :
-    QObject(parent)
+LibTorrentApi::LibTorrentApi() :
+    QObject(nullptr)
 {
     generalInit();
     QMetaObject::invokeMethod(this, &LibTorrentApi::init, Qt::QueuedConnection);
 }
 
-LibTorrentApi::LibTorrentApi(const QString& deltaUpdatesKey, QObject *parent):
-    QObject(parent),
+LibTorrentApi::LibTorrentApi(const QString& deltaUpdatesKey):
+    QObject(nullptr), // moveToThread cannot be used with parent
     deltaUpdatesKey_(deltaUpdatesKey)
 {
     generalInit();
@@ -70,6 +70,7 @@ void LibTorrentApi::generalInit()
 {
     session_ = nullptr;
     deltaManager_ = nullptr;
+    alertTimer_ = nullptr;
     numResumeData_ = 0;
     settingsPath_ = SettingsModel::syncSettingsPath() + "/libtorrent.dat";
     checkingSpeed_ = 20000000;
@@ -79,14 +80,15 @@ void LibTorrentApi::generalInit()
 void LibTorrentApi::generalThreadInit()
 {
     createSession();
-    connect(&alertTimer_, &QTimer::timeout, this, &LibTorrentApi::handleAlerts);
-    alertTimer_.setInterval(1000);
-    alertTimer_.start();
+    alertTimer_ = new QTimer(this);
+    connect(alertTimer_, &QTimer::timeout, this, &LibTorrentApi::handleAlerts);
+    alertTimer_->setInterval(1000);
+    alertTimer_->start();
 }
 
 LibTorrentApi::~LibTorrentApi()
 {
-    shutdown();
+    QMetaObject::invokeMethod(this, &LibTorrentApi::shutdown, Qt::BlockingQueuedConnection);
 }
 
 bool LibTorrentApi::createSession()
@@ -477,12 +479,16 @@ void LibTorrentApi::disableQueue(const QString& key)
 
 qint64 LibTorrentApi::folderTotalWanted(const QString& key)
 {
+    const lt::torrent_status status = getHandle(key).status();
     if (deltaManager_ && deltaManager_->contains(key))
     {
+        if (folderChecking(status))
+        {
+            return status.total_wanted;
+        }
         return deltaManager_->totalWanted(key);
     }
 
-    const lt::torrent_status status = getHandle(key).status();
     if (status.state == lt::torrent_status::downloading_metadata)
     {
         return -1;
@@ -492,12 +498,16 @@ qint64 LibTorrentApi::folderTotalWanted(const QString& key)
 
 qint64 LibTorrentApi::folderTotalWantedDone(const QString& key)
 {
+    const lt::torrent_status status = getHandle(key).status();
     if (deltaManager_ && deltaManager_->contains(key))
     {
+        if (folderChecking(status))
+        {
+            return status.total_wanted_done;
+        }
         return deltaManager_->totalWantedDone(key);
     }
 
-    lt::torrent_status status = getHandle(key).status();
     if (status.state == lt::torrent_status::downloading_metadata)
     {
         return -1;
@@ -631,7 +641,7 @@ void LibTorrentApi::shutdown()
 {
     bool deleteSession = true;
 
-    alertTimer_.stop();
+    alertTimer_->stop();
     LOG << "Alert timer stopped";
     saveSettings();
     generateResumeData();
@@ -759,7 +769,7 @@ void LibTorrentApi::start()
         LOG << "Delta manager restored.";
     }
 
-    alertTimer_.start();
+    alertTimer_->start();
 }
 
 void LibTorrentApi::handleAlerts()
@@ -1045,7 +1055,6 @@ void LibTorrentApi::handlePatched(const QString& key, const QString& modName, bo
 {
     Q_UNUSED(success)
 
-    QString path = SettingsModel::modDownloadPath();
     LOG << "Patching done. Readding mod. " << key << " " << modName << " " << success;
     //Re-add folder and prevent infinite loop by patch refusal.
     addFolder(key, modName, false);

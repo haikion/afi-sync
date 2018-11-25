@@ -98,11 +98,11 @@ void TreeModel::createSync(const JsonReader& jsonReader)
     const QString deltaUpdatesKey = jsonReader.deltaUpdatesKey();
     if (deltaUpdatesKey != QString())
     {
-        Global::sync = new LibTorrentApi(deltaUpdatesKey, this);
+        Global::sync = new LibTorrentApi(deltaUpdatesKey);
         sync_ = Global::sync;
         return;
     }
-    Global::sync = new LibTorrentApi(this);
+    Global::sync = new LibTorrentApi();
     sync_ = Global::sync;
 }
 
@@ -115,6 +115,7 @@ TreeModel::~TreeModel()
 {
     LOG;
     DeletableDetector::printDeletables(repositories_);
+    delete sync_;
 }
 
 void TreeModel::stopUpdates()

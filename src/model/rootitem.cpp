@@ -227,7 +227,6 @@ void RootItem::resetSyncSettings()
             //repo->checkboxClicked(true);
         }
     }
-    sync_->shutdown();
     //Brute way to avoid "file in use" while sync is shutting down.
     QDir dir(SettingsModel::syncSettingsPath());
     int attempts = 0;

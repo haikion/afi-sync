@@ -27,8 +27,8 @@ class LibTorrentApi : public QObject, public ISync
     Q_INTERFACES(ISync)
 
 public:
-    explicit LibTorrentApi(QObject *parent = nullptr);
-    explicit LibTorrentApi(const QString& deltaUpdatesKey, QObject *parent = nullptr);
+    explicit LibTorrentApi();
+    explicit LibTorrentApi(const QString& deltaUpdatesKey);
     ~LibTorrentApi();
 
     virtual void setDeltaUpdatesFolder(const QString& key);
@@ -66,8 +66,6 @@ public:
     virtual QString folderError(const QString& key);
     //Returns file system path of the folder with specific key.
     virtual QString folderPath(const QString& key);
-    //Shutdowns the sync
-    virtual void shutdown();
     //Total bandwiths
     virtual qint64 download() const;
     virtual qint64 upload();
@@ -97,6 +95,7 @@ private slots:
     void setPortSlot(int port);
     void enableDeltaUpdatesSlot();
     void initDelta();
+    void shutdown();
 
 signals:
     void initCompleted();
@@ -106,7 +105,7 @@ private:
     static const QString ERROR_KEY_NOT_FOUND;
     static const QString ERROR_SESSION_NULL;
 
-    QTimer alertTimer_;
+    QTimer* alertTimer_;
     libtorrent::session* session_;
     CiHash<libtorrent::torrent_handle> keyHash_;
     CiHash<libtorrent::add_torrent_params> torrentParams_;
