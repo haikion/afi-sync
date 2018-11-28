@@ -48,7 +48,6 @@ signals:
 
 private slots:
     void update();
-    void removeOrphans();
     void periodicRepoUpdate();
 
 private:

@@ -33,16 +33,7 @@ TreeModel::TreeModel(QObject* parent):
     LOG;
     createSync(jsonReader_);
     repositories_ = jsonReader_.repositories(sync_);
-
     LOG << "readJson completed";
-    if (sync_->ready())
-    {
-        removeOrphans();
-    }
-    else
-    {
-        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(removeOrphans()));
-    }
 
     updateTimer_.setInterval(1000);
     connect(&updateTimer_, &QTimer::timeout, this, &TreeModel::update);
@@ -51,35 +42,6 @@ TreeModel::TreeModel(QObject* parent):
     repoUpdateTimer_.setInterval(30000);
     connect(&repoUpdateTimer_, &QTimer::timeout, this, &TreeModel::periodicRepoUpdate);
     repoUpdateTimer_.start();
-}
-
-// Removes sync dirs which
-// are not active in any repository in this program.
-void TreeModel::removeOrphans()
-{
-    QSet<QString> keys;
-
-    for (const Repository* repository : repositories_)
-    {
-        for (const Mod* mod : repository->mods())
-        {
-            LOG << "Processing mod = " << mod->name()
-                     << " key = " << mod->key()
-                     << " repository = " << repository->name();
-            keys.insert(mod->key());
-        }
-    }
-    for (const QString& key : sync_->folderKeys())
-    {
-        if (!keys.contains(key))
-        {
-            //Not found
-            LOG << "Deleting folder with key: " << key;
-            sync_->removeFolder(key);
-        }
-    }
-    sync_->cleanUnusedFiles(keys);
-    LOG << "Done";
 }
 
 //TODO: Remove
