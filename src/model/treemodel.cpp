@@ -35,7 +35,6 @@ TreeModel::TreeModel(QObject* parent):
     repositories_ = jsonReader_.repositories(sync_);
 
     LOG << "readJson completed";
-    // TODO: Simply do not add torrents that are not in repositories.json
     if (sync_->ready())
     {
         removeOrphans();
