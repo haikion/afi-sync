@@ -21,6 +21,7 @@
 #include "modadapter.h"
 #include "deletabledetector.h"
 #include "settingsmodel.h"
+#include "processmonitor.h"
 
 TreeModel::TreeModel(QObject* parent):
     QObject(parent),
@@ -30,9 +31,8 @@ TreeModel::TreeModel(QObject* parent):
     sync_(nullptr)
 {
     LOG;
-    JsonReader jsonReader;
-    createSync(jsonReader);
-    repositories_ = jsonReader.repositories(sync_);
+    createSync(jsonReader_);
+    repositories_ = jsonReader_.repositories(sync_);
 
     LOG << "readJson completed";
     // TODO: Simply do not add torrents that are not in repositories.json
@@ -45,9 +45,13 @@ TreeModel::TreeModel(QObject* parent):
         connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(removeOrphans()));
     }
 
-    updateTimer.setInterval(1000);
-    connect(&updateTimer, &QTimer::timeout, this, &TreeModel::update);
-    updateTimer.start();
+    updateTimer_.setInterval(1000);
+    connect(&updateTimer_, &QTimer::timeout, this, &TreeModel::update);
+    updateTimer_.start();
+
+    repoUpdateTimer_.setInterval(30000);
+    connect(&repoUpdateTimer_, &QTimer::timeout, this, &TreeModel::periodicRepoUpdate);
+    repoUpdateTimer_.start();
 }
 
 // Removes sync dirs which
@@ -224,6 +228,43 @@ void TreeModel::updateSpeed()
 {
     download_ = sync_->download();
     upload_ = sync_->upload();
+}
+
+void TreeModel::periodicRepoUpdate()
+{
+    for (Repository* repo : repositories_)
+    {
+        const QString status = repo->statusStr();
+        if (status != SyncStatus::READY &&
+                status != SyncStatus::READY_PAUSED && status != SyncStatus::INACTIVE)
+        {
+            LOG << "Periodic update disabled, " << repo->name() << " " << status;
+            return;
+        }
+    }
+    if (ProcessMonitor::arma3Running())
+    {
+        LOG << "Repositories update ignored because Arma 3 is running";
+        return;
+    }
+    if (jsonReader_.updateAvailable())
+    {
+        LOG << "Updating repositories";
+        jsonReader_.repositories(sync_, repositories_);
+        emit repositoriesChanged(toIrepositories(repositories_));
+        return;
+    }
+    LOG << "No repo updates";
+}
+
+QList<IRepository*> TreeModel::toIrepositories(const QList<Repository*> repositories)
+{
+    QList<IRepository*> irepositories;
+    for (Repository* repository : repositories)
+    {
+        irepositories.append(repository);
+    }
+    return irepositories;
 }
 
 bool TreeModel::ready(const QModelIndex& idx) const

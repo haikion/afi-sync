@@ -68,6 +68,8 @@ int gui(int argc, char* argv[])
     mainWindow->show();
     mainWindow->init(treeModel, new SettingsUiModel());
     mainWindow->treeWidget()->setRepositories(treeModel->repositories());
+    QObject::connect(treeModel, &TreeModel::repositoriesChanged,
+                     mainWindow->treeWidget(), &AsTreeWidget::setRepositories);
 
     const int rVal = app.exec();
     #ifndef QT_DEBUG

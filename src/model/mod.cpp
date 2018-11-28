@@ -27,7 +27,6 @@ Mod::Mod(const QString& name, const QString& key, ISync* sync):
     //Enables non lagging UI
     moveToThread(Global::workerThread);
     qRegisterMetaType<QVector<int>>("QVector<int>"); //TODO: Remove, QML ?
-    connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(repositoryChanged()));
     QMetaObject::invokeMethod(this, &Mod::threadConstructor, Qt::QueuedConnection);
 }
 
@@ -46,8 +45,8 @@ void Mod::threadConstructor()
     updateTimer_->setTimerType(Qt::VeryCoarseTimer);
     updateTimer_->setInterval(1000);
     connect(updateTimer_, &QTimer::timeout, this, &Mod::update);
+    connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(repositoryChanged()));
 }
-
 
 QString Mod::path() const
 {
@@ -270,19 +269,19 @@ QString Mod::key() const
 
 void Mod::startUpdates()
 {
-    if (sync_->ready())
-    {
-        QMetaObject::invokeMethod(this, &Mod::startUpdatesSlot, Qt::QueuedConnection);
-    }
-    else
-    {
-        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(startUpdatesSlot()));
-    }
+    QMetaObject::invokeMethod(this, &Mod::startUpdatesSlot, Qt::QueuedConnection);
 }
 
 void Mod::startUpdatesSlot()
 {
-    updateTimer_->start();
+    if (sync_->ready())
+    {
+        updateTimer_->start();
+    }
+    else
+    {
+        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), updateTimer_, SLOT(start()));
+    }
 }
 
 //This should always be run in UI Thread

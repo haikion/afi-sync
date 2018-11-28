@@ -44,6 +44,9 @@ public:
     virtual bool ticked();
     virtual void setTicked(bool ticked);
     virtual QString progressStr();
+    void setServerAddress(const QString& serverAddress);
+    void setPort(const unsigned& port);
+    void setPassword(const QString& password);
 
 private:
     ISync* sync_;

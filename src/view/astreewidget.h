@@ -16,11 +16,9 @@ class AsTreeWidget : public QTreeWidget
 public:
     explicit AsTreeWidget(QWidget* parent = 0);
 
-    void setRepositories(QList<IRepository*> repositories);
-
-
 public slots:
     void update();
+    void setRepositories(QList<IRepository*> repositories);
 
 private slots:
     void showContextMenu(const QPoint& point);

@@ -24,7 +24,8 @@ public:
     void fillEverything(RootItem *root, const QString& jsonFilePath);
     bool updateAvailable();
     QList<Repository*> repositories(ISync* sync);
-    QString deltaUpdatesKey() const;
+    QString deltaUpdatesKey() const;    
+    void repositories(ISync* sync, QList<Repository*>& repositories);
 
 private:
     static const QString SEPARATOR;
@@ -40,11 +41,13 @@ private:
     QString updateUrl(const QVariantMap& jsonMap) const;
     QHash<QString, Repository*> addedRepos(const RootItem* root) const;
     QSet<QString> addedMods(const Repository* repo) const;
-    void removeDeprecatedRepos(RootItem* root, const QSet<QString> jsonRepos);
+    void removeDeprecatedRepos(QList<Repository*>& repositoriest, const QSet<QString> jsonRepos);
     void removeDeprecatedMods(Repository* repo, const QSet<QString> jsonMods);
     QHash<QString, Mod*> createModHash(const RootItem* root) const;
     QByteArray fetchJsonBytes(QString url);
     QVariantMap bytesToJson(const QByteArray& bytes) const;
+    static Repository* findRepoByName(const QString& name, QList<Repository*> repositories);
+    void readJsonFile();
 };
 
 #endif // JSONREADER_H

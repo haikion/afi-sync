@@ -43,9 +43,13 @@ public slots:
     void updateSpeed();
     bool ready(const QModelIndex& idx) const;
 
+signals:
+    void repositoriesChanged(QList<IRepository*> repositories);
+
 private slots:
     void update();
     void removeOrphans();
+    void periodicRepoUpdate();
 
 private:
     RootItem* rootItem_;
@@ -53,8 +57,10 @@ private:
     unsigned upload_;
     bool haltGui_;
     QList<Repository*> repositories_;
-    QTimer updateTimer;
+    QTimer updateTimer_;
     ISync* sync_;
+    QTimer repoUpdateTimer_;
+    JsonReader jsonReader_;
 
     void setupModelData(const QStringList& lines, TreeItem* parent);
     void postInit();
@@ -62,6 +68,8 @@ private:
     QSet<Mod*> mods() const;
     void manageDeltaUpdates(const JsonReader& jsonReader);
     void createSync(const JsonReader& jsonReader);
+    void updateRepositories();
+    static QList<IRepository*> toIrepositories(const QList<Repository*> repositories);
 };
 
 #endif // TREEMODEL_H

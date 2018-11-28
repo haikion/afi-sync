@@ -91,6 +91,21 @@ QString Repository::progressStr()
     return Mod::toProgressStr(totalWanted + totalWantedDelta, totalWantedDone + totalWantedDoneDelta);
 }
 
+void Repository::setServerAddress(const QString& serverAddress)
+{
+    serverAddress_ = serverAddress;
+}
+
+void Repository::setPort(const unsigned& port)
+{
+    port_ = port;
+}
+
+void Repository::setPassword(const QString& password)
+{
+    password_ = password;
+}
+
 void Repository::startUpdates()
 {
     LOG;

@@ -13,6 +13,7 @@
 #include "repository.h"
 #include "rootitem.h"
 #include "settingsmodel.h"
+#include "treemodel.h"
 
 const QString JsonReader::SEPARATOR = "|||";
 
@@ -22,17 +23,15 @@ JsonReader::JsonReader(ISync* sync):
     downloadedPath_(repositoriesPath_ + "_new"),
     sync_(sync)
 {
-    jsonMap_ = qvariant_cast<QVariantMap>(readJsonFile(repositoriesPath_).toVariant());
-    const QVariantMap jsonMapUpdate = updateJson(updateUrl(jsonMap_));
-    if (jsonMapUpdate != QVariantMap())
-        jsonMap_ = jsonMapUpdate;
-
+    readJsonFile();
     if (jsonMap_ == QVariantMap())
     {
         LOG_ERROR << "Json file parse failure. Exiting...";
         exit(2);
     }
 }
+
+
 
 QHash<QString, Repository*> JsonReader::addedRepos(const RootItem* root) const
 {
@@ -78,21 +77,6 @@ void JsonReader::removeDeprecatedMods(Repository* repo, const QSet<QString> json
     }
 }
 
-void JsonReader::removeDeprecatedRepos(RootItem* root, const QSet<QString> jsonRepos)
-{
-    LOG << "Checking deprecated mods...";
-
-    QHash<QString, Repository*> adRepos = addedRepos(root);
-    QSet<QString> depreRepos = adRepos.keys().toSet() - jsonRepos;
-    for (const QString& repoName : depreRepos)
-    {
-        LOG << "Removing deprecated repo: " << repoName;
-        Repository* repo = adRepos.value(repoName);
-        root->removeChild(repo);
-        delete repo;
-    }
-}
-
 QString JsonReader::updateUrl(const QVariantMap& jsonMap) const
 {
     QString updateUrl = qvariant_cast<QString>(jsonMap.value("updateUrl"));
@@ -107,17 +91,61 @@ bool JsonReader::updateAvailable()
 QList<Repository*> JsonReader::repositories(ISync* sync)
 {
     QList<Repository*> retVal;
-    const QList<QVariant> repositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
+    repositories(sync, retVal);
+    return retVal;
+}
+
+Repository* JsonReader::findRepoByName(const QString& name, QList<Repository*> repositories)
+{
+    for (Repository* repository : repositories)
+    {
+        if (repository->name() == name)
+        {
+            return repository;
+        }
+    }
+    return nullptr;
+}
+
+void JsonReader::readJsonFile()
+{
+    jsonMap_ = qvariant_cast<QVariantMap>(readJsonFile(repositoriesPath_).toVariant());
+    const QVariantMap jsonMapUpdate = updateJson(updateUrl(jsonMap_));
+    if (jsonMapUpdate != QVariantMap())
+        jsonMap_ = jsonMapUpdate;
+}
+
+void JsonReader::repositories(ISync* sync, QList<Repository*>& repositories)
+{
+    readJsonFile();
+    const QList<QVariant> jsonRepositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
     QMap<QString, Mod*> modMap; // Add same key mods only once
-    for (const QVariant& repoVar : repositories)
+    for (Repository* repository : repositories)
+    {
+        for (Mod* mod : repository->mods())
+        {
+            modMap.insert(mod->key(), mod);
+        }
+    }
+    QSet<QString> jsonKeys;
+    for (const QVariant& repoVar : jsonRepositories)
     {
         QVariantMap repository = qvariant_cast<QVariantMap>(repoVar);
         QString repoName = qvariant_cast<QString>(repository.value("name"));
-        Repository* repo;
+        Repository* repo = findRepoByName(repoName, repositories);
         const QString serverAddress = qvariant_cast<QString>(repository.value("serverAddress"));
         const unsigned serverPort = qvariant_cast<unsigned>(repository.value("serverPort"));
         const QString password = qvariant_cast<QString>(repository.value("password", ""));
-        repo = new Repository(repoName, serverAddress, serverPort, password, sync_);
+        if (repo == nullptr)
+        {
+            repo = new Repository(repoName, serverAddress, serverPort, password, sync_);
+        }
+        else
+        {
+            repo->setServerAddress(serverAddress);
+            repo->setPort(serverPort);
+            repo->setPassword(password);
+        }
         repo->setBattlEyeEnabled(qvariant_cast<bool>(repository.value("battlEyeEnabled", true)));
 
         QList<QVariant> mods = qvariant_cast<QList<QVariant>>(repository.value("mods"));
@@ -126,6 +154,7 @@ QList<Repository*> JsonReader::repositories(ISync* sync)
             const QVariantMap mod = qvariant_cast<QVariantMap>(mods.at(i));
             const QString key = qvariant_cast<QString>(mod.value("key")).toLower();
             LOG << "key parsed. key = " << key;
+            jsonKeys.insert(key);
             if (repo->contains(key))
             {
                 LOG << "Key " << key << " already in " << repoName;
@@ -138,11 +167,11 @@ QList<Repository*> JsonReader::repositories(ISync* sync)
             newMod->setFileSize(qvariant_cast<quint64>(mod.value("fileSize", "0")));
             new ModAdapter(newMod, repo, mod.value("optional", false).toBool(), i);
         }
+        removeDeprecatedMods(repo, jsonKeys);
         repo->startUpdates();
-        retVal.append(repo);
+        if (!repositories.contains(repo))
+            repositories.append(repo);
     }
-
-    return retVal;
 }
 
 QJsonDocument JsonReader::readJsonFile(const QString& path) const
