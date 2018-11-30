@@ -6,6 +6,7 @@
 class IBandwidthMeter
 {
 public:
+    virtual ~IBandwidthMeter() = default;
     virtual QString uploadStr() const = 0;
     virtual QString downloadStr() const = 0;
 };

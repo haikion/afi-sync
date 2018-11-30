@@ -6,6 +6,7 @@
 class ISettings
 {
 public:
+    virtual ~ISettings() = default;
     virtual QString arma3Path() = 0;
     virtual void resetArma3Path() = 0;
     virtual void setArma3Path(QString path) = 0;
@@ -40,8 +41,6 @@ public:
 
     virtual bool deltaPatchingEnabled() const = 0;
     virtual void setDeltaPatchingEnabled(const bool enabled) = 0;
-
-    virtual ~ISettings() {}
 };
 
 #endif // ISETTINGS_H

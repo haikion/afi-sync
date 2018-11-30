@@ -57,8 +57,8 @@ private:
     QSet<Repository*> repositories_;
     unsigned waitTime_;
     QVector<ModAdapter*> adapters_;
-    QAtomicInteger<qint64> totalWantedDone_;
     QAtomicInteger<qint64> totalWanted_;
+    QAtomicInteger<qint64> totalWantedDone_;
     QMutex repositoriesMutex_;
 
     void buildPathHash();

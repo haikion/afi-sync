@@ -327,6 +327,7 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
     }
 }
 
+// TODO: Remove, ETA
 int LibTorrentApi::folderEta(const QString& key)
 {
    lt::torrent_status status = getHandle(key).status();
@@ -406,6 +407,7 @@ int LibTorrentApi::queuedDownloadEta(const lt::torrent_status& status) const
     return (totalBytesToDownload / download()) + (totalBytesToCheck / checkingSpeed_);
 }
 
+//TODO: Remove ETA
 int LibTorrentApi::queuedCheckingEta(const lt::torrent_status& status) const
 {
     //Caching

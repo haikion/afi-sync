@@ -29,6 +29,7 @@ namespace SyncStatus {
 class ISyncItem
 {
 public:
+    virtual ~ISyncItem() = default;
     virtual QString name() const = 0;
     virtual QString statusStr() = 0;
     virtual QString etaStr() const = 0;
