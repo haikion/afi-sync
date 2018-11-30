@@ -503,11 +503,7 @@ qint64 LibTorrentApi::folderTotalWantedDone(const QString& key)
     const lt::torrent_status status = getHandle(key).status();
     if (deltaManager_ && deltaManager_->contains(key))
     {
-        if (folderChecking(status))
-        {
-            return status.total_wanted_done;
-        }
-        return deltaManager_->totalWantedDone(key);
+        return folderChecking(status) ? status.total_wanted_done : deltaManager_->totalWantedDone(key);
     }
 
     if (status.state == lt::torrent_status::downloading_metadata)

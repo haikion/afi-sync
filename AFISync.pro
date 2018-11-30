@@ -32,6 +32,7 @@ win32 {
 
 unix {
    DEFINES += BOOST_LOG_DYN_LINK
+   QMAKE_CXXFLAGS += -Wno-unknown-pragmas
    LIBS += -lboost_system -lboost_atomic -lboost_random -lboost_date_time -lboost_log_setup -lboost_filesystem -lboost_log -lboost_thread -ltorrent-rasterbar
 }
 
