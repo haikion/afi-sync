@@ -431,6 +431,10 @@ void Mod::updateStatus()
         {
             setStatus(SyncStatus::DOWNLOADING_PATCHES);
         }
+        else if (sync_->folderExtractingPatch(key_))
+        {
+            setStatus(SyncStatus::EXTRACTING_PATCH);
+        }
         else if (sync_->folderPatching(key_))
         {
             setStatus(SyncStatus::PATCHING);

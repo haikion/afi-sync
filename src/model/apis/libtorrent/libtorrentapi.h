@@ -21,7 +21,7 @@
 #include "speedestimator.h"
 #include "deltamanager.h"
 
-class LibTorrentApi : public QObject, public ISync
+class LibTorrentApi : public QObject, virtual public ISync
 {
     Q_OBJECT
     Q_INTERFACES(ISync)
@@ -84,6 +84,7 @@ public:
     virtual qint64 folderTotalWanted(const QString& key);
     virtual qint64 folderTotalWantedDone(const QString& key);
     virtual void cleanUnusedFiles(const QSet<QString> usedKeys);
+    virtual bool folderExtractingPatch(const QString& key);
 
 private slots:
     void handleAlerts();

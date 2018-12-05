@@ -197,6 +197,15 @@ bool DeltaManager::queued(const QString& key)
     return downloader_->patchDownloaded(modName) && !patcher_->patching(modName);
 }
 
+bool DeltaManager::patchExtracting(const QString& key)
+{
+    const QString modName = keyHash_.value(key, "");
+    if (modName.isEmpty())
+        return false;
+
+    return patcher_->patching(modName) && patcher_->patchExtracting();
+}
+
 QSet<QString> DeltaManager::torrentFilesUpper()
 {
     QSet<QString> rVal;

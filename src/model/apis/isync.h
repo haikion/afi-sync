@@ -9,7 +9,7 @@
 class ISync
 {
 public:
-    virtual ~ISync() {}
+    virtual ~ISync() = default;
 
     virtual void setDeltaUpdatesFolder(const QString& key) = 0;
     virtual QString deltaUpdatesKey() = 0;
@@ -36,6 +36,7 @@ public:
     virtual bool folderPatching(const QString& key) = 0;
     //Returns true if downloading patches for specific folder.
     virtual bool folderDownloadingPatches(const QString& key) = 0;
+    virtual bool folderExtractingPatch(const QString& key) = 0;
     //Removes folder with specific key.
     virtual void removeFolder(const QString& key) = 0;
     //Returns list of files in folder in upper case unix (separator = /) format. Example: "C:/MODS/@MOD/FILE.PBO"

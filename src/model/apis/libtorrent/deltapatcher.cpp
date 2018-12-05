@@ -29,6 +29,7 @@ const QString DeltaPatcher::PATCH_DIR = "delta_patch";
 DeltaPatcher::DeltaPatcher(const QString& patchesPath, libtorrent::torrent_handle handle):
     QObject(nullptr),
     bytesPatched_(0),
+    extractingPatches_(false),
     totalBytes_(0),
     handle_(handle)
 {
@@ -405,14 +406,21 @@ QStringList DeltaPatcher::removePatchesFromLatest(const QString& latestPath, con
 
 bool DeltaPatcher::extract(const QString& zipPath)
 {
+    extractingPatches_ = true;
     LOG << "Extracting " << zipPath;
     QFileInfo fi = QFileInfo(zipPath);
     console_->runCmd(SZIP_EXECUTABLE + " -y x \""
            + QDir::toNativeSeparators(zipPath)
            + "\" -o\"" + QDir::toNativeSeparators(fi.absolutePath()) + "\"");
+    extractingPatches_ = false;
     if (QDir(fi.absolutePath() + "/" + PATCH_DIR).exists()) //7z exits with 0 regardless
         return true;
     return false;
+}
+
+bool DeltaPatcher::patchExtracting()
+{
+    return extractingPatches_;
 }
 
 void DeltaPatcher::compress(const QString& dir, const QString& archivePath)

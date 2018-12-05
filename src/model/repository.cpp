@@ -36,7 +36,6 @@ void Repository::update()
 
 void Repository::stopUpdates()
 {
-    LOG;
     for (Mod* mod : mods())
     {
         mod->stopUpdates();
@@ -108,7 +107,6 @@ void Repository::setPassword(const QString& password)
 
 void Repository::startUpdates()
 {
-    LOG;
     for (Mod* mod : mods())
     {
         mod->startUpdates();

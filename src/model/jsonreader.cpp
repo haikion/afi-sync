@@ -142,6 +142,7 @@ void JsonReader::repositories(ISync* sync, QList<Repository*>& repositories)
         }
         else
         {
+            repo->stopUpdates();
             repo->setServerAddress(serverAddress);
             repo->setPort(serverPort);
             repo->setPassword(password);
@@ -153,13 +154,9 @@ void JsonReader::repositories(ISync* sync, QList<Repository*>& repositories)
         {
             const QVariantMap mod = qvariant_cast<QVariantMap>(mods.at(i));
             const QString key = qvariant_cast<QString>(mod.value("key")).toLower();
-            LOG << "key parsed. key = " << key;
             jsonKeys.insert(key);
             if (repo->contains(key))
-            {
-                LOG << "Key " << key << " already in " << repoName;
-                continue;
-            }
+                continue; // Mod is already included in the repository.
 
             const QString modName = mod.value("name").toString().toLower();
             Mod* newMod = modMap.contains(key) ? modMap.value(key) : new Mod(modName, key, sync);

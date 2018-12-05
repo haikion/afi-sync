@@ -41,6 +41,7 @@ public:
     bool notPatching();
     void stop();    
     bool patching(const QString& modName);
+    bool patchExtracting();
 
 signals:
     void patched(QString modPath, bool success);
@@ -55,6 +56,7 @@ private:
     static const QString PATCH_DIR;
 
     QAtomicInteger<qint64> bytesPatched_;
+    std::atomic<bool> extractingPatches_;
     QAtomicInteger<qint64> totalBytes_;
     QFileInfo* patchesFi_;
     QThread thread_;

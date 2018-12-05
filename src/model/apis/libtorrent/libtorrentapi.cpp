@@ -468,6 +468,11 @@ bool LibTorrentApi::folderDownloadingPatches(const QString& key)
     return deltaManager_ && deltaManager_->patchDownloading(key);
 }
 
+bool LibTorrentApi::folderExtractingPatch(const QString& key)
+{
+    return deltaManager_ && deltaManager_->patchExtracting(key);
+}
+
 void LibTorrentApi::disableQueue(const QString& key)
 {
     lt::torrent_handle handle = getHandle(key);
@@ -481,21 +486,14 @@ void LibTorrentApi::disableQueue(const QString& key)
 
 qint64 LibTorrentApi::folderTotalWanted(const QString& key)
 {
-    const lt::torrent_status status = getHandle(key).status();
+    const lt::torrent_handle handle = getHandle(key);
     if (deltaManager_ && deltaManager_->contains(key))
     {
-        if (folderChecking(status))
-        {
-            return status.total_wanted;
-        }
-        return deltaManager_->totalWanted(key);
+        return folderChecking(status) ? handle.get_torrent_info().total_size() : deltaManager_->totalWanted(key);
     }
 
-    if (status.state == lt::torrent_status::downloading_metadata)
-    {
-        return -1;
-    }
-    return status.total_wanted;
+    const lt::torrent_status status = handle.status();
+    return status.state == lt::torrent_status::downloading_metadata ? -1 : status.total_wanted;
 }
 
 qint64 LibTorrentApi::folderTotalWantedDone(const QString& key)
@@ -503,7 +501,8 @@ qint64 LibTorrentApi::folderTotalWantedDone(const QString& key)
     const lt::torrent_status status = getHandle(key).status();
     if (deltaManager_ && deltaManager_->contains(key))
     {
-        return folderChecking(status) ? status.total_wanted_done : deltaManager_->totalWantedDone(key);
+        // total_wanted_done is 0 when checking
+        return folderChecking(status) ? status.total_done : deltaManager_->totalWantedDone(key);
     }
 
     if (status.state == lt::torrent_status::downloading_metadata)

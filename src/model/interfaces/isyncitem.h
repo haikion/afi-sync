@@ -7,6 +7,7 @@
 namespace SyncStatus {
     static const QString DOWNLOADING = "Downloading...";
     static const QString DOWNLOADING_PATCHES = "Downloading Patch...";
+    static const QString EXTRACTING_PATCH = "Extracting Patch...";
     static const QString READY = "Ready";
     static const QString READY_PAUSED = "Ready and Paused";
     static const QString NO_SYNC_CONNECTION = "No Sync Connection.";
