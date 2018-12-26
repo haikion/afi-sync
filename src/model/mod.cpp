@@ -116,7 +116,7 @@ void Mod::moveFiles()
 {
     if (sync_->folderExists(key_))
     {
-        sync_->setFolderPath(key_, path());
+        sync_->setFolderPath(key_, SettingsModel::modDownloadPath());
     }
 }
 

@@ -487,12 +487,12 @@ void LibTorrentApi::disableQueue(const QString& key)
 qint64 LibTorrentApi::folderTotalWanted(const QString& key)
 {
     const lt::torrent_handle handle = getHandle(key);
+    const lt::torrent_status status = handle.status();
     if (deltaManager_ && deltaManager_->contains(key))
     {
         return folderChecking(status) ? handle.get_torrent_info().total_size() : deltaManager_->totalWanted(key);
     }
 
-    const lt::torrent_status status = handle.status();
     return status.state == lt::torrent_status::downloading_metadata ? -1 : status.total_wanted;
 }
 
