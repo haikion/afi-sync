@@ -54,8 +54,9 @@ private:
     QSet<QString> inDownload_;
     libtorrent::torrent_handle handle_;
     QTimer updateTimer_;
-    QSet<QString> torrentFilesUpper();
+
+    bool checkingFiles();
     void deleteExtraFiles();
-    QString status();
+    QSet<QString> torrentFilesUpper();
 };
 #endif // DELTAMANAGER_H

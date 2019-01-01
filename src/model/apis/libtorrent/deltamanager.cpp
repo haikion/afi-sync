@@ -16,6 +16,7 @@ DeltaManager::DeltaManager(lt::torrent_handle handle, QObject* parent):
                               + "/" + Constants::DELTA_PATCHES_NAME, handle)),
     handle_(handle)
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
     connect(patcher_, SIGNAL(patched(QString, bool)), this, SLOT(handlePatched(QString, bool)));
     updateTimer_.setInterval(1000);
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
@@ -37,7 +38,7 @@ void DeltaManager::update()
     QSet<QString> inDownload = inDownload_; //Prevents crash because loop edits itself.
     for (const QString& modName : inDownload)
     {
-        if (patcher_->notPatching() && downloader_->patchDownloaded(modName))
+        if (patcher_->notPatching() && downloader_->patchDownloaded(modName) && !checkingFiles())
         {
             patcher_->patch(SettingsModel::modDownloadPath() + "/" + modName);
             inDownload_.remove(modName);
@@ -52,23 +53,17 @@ CiHash<QString> DeltaManager::keyHash() const
 
 bool DeltaManager::patch(const QString& modName, const QString& key)
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
     if (!patchAvailable(modName))
     {
         LOG_WARNING << "No patches found for" << modName;
         return false;
     }
 
-    Q_ASSERT(key.size() > 0);
     keyHash_.insert(key, modName);
-    LOG << "Starting updates";
-    QMetaObject::invokeMethod(&updateTimer_, "start", Qt::QueuedConnection);
+    updateTimer_.start(); // Start update timer if it isn't already running
     inDownload_.insert(modName);
     downloader_->downloadPatch(modName);
-    if (downloader_->patchDownloaded(modName))
-    {
-        inDownload_.remove(modName);
-        patcher_->patch(SettingsModel::modDownloadPath() + "/" + modName);
-    }
     return true;
     //Patch will be recalled once download is completed.
 }
@@ -187,6 +182,14 @@ void DeltaManager::deleteExtraFiles()
     }
 }
 
+bool DeltaManager::checkingFiles()
+{
+    const auto status = handle_.status().state;
+    return status == libtorrent::torrent_status::state_t::checking_files
+            || status == libtorrent::torrent_status::state_t::queued_for_checking
+            || status == libtorrent::torrent_status::state_t::checking_resume_data;
+}
+
 bool DeltaManager::queued(const QString& key)
 {
     auto it = keyHash_.find(key);
@@ -194,7 +197,7 @@ bool DeltaManager::queued(const QString& key)
         return false;
 
     const QString modName = it.value();
-    return downloader_->patchDownloaded(modName) && !patcher_->patching(modName);
+    return downloader_->patchDownloaded(modName) && !patcher_->patching(modName) && !checkingFiles();
 }
 
 bool DeltaManager::patchExtracting(const QString& key)
