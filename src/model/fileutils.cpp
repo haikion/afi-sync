@@ -211,6 +211,21 @@ bool FileUtils::safeRename(const QString& srcPath, const QString& dstPath)
     return QFile::rename(srcPath, dstPath);
 }
 
+void FileUtils::safeRemoveEmptyDirs(const QString& path)
+{
+    QDirIterator it(path, QDir::Dirs | QDir::NoDotAndDotDot);
+    while (it.hasNext())
+    {
+        const QString subPath = it.next();
+        safeRemoveEmptyDirs(subPath);
+        QDir dir(subPath);
+        if (dir.isEmpty())
+        {
+            safeRemoveRecursively(subPath);
+        }
+    }
+}
+
 bool FileUtils::safeRemove(const QString& filePath)
 {
     QFile file(filePath);

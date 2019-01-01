@@ -22,6 +22,8 @@ public:
     static bool safeRemoveRecursively(QDir& dir);
     static bool safeRemoveRecursively(const QString& path);
     static bool safeRename(const QString& srcPath, const QString& dstPath);
+    // Removes all empty directories from path
+    static void safeRemoveEmptyDirs(const QString& path);
     //For testability
     static void appendSafePath(const QString& path);
 

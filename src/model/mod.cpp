@@ -198,11 +198,12 @@ void Mod::deleteExtraFiles()
     }
 
     QSet<QString> extraFiles = localFiles - remoteFiles;
-    for (QString path : extraFiles)
+    for (const QString path : extraFiles)
     {
         LOG << "Deleting extra file " << path << " from mod " << name();
         FileUtils::rmCi(path);
     }
+    FileUtils::safeRemoveEmptyDirs(dir.absolutePath());
     LOG << "Completed name = " << name();
 }
 
