@@ -39,7 +39,6 @@ unix {
 SOURCES += src/model/main.cpp \
     src/model/treeitem.cpp \
     src/model/treemodel.cpp \
-    src/model/rootitem.cpp \
     src/model/syncitem.cpp \
     src/model/mod.cpp \
     src/model/repository.cpp \
@@ -77,7 +76,6 @@ SOURCES += src/model/main.cpp \
 HEADERS += \
     src/model/treeitem.h \
     src/model/treemodel.h \
-    src/model/rootitem.h \
     src/model/syncitem.h \
     src/model/repository.h \
     src/model/mod.h \

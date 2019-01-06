@@ -1,10 +1,3 @@
-/*
- * Unit tests for AFISync
- * Make sure workingDirectory is defined as working directory.
- *
- * TODO: Create tests for delta patch generation when files are identical
- */
-
 #include <QString>
 #include <QtTest>
 #include <QCoreApplication>
@@ -15,7 +8,6 @@
 
 #include "../src/model/fileutils.h"
 #include "../src/model/jsonreader.h"
-#include "../src/model/rootitem.h"
 #include "../src/model/treemodel.h"
 #include "../src/model/repository.h"
 #include "../src/model/global.h"
@@ -467,10 +459,10 @@ void AfiSyncTest::deletables()
     Mod* mod2 = new Mod("name3", "key3", Global::sync);
     Repository* repo1 = new Repository("repo1", "address", 1024, "password1", Global::sync);
     Repository* repo2 = new Repository("repo2", "address", 1024, "password1", Global::sync);
-    ModAdapter* commonMod1 = new ModAdapter(commonMod, repo1, false, 0);
-    ModAdapter* commonMod2 = new ModAdapter(commonMod, repo2, false, 0);
-    ModAdapter* modAdapter1 = new ModAdapter(mod1, repo1, false, 0);
-    ModAdapter* modAdapter2 = new ModAdapter(mod2, repo1, false, 0);
+    new ModAdapter(commonMod, repo1, false, 0);
+    new ModAdapter(commonMod, repo2, false, 0);
+    new ModAdapter(mod1, repo1, false, 0);
+    new ModAdapter(mod2, repo1, false, 0);
     QList<Repository*> repositories;
     repositories.append(repo1);
     repositories.append(repo2);
@@ -504,7 +496,7 @@ void AfiSyncTest::rmCi()
 
 void AfiSyncTest::rmCiDifficult()
 {
-    static const QString PATH = "späced päth";
+    static const QString PATH = "spÃ¤ced pÃ¤th";
     static const QString FILE_PATH = PATH + "/" + MOD1_3_NAME;
 
     QDir().mkpath(PATH);
@@ -574,8 +566,7 @@ void AfiSyncTest::addRemoveFolder()
     }
 
     QCOMPARE(exists, true);
-    const bool rVal = sync_->removeFolder(VT5_TORRENT_PATH);
-    QCOMPARE(rVal, true);
+    sync_->removeFolder(VT5_TORRENT_PATH);
     QCOMPARE(sync_->folderExists(VT5_TORRENT_PATH), false);
 
     cleanupTest();
@@ -586,7 +577,7 @@ void AfiSyncTest::addRemoveFolderKey()
 {
     sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
     QCOMPARE(sync_->folderExists(VT5_TORRENT_PATH), true);
-    QCOMPARE(sync_->removeFolder(VT5_TORRENT_PATH), true);
+    sync_->removeFolder(VT5_TORRENT_PATH);
     QCOMPARE(sync_->folderExists(VT5_TORRENT_PATH), false);
 }
 //Mod tests

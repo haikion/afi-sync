@@ -11,7 +11,6 @@
 #include "mod.h"
 #include "modadapter.h"
 #include "repository.h"
-#include "rootitem.h"
 #include "settingsmodel.h"
 #include "treemodel.h"
 
@@ -31,18 +30,6 @@ JsonReader::JsonReader(ISync* sync):
     }
 }
 
-
-
-QHash<QString, Repository*> JsonReader::addedRepos(const RootItem* root) const
-{
-    QHash<QString, Repository*> rVal;
-    for (Repository* repo : root->childItems())
-    {
-        rVal.insert(repo->name(), repo);
-    }
-    return rVal;
-}
-
 QSet<QString> JsonReader::addedMods(const Repository* repo) const
 {
     QSet<QString> rVal;
@@ -51,20 +38,6 @@ QSet<QString> JsonReader::addedMods(const Repository* repo) const
         rVal.insert(mod->key());
     }
 
-    return rVal;
-}
-
-//Creates data struture for added mods.
-QHash<QString, Mod*> JsonReader::createModHash(const RootItem* root) const
-{
-    QHash<QString, Mod*> rVal;
-    for (Repository* repo : root->childItems())
-    {
-        for (Mod* mod : repo->mods())
-        {
-            rVal.insert(mod->key(), mod);
-        }
-    }
     return rVal;
 }
 

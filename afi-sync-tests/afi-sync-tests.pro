@@ -38,7 +38,6 @@ SOURCES += tst_afisynctest.cpp \
     ../src/model/pathfinder.cpp \
     ../src/model/processmonitor.cpp \
     ../src/model/repository.cpp \
-    ../src/model/rootitem.cpp \
     ../src/model/runningtime.cpp \
     ../src/model/settingsmodel.cpp \
     ../src/model/syncitem.cpp \
@@ -73,7 +72,6 @@ HEADERS += \
     ../src/model/pathfinder.h \
     ../src/model/processmonitor.h \
     ../src/model/repository.h \
-    ../src/model/rootitem.h \
     ../src/model/runningtime.h \
     ../src/model/settingsmodel.h \
     ../src/model/syncitem.h \

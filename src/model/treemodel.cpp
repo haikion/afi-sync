@@ -7,7 +7,7 @@
 
 #include <sys/types.h>
 #include <signal.h>
-#include <src/model/apis/libtorrent/libtorrentapi.h>
+#include "apis/libtorrent/libtorrentapi.h"
 #include "afisynclogger.h"
 #include <QDir>
 #include <QStringList>
@@ -106,12 +106,6 @@ void TreeModel::enableRepositories()
         repo->startUpdates();
         repo->setTicked(true);
     }
-}
-
-// TODO: Delete, QML specific
-void TreeModel::rowsChanged()
-{
-    LOG;
 }
 
 // TODO: Delete, QML specific

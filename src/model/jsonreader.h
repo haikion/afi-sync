@@ -39,11 +39,9 @@ private:
     QJsonDocument readJsonFile(const QString& path) const;
     QVariantMap updateJson(const QString& url);
     QString updateUrl(const QVariantMap& jsonMap) const;
-    QHash<QString, Repository*> addedRepos(const RootItem* root) const;
     QSet<QString> addedMods(const Repository* repo) const;
     void removeDeprecatedRepos(QList<Repository*>& repositoriest, const QSet<QString> jsonRepos);
     void removeDeprecatedMods(Repository* repo, const QSet<QString> jsonMods);
-    QHash<QString, Mod*> createModHash(const RootItem* root) const;
     QByteArray fetchJsonBytes(QString url);
     QVariantMap bytesToJson(const QByteArray& bytes) const;
     static Repository* findRepoByName(const QString& name, QList<Repository*> repositories);

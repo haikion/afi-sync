@@ -20,10 +20,9 @@ class TreeModel : public QObject, virtual public IBandwidthMeter
     Q_OBJECT
 
 public:
-    explicit TreeModel(QObject* parent = 0);
+    explicit TreeModel(QObject* parent = nullptr);
     ~TreeModel();
 
-    void updateView(TreeItem* item, int row = -1); // TODO Remove, QML
     void reset();
     void enableRepositories();
     void setHaltGui(bool halt);
@@ -32,7 +31,6 @@ public:
     void moveFiles();
     void stopUpdates();
 public slots:
-    void rowsChanged(); // TODO: Remove QML specific
     QString downloadStr() const;
     QString uploadStr() const;
     void checkboxClicked(const QModelIndex& index);
