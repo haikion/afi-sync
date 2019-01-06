@@ -38,6 +38,7 @@ public:
     QString name(const QString& key);
     bool patchDownloading(const QString& key) const;
     bool patchExtracting(const QString& key);
+    bool patching(const QString& key);
     bool queued(const QString& key);
 
 signals:

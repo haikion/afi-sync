@@ -458,9 +458,14 @@ int LibTorrentApi::downloadEta(const lt::torrent_status& status) const
     return ((status.total_wanted - status.total_wanted_done) / status.download_rate) + (totalBytesToCheck / checkingSpeed_);
 }
 
+bool LibTorrentApi::folderCheckingPatches(const QString& key)
+{
+    return deltaManager_ && deltaManager_->contains(key) && folderChecking(key);
+}
+
 bool LibTorrentApi::folderPatching(const QString& key)
 {
-    return deltaManager_ && deltaManager_->contains(key);
+    return deltaManager_ && deltaManager_->patching(key);
 }
 
 bool LibTorrentApi::folderDownloadingPatches(const QString& key)

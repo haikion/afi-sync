@@ -381,9 +381,13 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::QUEUED);
     }
+    else if (sync_->folderCheckingPatches(key_))
+    {
+        setStatus(SyncStatus::CHECKING_PATCHES);
+    }
     else if (sync_->folderChecking(key_))
     {
-        setStatus(sync_->folderPatching(key_) ? SyncStatus::CHECKING_PATCHES : SyncStatus::CHECKING);
+        setStatus(SyncStatus::CHECKING);
     }
     //Wait for ready just in case
     else if (statusStr() == SyncStatus::WAITING)
@@ -424,14 +428,6 @@ void Mod::updateStatus()
                 setStatus(SyncStatus::PAUSED);
             }
         }
-        else if (sync_->folderNoPeers(key_))
-        {
-            setStatus(SyncStatus::NO_PEERS);
-        }
-        else if (sync_->folderDownloadingPatches(key_))
-        {
-            setStatus(SyncStatus::DOWNLOADING_PATCHES);
-        }
         else if (sync_->folderExtractingPatch(key_))
         {
             setStatus(SyncStatus::EXTRACTING_PATCH);
@@ -439,6 +435,14 @@ void Mod::updateStatus()
         else if (sync_->folderPatching(key_))
         {
             setStatus(SyncStatus::PATCHING);
+        }
+        else if (sync_->folderNoPeers(key_))
+        {
+            setStatus(SyncStatus::NO_PEERS);
+        }
+        else if (sync_->folderDownloadingPatches(key_))
+        {
+            setStatus(SyncStatus::DOWNLOADING_PATCHES);
         }
         else if (eta() > 0)
         {

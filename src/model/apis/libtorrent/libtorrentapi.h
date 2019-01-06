@@ -85,6 +85,7 @@ public:
     virtual qint64 folderTotalWantedDone(const QString& key);
     virtual void cleanUnusedFiles(const QSet<QString> usedKeys);
     virtual bool folderExtractingPatch(const QString& key);
+    virtual bool folderCheckingPatches(const QString& key);
 
 private slots:
     void handleAlerts();

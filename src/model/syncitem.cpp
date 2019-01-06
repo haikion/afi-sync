@@ -117,6 +117,7 @@ void SyncItem::setFileSize(const quint64 size)
 void SyncItem::setStatus(const QString& status)
 {
     statusMutex_.lock();
-    status_ = status;
+    if (status_ != status)
+        status_ = status;
     statusMutex_.unlock();
 }
