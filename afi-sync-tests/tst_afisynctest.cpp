@@ -68,14 +68,6 @@ private Q_SLOTS:
     void noSuchDir();
     void copyDeepOverwrite();
 
-    //LibTorrent API tests
-    void getEta();
-    void setFolderPaused();
-    void getFolderKeys();
-    void getFilesUpper();
-    void addRemoveFolder();
-    void addRemoveFolderKey();
-
     //Mod tests
     void modFilesRemoved();
 
@@ -108,11 +100,7 @@ private Q_SLOTS:
     void patchAvailableNegativeVer();
     void managerPatchAvailable();
     void managerPatchAvailableNeg();
-    void managerContains();
     void managerContainsNeg();
-    void managerPatch();
-    void managerPatchNeg();
-    void deltaNoPeers();
 
     //DeletableDetector tests
     void deletables();
@@ -121,11 +109,11 @@ private:
     ISync* sync_;
     TreeModel* model_;
     JsonReader reader_;
-    RootItem* root_;
     //Delta patching
     libtorrent::torrent_handle handle_;
     libtorrent::session* session_;
     SettingsModel* settings_;
+    QThread* workerThreadCache;
 
     libtorrent::torrent_handle createHandle(const QString& url = QString(), const QString& modDownloadPath = TMP_PATH);
 };
@@ -134,19 +122,19 @@ private:
 AfiSyncTest::AfiSyncTest():
    sync_(nullptr),
    model_(nullptr),
-   root_(nullptr),
    session_(nullptr),
    settings_(new SettingsModel())
 {
-//   handle_ = createHandle();
+   QDir().mkdir(TMP_PATH + "/1");
    settings_->setModDownloadPath(TMP_PATH + "/1");
 
    Global::workerThread = new QThread();
    Global::workerThread->setObjectName("workerThread");
    Global::workerThread->start();
+   // Used to skip thread asserts
+   workerThreadCache = Global::workerThread;
    LOG << "Worker thread started";
    Global::sync = new LibTorrentApi();
-   //Global::model = new TreeModel(nullptr, Global::sync);
    SettingsModel::initBwLimits();
 }
 
@@ -308,7 +296,7 @@ void AfiSyncTest::patch()
 
     DeltaPatcher* patcher = new DeltaPatcher(PATCHES_PATH, libtorrent::torrent_handle());
     QEventLoop loop;
-    QObject::connect(patcher, SIGNAL(patched(QString, bool)), &loop, SLOT(quit()));
+    QObject::connect(patcher, &DeltaPatcher::patched, &loop, &QEventLoop::quit);
     patcher->patch(MOD_PATH_1);
     qDebug() << "Waiting... patched signal";
     loop.exec();
@@ -366,7 +354,9 @@ void AfiSyncTest::managerPatchAvailable()
 {
     beforeDelta();
     settings_->setModDownloadPath(TMP_PATH + "/1");
+    Global::workerThread = QThread::currentThread(); // Skip thread asserts
     DeltaManager* manager = new DeltaManager(handle_);
+    Global::workerThread = workerThreadCache;
     bool rVal = manager->patchAvailable(MOD_NAME_1);
     delete manager;
     afterDelta();
@@ -377,79 +367,26 @@ void AfiSyncTest::managerPatchAvailableNeg()
 {
     beforeDelta();
     settings_->setModDownloadPath(TMP_PATH + "/1");
+    Global::workerThread = QThread::currentThread(); // Skip thread asserts
     DeltaManager* manager = new DeltaManager(handle_);
+    Global::workerThread = workerThreadCache;
     bool rVal = manager->patchAvailable("@doesnotexist");
     delete manager;
     afterDelta();
     QVERIFY(!rVal);
 }
 
-void AfiSyncTest::managerContains()
-{
-    beforeDelta();
-    settings_->setModDownloadPath(TMP_PATH + "/1");
-    DeltaManager manager(handle_);
-    QString key = "http://fakekey.org/fake.torrent";
-    manager.patch(MOD_NAME_1, key);
-    bool rVal = manager.contains(key);
-    afterDelta();
-    QVERIFY(rVal);
-}
-
 void AfiSyncTest::managerContainsNeg()
 {
     beforeDelta();
     settings_->setModDownloadPath(TMP_PATH + "/1");
+    Global::workerThread = QThread::currentThread(); // Skip thread asserts
     DeltaManager* manager = new DeltaManager(handle_);
+    Global::workerThread = workerThreadCache;
     bool rVal = manager->contains("http://doesnotexist.org/no.torrent");
     delete manager;
     afterDelta();
     QVERIFY(!rVal);
-}
-
-
-void AfiSyncTest::managerPatch()
-{
-    beforeDelta();
-    settings_->setModDownloadPath(TMP_PATH + "/1");
-    DeltaManager manager(handle_);
-    manager.patch("@mod1", "http://fakekey.org/fake.torrent");
-    afterDelta();
-}
-
-void AfiSyncTest::managerPatchNeg()
-{
-    beforeDelta();
-    settings_->setModDownloadPath(TMP_PATH + "/1");
-    DeltaManager manager(handle_);
-    manager.patch("@doesnotexist", "http://fakekey.org/fake.torrent");
-    afterDelta();
-}
-
-//Tests that the folder status is NO_PEERS
-//when there are no peers for afisync_patches torrent.
-void AfiSyncTest::deltaNoPeers()
-{
-    settings_->setDeltaPatchingEnabled(true);
-    beforeDelta();
-    startTest();
-    Global::sync->setDeltaUpdatesFolder(TMP_PATH + "/afisync_patches_nopeers.torrent");
-    Global::sync->enableDeltaUpdates();
-
-    const QString modsPath = TMP_PATH + "/1";
-    settings_->setModDownloadPath(modsPath);
-    FileUtils::safeRemoveRecursively(modsPath + "/" + Constants::DELTA_PATCHES_NAME);
-
-    Repository* repo = new Repository("repo", "dummy", 21221, "", Global::sync);
-    Mod* mod = new Mod("@mod1", TMP_PATH + "/@mod1_1.torrent", Global::sync);
-    repo->checkboxClicked();
-    new ModAdapter(mod, repo, false, 0);
-    QThread::sleep(3); //Wait for workerThread to finish
-    QCOMPARE(mod->statusStr(), SyncStatus::NO_PEERS);
-    mod->deleteLater();
-
-    cleanupTest();
-    afterDelta();
 }
 
 void AfiSyncTest::deletables()
@@ -549,37 +486,6 @@ void AfiSyncTest::simpleCmdNeg()
     cmd->deleteLater();
 }
 
-//Sync tests
-void AfiSyncTest::addRemoveFolder()
-{
-    startTest();
-
-    sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
-    bool exists = sync_->folderExists(VT5_TORRENT_PATH);
-    int counter = 0;
-    //Wait 1 sec for async call to finish
-    while (!exists && counter < 10)
-    {
-        ++counter;
-        exists = sync_->folderExists(VT5_TORRENT_PATH);
-        QThread::msleep(100);
-    }
-
-    QCOMPARE(exists, true);
-    sync_->removeFolder(VT5_TORRENT_PATH);
-    QCOMPARE(sync_->folderExists(VT5_TORRENT_PATH), false);
-
-    cleanupTest();
-}
-
-
-void AfiSyncTest::addRemoveFolderKey()
-{
-    sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
-    QCOMPARE(sync_->folderExists(VT5_TORRENT_PATH), true);
-    sync_->removeFolder(VT5_TORRENT_PATH);
-    QCOMPARE(sync_->folderExists(VT5_TORRENT_PATH), false);
-}
 //Mod tests
 
 //Tests if files get removed from mod directory
@@ -594,7 +500,7 @@ void AfiSyncTest::modFilesRemoved()
     Mod* mod = new Mod("@mod1", TORRENT_PATH_MOD1_3, Global::sync);
     ModAdapter* adp = new ModAdapter(mod, repo, false, 0);
     Q_UNUSED(adp);
-    repo->checkboxClicked();
+    //repo->checkboxClicked();
     QSet<QString> readys;
     readys.insert(SyncStatus::READY);
     readys.insert(SyncStatus::READY_PAUSED);
@@ -744,55 +650,6 @@ void AfiSyncTest::sizeOverflow()
     mod->setFileSize(quint64(13770848165));
     QCOMPARE(mod->sizeStr(), QString("12.83 GB"));
     mod->deleteLater();
-
-    cleanupTest();
-}
-
-void AfiSyncTest::getFilesUpper()
-{
-    startTest();
-
-    sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
-    QSet<QString> files = sync_->folderFilesUpper(VT5_TORRENT_PATH);
-    QCOMPARE(files.size(), 3);
-    sync_->removeFolder(VT5_TORRENT_PATH);
-
-    cleanupTest();
-}
-
-void AfiSyncTest::getFolderKeys()
-{
-    startTest();
-
-    sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
-    QCOMPARE(sync_->folderKeys().size(), 1);
-    QCOMPARE(sync_->folderKeys().at(0), VT5_TORRENT_PATH.toLower());
-    sync_->removeFolder(VT5_TORRENT_PATH);
-
-    cleanupTest();
-}
-
-void AfiSyncTest::setFolderPaused()
-{
-    startTest();
-
-    sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
-    sync_->setFolderPaused(VT5_TORRENT_PATH, true);
-    QCOMPARE(sync_->folderPaused(VT5_TORRENT_PATH), true);
-    sync_->removeFolder(VT5_TORRENT_PATH);
-
-    cleanupTest();
-}
-
-void AfiSyncTest::getEta()
-{
-    startTest();
-
-    sync_->addFolder(VT5_TORRENT_PATH, "@vt5");
-    int eta = sync_->folderEta(VT5_TORRENT_PATH);
-    qDebug() << "eta =" << eta;
-    QVERIFY(eta > 0);
-    sync_->removeFolder(VT5_TORRENT_PATH);
 
     cleanupTest();
 }

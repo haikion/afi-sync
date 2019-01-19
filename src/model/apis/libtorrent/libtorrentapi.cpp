@@ -965,6 +965,7 @@ lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key)
         return handle;
     }
 
+    // TODO: Remove? Might be too defensive
     if (!session_)
     {
         LOG << ERROR_SESSION_NULL;
@@ -1035,6 +1036,7 @@ lt::torrent_handle LibTorrentApi::getHandle(const QString& key)
 
 bool LibTorrentApi::addFolder(const QString& key, const QString& name)
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
     return addFolder(key, name, true);
 }
 

@@ -215,6 +215,7 @@ bool DeltaPatcher::notPatching()
 //Synchronous patch function
 bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
 {
+    LOG << "Patching " << modPath << " with " << patch;
     if (!extract(patchesFi_->absoluteFilePath() + "/" + patch))
         return false;
 
@@ -271,11 +272,11 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
         bool rVal = console_->runCmd(XDELTA_EXECUTABLE + " -d -s " + " \""
                            + QDir::toNativeSeparators(targetFilePath) + "\" \""
                            + QDir::toNativeSeparators(diffPath) + "\" \""
-                           + QDir::toNativeSeparators(patchedPath)) + "\"";
+                           + QDir::toNativeSeparators(patchedPath) + "\"");
 
         if (!rVal)
         {
-            LOG_WARNING << "Delta patching failed. targetPath =" << targetPath;
+            LOG_WARNING << "Delta patching failed. targetPath = " << targetPath;
             cleanUp(deltaDir, tmpDir);
             return false;
         }
