@@ -147,7 +147,7 @@ void Repository::changed()
 {
     for (Mod* mod : mods())
     {
-        QMetaObject::invokeMethod(mod, "repositoryChanged", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(mod, &Mod::repositoryChanged, Qt::QueuedConnection);
     }
 }
 

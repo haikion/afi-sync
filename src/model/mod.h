@@ -26,8 +26,6 @@ public:
     virtual Repository* parentItem();
     void appendRepository(Repository* repository);
     virtual void checkboxClicked();
-    virtual QString startText();
-    virtual QString joinText();
     QSet<Repository*> repositories() const;
     void deleteExtraFiles();
     virtual bool ticked();

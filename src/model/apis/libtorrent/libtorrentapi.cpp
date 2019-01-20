@@ -298,11 +298,6 @@ void LibTorrentApi::setFolderPath(const QString& key, const QString& path)
 void LibTorrentApi::setFolderPaused(const QString& key, bool value)
 {
     lt::torrent_handle handle = getHandle(key);
-
-    //TODO: Might be too defensive
-    if (!handle.is_valid())
-        return;
-
     QString name = QString::fromStdString(handle.status().name);
     if (value)
     {
@@ -596,7 +591,6 @@ bool LibTorrentApi::folderExists(const QString& key)
     return true;
 }
 
-
 bool LibTorrentApi::folderPaused(const QString& key)
 {
     lt::torrent_handle handle = getHandle(key);
@@ -604,9 +598,7 @@ bool LibTorrentApi::folderPaused(const QString& key)
         return false;
 
     lt::torrent_status status = handle.status();
-    bool rVal = status.paused;
-    //LOG << "key =" << key << "rVal =" << rVal;
-    return rVal;
+    return status.paused;
 }
 
 QString LibTorrentApi::folderError(const QString& key)

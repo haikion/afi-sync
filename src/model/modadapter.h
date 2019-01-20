@@ -22,8 +22,6 @@ public:
 
     virtual void check();
     virtual QString checkText();
-    virtual QString startText();
-    virtual QString joinText();
     virtual QString statusStr();
     virtual QString etaStr() const;
     virtual void checkboxClicked();

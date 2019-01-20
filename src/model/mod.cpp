@@ -198,7 +198,7 @@ void Mod::deleteExtraFiles()
     }
 
     QSet<QString> extraFiles = localFiles - remoteFiles;
-    for (const QString path : extraFiles)
+    for (const QString& path : extraFiles)
     {
         LOG << "Deleting extra file " << path << " from mod " << name();
         FileUtils::rmCi(path);
@@ -221,16 +221,6 @@ bool Mod::ticked()
     return false;
 }
 
-QString Mod::startText() //TODO: Remove, QML
-{
-    return "hidden";
-}
-
-QString Mod::joinText() //TODO: Remove, QML
-{
-    return "hidden";
-}
-
 //If all repositories this mod is included in are disabled then stop the
 //download.
 void Mod::repositoryChanged()
@@ -243,7 +233,9 @@ void Mod::repositoryChanged()
     }
     if (reposInactive() || !ticked())
     {
-        if (sync_->folderExists(key_) && !sync_->folderPaused(key_))
+        // No checking for paused state because torrent might have been
+        // paused by auto management (queued for example).
+        if (sync_->folderExists(key_))
         {
             LOG << "All repositories inactive or mod unchecked. Stopping " << name();
             stop();

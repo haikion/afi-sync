@@ -19,8 +19,6 @@ public:
     virtual QString checkText(); //TODO: Remove, QML
     virtual QString nameText();
     virtual QString statusStr();
-    virtual QString startText() = 0; //TODO: Remove, QML
-    virtual QString joinText() = 0; //TODO: Remove, QML
     virtual void processCompletion() = 0;
     virtual void check() = 0;
     virtual int eta() const;

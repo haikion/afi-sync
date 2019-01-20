@@ -32,16 +32,6 @@ QString ModAdapter::checkText()
     return rVal;
 }
 
-QString ModAdapter::startText()
-{
-    return mod_->startText();
-}
-
-QString ModAdapter::joinText()
-{
-    return mod_->joinText();
-}
-
 QString ModAdapter::statusStr()
 {
     return mod_->statusStr();

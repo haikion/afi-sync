@@ -55,11 +55,6 @@ bool SyncItem::active() const
     return activeStatuses.contains(status_);
 }
 
-QString SyncItem::startText()
-{
-    return "uploadText()"; //TODO: Wtf??
-}
-
 int SyncItem::eta() const //TODO: Remove, ETA
 {
     return eta_;
