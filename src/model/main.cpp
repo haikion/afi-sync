@@ -16,6 +16,7 @@
 #include "settingsmodel.h"
 #include "treemodel.h"
 #include "settingsuimodel.h"
+#include "apis/libtorrent/ahasher.h"
 #include "apis/libtorrent/libtorrentapi.h"
 #include "../view/mainwindow.h"
 
@@ -88,7 +89,6 @@ int gui(int argc, char* argv[])
 int cli(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
-    TreeModel* model = generalInit();
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
@@ -97,6 +97,7 @@ int cli(int argc, char* argv[])
                            , "directory", SettingsModel::modDownloadPath()},
                           {"port", "External Port. Current value: " + SettingsModel::port()
                            , "port", SettingsModel::port()},
+                          {"delta-hash", "Prints delta hash for the mod. Used for debugging", "mod directory", "."},
                           {DELTA_ARGS.at(0), "Delta patch generation:  Defines path to old version", DELTA_ARGS.at(0)},
                           {DELTA_ARGS.at(1), "Delta patch generation:  Defines path to new version", DELTA_ARGS.at(1)},
                           {DELTA_ARGS.at(2), "Delta patch generation:  Defines path to patches directory", DELTA_ARGS.at(2)},
@@ -108,14 +109,26 @@ int cli(int argc, char* argv[])
     QStringList args;
     for (int i = 0; i < argc; ++i)
     {
-        LOG << argv[i];
         args.append(argv[i]);
     }
     parser.process(args);
-    LOG << parser.errorText();
+    const QString errorText = parser.errorText();
+    if (!errorText.isEmpty())
+    {
+        LOG << parser.errorText();
+        return 1;
+    }
+
+    //Delta hash
+    const QString deltaPath = parser.value("delta-hash");
+    if (!deltaPath.isEmpty())
+    {
+        LOG << "Hash for " << deltaPath << " is " << AHasher::hash(deltaPath);
+        return 0;
+    }
 
     //Delta patching
-    QSet<QString> missingArgs = DELTA_ARGS.toSet() - parser.optionNames().toSet();
+    const QSet<QString> missingArgs = DELTA_ARGS.toSet() - parser.optionNames().toSet();
     if (missingArgs.size() < DELTA_ARGS.size())
     {
         if (missingArgs.size() != 0)
@@ -132,6 +145,9 @@ int cli(int argc, char* argv[])
         return 0;
     }
     LOG << "Fail " << missingArgs.size() << " " << missingArgs;
+    TreeModel* model = generalInit();
+
+    // Mirror
     QFileInfo dir(parser.value("mirror"));
     QString modDownloadPath = dir.absoluteFilePath();
     if (!dir.isDir() || !dir.isWritable())

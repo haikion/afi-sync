@@ -18,7 +18,6 @@ SettingsModel::SettingsModel(QObject* parent):
 
 void SettingsModel::createSettings()
 {
-    LOG << "Creating settings object.";
     QCoreApplication::setOrganizationName("AFISync");
     QCoreApplication::setOrganizationDomain("armafinland.fi");
     QCoreApplication::setApplicationName("AFISync");
