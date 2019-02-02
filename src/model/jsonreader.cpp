@@ -17,10 +17,9 @@
 const QString JsonReader::SEPARATOR = "|||";
 
 //Fastest
-JsonReader::JsonReader(ISync* sync):
+JsonReader::JsonReader():
     repositoriesPath_(QCoreApplication::applicationDirPath() + "/settings/repositories.json"),
-    downloadedPath_(repositoriesPath_ + "_new"),
-    sync_(sync)
+    downloadedPath_(repositoriesPath_ + "_new")
 {
     readJsonFile();
     if (jsonMap_ == QVariantMap())
@@ -100,7 +99,7 @@ void JsonReader::repositories(ISync* sync, QList<Repository*>& repositories)
             modMap.insert(mod->key(), mod);
         }
     }
-    QSet<QString> jsonKeys;
+    QMap<Repository*, QSet<QString>> repositoryJsonModKeys;
     for (const QVariant& repoVar : jsonRepositories)
     {
         QVariantMap repository = qvariant_cast<QVariantMap>(repoVar);
@@ -111,7 +110,7 @@ void JsonReader::repositories(ISync* sync, QList<Repository*>& repositories)
         const QString password = qvariant_cast<QString>(repository.value("password", ""));
         if (repo == nullptr)
         {
-            repo = new Repository(repoName, serverAddress, serverPort, password, sync_);
+            repo = new Repository(repoName, serverAddress, serverPort, password, sync);
         }
         else
         {
@@ -123,11 +122,12 @@ void JsonReader::repositories(ISync* sync, QList<Repository*>& repositories)
         repo->setBattlEyeEnabled(qvariant_cast<bool>(repository.value("battlEyeEnabled", true)));
 
         QList<QVariant> mods = qvariant_cast<QList<QVariant>>(repository.value("mods"));
+        QSet<QString> jsonModKeys;
         for (int i = 0; i < mods.size(); ++i)
         {
             const QVariantMap mod = qvariant_cast<QVariantMap>(mods.at(i));
             const QString key = qvariant_cast<QString>(mod.value("key")).toLower();
-            jsonKeys.insert(key);
+            jsonModKeys.insert(key);
             if (repo->contains(key))
                 continue; // Mod is already included in the repository.
 
@@ -137,10 +137,17 @@ void JsonReader::repositories(ISync* sync, QList<Repository*>& repositories)
             newMod->setFileSize(qvariant_cast<quint64>(mod.value("fileSize", "0")));
             new ModAdapter(newMod, repo, mod.value("optional", false).toBool(), i);
         }
-        removeDeprecatedMods(repo, jsonKeys);
-        repo->startUpdates();
+        repositoryJsonModKeys.insert(repo, jsonModKeys);
         if (!repositories.contains(repo))
             repositories.append(repo);
+    }
+
+    // First add all mods and then remove deprecated in order to not
+    // destroy moved mods.
+    for (Repository* repo : repositoryJsonModKeys.keys())
+    {
+        removeDeprecatedMods(repo, repositoryJsonModKeys.value(repo));
+        repo->startUpdates();
     }
 }
 

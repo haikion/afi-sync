@@ -16,7 +16,7 @@ class Repository;
 class JsonReader
 {
 public:
-    JsonReader(ISync* sync = nullptr);
+    JsonReader();
 
     //Fills rootItem according to XML file
     void fillEverything(RootItem* root);
@@ -34,7 +34,6 @@ private:
     SyncNetworkAccessManager nam_;
     QString repositoriesPath_; //Holds path to validated repositories.json
     QString downloadedPath_; //Holds path to downloaded but not validated repositories.json
-    ISync* sync_;
 
     QJsonDocument readJsonFile(const QString& path) const;
     QVariantMap updateJson(const QString& url);
