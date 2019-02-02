@@ -950,7 +950,6 @@ lt::torrent_handle LibTorrentApi::addFolderFromParams(const QString& key)
 //Does not wait for torrent-file download to finish.
 lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key)
 {
-    LOG << "key = " << key;
     lt::torrent_handle handle = addFolderFromParams(key);
     if (handle.is_valid())
     {
@@ -1208,7 +1207,6 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         //FIXME: Sometimes this becomes off as empty.
         QString url = QString::fromLocal8Bit(FileUtils::readFile(pathPrefix + ".link")).toLower();
         prefixMap_.insert(url, it.fileName().remove(".torrent"));
-        LOG << url << (params.ti == 0) << params.resume_data.size();
         if (params.ti == 0 || url.isEmpty() || !params.ti->is_valid())
         {
             LOG_ERROR << "Loading torrent " << filePath << " url = " << url;

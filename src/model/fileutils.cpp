@@ -207,7 +207,6 @@ bool FileUtils::safeRename(const QString& srcPath, const QString& dstPath)
     if (!pathIsSafe(srcPath))
         return false;
 
-    LOG << "Rename " << srcPath << " to "  << dstPath;
     return QFile::rename(srcPath, dstPath);
 }
 
