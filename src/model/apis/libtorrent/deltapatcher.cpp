@@ -30,7 +30,7 @@ DeltaPatcher::DeltaPatcher(const QString& patchesPath, libtorrent::torrent_handl
     QObject(nullptr),
     bytesPatched_(0),
     extractingPatches_(false),
-    totalBytes_(0),
+    totalBytes_(-1),
     handle_(handle)
 {
     //Required because patching process is ran
