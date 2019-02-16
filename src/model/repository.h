@@ -20,6 +20,7 @@ public:
                QString password, ISync* sync);
     ~Repository();
 
+    static Repository* findRepoByName(const QString& name, QList<Repository*> repositories);
     void check();
     void appendModAdapter(ModAdapter* adp, int index);
     void updateView(TreeItem* item, int row = -1);
@@ -46,7 +47,9 @@ public:
     virtual QString progressStr();
     void setServerAddress(const QString& serverAddress);
     void setPort(const unsigned& port);
-    void setPassword(const QString& password);
+    void setPassword(const QString& password);    
+    QSet<QString> modKeys() const;    
+    void removeDeprecatedMods(const QSet<QString> jsonMods);
 
 private:
     ISync* sync_;

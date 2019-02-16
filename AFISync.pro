@@ -71,7 +71,8 @@ SOURCES += src/model/main.cpp \
     src/view/astreewidget.cpp \
     src/view/mainwindow.cpp \
     src/view/optionalsetting.cpp \
-    src/view/pathsetting.cpp
+    src/view/pathsetting.cpp \
+    src/model/jsonutils.cpp
 
 HEADERS += \
     src/model/treeitem.h \
@@ -115,7 +116,8 @@ HEADERS += \
     src/view/astreewidget.h \
     src/view/mainwindow.h \
     src/view/optionalsetting.h \
-    src/view/pathsetting.h
+    src/view/pathsetting.h \
+    src/model/jsonutils.h
 
 DISTFILES += \
     AFISync.rc \

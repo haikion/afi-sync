@@ -105,6 +105,19 @@ void Repository::setPassword(const QString& password)
     password_ = password;
 }
 
+Repository* Repository::findRepoByName(const QString& name, QList<Repository*> repositories)
+{
+    for (Repository* repository : repositories)
+    {
+        if (repository->name() == name)
+        {
+            return repository;
+        }
+    }
+    return nullptr;
+}
+
+
 void Repository::startUpdates()
 {
     for (Mod* mod : mods())
@@ -318,6 +331,17 @@ QString Repository::modsParameter()
     return rVal;
 }
 
+QSet<QString> Repository::modKeys() const
+{
+    QSet<QString> rVal;
+    for (Mod* mod : mods())
+    {
+        rVal.insert(mod->key());
+    }
+
+    return rVal;
+}
+
 QStringList Repository::joinParameters() const
 {
     QStringList rVal;
@@ -427,6 +451,7 @@ bool Repository::contains(const QString& key) const
     return false;
 }
 
+// TODO: Refactor, QML
 QList<Mod*> Repository::mods() const
 {
     QList<Mod*> rVal;
@@ -435,6 +460,15 @@ QList<Mod*> Repository::mods() const
         rVal.append(static_cast<ModAdapter*>(item)->mod());
     }
     return rVal;
+}
+
+void Repository::removeDeprecatedMods(const QSet<QString> jsonMods)
+{
+    const QSet<QString> deprecatedMods = modKeys() - jsonMods;
+    for (const QString& key : deprecatedMods)
+    {
+        removeMod(key);
+    }
 }
 
 QList<ISyncItem*> Repository::uiMods() const

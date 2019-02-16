@@ -10,7 +10,6 @@
 #include "syncnetworkaccessmanager.h"
 #include "interfaces/irepository.h"
 
-class RootItem;
 class Repository;
 
 class JsonReader
@@ -18,14 +17,10 @@ class JsonReader
 public:
     JsonReader();
 
-    //Fills rootItem according to XML file
-    void fillEverything(RootItem* root);
-    //Enables better testability.
-    void fillEverything(RootItem *root, const QString& jsonFilePath);
     bool updateAvailable();
     QList<Repository*> repositories(ISync* sync);
     QString deltaUpdatesKey() const;    
-    void repositories(ISync* sync, QList<Repository*>& repositories);
+    void updateRepositories(ISync* sync, QList<Repository*>& updateRepositories);
 
 private:
     static const QString SEPARATOR;
@@ -35,16 +30,13 @@ private:
     QString repositoriesPath_; //Holds path to validated repositories.json
     QString downloadedPath_; //Holds path to downloaded but not validated repositories.json
 
-    QJsonDocument readJsonFile(const QString& path) const;
-    QVariantMap updateJson(const QString& url);
+    bool updateJsonMap();
     QString updateUrl(const QVariantMap& jsonMap) const;
-    QSet<QString> addedMods(const Repository* repo) const;
+    QString updateUrl() const;
     void removeDeprecatedRepos(QList<Repository*>& repositoriest, const QSet<QString> jsonRepos);
-    void removeDeprecatedMods(Repository* repo, const QSet<QString> jsonMods);
     QByteArray fetchJsonBytes(QString url);
-    QVariantMap bytesToJson(const QByteArray& bytes) const;
-    static Repository* findRepoByName(const QString& name, QList<Repository*> repositories);
     void readJsonFile();
+    void updateRepositoriesOffline(ISync* sync, QList<Repository*>& updateRepositories);
 };
 
 #endif // JSONREADER_H

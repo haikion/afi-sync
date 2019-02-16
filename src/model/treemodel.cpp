@@ -205,7 +205,7 @@ void TreeModel::periodicRepoUpdate()
     if (jsonReader_.updateAvailable())
     {
         LOG << "Updating repositories";
-        jsonReader_.repositories(sync_, repositories_);
+        jsonReader_.updateRepositories(sync_, repositories_);
         emit repositoriesChanged(toIrepositories(repositories_));
         return;
     }

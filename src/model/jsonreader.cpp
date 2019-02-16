@@ -13,10 +13,12 @@
 #include "repository.h"
 #include "settingsmodel.h"
 #include "treemodel.h"
+#include "fileutils.h"
+#include "jsonutils.h"
 
 const QString JsonReader::SEPARATOR = "|||";
 
-//Fastest
+// Fastest
 JsonReader::JsonReader():
     repositoriesPath_(QCoreApplication::applicationDirPath() + "/settings/repositories.json"),
     downloadedPath_(repositoriesPath_ + "_new")
@@ -29,67 +31,51 @@ JsonReader::JsonReader():
     }
 }
 
-QSet<QString> JsonReader::addedMods(const Repository* repo) const
+QString JsonReader::updateUrl() const
 {
-    QSet<QString> rVal;
-    for (Mod* mod : repo->mods())
-    {
-        rVal.insert(mod->key());
-    }
-
-    return rVal;
-}
-
-void JsonReader::removeDeprecatedMods(Repository* repo, const QSet<QString> jsonMods)
-{
-    QSet<QString> deprecatedMods = addedMods(repo) - jsonMods;
-    for (const QString& key : deprecatedMods)
-    {
-        repo->removeMod(key);
-    }
-}
-
-QString JsonReader::updateUrl(const QVariantMap& jsonMap) const
-{
-    QString updateUrl = qvariant_cast<QString>(jsonMap.value("updateUrl"));
-    return updateUrl;
+    return JsonUtils::updateUrl(jsonMap_);
 }
 
 bool JsonReader::updateAvailable()
 {
-    return bytesToJson(fetchJsonBytes(updateUrl(jsonMap_))) != jsonMap_;;
+    const QString url = updateUrl();
+    if (url == QString())
+    {
+        return false; // No update url set
+    }
+    const QByteArray bytes = nam_.fetchBytes(url);
+    if (bytes == QByteArray())
+    {
+        return false; // Unresponsive url
+    }
+    const QVariantMap map = JsonUtils::bytesToJsonMap(bytes);
+    if (map == QVariantMap())
+    {
+        return false; // Data is not json
+    }
+    return JsonUtils::bytesToJsonMap(bytes) != jsonMap_;
 }
 
 QList<Repository*> JsonReader::repositories(ISync* sync)
 {
     QList<Repository*> retVal;
-    repositories(sync, retVal);
+    updateRepositories(sync, retVal);
     return retVal;
-}
-
-Repository* JsonReader::findRepoByName(const QString& name, QList<Repository*> repositories)
-{
-    for (Repository* repository : repositories)
-    {
-        if (repository->name() == name)
-        {
-            return repository;
-        }
-    }
-    return nullptr;
 }
 
 void JsonReader::readJsonFile()
 {
-    jsonMap_ = qvariant_cast<QVariantMap>(readJsonFile(repositoriesPath_).toVariant());
-    const QVariantMap jsonMapUpdate = updateJson(updateUrl(jsonMap_));
-    if (jsonMapUpdate != QVariantMap())
-        jsonMap_ = jsonMapUpdate;
+    const QByteArray jsonBytes = FileUtils::readFile(repositoriesPath_);
+    jsonMap_ = JsonUtils::bytesToJsonMap(jsonBytes);
+    if (jsonMap_ == QVariantMap())
+    {
+        LOG_ERROR << "Failed to open json file: " << repositoriesPath_;
+        exit(2);
+    }
 }
 
-void JsonReader::repositories(ISync* sync, QList<Repository*>& repositories)
+void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repositories)
 {
-    readJsonFile();
     const QList<QVariant> jsonRepositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
     QMap<QString, Mod*> modMap; // Add same key mods only once
     for (Repository* repository : repositories)
@@ -104,7 +90,7 @@ void JsonReader::repositories(ISync* sync, QList<Repository*>& repositories)
     {
         QVariantMap repository = qvariant_cast<QVariantMap>(repoVar);
         QString repoName = qvariant_cast<QString>(repository.value("name"));
-        Repository* repo = findRepoByName(repoName, repositories);
+        Repository* repo = Repository::findRepoByName(repoName, repositories);
         const QString serverAddress = qvariant_cast<QString>(repository.value("serverAddress"));
         const unsigned serverPort = qvariant_cast<unsigned>(repository.value("serverPort"));
         const QString password = qvariant_cast<QString>(repository.value("password", ""));
@@ -146,75 +132,35 @@ void JsonReader::repositories(ISync* sync, QList<Repository*>& repositories)
     // destroy moved mods.
     for (Repository* repo : repositoryJsonModKeys.keys())
     {
-        removeDeprecatedMods(repo, repositoryJsonModKeys.value(repo));
+        repo->removeDeprecatedMods(repositoryJsonModKeys.value(repo));
         repo->startUpdates();
     }
 }
 
-QJsonDocument JsonReader::readJsonFile(const QString& path) const
+void JsonReader::updateRepositories(ISync* sync, QList<Repository*>& repositories)
 {
-    QFile file(path);
-    if (!file.exists() || !file.open(QIODevice::ReadOnly))
-    {
-        LOG_ERROR << "Failed to open json file: " << path << " file.exists = " << file.exists();
-        return QJsonDocument();
-    }
-    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    if (!doc.isObject())
-    {
-        LOG_ERROR << "Error parsing json file: " << path;
-        return QJsonDocument();
-    }
-    file.close();
-
-    return doc;
+    updateJsonMap();
+    updateRepositoriesOffline(sync, repositories);
 }
 
 QString JsonReader::deltaUpdatesKey() const
 {
-    const QVariantMap jsonMap = qvariant_cast<QVariantMap>(readJsonFile(repositoriesPath_).toVariant());
-    return jsonMap.value("deltaUpdates").toString();
+    return jsonMap_.value("deltaUpdates").toString();
 }
 
-QByteArray JsonReader::fetchJsonBytes(QString url)
+bool JsonReader::updateJsonMap()
 {
-    QNetworkReply* reply = nam_.syncGet(QNetworkRequest(url));
-    if (reply->bytesAvailable() == 0)
+    const QString url = updateUrl();
+    if (url == QString())
     {
-        LOG_WARNING << "Failed. url = " << url;
-        return QByteArray();
+        return false;
     }
-    QByteArray rVal = reply->readAll();
-    reply->deleteLater();
-    return rVal;
-}
-
-QVariantMap JsonReader::bytesToJson(const QByteArray& bytes) const
-{
-    QJsonDocument docElement = QJsonDocument::fromJson(bytes);
-    if (docElement == QJsonDocument())
+    const QByteArray bytes = nam_.fetchBytes(url);
+    const QVariantMap jsonMapUpdate = JsonUtils::bytesToJsonMap(bytes);
+    if (jsonMapUpdate != QVariantMap())
     {
-        //Incorrect reply from network server
-        return QVariantMap();
+        jsonMap_ = jsonMapUpdate;
+        return true;
     }
-    return qvariant_cast<QVariantMap>(docElement.toVariant());
-}
-
-//Downloads new json file.
-QVariantMap JsonReader::updateJson(const QString& url)
-{
-    QByteArray bytes = fetchJsonBytes(url);
-    if (bytes == QByteArray())
-    {
-        return QVariantMap();
-    }
-    QFile::remove(repositoriesPath_);
-    QFile file(repositoriesPath_);
-    if (!file.open(QIODevice::WriteOnly))
-    {
-        return QVariantMap();
-    }
-    file.write(bytes);
-    file.close();
-    return bytesToJson(bytes);
+    return false;
 }

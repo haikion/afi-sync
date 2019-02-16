@@ -23,6 +23,7 @@ public:
     ~SyncNetworkAccessManager();
 
     QNetworkReply* syncGet(QNetworkRequest req, int timeout = DEFAULT_TIMEOUT);
+    QByteArray fetchBytes(const QString& url);
 
 private slots:
     void syncGetSlot(QNetworkRequest req, QNetworkReply*& reply, int timeout);

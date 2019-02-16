@@ -31,6 +31,19 @@ QNetworkReply* SyncNetworkAccessManager::syncGet(QNetworkRequest req, int timeou
     return rVal;
 }
 
+QByteArray SyncNetworkAccessManager::fetchBytes(const QString& url)
+{
+    QNetworkReply* reply = syncGet(QNetworkRequest(url));
+    if (reply->bytesAvailable() == 0)
+    {
+        LOG_WARNING << "Failed. url = " << url;
+        return QByteArray();
+    }
+    QByteArray retVal = reply->readAll();
+    reply->deleteLater();
+    return retVal;
+}
+
 void SyncNetworkAccessManager::syncGetSlot(QNetworkRequest req, QNetworkReply*& reply, int timeout)
 {
     QEventLoop loop;
