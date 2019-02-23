@@ -1,6 +1,8 @@
 #ifndef JSONREADER_H
 #define JSONREADER_H
 
+#include <memory>
+#include <QByteArray>
 #include <QJsonDocument>
 #include <QVariantMap>
 #include <QString>
@@ -22,20 +24,22 @@ public:
     QString deltaUpdatesKey() const;    
     void updateRepositories(ISync* sync, QList<Repository*>& updateRepositories);
 
+protected:
+    virtual bool writeJsonBytes(const QByteArray& bytes);
+    virtual QByteArray readJsonBytes() const;
+    void setSyncNetworkAccessManager(std::unique_ptr<SyncNetworkAccessManager> syncNetworkAccessManager);
+
 private:
-    static const QString SEPARATOR;
+    static const QString JSON_RELATIVE_PATH;
 
     QVariantMap jsonMap_;
-    SyncNetworkAccessManager nam_;
-    QString repositoriesPath_; //Holds path to validated repositories.json
-    QString downloadedPath_; //Holds path to downloaded but not validated repositories.json
+    std::unique_ptr<SyncNetworkAccessManager> nam_;
 
     bool updateJsonMap();
     QString updateUrl(const QVariantMap& jsonMap) const;
     QString updateUrl() const;
-    void removeDeprecatedRepos(QList<Repository*>& repositoriest, const QSet<QString> jsonRepos);
     QByteArray fetchJsonBytes(QString url);
-    void readJsonFile();
+    bool readJsonFile();
     void updateRepositoriesOffline(ISync* sync, QList<Repository*>& updateRepositories);
 };
 

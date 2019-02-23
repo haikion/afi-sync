@@ -16,19 +16,16 @@
 #include "fileutils.h"
 #include "jsonutils.h"
 
-const QString JsonReader::SEPARATOR = "|||";
+const QString JsonReader::JSON_RELATIVE_PATH = "/settings/repositories.json";
 
-// Fastest
-JsonReader::JsonReader():
-    repositoriesPath_(QCoreApplication::applicationDirPath() + "/settings/repositories.json"),
-    downloadedPath_(repositoriesPath_ + "_new")
+JsonReader::JsonReader()
 {
-    readJsonFile();
-    if (jsonMap_ == QVariantMap())
+    if (!readJsonFile())
     {
         LOG_ERROR << "Json file parse failure. Exiting...";
         exit(2);
     }
+    nam_ = std::make_unique<SyncNetworkAccessManager>();
 }
 
 QString JsonReader::updateUrl() const
@@ -43,13 +40,13 @@ bool JsonReader::updateAvailable()
     {
         return false; // No update url set
     }
-    const QByteArray bytes = nam_.fetchBytes(url);
+    const QByteArray bytes = nam_->fetchBytes(url);
     if (bytes == QByteArray())
     {
         return false; // Unresponsive url
     }
     const QVariantMap map = JsonUtils::bytesToJsonMap(bytes);
-    if (map == QVariantMap())
+    if (map.isEmpty())
     {
         return false; // Data is not json
     }
@@ -63,15 +60,26 @@ QList<Repository*> JsonReader::repositories(ISync* sync)
     return retVal;
 }
 
-void JsonReader::readJsonFile()
+bool JsonReader::readJsonFile()
 {
-    const QByteArray jsonBytes = FileUtils::readFile(repositoriesPath_);
-    jsonMap_ = JsonUtils::bytesToJsonMap(jsonBytes);
-    if (jsonMap_ == QVariantMap())
+    const QByteArray jsonBytes = readJsonBytes();
+    QVariantMap jsonMap = JsonUtils::bytesToJsonMap(jsonBytes);
+    if (jsonMap.isEmpty())
     {
-        LOG_ERROR << "Failed to open json file: " << repositoriesPath_;
-        exit(2);
+        return false;
     }
+    jsonMap_ = jsonMap;
+    return true;
+}
+
+QByteArray JsonReader::readJsonBytes() const
+{
+    return FileUtils::readFile(QCoreApplication::applicationDirPath() + JSON_RELATIVE_PATH);
+}
+
+void JsonReader::setSyncNetworkAccessManager(std::unique_ptr<SyncNetworkAccessManager> syncNetworkAccessManager)
+{
+    nam_ = std::move(syncNetworkAccessManager);
 }
 
 void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repositories)
@@ -85,7 +93,7 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
             modMap.insert(mod->key(), mod);
         }
     }
-    QMap<Repository*, QSet<QString>> repositoryJsonModKeys;
+    QHash<Repository*, QSet<QString>> repositoryJsonModKeys;
     for (const QVariant& repoVar : jsonRepositories)
     {
         QVariantMap repository = qvariant_cast<QVariantMap>(repoVar);
@@ -130,7 +138,7 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
 
     // First add all mods and then remove deprecated in order to not
     // destroy moved mods.
-    for (Repository* repo : repositoryJsonModKeys.keys())
+    for (Repository* repo: repositoryJsonModKeys.keys())
     {
         repo->removeDeprecatedMods(repositoryJsonModKeys.value(repo));
         repo->startUpdates();
@@ -148,6 +156,11 @@ QString JsonReader::deltaUpdatesKey() const
     return jsonMap_.value("deltaUpdates").toString();
 }
 
+bool JsonReader::writeJsonBytes(const QByteArray& data)
+{
+    return FileUtils::writeFile(data, QCoreApplication::applicationDirPath() + JSON_RELATIVE_PATH);
+}
+
 bool JsonReader::updateJsonMap()
 {
     const QString url = updateUrl();
@@ -155,12 +168,12 @@ bool JsonReader::updateJsonMap()
     {
         return false;
     }
-    const QByteArray bytes = nam_.fetchBytes(url);
+    const QByteArray bytes = nam_->fetchBytes(url);
     const QVariantMap jsonMapUpdate = JsonUtils::bytesToJsonMap(bytes);
-    if (jsonMapUpdate != QVariantMap())
+    if (!jsonMapUpdate.isEmpty())
     {
         jsonMap_ = jsonMapUpdate;
-        return true;
+        return writeJsonBytes(bytes);
     }
     return false;
 }
