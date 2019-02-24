@@ -1,10 +1,5 @@
 #!/bin/bash
 
-WORKING_DIR=~/afisync-tests/work
-
-./init.sh
-cd $WORKING_DIR
-
 trash *7z
 touch afisync.log
 ./AFISync &
