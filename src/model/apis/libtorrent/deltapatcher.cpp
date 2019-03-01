@@ -26,7 +26,7 @@ const QString DeltaPatcher::DELTA_EXTENSION = ".vcdiff";
 const QString DeltaPatcher::SEPARATOR = ".";
 const QString DeltaPatcher::PATCH_DIR = "delta_patch";
 
-DeltaPatcher::DeltaPatcher(const QString& patchesPath, libtorrent::torrent_handle handle):
+DeltaPatcher::DeltaPatcher(const QString& patchesPath, const libtorrent::torrent_handle& handle):
     QObject(nullptr),
     bytesPatched_(0),
     extractingPatches_(false),
@@ -83,7 +83,7 @@ void DeltaPatcher::patchDirSync(const QString& modPath)
     mutex_.unlock();
 
     QStringList patches = filterPatches(modPath, allPatches);
-    if (patches.size() == 0)
+    if (patches.isEmpty())
     {
         LOG_ERROR << "no patches found for" << modName << "from"
             << allPatches << "hash =" << AHasher::hash(modPath);
@@ -101,6 +101,16 @@ void DeltaPatcher::patchDirSync(const QString& modPath)
 void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches, int attempts)
 {
     static const int MAX_ATTEMPTS = 10;
+
+    if (!handle_.status().is_finished)
+    {
+        // Wait for torrent to finish (Might occur if recheck was needed)
+        QTimer::singleShot(10000, [=] {applyPatches(modPath, patches, attempts);});
+        LOG << "Waiting for 10 s for patches torrent to finish. modPath = " << modPath << " patches = "
+            << patches << " attempts = " << attempts << "/" << MAX_ATTEMPTS;
+        return;
+    }
+
     if (attempts > MAX_ATTEMPTS)
     {
         //FAIL
@@ -157,10 +167,10 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
     LOG << "Calculated hash for " << modPath << ". Result: " << hash;
     const QRegExp regEx(modName + ".*" + hash + "\\" + SEPARATOR + "7z");
     const QStringList matches = allPatches.filter(regEx);
-    if (matches.size() == 0)
+    if (matches.isEmpty())
         return QStringList();
 
-    const QString patchName = matches.at(0);
+    const QString& patchName = matches.at(0);
     //First version. TODO: Why not just match hashes in recursive manner?
     int version = patchName.split(SEPARATOR).at(1).toInt();
     patches.append(patchName);
@@ -310,7 +320,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
 
     QStringList conflictingFiles =
             patchesDir.entryList().filter(QRegExp(modName + "\\..*\\." + oldHash + "\\.7z" ));
-    if (conflictingFiles.size() > 0)
+    if (!conflictingFiles.isEmpty())
     {
         LOG_ERROR << "patch " << patchName << " collides with files: " << conflictingFiles;
         return false;
@@ -414,9 +424,7 @@ bool DeltaPatcher::extract(const QString& zipPath)
            + QDir::toNativeSeparators(zipPath)
            + "\" -o\"" + QDir::toNativeSeparators(fi.absolutePath()) + "\"");
     extractingPatches_ = false;
-    if (QDir(fi.absolutePath() + "/" + PATCH_DIR).exists()) //7z exits with 0 regardless
-        return true;
-    return false;
+    return QDir(fi.absolutePath() + "/" + PATCH_DIR).exists();
 }
 
 bool DeltaPatcher::patchExtracting()
@@ -470,7 +478,7 @@ int DeltaPatcher::latestVersion(const QString& modName) const
 int DeltaPatcher::latestVersion(const QString& modName, const QStringList& fileNames)
 {
     int rVal = -1;
-    for (QString fileName : fileNames)
+    for (const QString& fileName : fileNames)
     {
         if (!fileName.contains(QRegExp(modName + ".*7z")))
             continue;

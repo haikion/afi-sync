@@ -25,8 +25,8 @@ class DeltaPatcher: public QObject
     Q_OBJECT
 
 public:
-    DeltaPatcher(const QString& patchesPath, libtorrent::torrent_handle handle);
-    ~DeltaPatcher();
+    DeltaPatcher(const QString& patchesPath, const libtorrent::torrent_handle& handle);
+    ~DeltaPatcher() override;
 
     //Patches dir to latest version.
     void patch(const QString& modPath);
