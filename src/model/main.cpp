@@ -4,6 +4,7 @@
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QDir>
+#include <QMessageBox>
 #include <QSettings>
 #include <QTextStream>
 #include "afisynclogger.h"
@@ -61,9 +62,17 @@ TreeModel* generalInit(QObject* parent = nullptr)
 int gui(int argc, char* argv[])
 {
     QApplication app(argc, argv);
+    if (ProcessMonitor::afiSyncRunning())
+    {
+        QMessageBox msgBox;
+        msgBox.setText("AFISync process is already running.");
+        msgBox.exec();
+        exit(1);
+    }
     #ifndef QT_DEBUG
             AfiSyncLogger* logger = initStandalone();
     #endif
+
     MainWindow* mainWindow = new MainWindow();
     TreeModel* treeModel = generalInit(mainWindow);
     mainWindow->show();
