@@ -18,8 +18,9 @@
 
 #include "../../cihash.h"
 #include "../isync.h"
-#include "speedestimator.h"
+#include "alerthandler.h"
 #include "deltamanager.h"
+#include "speedestimator.h" // TODO: Remove?
 
 class LibTorrentApi : public QObject, virtual public ISync
 {
@@ -114,11 +115,13 @@ private:
     CiHash<QString> prefixMap_;
     DeltaManager* deltaManager_;
     int numResumeData_;
-    std::vector<libtorrent::alert*>* alerts_;
+    std::vector<libtorrent::alert*>* alerts_; // TODO: Make local?
     SpeedEstimator speedEstimator_;
     QString deltaUpdatesKey_;
     QString settingsPath_;
-    int64_t checkingSpeed_;
+    int64_t checkingSpeed_; // TODO: Remove?
+    AlertHandler alertHandler_;
+
 
     bool loadLtSettings();
     void saveSettings();
@@ -137,16 +140,6 @@ private:
     libtorrent::torrent_handle getHandle(const QString& key);
     bool addFolder(const QString& key, const QString& name, bool patchingEnabled);
     void createDeltaManager(libtorrent::torrent_handle handle, const QString& key);
-    void handleAlert(libtorrent::alert* a);
-    void handleListenFailedAlert(const libtorrent::listen_failed_alert* a) const;
-    void handleTorrentCheckAlert(const libtorrent::torrent_checked_alert* a) const;
-    void handleTorrentFinishedAlert(const libtorrent::torrent_finished_alert* a);
-    void handleListenSucceededAlert(const libtorrent::listen_succeeded_alert* a) const;
-    void handleFastresumeRejectedAlert(const libtorrent::fastresume_rejected_alert* a) const;
-    void handleMetadataReceivedAlert(const libtorrent::metadata_received_alert* a) const;
-    void handleMetadataFailedAlert(const libtorrent::metadata_failed_alert* a) const;
-    void handlePortmapErrorAlert(const libtorrent::portmap_error_alert* a) const;
-    void handlePortmapAlert(const libtorrent::portmap_alert* a) const;
     libtorrent::torrent_handle getHandleSilent(const QString& key);
     bool folderChecking(const libtorrent::torrent_status& status) const;
     bool folderQueued(const libtorrent::torrent_status& status) const;

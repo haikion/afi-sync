@@ -72,7 +72,8 @@ SOURCES += src/model/main.cpp \
     src/view/mainwindow.cpp \
     src/view/optionalsetting.cpp \
     src/view/pathsetting.cpp \
-    src/model/jsonutils.cpp
+    src/model/jsonutils.cpp \
+    src/model/apis/libtorrent/alerthandler.cpp
 
 HEADERS += \
     src/model/treeitem.h \
@@ -117,7 +118,8 @@ HEADERS += \
     src/view/mainwindow.h \
     src/view/optionalsetting.h \
     src/view/pathsetting.h \
-    src/model/jsonutils.h
+    src/model/jsonutils.h \
+    src/model/apis/libtorrent/alerthandler.h
 
 DISTFILES += \
     AFISync.rc \
