@@ -86,6 +86,7 @@ QSet<QString> SyncItem::createActiveStatuses()
     retVal.insert(SyncStatus::READY);
     retVal.insert(SyncStatus::READY_PAUSED);
     retVal.insert(SyncStatus::CHECKING_PATCHES);
+    retVal.insert(SyncStatus::MOVING_FILES);
     return retVal;
 }
 

@@ -73,7 +73,9 @@ SOURCES += src/model/main.cpp \
     src/view/optionalsetting.cpp \
     src/view/pathsetting.cpp \
     src/model/jsonutils.cpp \
-    src/model/apis/libtorrent/alerthandler.cpp
+    src/model/apis/libtorrent/alerthandler.cpp \
+    src/model/apis/libtorrent/directorywatcher.cpp \
+    src/model/apis/libtorrent/storagemovemanager.cpp
 
 HEADERS += \
     src/model/treeitem.h \
@@ -119,7 +121,9 @@ HEADERS += \
     src/view/optionalsetting.h \
     src/view/pathsetting.h \
     src/model/jsonutils.h \
-    src/model/apis/libtorrent/alerthandler.h
+    src/model/apis/libtorrent/alerthandler.h \
+    src/model/apis/libtorrent/directorywatcher.h \
+    src/model/apis/libtorrent/storagemovemanager.h
 
 DISTFILES += \
     AFISync.rc \

@@ -7,6 +7,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QHash>
 
 template<class T> class CiHash : public QHash<QString, T>
@@ -24,6 +25,14 @@ public:
     {
         QString lowerKey = key.toLower();
         return QHash<QString, T>::remove(lowerKey);
+    }
+
+    void removeAll(const QStringList& keys)
+    {
+        for (const QString& key : keys)
+        {
+            remove(key);
+        }
     }
 
     bool contains(const QString& key) const

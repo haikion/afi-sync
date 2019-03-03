@@ -114,6 +114,12 @@ void Mod::start()
 
 void Mod::moveFiles()
 {
+    QMetaObject::invokeMethod(this, &Mod::moveFilesSlot, Qt::QueuedConnection);
+}
+
+void Mod::moveFilesSlot()
+{
+    deleteExtraFiles();
     if (sync_->folderExists(key_))
     {
         sync_->setFolderPath(key_, SettingsModel::modDownloadPath());
@@ -368,6 +374,10 @@ void Mod::updateStatus()
     else if (!sync_->folderExists(key_))
     {
         setStatus(SyncStatus::ERRORED);
+    }
+    else if (sync_->folderMovingFiles(key_))
+    {
+        setStatus(SyncStatus::MOVING_FILES);
     }
     else if (sync_->folderQueued(key_))
     {

@@ -75,6 +75,7 @@ private slots:
     void threadConstructor();
     void stopUpdatesSlot();
     void startUpdatesSlot();
+    void moveFilesSlot();
 };
 
 #endif // MODITEM_H

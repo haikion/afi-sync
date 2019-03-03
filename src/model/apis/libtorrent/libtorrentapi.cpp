@@ -68,22 +68,32 @@ void LibTorrentApi::init()
 
 void LibTorrentApi::generalInit()
 {
-    session_ = nullptr;
-    deltaManager_ = nullptr;
-    alertTimer_ = nullptr;
-    numResumeData_ = 0;
-    settingsPath_ = SettingsModel::syncSettingsPath() + "/libtorrent.dat";
-    checkingSpeed_ = 20000000;
+    ready_ = false;
     moveToThread(Global::workerThread);
+}
+
+qint64 LibTorrentApi::folderTotalWantedMoving(const QString& key)
+{
+    lt::torrent_handle handle = keyHash_.value(key);
+    return 0;
 }
 
 void LibTorrentApi::generalThreadInit()
 {
+    session_ = nullptr;
+    deltaManager_ = nullptr;
+    numResumeData_ = 0;
+    settingsPath_ = SettingsModel::syncSettingsPath() + "/libtorrent.dat";
+
     createSession();
-    alertTimer_ = new QTimer(this);
-    connect(alertTimer_, &QTimer::timeout, this, &LibTorrentApi::handleAlerts);
-    alertTimer_->setInterval(1000);
-    alertTimer_->start();
+    storageMoveManager_ = new StorageMoveManager();
+    alertHandler_ = new AlertHandler(this);
+    timer_ = new QTimer(this);
+    connect(timer_, &QTimer::timeout, this, &LibTorrentApi::handleAlerts);
+    connect(timer_, &QTimer::timeout, storageMoveManager_, &StorageMoveManager::update);
+    timer_->setInterval(1000);
+    timer_->start();
+    ready_ = true;
 }
 
 LibTorrentApi::~LibTorrentApi()
@@ -251,6 +261,11 @@ bool LibTorrentApi::folderChecking(const QString& key)
     return folderChecking(status);
 }
 
+bool LibTorrentApi::folderMovingFiles(const QString& key)
+{
+    return storageMoveManager_->contains(key);
+}
+
 bool LibTorrentApi::folderQueued(const lt::torrent_status& status) const
 {
     lt::torrent_status::state_t state = status.state;
@@ -292,6 +307,8 @@ bool LibTorrentApi::folderQueued(const QString& key)
 void LibTorrentApi::setFolderPath(const QString& key, const QString& path)
 {
     lt::torrent_handle handle = getHandle(key);
+    const std::string name = handle.name();
+    storageMoveManager_->insert(key, QString::fromStdString(handle.save_path() + "/" + name), path + "/" + QString::fromStdString(name));
     handle.move_storage(path.toStdString());
 }
 
@@ -325,55 +342,8 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
 // TODO: Remove, ETA
 int LibTorrentApi::folderEta(const QString& key)
 {
-   lt::torrent_status status = getHandle(key).status();
-   if (status.state == lt::torrent_status::state_t::checking_files)
-   {
-       if (status.queue_position == 0)
-       {
-           return checkingEta(status);
-       }
-       return queuedCheckingEta(status);
-   }
-   else if (status.state == lt::torrent_status::downloading && status.queue_position > 0)
-   {
-       return queuedDownloadEta(status);
-   }
-   else if (deltaManager_ && deltaManager_->contains(key))
-   {
-       return deltaManager_->patchingEta(key);
-   }
-   return downloadEta(status);
-}
-
-// TODO: Remove, ETA
-int64_t LibTorrentApi::checkingEta(const lt::torrent_status& status)
-{
-    static QMap<lt::sha1_hash, int64_t> lastBytesMap;
-    static QMap<lt::sha1_hash, int64_t> lastTime;
-
-    if (lastBytesMap.contains(status.info_hash))
-    {
-        int64_t dChecked = status.total_wanted_done - lastBytesMap[status.info_hash];
-        int64_t dT = runningTimeS() - lastTime[status.info_hash];
-        if (dChecked > 0 && dT > 0)
-        {
-            static const uint64_t SAMPLE_SIZE = 20;
-            static uint64_t averager[SAMPLE_SIZE];
-            static uint64_t i = 0;
-
-            //Insert average of last <=10 meassurements
-            ++i;
-            averager[i % SAMPLE_SIZE] = dChecked / dT;
-            checkingSpeed_ = std::accumulate(std::begin(averager), std::end(averager), 0) / std::min(i, SAMPLE_SIZE);
-            LOG << "Checking speed = " << checkingSpeed_;
-        }
-    }
-    lastBytesMap[status.info_hash] = status.total_wanted_done;
-    lastTime[status.info_hash] = runningTimeS();
-    if (checkingSpeed_ == 0)
-        return Constants::MAX_ETA;
-
-    return (status.total_wanted - status.total_wanted_done) / checkingSpeed_;
+    LOG_ERROR << "ERROR: folderEta() called while being deprecated";
+    return -1;
 }
 
 int LibTorrentApi::queuedDownloadEta(const lt::torrent_status& status) const
@@ -488,6 +458,12 @@ qint64 LibTorrentApi::folderTotalWanted(const QString& key)
 {
     const lt::torrent_handle handle = getHandle(key);
     const lt::torrent_status status = handle.status();
+
+    if (folderMovingFiles(key))
+    {
+        return storageMoveManager_->totalWanted(key);
+    }
+
     if (deltaManager_ && deltaManager_->contains(key))
     {
         return folderChecking(status) ? handle.get_torrent_info().total_size() : deltaManager_->totalWanted(key);
@@ -498,6 +474,11 @@ qint64 LibTorrentApi::folderTotalWanted(const QString& key)
 
 qint64 LibTorrentApi::folderTotalWantedDone(const QString& key)
 {
+    if (folderMovingFiles(key))
+    {
+        return storageMoveManager_->totalWantedDone(key);
+    }
+
     const lt::torrent_status status = getHandle(key).status();
     if (deltaManager_ && deltaManager_->contains(key))
     {
@@ -635,7 +616,7 @@ void LibTorrentApi::shutdown()
 {
     bool deleteSession = true;
 
-    alertTimer_->stop();
+    timer_->stop();
     LOG << "Alert timer stopped";
     saveSettings();
     generateResumeData();
@@ -675,6 +656,7 @@ void LibTorrentApi::shutdown()
         keyHash_.clear();
         LOG << "keyHash_ cleared";
     }
+    delete storageMoveManager_;
 }
 
 qint64 LibTorrentApi::upload()
@@ -720,7 +702,11 @@ void LibTorrentApi::setMaxDownloadSlot(const int limit)
 
 bool LibTorrentApi::ready()
 {
-    return session_ != nullptr && session_->is_valid();
+    return ready_;
+
+    //bool retVal = false;
+    //QMetaObject::invokeMethod(this, "readySlot", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool , retVal));
+    //return retVal;
 }
 
 void LibTorrentApi::setPort(int port)
@@ -763,7 +749,7 @@ void LibTorrentApi::start()
         LOG << "Delta manager restored.";
     }
 
-    alertTimer_->start();
+    timer_->start();
 }
 
 void LibTorrentApi::handleAlerts()
@@ -776,7 +762,7 @@ void LibTorrentApi::handleAlerts()
 
     auto alerts = new std::vector<lt::alert*>();
     session_->pop_alerts(alerts);
-    alertHandler_.handleAlerts(alerts);
+    alertHandler_->handleAlerts(alerts);
     delete alerts;
 }
 

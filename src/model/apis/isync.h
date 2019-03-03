@@ -22,6 +22,8 @@ public:
     virtual QList<QString> folderKeys() = 0;
     //Returns true if there are no peers.
     virtual bool folderNoPeers(const QString& key) = 0;
+    //Returns true if folder is moving files
+    virtual bool folderMovingFiles(const QString& key) = 0;
     //Returns true if folder with given key has finished (checked & downloaded).
     virtual bool folderReady(const QString& key) = 0;
     //Returns true if folder is queued for checking or downloading

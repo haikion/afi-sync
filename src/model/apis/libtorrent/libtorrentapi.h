@@ -21,8 +21,11 @@
 #include "alerthandler.h"
 #include "deltamanager.h"
 #include "speedestimator.h" // TODO: Remove?
+#include "storagemovemanager.h"
 
-class LibTorrentApi : public QObject, virtual public ISync
+// TODO: Split this into more classes in order to reduce complexity.
+// create class for managing settings
+class LibTorrentApi : public QObject, public ISync
 {
     Q_OBJECT
     Q_INTERFACES(ISync)
@@ -32,61 +35,62 @@ public:
     explicit LibTorrentApi(const QString& deltaUpdatesKey);
     ~LibTorrentApi();
 
-    virtual void setDeltaUpdatesFolder(const QString& key);
-    virtual QString deltaUpdatesKey();
-    virtual bool disableDeltaUpdates();
+    void setDeltaUpdatesFolder(const QString& key) override;
+    QString deltaUpdatesKey() override;
+    bool disableDeltaUpdates() override;
     bool disableDeltaUpdatesNoTorrents();
-    virtual void enableDeltaUpdates();
+    void enableDeltaUpdates() override;
 
-    virtual void checkFolder(const QString& key);
+    void checkFolder(const QString& key) override;
     //Returns true if there are no peers.
-    virtual bool folderNoPeers(const QString& key);
+    bool folderNoPeers(const QString& key) override;
     //Returns list of keys of added folders.
-    virtual QList<QString> folderKeys();
-    virtual bool folderReady(const QString& key);
+    QList<QString> folderKeys() override;
+    bool folderReady(const QString& key) override;
     //Returns true if folder is indexing or checking files.
-    virtual bool folderChecking(const QString& key);
-    virtual bool folderQueued(const QString& key);
+    bool folderChecking(const QString& key) override;
+    bool folderMovingFiles(const QString& key) override;
+    bool folderQueued(const QString& key) override;
     //Fetches eta to ready state. Returns time in seconds.
-    virtual int folderEta(const QString& key);
-    virtual bool folderPatching(const QString& key);
+    int folderEta(const QString& key) override;
+    bool folderPatching(const QString& key) override;
     //Adds folder, path is local system directory, key is source.
-    virtual bool addFolder(const QString& key, const QString& name);
+    bool addFolder(const QString& key, const QString& name) override;
     //Removes folder with specific key.
-    virtual void removeFolder(const QString& key);
+    void removeFolder(const QString& key) override;
     //Returns list of files in folder in upper case format.
-    virtual QSet<QString> folderFilesUpper(const QString& key);
+    QSet<QString> folderFilesUpper(const QString& key) override;
     //Returns true if folder with specific key exists.
-    virtual bool folderExists(const QString& key);
-    void setFolderPath(const QString& key, const QString& path);
+    bool folderExists(const QString& key) override;
+    void setFolderPath(const QString& key, const QString& path) override;
     //Returns true if folder is paused
-    virtual bool folderPaused(const QString& key);
+    bool folderPaused(const QString& key) override;
     //Sets folder in paused mode or starts if if value is set to false.
-    virtual void setFolderPaused(const QString& key, bool value);
+    void setFolderPaused(const QString& key, bool value) override;
     //Returns string describing the error. Returns empty string if no error.
-    virtual QString folderError(const QString& key);
+    QString folderError(const QString& key) override;
     //Returns file system path of the folder with specific key.
-    virtual QString folderPath(const QString& key);
+    QString folderPath(const QString& key) override;
     //Total bandwiths
-    virtual qint64 download() const;
-    virtual qint64 upload();
+    qint64 download() const override;
+    qint64 upload() override;
     //Sets global max upload
-    virtual void setMaxUpload(const int limit);
+    void setMaxUpload(const int limit) override;
     //Sets global max download
-    virtual void setMaxDownload(const int limit);
+    void setMaxDownload(const int limit) override;
     //Returns true if the sync has loaded and is ready to take commands.
-    virtual bool ready();
+    bool ready() override;
     //Sets outgoing port.
-    virtual void setPort(int port);
+    void setPort(int port) override;
     //Restarts sync
-    virtual void start();    
-    virtual bool folderDownloadingPatches(const QString& key);
-    virtual void disableQueue(const QString& key);
-    virtual qint64 folderTotalWanted(const QString& key);
-    virtual qint64 folderTotalWantedDone(const QString& key);
-    virtual void cleanUnusedFiles(const QSet<QString> usedKeys);
-    virtual bool folderExtractingPatch(const QString& key);
-    virtual bool folderCheckingPatches(const QString& key);
+    void start() override;
+    bool folderDownloadingPatches(const QString& key) override;
+    void disableQueue(const QString& key) override;
+    qint64 folderTotalWanted(const QString& key) override;
+    qint64 folderTotalWantedDone(const QString& key) override;
+    void cleanUnusedFiles(const QSet<QString> usedKeys) override;
+    bool folderExtractingPatch(const QString& key) override;
+    bool folderCheckingPatches(const QString& key) override;
 
 private slots:
     void handleAlerts();
@@ -98,7 +102,7 @@ private slots:
     void setPortSlot(int port);
     void enableDeltaUpdatesSlot();
     void initDelta();
-    void shutdown();
+    void shutdown();    
 
 signals:
     void initCompleted();
@@ -108,20 +112,23 @@ private:
     static const QString ERROR_KEY_NOT_FOUND;
     static const QString ERROR_SESSION_NULL;
 
-    QTimer* alertTimer_;
+    QTimer* timer_;
     libtorrent::session* session_;
+    // TODO: Create single type called TorrentHandle
+    // and combine these.
     CiHash<libtorrent::torrent_handle> keyHash_;
     CiHash<libtorrent::add_torrent_params> torrentParams_;
     CiHash<QString> prefixMap_;
+
     DeltaManager* deltaManager_;
     int numResumeData_;
-    std::vector<libtorrent::alert*>* alerts_; // TODO: Make local?
     SpeedEstimator speedEstimator_;
     QString deltaUpdatesKey_;
     QString settingsPath_;
     int64_t checkingSpeed_; // TODO: Remove?
-    AlertHandler alertHandler_;
-
+    AlertHandler* alertHandler_;
+    StorageMoveManager* storageMoveManager_;
+    std::atomic<bool> ready_;
 
     bool loadLtSettings();
     void saveSettings();
@@ -146,11 +153,11 @@ private:
     int queuedCheckingEta(const libtorrent::torrent_status& status) const;
     int queuedDownloadEta(const libtorrent::torrent_status& status) const;
     int downloadEta(const libtorrent::torrent_status& status) const;
-    int64_t checkingEta(const libtorrent::torrent_status& status); //TODO: Deleta, ETA no longer used
     libtorrent::torrent_handle addFolderFromParams(const QString& key);
     void removeFiles(const QString& hashString);
     void generalThreadInit();
     void generalInit();
+    qint64 folderTotalWantedMoving(const QString& key);
 };
 
 #endif // LIBTORRENTAPI_H
