@@ -69,6 +69,10 @@ void LibTorrentApi::init()
 void LibTorrentApi::generalInit()
 {
     ready_ = false;
+    session_ = nullptr;
+    deltaManager_ = nullptr;
+    numResumeData_ = 0;
+    settingsPath_ = SettingsModel::syncSettingsPath() + "/libtorrent.dat";
     moveToThread(Global::workerThread);
 }
 
@@ -80,11 +84,6 @@ qint64 LibTorrentApi::folderTotalWantedMoving(const QString& key)
 
 void LibTorrentApi::generalThreadInit()
 {
-    session_ = nullptr;
-    deltaManager_ = nullptr;
-    numResumeData_ = 0;
-    settingsPath_ = SettingsModel::syncSettingsPath() + "/libtorrent.dat";
-
     createSession();
     storageMoveManager_ = new StorageMoveManager();
     alertHandler_ = new AlertHandler(this);
