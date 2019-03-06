@@ -12,6 +12,7 @@ AsTreeWidget::AsTreeWidget(QWidget* parent): QTreeWidget(parent)
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, &AsTreeWidget::customContextMenuRequested, this, &AsTreeWidget::showContextMenu);
     header()->setStretchLastSection(false);
+    setExpandsOnDoubleClick(false);
 }
 
 void AsTreeWidget::update()
