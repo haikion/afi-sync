@@ -2,6 +2,7 @@
 #include <map>
 
 #include <QDirIterator>
+#include <QEventLoop>
 #include <QFile>
 #include <QFileInfo>
 #include <QThread>
@@ -97,7 +98,16 @@ void LibTorrentApi::generalThreadInit()
 
 LibTorrentApi::~LibTorrentApi()
 {
-    QMetaObject::invokeMethod(this, &LibTorrentApi::shutdown, Qt::BlockingQueuedConnection);
+    QMetaObject::invokeMethod(this, &LibTorrentApi::shutdown, Qt::QueuedConnection);
+    // Wait for shutdown signal for 15 s. LibTorrent might hang at destruction.
+    // Implement better solution once such thing is discovered.
+    QTimer timer;
+    timer.setSingleShot(true);
+    QEventLoop loop;
+    connect(this, &LibTorrentApi::shutdownCompleted, &loop, &QEventLoop::quit);
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(15000);
+    loop.exec();
 }
 
 bool LibTorrentApi::createSession()
@@ -656,6 +666,7 @@ void LibTorrentApi::shutdown()
         LOG << "keyHash_ cleared";
     }
     delete storageMoveManager_;
+    emit shutdownCompleted();
 }
 
 qint64 LibTorrentApi::upload()
@@ -702,10 +713,6 @@ void LibTorrentApi::setMaxDownloadSlot(const int limit)
 bool LibTorrentApi::ready()
 {
     return ready_;
-
-    //bool retVal = false;
-    //QMetaObject::invokeMethod(this, "readySlot", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool , retVal));
-    //return retVal;
 }
 
 void LibTorrentApi::setPort(int port)

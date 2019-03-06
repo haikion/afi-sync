@@ -106,6 +106,7 @@ private slots:
 
 signals:
     void initCompleted();
+    void shutdownCompleted();
 
 private:
     static const int NOT_FOUND; //Unable to fetch eta
