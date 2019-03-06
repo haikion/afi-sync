@@ -308,7 +308,7 @@ void Repository::updateEtaAndStatus()
 
 QString Repository::modsParameter()
 {
-    if (childItems().size() == 0)
+    if (modAdapters_.isEmpty())
     {
         return QString();
     }
@@ -352,7 +352,7 @@ void Repository::appendModAdapter(ModAdapter* adp, int index)
 {
     setFileSize(fileSize() + adp->mod()->fileSize());
 
-    TreeItem::appendChild(adp, index);
+    modAdapters_.insert(index, adp);
 }
 
 QString Repository::startText()
@@ -445,9 +445,9 @@ bool Repository::contains(const QString& key) const
 QList<Mod*> Repository::mods() const
 {
     QList<Mod*> rVal;
-    for (TreeItem* item : TreeItem::childItems())
+    for (ModAdapter* item : modAdapters_)
     {
-        rVal.append(static_cast<ModAdapter*>(item)->mod());
+        rVal.append(item->mod());
     }
     return rVal;
 }
@@ -461,31 +461,22 @@ void Repository::removeDeprecatedMods(const QSet<QString> jsonMods)
     }
 }
 
-void Repository::clearMods()
+void Repository::clearModAdapters()
 {
-    QList<TreeItem*> childs = childItems();
-    for (TreeItem* child : childs)
-    {
-        removeChild(child);
-    }
+    modAdapters_.clear();
 }
 
 QList<ISyncItem*> Repository::uiMods() const
 {
     QList<ISyncItem*> rVal;
-    for (TreeItem* item : TreeItem::childItems())
+    for (ModAdapter* item : modAdapters_)
     {
-        rVal.append(static_cast<ModAdapter*>(item));
+        rVal.append(item);
     }
     return rVal;
 }
 
 QList<ModAdapter*> Repository::modAdapters() const
 {
-    QList<ModAdapter*> rVal;
-    for (TreeItem* item : TreeItem::childItems())
-    {
-        rVal.append(static_cast<ModAdapter*>(item));
-    }
-    return rVal;
+    return modAdapters_;
 }

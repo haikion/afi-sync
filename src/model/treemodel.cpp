@@ -234,7 +234,7 @@ void TreeModel::updateRepositories()
     for (Repository* repo : deletables)
     {
         QList<Mod*> mods = repo->mods();
-        repo->clearMods();
+        repo->clearModAdapters();
         for (Mod* mod : mods)
         {
             mod->removeRepository(repo);
@@ -243,7 +243,7 @@ void TreeModel::updateRepositories()
                 mod->deleteLater();
             }
         }
-        repo->deleteLater();
+        delete repo;
     }
     emit repositoriesChanged(toIrepositories(repositories_));
 }

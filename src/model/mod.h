@@ -11,7 +11,7 @@
 class Repository;
 class ModAdapter;
 
-class Mod : public SyncItem
+class Mod : public QObject, public SyncItem
 {
     Q_OBJECT
 
@@ -23,7 +23,6 @@ public:
     void moveFiles();
     void check();
     QString key() const;
-    virtual Repository* parentItem();
     void appendRepository(Repository* repository);
     virtual void checkboxClicked();
     QSet<Repository*> repositories() const;

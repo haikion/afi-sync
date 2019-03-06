@@ -14,7 +14,7 @@
 const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 
 Mod::Mod(const QString& name, const QString& key, ISync* sync):
-    SyncItem(name, nullptr),
+    SyncItem(name),
     key_(key),
     sync_(sync),
     updateTimer_(nullptr),
@@ -345,7 +345,7 @@ void Mod::removeRepositorySlot(Repository* repository)
 
     for (ModAdapter* adp : adapters_)
     {
-        if (adp->parentItem() == repository)
+        if (adp->repo() == repository)
         {
             adapters_.removeAll(adp);
             delete adp;
@@ -547,9 +547,4 @@ void Mod::updateEta() //TODO: Remove, ETA
         return;
     }
     setEta(sync_->folderEta(key_));
-}
-
-Repository* Mod::parentItem() //TODO: Remove, QML
-{
-    return static_cast<Repository*>(TreeItem::parentItem());
 }

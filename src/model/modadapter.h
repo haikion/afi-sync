@@ -14,8 +14,6 @@
  */
 class ModAdapter : public SyncItem
 {
-    Q_OBJECT
-
 public:
     ModAdapter(Mod* mod, Repository* repo, bool optional, int index);
     ~ModAdapter() = default;

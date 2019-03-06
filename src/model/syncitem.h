@@ -11,10 +11,10 @@
 #include "interfaces/isyncitem.h"
 #include "treeitem.h"
 
-class SyncItem : public TreeItem, public QObject, virtual public ISyncItem
+class SyncItem : virtual public ISyncItem
 {
 public:
-    explicit SyncItem(const QString& name, TreeItem* parentItem = nullptr);
+    explicit SyncItem(const QString& name);
 
     virtual QString checkText(); //TODO: Remove, QML
     virtual QString nameText();

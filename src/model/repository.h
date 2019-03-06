@@ -50,7 +50,7 @@ public:
     void setPassword(const QString& password);    
     QSet<QString> modKeys() const;    
     void removeDeprecatedMods(const QSet<QString> jsonMods);
-    void clearMods();
+    void clearModAdapters();
 
 private:
     ISync* sync_;
@@ -61,6 +61,7 @@ private:
     //True if repo is ready
     bool ready_;
     bool battlEyeEnabled_;
+    QList<ModAdapter*> modAdapters_;
 
     QString modsParameter();
     QStringList joinParameters() const;

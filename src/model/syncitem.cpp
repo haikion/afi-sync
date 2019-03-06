@@ -3,10 +3,8 @@
 #include "global.h"
 #include "syncitem.h"
 
-SyncItem::SyncItem(const QString& name, TreeItem* parentItem):
-    TreeItem(name, parentItem), //TOD: Remove, QML
+SyncItem::SyncItem(const QString& name):
     name_(name),
-    eta_(Constants::MAX_ETA), //TODO: Remove, eta
     fileSize_(0)
 {
     setStatus(SyncStatus::NO_SYNC_CONNECTION);

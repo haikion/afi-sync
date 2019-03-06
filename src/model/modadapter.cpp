@@ -4,13 +4,11 @@
 #include "settingsmodel.h"
 
 ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index):
-    SyncItem(mod->name(), repo),
+    SyncItem(mod->name()),
     mod_(mod),
     repo_(repo),
     isOptional_(isOptional)
 {
-    setParentItem(repo);
-    QString repoStr = repo_->name().replace("/| ","_");
     //Connect everything
     setFileSize(mod->fileSize());
     repo->appendModAdapter(this, index);
