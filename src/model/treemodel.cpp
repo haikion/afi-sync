@@ -39,9 +39,12 @@ TreeModel::TreeModel(QObject* parent):
     connect(&updateTimer_, &QTimer::timeout, this, &TreeModel::update);
     updateTimer_.start();
 
-    repoUpdateTimer_.setInterval(30000);
+    //repoUpdateTimer_.setInterval(30000);
+    repoUpdateTimer_.setInterval(1000);
     connect(&repoUpdateTimer_, &QTimer::timeout, this, &TreeModel::periodicRepoUpdate);
     repoUpdateTimer_.start();
+
+    qRegisterMetaType<Repository*>("Repository*");
 }
 
 //TODO: Remove
@@ -205,11 +208,44 @@ void TreeModel::periodicRepoUpdate()
     if (jsonReader_.updateAvailable())
     {
         LOG << "Updating repositories";
-        jsonReader_.updateRepositories(sync_, repositories_);
-        emit repositoriesChanged(toIrepositories(repositories_));
+        updateRepositories();
         return;
     }
     LOG << "No repo updates";
+}
+
+void TreeModel::updateRepositories()
+{
+    QList<Repository*> updatedList = repositories_;
+    jsonReader_.updateRepositories(sync_, updatedList);
+
+    QList<Repository*> deletables;
+    for (Repository* repo : repositories_)
+    {
+        if (!updatedList.contains(repo))
+        {
+            deletables.append(repo);
+        }
+    }
+
+    repositories_.clear();
+    repositories_.append(updatedList);
+
+    for (Repository* repo : deletables)
+    {
+        QList<Mod*> mods = repo->mods();
+        repo->clearMods();
+        for (Mod* mod : mods)
+        {
+            mod->removeRepository(repo);
+            if (mod->repositories().isEmpty())
+            {
+                mod->deleteLater();
+            }
+        }
+        repo->deleteLater();
+    }
+    emit repositoriesChanged(toIrepositories(repositories_));
 }
 
 QList<IRepository*> TreeModel::toIrepositories(const QList<Repository*> repositories)

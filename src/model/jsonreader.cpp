@@ -132,8 +132,6 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
             new ModAdapter(newMod, repo, mod.value("optional", false).toBool(), i);
         }
         repositoryJsonModKeys.insert(repo, jsonModKeys);
-        if (!repositories.contains(repo))
-            repositories.append(repo);
     }
 
     // First add all mods and then remove deprecated in order to not
@@ -143,6 +141,8 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
         repo->removeDeprecatedMods(repositoryJsonModKeys.value(repo));
         repo->startUpdates();
     }
+    repositories.clear();
+    repositories.append(repositoryJsonModKeys.keys());
 }
 
 void JsonReader::updateRepositories(ISync* sync, QList<Repository*>& repositories)

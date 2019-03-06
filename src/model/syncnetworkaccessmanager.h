@@ -26,7 +26,8 @@ public:
     QByteArray fetchBytes(const QString& url);
 
 private slots:
-    void syncGetSlot(QNetworkRequest req, QNetworkReply*& reply, int timeout);
+    void syncGetSlot(QNetworkRequest req, QNetworkReply*& reply, int timeout);    
+    QByteArray fetchBytesSlot(const QString& url);
 
 private:
     static const int DEFAULT_TIMEOUT;

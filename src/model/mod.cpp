@@ -41,6 +41,7 @@ Mod::~Mod()
 
 void Mod::threadConstructor()
 {
+    updateTicked();
     updateTimer_ = new QTimer(this);
     updateTimer_->setTimerType(Qt::VeryCoarseTimer);
     updateTimer_->setInterval(1000);
@@ -213,18 +214,28 @@ void Mod::deleteExtraFiles()
     LOG << "Completed name = " << name();
 }
 
-//Returns true if at least one adapter is active.
 bool Mod::ticked()
 {
+    return ticked_;
+}
+
+void Mod::updateTicked()
+{
     if (!optional() && !reposInactive())
-        return true;
+    {
+        ticked_ = true;
+        return;
+    }
 
     for (ModAdapter* adp : modAdapters())
     {
         if (adp->ticked())
-            return true;
+        {
+            ticked_ = true;
+            return;
+        }
     }
-    return false;
+    ticked_ = false;
 }
 
 //If all repositories this mod is included in are disabled then stop the
@@ -254,6 +265,7 @@ void Mod::repositoryChanged()
         LOG << "Starting mod transfer. name = " << name();
         start();
     }
+    updateTicked();
 }
 
 QSet<Repository*> Mod::repositories() const
@@ -322,26 +334,26 @@ void Mod::appendRepository(Repository* repository)
     QMetaObject::invokeMethod(this, &Mod::repositoryChanged, Qt::QueuedConnection);
 }
 
-bool Mod::removeRepository(Repository* repository)
+void Mod::removeRepository(Repository* repository)
 {
-    const QString errorMsg = QString("ERROR: Mod %1 not found in repository %2.").
-            arg(name()).arg(repository->name());
+    QMetaObject::invokeMethod(this, "removeRepositorySlot", Qt::QueuedConnection, Q_ARG(Repository*, repository));
+}
 
-    repositoriesMutex_.lock();
+void Mod::removeRepositorySlot(Repository* repository)
+{
     repositories_.remove(repository);
-    repositoriesMutex_.unlock();
 
     for (ModAdapter* adp : adapters_)
     {
         if (adp->parentItem() == repository)
         {
-            repository->removeChild(adp);
+            adapters_.removeAll(adp);
+            delete adp;
             LOG << "Mod View Adapter removed.";
-            return true;
+            updateTicked();
         }
     }
-    LOG << errorMsg;
-    return false;
+    updateTicked();
 }
 
 //Returns true only if all adapters are optional
@@ -516,16 +528,13 @@ void Mod::checkboxClicked()
 
 bool Mod::reposInactive()
 {
-    repositoriesMutex_.lock();
     for (Repository* repo : repositories_)
     {
         if (repo->statusStr() != SyncStatus::INACTIVE)
         {
-            repositoriesMutex_.unlock();
             return false;
         }
     }
-    repositoriesMutex_.unlock();
     return true;
 }
 

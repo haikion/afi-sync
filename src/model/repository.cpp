@@ -129,12 +129,6 @@ void Repository::startUpdates()
 Repository::~Repository()
 {
     LOG << "name = " << name();
-    for (Mod* mod : mods())
-    {
-        //Remove mod object from repository but keep
-        //mod settings.
-        removeMod(mod, false);
-    }
 }
 
 void Repository::check()
@@ -422,11 +416,7 @@ bool Repository::removeMod(const QString& key)
 bool Repository::removeMod(Mod* mod, bool removeFromSync)
 {
     //Removes mod view adapter.
-    if (!mod->removeRepository(this))
-    {
-        LOG_ERROR << "Unable to remove " << mod->name() << " from repository " << name();
-        return false;
-    }
+    mod->removeRepository(this);
     if (mod->repositories().size() == 0 && removeFromSync)
     {
         //Mod may not exist if it doesn't belong to any repo.
@@ -468,6 +458,15 @@ void Repository::removeDeprecatedMods(const QSet<QString> jsonMods)
     for (const QString& key : deprecatedMods)
     {
         removeMod(key);
+    }
+}
+
+void Repository::clearMods()
+{
+    QList<TreeItem*> childs = childItems();
+    for (TreeItem* child : childs)
+    {
+        removeChild(child);
     }
 }
 

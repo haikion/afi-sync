@@ -33,7 +33,16 @@ QNetworkReply* SyncNetworkAccessManager::syncGet(QNetworkRequest req, int timeou
 
 QByteArray SyncNetworkAccessManager::fetchBytes(const QString& url)
 {
-    QNetworkReply* reply = syncGet(QNetworkRequest(url));
+    QByteArray retVal;
+    QMetaObject::invokeMethod(this, "fetchBytesSlot", Qt::BlockingQueuedConnection,
+                              Q_RETURN_ARG(QByteArray, retVal), Q_ARG(QString, url));
+    return retVal;
+}
+
+QByteArray SyncNetworkAccessManager::fetchBytesSlot(const QString& url)
+{
+    QNetworkReply * reply = nullptr;
+    syncGetSlot(QNetworkRequest(url), reply, DEFAULT_TIMEOUT);
     if (reply->bytesAvailable() == 0)
     {
         LOG_WARNING << "Failed. url = " << url;

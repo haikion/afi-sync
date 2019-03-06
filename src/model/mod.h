@@ -42,9 +42,10 @@ public:
     virtual QString progressStr();
     static QString bytesToMegasCeilStr(const qint64 bytes);
     static QString toProgressStr(const qint64 totalWanted, qint64 totalWantedDone);
+    void removeRepository(Repository* repository);
+
 public slots:
     void repositoryChanged();
-    bool removeRepository(Repository* repository);
 
 private:
     static const unsigned COMPLETION_WAIT_DURATION;
@@ -58,6 +59,7 @@ private:
     QAtomicInteger<qint64> totalWanted_;
     QAtomicInteger<qint64> totalWantedDone_;
     QMutex repositoriesMutex_;
+    std::atomic<bool> ticked_;
 
     void buildPathHash();
     void updateEta();
@@ -69,6 +71,8 @@ private:
     void setProcessCompletion(const bool value);
     bool getProcessCompletion() const;
     void updateProgress();
+    void updateTicked();
+
 private slots:
     void update();
     void init();
@@ -76,6 +80,7 @@ private slots:
     void stopUpdatesSlot();
     void startUpdatesSlot();
     void moveFilesSlot();
+    void removeRepositorySlot(Repository* repository);
 };
 
 #endif // MODITEM_H

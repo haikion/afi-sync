@@ -50,6 +50,7 @@ public:
     void setPassword(const QString& password);    
     QSet<QString> modKeys() const;    
     void removeDeprecatedMods(const QSet<QString> jsonMods);
+    void clearMods();
 
 private:
     ISync* sync_;
