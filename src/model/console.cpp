@@ -1,4 +1,3 @@
-#include <QTimer>
 #include "afisynclogger.h"
 #include "console.h"
 
