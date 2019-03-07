@@ -3,23 +3,20 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QCoreApplication>
-#include <QDir>
 #include <QMessageBox>
-#include <QSettings>
-#include <QTextStream>
+#include "../view/mainwindow.h"
 #include "afisynclogger.h"
+#include "apis/libtorrent/ahasher.h"
 #include "apis/libtorrent/deltapatcher.h"
+#include "apis/libtorrent/libtorrentapi.h"
 #include "constantsmodel.h"
 #include "crashhandler/crashhandler.h"
 #include "fileutils.h"
 #include "global.h"
 #include "processmonitor.h"
 #include "settingsmodel.h"
-#include "treemodel.h"
 #include "settingsuimodel.h"
-#include "apis/libtorrent/ahasher.h"
-#include "apis/libtorrent/libtorrentapi.h"
-#include "../view/mainwindow.h"
+#include "treemodel.h"
 #include "version.h"
 
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
