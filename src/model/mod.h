@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QTimer>
 #include <QSet>
-#include <QVector>
+#include <QList>
 #include "apis/isync.h"
 #include "syncitem.h"
 
@@ -29,9 +29,9 @@ public:
     void deleteExtraFiles();
     virtual bool ticked();
     void processCompletion();
-    QVector<ModAdapter*> modAdapters() const;
+    QList<ModAdapter*> modAdapters();
     void appendModAdapter(ModAdapter* adapter);
-    virtual bool optional() const;
+    bool optional() override;
     void stopUpdates();
     void startUpdates();
     void updateStatus();
@@ -54,11 +54,12 @@ private:
     QTimer* updateTimer_;
     QSet<Repository*> repositories_;
     unsigned waitTime_;
-    QVector<ModAdapter*> adapters_;
+    QList<ModAdapter*> adapters_;
     QAtomicInteger<qint64> totalWanted_;
     QAtomicInteger<qint64> totalWantedDone_;
     QMutex repositoriesMutex_;
     std::atomic<bool> ticked_;
+    QMutex adaptersMutex_;
 
     void buildPathHash();
     void updateEta();

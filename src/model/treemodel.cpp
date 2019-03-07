@@ -39,8 +39,7 @@ TreeModel::TreeModel(QObject* parent):
     connect(&updateTimer_, &QTimer::timeout, this, &TreeModel::update);
     updateTimer_.start();
 
-    //repoUpdateTimer_.setInterval(30000);
-    repoUpdateTimer_.setInterval(1000);
+    repoUpdateTimer_.setInterval(30000);
     connect(&repoUpdateTimer_, &QTimer::timeout, this, &TreeModel::periodicRepoUpdate);
     repoUpdateTimer_.start();
 

@@ -32,7 +32,7 @@ Mod::Mod(const QString& name, const QString& key, ISync* sync):
 
 Mod::~Mod()
 {
-    for (ModAdapter* adp : adapters_)
+    for (ModAdapter* adp : modAdapters())
     {
         LOG << "Destroying adapter";
         delete adp;
@@ -343,11 +343,14 @@ void Mod::removeRepositorySlot(Repository* repository)
 {
     repositories_.remove(repository);
 
-    for (ModAdapter* adp : adapters_)
+    QList<ModAdapter*> adps = modAdapters();
+    for (ModAdapter* adp : adps)
     {
         if (adp->repo() == repository)
         {
+            adaptersMutex_.lock();
             adapters_.removeAll(adp);
+            adaptersMutex_.unlock();
             delete adp;
             LOG << "Mod View Adapter removed.";
             updateTicked();
@@ -357,7 +360,7 @@ void Mod::removeRepositorySlot(Repository* repository)
 }
 
 //Returns true only if all adapters are optional
-bool Mod::optional() const
+bool Mod::optional()
 {
     bool rVal = true;
     for (ModAdapter* adp : modAdapters())
@@ -367,14 +370,19 @@ bool Mod::optional() const
     return rVal;
 }
 
-QVector<ModAdapter*> Mod::modAdapters() const
+QList<ModAdapter*> Mod::modAdapters()
 {
-    return adapters_;
+    adaptersMutex_.lock();
+    QList<ModAdapter*> retVal = adapters_;
+    adaptersMutex_.unlock();
+    return retVal;
 }
 
 void Mod::appendModAdapter(ModAdapter* adapter)
 {
+    adaptersMutex_.lock();
     adapters_.append(adapter);
+    adaptersMutex_.unlock();
 }
 
 void Mod::updateStatus()

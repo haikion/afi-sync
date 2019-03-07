@@ -94,6 +94,7 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
         }
     }
     QHash<Repository*, QSet<QString>> repositoryJsonModKeys;
+    QList<Repository*> orderedRepositoryList;
     for (const QVariant& repoVar : jsonRepositories)
     {
         QVariantMap repository = qvariant_cast<QVariantMap>(repoVar);
@@ -132,6 +133,7 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
             new ModAdapter(newMod, repo, mod.value("optional", false).toBool(), i);
         }
         repositoryJsonModKeys.insert(repo, jsonModKeys);
+        orderedRepositoryList.append(repo);
     }
 
     // First add all mods and then remove deprecated in order to not
@@ -142,7 +144,7 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
         repo->startUpdates();
     }
     repositories.clear();
-    repositories.append(repositoryJsonModKeys.keys());
+    repositories.append(orderedRepositoryList);
 }
 
 void JsonReader::updateRepositories(ISync* sync, QList<Repository*>& repositories)

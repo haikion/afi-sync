@@ -30,7 +30,7 @@ public:
     virtual QString joinText(); // TODO: Remove, QML
     virtual void join();
     virtual void start();
-    virtual bool optional() const;
+    bool optional() override;
     QList<Mod*> mods() const;
     QList<ISyncItem*> uiMods() const;
     void processCompletion();

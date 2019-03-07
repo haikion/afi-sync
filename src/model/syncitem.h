@@ -23,7 +23,7 @@ public:
     virtual void check() = 0;
     virtual int eta() const;
     virtual QString etaStr() const;
-    virtual bool optional() const = 0;
+    virtual bool optional() = 0;
     virtual bool ticked() = 0;
     virtual void checkboxClicked() = 0;
     virtual QString name() const;

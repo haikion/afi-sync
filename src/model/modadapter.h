@@ -26,7 +26,7 @@ public:
     virtual bool ticked();
     virtual void processCompletion();
     virtual int eta() const;
-    virtual bool optional() const;
+    bool optional() override;
     virtual QString progressStr();
     Mod* mod() const;
     Repository* repo() const;

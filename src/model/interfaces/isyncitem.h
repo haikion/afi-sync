@@ -36,7 +36,7 @@ public:
     virtual QString statusStr() = 0;
     virtual QString etaStr() const = 0;
     virtual QString sizeStr() const = 0;
-    virtual bool optional() const = 0;
+    virtual bool optional() = 0; // Mutex reading
     virtual bool ticked() = 0;
     virtual void checkboxClicked() = 0;
     virtual void check() = 0;

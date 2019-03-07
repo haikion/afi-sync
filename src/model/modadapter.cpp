@@ -76,7 +76,7 @@ void ModAdapter::setTicked(bool checked)
     mod_->checkboxClicked();
 }
 
-bool ModAdapter::optional() const
+bool ModAdapter::optional()
 {
     return isOptional_;
 }
