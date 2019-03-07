@@ -20,6 +20,7 @@
 #include "apis/libtorrent/ahasher.h"
 #include "apis/libtorrent/libtorrentapi.h"
 #include "../view/mainwindow.h"
+#include "version.h"
 
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
 
@@ -50,6 +51,7 @@ AfiSyncLogger* initStandalone()
 
 TreeModel* generalInit(QObject* parent = nullptr)
 {
+    LOG << "Version: " << VERSION_CHARS;
     Global::workerThread = new QThread();
     Global::workerThread->setObjectName("workerThread");
     Global::workerThread->start();

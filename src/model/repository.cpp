@@ -178,7 +178,7 @@ void Repository::start()
     generalLaunch();
 }
 
-bool Repository::optional() const
+bool Repository::optional()
 {
     return true; //Repositories are always optional
 }
