@@ -25,7 +25,6 @@ QSet<QString> AfiSync::activeModNames(const IRepository* repository)
     QSet<QString> retVal;
     for (IMod* mod : repository->uiMods())
     {
-        //FIXME: Incorrect?
         if (mod->selected())
         {
             retVal.insert(mod->name());
