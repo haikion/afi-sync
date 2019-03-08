@@ -1,4 +1,3 @@
-
 #include <QDir>
 
 #include <gtest/gtest.h>
@@ -6,14 +5,13 @@
 #include <gmock/gmock-matchers.h>
 
 #include "../app/src/model/deletabledetector.h"
-#include "../app/src/model/interfaces/irepository.h"
 #include "../app/src/model/afisync.h"
 
-using namespace testing;
+#include "mockmod.h"
+#include "mockrepository.h"
+#include "testconstants.h"
 
-static const QString NAME_1 = "@test1";
-static const QString NAME_2 = "@test2";
-static const QString NAME_3 = "@test3";
+using namespace testing;
 
 class DeletableDetectorTest : public Test
 {
@@ -35,30 +33,6 @@ class DeletableDetectorTest : public Test
     }
 };
 
-class MockSyncItem : virtual public ISyncItem
-{
-public:
-    MockSyncItem() = default;
-    MOCK_CONST_METHOD0(name, QString());
-    MOCK_METHOD0(ticked, bool());
-    MOCK_CONST_METHOD0(active, bool());
-    MOCK_METHOD0(statusStr, QString());
-    MOCK_CONST_METHOD0(etaStr, QString());
-    MOCK_CONST_METHOD0(sizeStr, QString());
-    MOCK_METHOD0(optional, bool());
-    MOCK_METHOD0(checkboxClicked, void());
-    MOCK_METHOD0(check, void());
-    MOCK_METHOD0(progressStr, QString());
-};
-
-class MockRepository : public MockSyncItem, virtual public IRepository
-{
-public:
-    MOCK_METHOD0(start, void());
-    MOCK_METHOD0(join, void());
-    MOCK_CONST_METHOD0(uiMods, QList<ISyncItem*>());
-};
-
 TEST_F(DeletableDetectorTest, emptyDirs)
 {
     QList<IRepository*> repositories;
@@ -73,10 +47,10 @@ TEST_F(DeletableDetectorTest, emptyDirs)
 
 TEST_F(DeletableDetectorTest, twoDeletables)
 {
-    QList<ISyncItem*> mods;
-    MockSyncItem mod;
+    QList<IMod*> mods;
+    MockMod mod;
     EXPECT_CALL(mod, name()).WillRepeatedly(Return(NAME_1));
-    EXPECT_CALL(mod, ticked()).WillRepeatedly(Return(true));
+    EXPECT_CALL(mod, selected()).WillRepeatedly(Return(true));
     mods.append(&mod);
     MockRepository repo;
     EXPECT_CALL(repo, uiMods()).WillRepeatedly(Return(mods));
@@ -93,14 +67,18 @@ TEST_F(DeletableDetectorTest, twoDeletables)
 
 TEST_F(DeletableDetectorTest, ticked)
 {
-    QList<ISyncItem*> mods;
-    MockSyncItem mod1;
+    QList<IMod*> mods;
+
+    MockMod mod1;
     EXPECT_CALL(mod1, name()).WillRepeatedly(Return(NAME_1));
-    EXPECT_CALL(mod1, ticked()).WillRepeatedly(Return(true));
-    MockSyncItem mod2;
-    EXPECT_CALL(mod2, name()).WillRepeatedly(Return(NAME_2));
-    EXPECT_CALL(mod2, ticked()).WillRepeatedly(Return(false));
+    EXPECT_CALL(mod1, selected()).WillRepeatedly(Return(true));
     mods.append(&mod1);
+
+    MockMod mod2;
+    EXPECT_CALL(mod2, name()).WillRepeatedly(Return(NAME_2));
+    EXPECT_CALL(mod2, selected()).WillRepeatedly(Return(false));
+    mods.append(&mod2);
+
     MockRepository repo;
     EXPECT_CALL(repo, uiMods()).WillRepeatedly(Return(mods));
     QList<IRepository*> repositories;
@@ -113,20 +91,3 @@ TEST_F(DeletableDetectorTest, ticked)
     ASSERT_TRUE(deletableNames.contains(NAME_3));
     ASSERT_EQ(0, deletableDetector.totalSize());
 }
-
-TEST_F(DeletableDetectorTest, activeModNames)
-{
-    QList<ISyncItem*> mods;
-    MockSyncItem mod;
-    EXPECT_CALL(mod, name()).WillRepeatedly(Return(NAME_1));
-    EXPECT_CALL(mod, ticked()).WillRepeatedly(Return(true));
-    mods.append(&mod);
-    MockRepository repo;
-    QList<IRepository*> repositories;
-    repositories.append(&repo);
-    EXPECT_CALL(repo, uiMods()).WillRepeatedly(Return(mods));
-
-    const QStringList retVal = AfiSync::activeModNames(repositories);
-    ASSERT_TRUE(retVal.contains(NAME_1));
-}
-

@@ -100,3 +100,8 @@ void ModAdapter::forceCheck() const
 {
     mod_->forceCheck();
 }
+
+bool ModAdapter::selected()
+{
+    return ticked() && repo_->ticked();
+}

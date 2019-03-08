@@ -32,7 +32,7 @@ public:
     virtual void start();
     bool optional() override;
     QList<Mod*> mods() const;
-    QList<ISyncItem*> uiMods() const;
+    QList<IMod*> uiMods() const override;
     void processCompletion();
     void enableMods();
     bool removeMod(const QString& key);

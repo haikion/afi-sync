@@ -7,11 +7,12 @@
 #include <QList>
 #include "apis/isync.h"
 #include "syncitem.h"
+#include "interfaces/imod.h"
 
 class Repository;
 class ModAdapter;
 
-class Mod : public QObject, public SyncItem
+class Mod : public QObject, public SyncItem, virtual public IMod
 {
     Q_OBJECT
 
@@ -42,6 +43,7 @@ public:
     static QString bytesToMegasCeilStr(const qint64 bytes);
     static QString toProgressStr(const qint64 totalWanted, qint64 totalWantedDone);
     void removeRepository(Repository* repository);
+    bool selected() override;
 
 public slots:
     void repositoryChanged();

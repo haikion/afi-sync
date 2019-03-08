@@ -18,6 +18,7 @@
 #include "settingsuimodel.h"
 #include "treemodel.h"
 #include "version.h"
+#include "deletabledetector.h"
 
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
 
@@ -171,7 +172,7 @@ int cli(int argc, char* argv[])
     LOG << "Delta updates enabled due to the mirror mode.";
     SettingsModel::setPort(parser.value("port"), true);
     model->enableRepositories();
-    return app.exec();
+    return QCoreApplication::exec();
 }
 
 int main(int argc, char* argv[])

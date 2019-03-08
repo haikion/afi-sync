@@ -8,10 +8,10 @@ win32 {
     #Google Crashpad crash reporting
     include(src\model\crashhandler\crashhandler.pri)
     DEFINES += _WIN32_WINNT=0x0501
-    INCLUDEPATH += ..\src\libtorrent-rasterbar-1.1.7\include
-    INCLUDEPATH += ..\src\boost_1_66_0
+    INCLUDEPATH += $$_PRO_FILE_PWD_\..\..\src\libtorrent-rasterbar-1.1.7\include
+    INCLUDEPATH += $$_PRO_FILE_PWD_\..\..\src\boost_1_66_0
     RC_ICONS = src/view/armafin-logo-64px2.ico
-    LIBS += -L..\lib
+    LIBS += -L$$_PRO_FILE_PWD_\..\..\lib
     !Release {
         QMAKE_CXXFLAGS += -wd4250
         DEFINES += BOOST_ALL_DYN_LINK
@@ -127,7 +127,9 @@ HEADERS += \
     src/model/jsonutils.h \
     src/model/apis/libtorrent/alerthandler.h \
     src/model/apis/libtorrent/directorywatcher.h \
-    src/model/apis/libtorrent/storagemovemanager.h
+    src/model/apis/libtorrent/storagemovemanager.h \
+    src/model/interfaces/imod.h \
+    src/model/interfaces/imod.h
 
 DISTFILES += \
     AFISync.rc \

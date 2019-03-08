@@ -40,7 +40,8 @@ public:
     virtual bool ticked() = 0;
     virtual void checkboxClicked() = 0;
     virtual void check() = 0;
-    virtual bool active() const = 0;
+    // Item is being synchronized
+    virtual bool active() const = 0; // TODO: Rename to notReady ?
     virtual QString progressStr() = 0;
 };
 

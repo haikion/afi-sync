@@ -9,6 +9,7 @@
 DeletableDetector::DeletableDetector(const QString& modDownloadPath, const QList<IRepository*>& repositories)
 {
     QStringList modNames = AfiSync::activeModNames(repositories);
+    modNames.sort(Qt::CaseInsensitive);
     QList<QFileInfo> files = deletableFileInfos(modNames, modDownloadPath);
     for (const QFileInfo& file : files)
     {
@@ -17,7 +18,7 @@ DeletableDetector::DeletableDetector(const QString& modDownloadPath, const QList
     }
 }
 
-qint64 DeletableDetector::totalSize()
+qint64 DeletableDetector::totalSize() const
 {
     qint64 totalSize = 0;
     for (const Deletable& deletable : deletables_)
@@ -27,7 +28,7 @@ qint64 DeletableDetector::totalSize()
     return totalSize;
 }
 
-QStringList DeletableDetector::deletableNames()
+QStringList DeletableDetector::deletableNames() const
 {
     QStringList deletableNames;
     for (const Deletable& deletable : deletables_)

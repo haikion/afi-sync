@@ -2,13 +2,13 @@
 #define IREPOSITORY_H
 
 #include <QList>
-#include "isyncitem.h"
+#include "imod.h"
 
 class IRepository : virtual public ISyncItem
 {
 public:
     virtual ~IRepository() = default;
-    virtual QList<ISyncItem*> uiMods() const = 0;
+    virtual QList<IMod*> uiMods() const = 0; // TODO: Rename
     virtual void start() = 0;
     virtual void join() = 0;
 };

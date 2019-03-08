@@ -339,6 +339,18 @@ void Mod::removeRepository(Repository* repository)
     QMetaObject::invokeMethod(this, "removeRepositorySlot", Qt::QueuedConnection, Q_ARG(Repository*, repository));
 }
 
+bool Mod::selected()
+{
+    for (ModAdapter* adp : modAdapters())
+    {
+        if (adp->selected())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Mod::removeRepositorySlot(Repository* repository)
 {
     repositories_.remove(repository);

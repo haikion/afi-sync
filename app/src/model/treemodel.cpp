@@ -22,6 +22,7 @@
 #include "deletabledetector.h"
 #include "settingsmodel.h"
 #include "processmonitor.h"
+#include "afisync.h"
 
 TreeModel::TreeModel(QObject* parent):
     QObject(parent),
@@ -81,8 +82,8 @@ void TreeModel::setHaltGui(bool halt)
 TreeModel::~TreeModel()
 {
     LOG;
-    // FIXME: Move to main.cpp
-    //DeletableDetector::printDeletables(repositories_);
+    const DeletableDetector deletableDetector(SettingsModel::modDownloadPath(), toIrepositories(repositories_));
+    AfiSync::printDeletables(deletableDetector);
     delete sync_;
 }
 

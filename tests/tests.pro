@@ -6,6 +6,19 @@ CONFIG += c++14
 CONFIG -= app_bundle
 CONFIG += thread
 
+win32 {
+    DEFINES += _WIN32_WINNT=0x0501
+    INCLUDEPATH += $$_PRO_FILE_PWD_\..\..\src\libtorrent-rasterbar-1.1.7\include
+    INCLUDEPATH += $$_PRO_FILE_PWD_\..\..\src\boost_1_66_0
+    LIBS += -L$$_PRO_FILE_PWD_\..\..\lib
+    !Release {
+        QMAKE_CXXFLAGS += -wd4250
+        DEFINES += BOOST_ALL_DYN_LINK
+        POSTFIX = vc140-mt-gd-x64-1_66
+        LIBS += -lboost_log_setup-$${POSTFIX} -lboost_log-$${POSTFIX} -lboost_filesystem-$${POSTFIX} -lboost_system-$${POSTFIX} -lboost_date_time-$${POSTFIX} -lboost_thread-$${POSTFIX} -lboost_regex-$${POSTFIX} -lboost_atomic-$${POSTFIX} -lboost_random-$${POSTFIX} -lws2_32 -ltorrent
+    }
+}
+
 unix {
    DEFINES += BOOST_LOG_DYN_LINK
    QMAKE_CXXFLAGS += -Wno-unknown-pragmas
@@ -13,7 +26,6 @@ unix {
 }
 
 HEADERS += \
-        tst_afisync.h \
     ../app/src/model/apis/libtorrent/ahasher.h \
     ../app/src/model/apis/libtorrent/alerthandler.h \
     ../app/src/model/apis/libtorrent/deltadownloader.h \
@@ -25,6 +37,7 @@ HEADERS += \
     ../app/src/model/apis/libtorrent/speedestimator.h \
     ../app/src/model/apis/libtorrent/storagemovemanager.h \
     ../app/src/model/apis/isync.h \
+    ../app/src/model/interfaces/imod.h \
     ../app/src/model/interfaces/ibandwidthmeter.h \
     ../app/src/model/interfaces/irepository.h \
     ../app/src/model/interfaces/isettings.h \
@@ -56,7 +69,11 @@ HEADERS += \
     ../app/src/model/treemodel.h \
     ../app/src/model/version.h \
     ../app/src/model/deletable.h \
-    ../app/src/model/afisync.h
+    ../app/src/model/afisync.h \
+    mocksyncitem.h \
+    mockmod.h \
+    mockrepository.h \
+    testconstants.h
 
 SOURCES += \
         main.cpp \
@@ -94,4 +111,5 @@ SOURCES += \
     ../app/src/model/treemodel.cpp \
     deletabledetectortest.cpp \
     ../app/src/model/deletable.cpp \
-    ../app/src/model/afisync.cpp
+    ../app/src/model/afisync.cpp \
+    afisynctest.cpp

@@ -1,5 +1,3 @@
-#include "tst_afisync.h"
-
 #include <gtest/gtest.h>
 
 int main(int argc, char *argv[])

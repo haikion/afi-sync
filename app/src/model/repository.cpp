@@ -466,14 +466,14 @@ void Repository::clearModAdapters()
     modAdapters_.clear();
 }
 
-QList<ISyncItem*> Repository::uiMods() const
+QList<IMod*> Repository::uiMods() const
 {
-    QList<ISyncItem*> rVal;
+    QList<IMod*> retVal;
     for (ModAdapter* item : modAdapters_)
     {
-        rVal.append(item);
+        retVal.append(item);
     }
-    return rVal;
+    return retVal;
 }
 
 QList<ModAdapter*> Repository::modAdapters() const

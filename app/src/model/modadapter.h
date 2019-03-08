@@ -12,7 +12,7 @@
  * Each repository has its own ModAdapter. Also solves the problem in which mod is in two repositories
  * but optional in only one.
  */
-class ModAdapter : public SyncItem
+class ModAdapter : public SyncItem, virtual public IMod
 {
 public:
     ModAdapter(Mod* mod, Repository* repo, bool optional, int index);
@@ -31,6 +31,7 @@ public:
     Mod* mod() const;
     Repository* repo() const;
     void forceCheck() const;
+    bool selected() override;
 
 protected:
     virtual void setTicked(bool ticked);
