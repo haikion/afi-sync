@@ -541,9 +541,14 @@ void Mod::check()
 
 void Mod::checkboxClicked()
 {
-    LOG << name() << " checked state set to " << ticked();
+    QMetaObject::invokeMethod(this, &Mod::checkboxClickedSlot, Qt::QueuedConnection);
+}
+
+void Mod::checkboxClickedSlot()
+{
+    updateTicked();
     //Below cmd will start the download if repository is active.
-    QMetaObject::invokeMethod(this, &Mod::repositoryChanged, Qt::QueuedConnection);
+    repositoryChanged();
 }
 
 bool Mod::reposInactive()

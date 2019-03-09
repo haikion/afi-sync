@@ -83,6 +83,7 @@ private slots:
     void startUpdatesSlot();
     void moveFilesSlot();
     void removeRepositorySlot(Repository* repository);
+    void checkboxClickedSlot();
 };
 
 #endif // MODITEM_H
