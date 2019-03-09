@@ -66,6 +66,7 @@ private:
     void changed();
     QList<ModAdapter*> modAdapters() const;
     static QSet<QString> createReadyStatuses();
+    void removeAdapterByKey(const QString& key);
 };
 
 #endif // REPOSITORYITEM_H

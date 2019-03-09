@@ -241,6 +241,18 @@ QSet<QString> Repository::createReadyStatuses()
     return readyStatuses;
 }
 
+void Repository::removeAdapterByKey(const QString& key)
+{
+    QList<ModAdapter*> adapters = modAdapters_;
+    for (ModAdapter* modAdapter : adapters)
+    {
+        if (modAdapter->key() == key)
+        {
+            modAdapters_.removeAll(modAdapter);
+        }
+    }
+}
+
 // TODO: Create static mathematic function that returns Repository status
 // and takes in modStatuses
 void Repository::update()
@@ -412,6 +424,7 @@ void Repository::removeDeprecatedMods(const QSet<QString>& jsonMods)
     for (const QString& key : deprecatedMods)
     {
         removeMod(key);
+        removeAdapterByKey(key);
     }
 }
 

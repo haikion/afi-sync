@@ -644,6 +644,7 @@ void LibTorrentApi::shutdown()
             LOG_ERROR << key << " does not exist. Not deleting session as it would hang in deconstruction (BUG).";
             deleteSession = false;
         }
+        LOG << "Removing " << key << " from sync";
         session_->remove_torrent(handle);
     }
     if (deltaManager_)
@@ -791,7 +792,6 @@ void LibTorrentApi::removeFiles(const QString& hashString)
 
 void LibTorrentApi::removeFolder(const QString& key)
 {
-    LOG << "Removing folder: " << key;
     QMetaObject::invokeMethod(this, "removeFolderSlot", Qt::QueuedConnection, Q_ARG(QString, key));
 }
 
@@ -813,6 +813,7 @@ bool LibTorrentApi::removeFolderSlot(const QString& key)
             << " state = " << sta.state;
         return false;
     }
+    LOG << "Removing " << key << " from sync";
     session_->remove_torrent(handle);
     removeFiles(getHashString(handle));
     keyHash_.remove(key);
@@ -1017,7 +1018,6 @@ lt::torrent_handle LibTorrentApi::getHandle(const QString& key)
 
 bool LibTorrentApi::addFolder(const QString& key, const QString& name)
 {
-    LOG << "Adding folder. key = " << key << ", name = " << name;
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
     return addFolder(key, name, true);
 }

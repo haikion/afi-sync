@@ -105,3 +105,8 @@ bool ModAdapter::selected()
 {
     return ticked() && repo_->ticked();
 }
+
+QString ModAdapter::key() const
+{
+    return mod_->key();
+}
