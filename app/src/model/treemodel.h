@@ -12,32 +12,28 @@
 #include "interfaces/ibandwidthmeter.h"
 #include "jsonreader.h"
 
-class RootItem;
-class TreeItem;
-
 class TreeModel : public QObject, virtual public IBandwidthMeter
 {
     Q_OBJECT
 
 public:
     explicit TreeModel(QObject* parent = nullptr);
-    ~TreeModel();
+    ~TreeModel() override;
 
     void reset();
     void enableRepositories();
     void setHaltGui(bool halt);
-    RootItem* rootItem() const;
-    QList<IRepository*> repositories() const; // TODO Remove, QML
+    QList<IRepository*> repositories() const;
     void moveFiles();
     void stopUpdates();
+
 public slots:
-    QString downloadStr() const;
-    QString uploadStr() const;
+    QString downloadStr() const override;
+    QString uploadStr() const override;
     void checkboxClicked(const QModelIndex& index);
     void launch(const QModelIndex& repoIdx) const;
     void join(const QModelIndex& repoIdx) const;
     void check(const QModelIndex& idx);
-    QString versionString() const;
     void updateSpeed();
     bool ready(const QModelIndex& idx) const;
 
@@ -49,7 +45,6 @@ private slots:
     void periodicRepoUpdate();
 
 private:
-    RootItem* rootItem_;
     unsigned download_;
     unsigned upload_;
     bool haltGui_;
@@ -59,14 +54,13 @@ private:
     QTimer repoUpdateTimer_;
     JsonReader jsonReader_;
 
-    void setupModelData(const QStringList& lines, TreeItem* parent);
     void postInit();
     QString bandwithString(int amount) const;
     QSet<Mod*> mods() const;
     void manageDeltaUpdates(const JsonReader& jsonReader);
     void createSync(const JsonReader& jsonReader);
     void updateRepositories();
-    static QList<IRepository*> toIrepositories(const QList<Repository*> repositories);
+    static QList<IRepository*> toIrepositories(const QList<Repository*>& repositories);
 };
 
 #endif // TREEMODEL_H

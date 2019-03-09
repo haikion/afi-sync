@@ -178,11 +178,6 @@ void TreeModel::check(const QModelIndex& idx)
     }
 }
 
-QString TreeModel::versionString() const
-{
-    return Constants::VERSION_STRING;
-}
-
 void TreeModel::updateSpeed()
 {
     download_ = sync_->download();
@@ -241,7 +236,13 @@ void TreeModel::updateRepositories()
             mod->removeRepository(repo);
             if (mod->repositories().isEmpty())
             {
+                const QString key = mod->key();
                 mod->deleteLater();
+                connect(mod, &QObject::destroyed, [=] (QObject* obj)
+                {
+                    Q_UNUSED(obj)
+                    sync_->removeFolder(key);
+                });
             }
         }
         delete repo;
@@ -249,7 +250,7 @@ void TreeModel::updateRepositories()
     emit repositoriesChanged(toIrepositories(repositories_));
 }
 
-QList<IRepository*> TreeModel::toIrepositories(const QList<Repository*> repositories)
+QList<IRepository*> TreeModel::toIrepositories(const QList<Repository*>& repositories)
 {
     QList<IRepository*> irepositories;
     for (Repository* repository : repositories)

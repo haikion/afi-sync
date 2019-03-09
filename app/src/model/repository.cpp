@@ -13,14 +13,12 @@
 #include "settingsmodel.h"
 #include "global.h"
 
-Repository::Repository(const QString& name, const QString& serverAddress, unsigned port,
-                      QString password, ISync* sync):
+Repository::Repository(const QString& name, const QString& serverAddress, unsigned port, const QString& password, ISync* sync):
     SyncItem(name),
     sync_(sync),
     serverAddress_(serverAddress),
     port_(port),
     password_(password),
-    ready_(true),
     battlEyeEnabled_(true)
 {
     LOG << "Created repo name = " << name;
@@ -29,15 +27,11 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
         startUpdates();
 }
 
-void Repository::update()
-{
-    updateEtaAndStatus();
-}
-
 void Repository::stopUpdates()
 {
     for (Mod* mod : mods())
     {
+        // TODO: Instead call modAdapter
         mod->stopUpdates();
     }
 }
@@ -141,7 +135,6 @@ void Repository::check()
 
 void Repository::processCompletion()
 {
-    ready_ = true;
     for (Mod* mod : mods())
     {
         if (mod->ticked())
@@ -194,7 +187,7 @@ void Repository::generalLaunch(const QStringList& extraParams)
     //Create tmp file containing parameters because steam.exe can only pass
     //~1000 characters in parameters
     QString paramsFile = createParFile(modsParameter());
-    if (QFileInfo(steamExecutable).exists())
+    if (QFileInfo::exists(steamExecutable))
     {
         LOG << "Using params file";
         arguments << "-applaunch" << "107410" << "-par=" + paramsFile;
@@ -209,7 +202,7 @@ void Repository::generalLaunch(const QStringList& extraParams)
     if (battlEyeEnabled_)
         arguments << "-useBe";
 
-    if (extraParams.size() > 0)
+    if (!extraParams.isEmpty())
         arguments << extraParams;
 
     QString paramsString = SettingsModel::launchParameters();
@@ -218,7 +211,7 @@ void Repository::generalLaunch(const QStringList& extraParams)
         QStringList userParams = paramsString.split(" ");
         arguments << userParams;
     }
-    LOG << " name() = " << name()
+    LOG << "name() = " << name()
         << " executable = " << executable
         << " arguments = " << arguments;
     QProcess::startDetached(executable, arguments);
@@ -239,18 +232,6 @@ QString Repository::createParFile(const QString& parameters)
     return FILE_NAME;
 }
 
-//Which mod takes longest to complete?
-int Repository::calculateEta() const
-{
-    int maxEta = 0;
-
-    for (Mod* item : mods())
-    {
-        maxEta = std::max(item->eta(), maxEta);
-    }
-    return maxEta;
-}
-
 QSet<QString> Repository::createReadyStatuses()
 {
     QSet<QString> readyStatuses;
@@ -260,7 +241,9 @@ QSet<QString> Repository::createReadyStatuses()
     return readyStatuses;
 }
 
-void Repository::updateEtaAndStatus()
+// TODO: Create static mathematic function that returns Repository status
+// and takes in modStatuses
+void Repository::update()
 {
     static QSet<QString> readyStatuses = createReadyStatuses();
 
@@ -273,36 +256,31 @@ void Repository::updateEtaAndStatus()
     if (!ticked())
     {
         setStatus(SyncStatus::INACTIVE);
-        //If repository is not activated then
-        //set eta to 00:00:00
-        setEta(0);
     }
-    else if ((modStatuses - readyStatuses).size() == 0)
+    else if ((modStatuses - readyStatuses).isEmpty())
     {
         //All mods are ready so repo is ready.
         setStatus(SyncStatus::READY);
-        setEta(0);
     }
     else if (modStatuses.contains(SyncStatus::DOWNLOADING) || modStatuses.contains(SyncStatus::DOWNLOADING_PATCHES))
     {
         setStatus(SyncStatus::DOWNLOADING);
-        setEta(calculateEta());
-        ready_ = false;
     }
     else if (modStatuses.contains(SyncStatus::PATCHING))
     {
         setStatus(SyncStatus::PATCHING);
-        setEta(calculateEta());
     }
     else if (modStatuses.contains(SyncStatus::CHECKING) || modStatuses.contains(SyncStatus::CHECKING_PATCHES))
     {
         setStatus(SyncStatus::CHECKING);
-        setEta(calculateEta());
+    }
+    else if (modStatuses.contains(SyncStatus::MOVING_FILES))
+    {
+        setStatus(SyncStatus::MOVING_FILES);
     }
     else
     {
         setStatus(SyncStatus::WAITING);
-        setEta(calculateEta());
     }
 }
 
@@ -351,34 +329,7 @@ QStringList Repository::joinParameters() const
 void Repository::appendModAdapter(ModAdapter* adp, int index)
 {
     setFileSize(fileSize() + adp->mod()->fileSize());
-
     modAdapters_.insert(index, adp);
-}
-
-QString Repository::startText()
-{
-    if (ticked() == false)
-    {
-        return "Start Disabled";
-    }
-    if (statusStr() == SyncStatus::READY)
-    {
-        return "Start";
-    }
-    return "Start Disabled";
-}
-
-QString Repository::joinText()
-{
-    if (ticked() == false)
-    {
-        return "Join Disabled";
-    }
-    if (statusStr() == SyncStatus::READY)
-    {
-        return "Join";
-    }
-    return "Join Disabled";
 }
 
 ISync* Repository::sync() const
@@ -417,16 +368,20 @@ bool Repository::removeMod(Mod* mod, bool removeFromSync)
 {
     //Removes mod view adapter.
     mod->removeRepository(this);
-    if (mod->repositories().size() == 0 && removeFromSync)
+    if (mod->repositories().isEmpty() && removeFromSync)
     {
-        //Mod may not exist if it doesn't belong to any repo.
-        sync_->removeFolder(mod->key());
+        const QString key = mod->key();
         /* Deleting a QObject while pending events are waiting to be delivered can cause a crash.
          * You must not delete the QObject directly if it exists in a different thread than the
          * one currently executing. Use deleteLater() instead, which will cause the event loop
          * to delete the object after all pending events have been delivered to it.
          */
         mod->deleteLater(); //Mod runs in worker thread.
+        QObject::connect(mod, &QObject::destroyed, [=] (QObject* obj)
+        {
+            Q_UNUSED(obj)
+            sync_->removeFolder(key);
+        });
     }
     return true;
 }
@@ -441,7 +396,6 @@ bool Repository::contains(const QString& key) const
     return false;
 }
 
-// TODO: Refactor, QML
 QList<Mod*> Repository::mods() const
 {
     QList<Mod*> rVal;
@@ -452,7 +406,7 @@ QList<Mod*> Repository::mods() const
     return rVal;
 }
 
-void Repository::removeDeprecatedMods(const QSet<QString> jsonMods)
+void Repository::removeDeprecatedMods(const QSet<QString>& jsonMods)
 {
     const QSet<QString> deprecatedMods = modKeys() - jsonMods;
     for (const QString& key : deprecatedMods)

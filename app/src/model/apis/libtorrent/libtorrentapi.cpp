@@ -791,6 +791,7 @@ void LibTorrentApi::removeFiles(const QString& hashString)
 
 void LibTorrentApi::removeFolder(const QString& key)
 {
+    LOG << "Removing folder: " << key;
     QMetaObject::invokeMethod(this, "removeFolderSlot", Qt::QueuedConnection, Q_ARG(QString, key));
 }
 
@@ -1016,6 +1017,7 @@ lt::torrent_handle LibTorrentApi::getHandle(const QString& key)
 
 bool LibTorrentApi::addFolder(const QString& key, const QString& name)
 {
+    LOG << "Adding folder. key = " << key << ", name = " << name;
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
     return addFolder(key, name, true);
 }

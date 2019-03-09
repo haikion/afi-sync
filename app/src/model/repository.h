@@ -16,24 +16,20 @@
 class Repository : public SyncItem, virtual public IRepository
 {
 public:
-    Repository(const QString& name, const QString& serverAddress, unsigned port,
-               QString password, ISync* sync);
-    ~Repository();
+    Repository(const QString& name, const QString& serverAddress, unsigned port, const QString& password, ISync* sync);
+    ~Repository() override;
 
     static Repository* findRepoByName(const QString& name, QList<Repository*> repositories);
-    void check();
+    void check() override;
     void appendModAdapter(ModAdapter* adp, int index);
-    void updateView(TreeItem* item, int row = -1);
-    virtual void checkboxClicked();
+    void checkboxClicked() override;
     ISync* sync() const;
-    virtual QString startText(); // TODO: Remove, QML
-    virtual QString joinText(); // TODO: Remove, QML
-    virtual void join();
-    virtual void start();
+    void join() override;
+    void start() override;
     bool optional() override;
     QList<Mod*> mods() const;
     QList<IMod*> uiMods() const override;
-    void processCompletion();
+    void processCompletion() override;
     void enableMods();
     bool removeMod(const QString& key);
     bool removeMod(Mod* mod, bool removeFromSync = true);
@@ -42,14 +38,14 @@ public:
     void startUpdates();
     void stopUpdates();
     void setBattlEyeEnabled(bool battlEyeEnabled);
-    virtual bool ticked();
+    bool ticked() override;
     virtual void setTicked(bool ticked);
-    virtual QString progressStr();
+    QString progressStr() override;
     void setServerAddress(const QString& serverAddress);
     void setPort(const unsigned& port);
     void setPassword(const QString& password);    
     QSet<QString> modKeys() const;    
-    void removeDeprecatedMods(const QSet<QString> jsonMods);
+    void removeDeprecatedMods(const QSet<QString>& jsonMods);
     void clearModAdapters();
 
 private:
@@ -58,19 +54,17 @@ private:
     QString serverAddress_;
     unsigned port_;
     QString password_;
-    //True if repo is ready
-    bool ready_;
     bool battlEyeEnabled_;
+    // TODO: Create IModAdapter and use that instead so Repository
+    // can be unit tested
     QList<ModAdapter*> modAdapters_;
 
     QString modsParameter();
     QStringList joinParameters() const;
     void generalLaunch(const QStringList& extraParams = QStringList());
     QString createParFile(const QString& parameters);
-    void updateEtaAndStatus();
     void changed();
     QList<ModAdapter*> modAdapters() const;
-    int calculateEta() const;
     static QSet<QString> createReadyStatuses();
 };
 
