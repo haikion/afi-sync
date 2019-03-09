@@ -16,7 +16,8 @@ AsTreeWidget::AsTreeWidget(QWidget* parent): QTreeWidget(parent)
     header()->setStretchLastSection(false);
 
     connect(this, &AsTreeWidget::customContextMenuRequested, this, &AsTreeWidget::showContextMenu);
-    connect(this, &AsTreeWidget::itemClicked, [=] (QTreeWidgetItem* item, int) {
+    connect(this, &AsTreeWidget::itemClicked, [=] (QTreeWidgetItem* item, int)
+    {
         if (item->isExpanded())
         {
             collapseItem(item);
