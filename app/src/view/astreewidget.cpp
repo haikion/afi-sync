@@ -1,13 +1,10 @@
 #include <utility>
-
-#include <QPushButton>
-#include <QDebug>
-#include <QContextMenuEvent>
-#include <QMenu>
 #include <QHeaderView>
+#include <QMenu>
+#include <QPushButton>
 #include "../model/modadapter.h"
-#include "astreewidget.h"
 #include "astreeitem.h"
+#include "astreewidget.h"
 
 AsTreeWidget::AsTreeWidget(QWidget* parent): QTreeWidget(parent)
 {
@@ -61,7 +58,8 @@ void AsTreeWidget::showContextMenu(const QPoint& point)
         else
         {
             const ModAdapter* modAdapter = dynamic_cast<ModAdapter*>(syncItem);
-            menu.addAction("Recheck", [=] () {
+            menu.addAction("Recheck", [=] ()
+            {
                 modAdapter->forceCheck();
             });
         }
@@ -94,10 +92,12 @@ void AsTreeWidget::addRepositories(QList<IRepository*> repositories)
         AsTreeItem* repoItem = new AsTreeItem(this, repo, repoCheckBox, startButton, joinButton);
         addTopLevelItem(repoItem);
 
-        connect(startButton, &QPushButton::pressed, [=] () {
+        connect(startButton, &QPushButton::pressed, [=] ()
+        {
             repo->start();
         });
-        connect(joinButton, &QPushButton::pressed, [=] () {
+        connect(joinButton, &QPushButton::pressed, [=] ()
+        {
             repo->join();
         });
 
