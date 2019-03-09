@@ -1,3 +1,5 @@
+#include <utility>
+
 #include <QPushButton>
 #include <QDebug>
 #include <QContextMenuEvent>
@@ -34,7 +36,7 @@ void AsTreeWidget::update()
 
 void AsTreeWidget::showContextMenu(const QPoint& point)
 {
-    AsTreeItem* item = (AsTreeItem*) itemAt(point);
+    AsTreeItem* item = dynamic_cast<AsTreeItem*>(itemAt(point));
     if (item != nullptr)
     {
         QMenu menu(this);
@@ -70,7 +72,7 @@ void AsTreeWidget::setRepositories(QList<IRepository*> repositories)
 {
     clear();
     items.clear();
-    addRepositories(repositories);
+    addRepositories(std::move(repositories));
     header()->resizeSections(QHeaderView::ResizeToContents);
     header()->resizeSection(2, header()->sectionSize(2) + 50); //Status
     header()->resizeSection(4, header()->sectionSize(4) + 25); //Size
