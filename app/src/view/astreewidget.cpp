@@ -10,9 +10,18 @@
 AsTreeWidget::AsTreeWidget(QWidget* parent): QTreeWidget(parent)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(this, &AsTreeWidget::customContextMenuRequested, this, &AsTreeWidget::showContextMenu);
-    header()->setStretchLastSection(false);
     setExpandsOnDoubleClick(false);
+    header()->setStretchLastSection(false);
+
+    connect(this, &AsTreeWidget::customContextMenuRequested, this, &AsTreeWidget::showContextMenu);
+    connect(this, &AsTreeWidget::itemClicked, [=] (QTreeWidgetItem* item, int) {
+        if (item->isExpanded())
+        {
+            collapseItem(item);
+            return;
+        }
+        expandItem(item);
+    });
 }
 
 void AsTreeWidget::update()
@@ -87,14 +96,6 @@ void AsTreeWidget::addRepositories(QList<IRepository*> repositories)
         });
         connect(joinButton, &QPushButton::pressed, [=] () {
             repo->join();
-        });
-        connect(this, &AsTreeWidget::itemClicked, [=] (QTreeWidgetItem* item, int) {
-            if (item->isExpanded())
-            {
-                collapseItem(item);
-                return;
-            }
-            expandItem(item);
         });
 
         setItemWidget(repoItem, 0, repoCheckBox);
