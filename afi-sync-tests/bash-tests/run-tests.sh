@@ -3,9 +3,10 @@
 export MODS_DIR=~/afisync-tests/mods
 export WORKING_DIR=~/afisync-tests/work
 export TESTS_DIR=$PWD
+export MODS_DIR=${TESTS_DIR}/files/mods
 
 run_test () {
-    timeout 10 ${TESTS_DIR}/$1 && echo -e "\e[32m$1 passed\e[0m" || echo -e "\e[31m$1 failed\e[0m"
+    timeout 40 ${TESTS_DIR}/$1 && echo -e "\e[32m$1 passed\e[0m" || echo -e "\e[31m$1 failed\e[0m"
     killall AFISync
 }
 

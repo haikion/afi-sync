@@ -4,7 +4,6 @@ CURRENT_REPOSITORIES_JSON=${TESTS_DIR}/files/repositories2mods.json
 UPDATED_REPOSITORIES_JSON=${TESTS_DIR}/files/repositories1mod.json
 SYNC_DIR=${TESTS_DIR}/files/sync
 INI_FILE=${TESTS_DIR}/files/AFISync-primary-enabled.ini
-MODS_DIR=${TESTS_DIR}/files/mods
 
 trash settings
 cp -r ${TESTS_DIR}/files/settings settings

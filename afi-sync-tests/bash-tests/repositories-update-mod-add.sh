@@ -9,6 +9,7 @@ mkdir settings
 mkdir settings/AFISync
 cp ${INI_FILE} settings/AFISync/AFISync.ini
 cp ${CURRENT_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
+cp -R ${MODS_DIR}/* .
 
 ./AFISync &
 sleep 3
