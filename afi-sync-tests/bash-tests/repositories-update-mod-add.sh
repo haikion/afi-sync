@@ -20,4 +20,8 @@ while ! grep "Adding http://localhost/afisync-tests/torrents/@afi_editor_enhance
 done
 
 killall AFISync
+# Verify that torrent settings were added
+while [[ $(ls settings/sync | wc -w) != 7 ]]; do
+    sleep 1
+done
 exit 0

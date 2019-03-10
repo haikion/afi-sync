@@ -49,6 +49,10 @@ AfiSyncLogger* initStandalone()
 
 TreeModel* generalInit(QObject* parent = nullptr)
 {
+    //Linux ctrl+c and kill compatability
+    CleanExit cleanExit;
+    Q_UNUSED(cleanExit);
+
     LOG << "Version: " << VERSION_CHARS;
     Global::workerThread = new QThread();
     Global::workerThread->setObjectName("workerThread");
@@ -111,9 +115,6 @@ int cli(int argc, char* argv[])
                           {DELTA_ARGS.at(1), "Delta patch generation:  Defines path to new version", DELTA_ARGS.at(1)},
                           {DELTA_ARGS.at(2), "Delta patch generation:  Defines path to patches directory", DELTA_ARGS.at(2)},
                      });
-    //Linux ctrl+c compatability
-    CleanExit cleanExit;
-    Q_UNUSED(cleanExit);
 
     QStringList args;
     for (int i = 0; i < argc; ++i)
