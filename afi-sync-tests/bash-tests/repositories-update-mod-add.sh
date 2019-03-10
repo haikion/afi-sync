@@ -11,13 +11,12 @@ cp ${INI_FILE} settings/AFISync/AFISync.ini
 cp ${CURRENT_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
 
 ./AFISync &
-sleep 5
+sleep 3
 
 cp ${UPDATED_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
-sleep 40
+while ! grep "Adding http://localhost/afisync-tests/torrents/@afi_editor_enhancements_5.torrent to sync" afisync.log; do
+    sleep 1
+done
 
-retVal=1
-grep "Adding http://armafinland.fi/afisync/torrents/@afi_128.torrent to sync" afisync.log && retVal=0
 killall AFISync
-echo ${retVal}
-exit ${retVal}
+exit 0

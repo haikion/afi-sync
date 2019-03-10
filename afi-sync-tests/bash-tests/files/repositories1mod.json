@@ -13,10 +13,7 @@
                                               "fileSize":  27825,
                                               "key":  "http://localhost/afisync-tests/torrents/@cz75_nochain_a3_7.torrent",
                                               "optional":  true
-                                          },
-                                          {
-                                              "name":  "@afi",
-
+                                          }
                                       ]
                          }
                      ]

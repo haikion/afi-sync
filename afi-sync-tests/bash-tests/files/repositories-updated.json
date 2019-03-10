@@ -1,6 +1,5 @@
 ﻿{
     "updateUrl":  "http://localhost/afisync-tests/repositories.json",
-    "deltaUpdates":  "http://armafinland.fi/afisync/torrents/afisync_patches_221.torrent",
     "repositories":  [
                          {
                              "name":  "armafinland.fi Primary",
@@ -12,7 +11,7 @@
                                           {
                                               "name":  "@afi",
                                               "fileSize":  19774760,
-                                              "key":  "http://armafinland.fi/afisync/torrents/@afi_128.torrent"
+                                              "key":  "http://localhost/afisync-tests/torrents/@afi_128.torrent"
                                           }
                                       ]
                          }
