@@ -19,4 +19,8 @@ while ! grep "Removing http://localhost/afisync-tests/torrents/@afi_editor_enhan
    sleep 1
 done
 killall AFISync
+# Verify that torrent settings were deleted
+while [[ $(ls settings/sync | wc -w) != 4 ]]; do
+    sleep 1
+done
 exit 0
