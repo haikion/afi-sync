@@ -48,6 +48,9 @@ public:
 public slots:
     void repositoryChanged();
 
+signals:
+    void repositoriesChanged(QSet<Repository*> repositories);
+
 private:
     static const unsigned COMPLETION_WAIT_DURATION;
 

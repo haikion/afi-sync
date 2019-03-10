@@ -5,30 +5,29 @@
     models.
 */
 
+#include <csignal>
 #include <sys/types.h>
-#include <signal.h>
-#include "apis/libtorrent/libtorrentapi.h"
-#include "afisynclogger.h"
-#include <QDir>
-#include <QStringList>
-#include <QFile>
 #include <QCoreApplication>
-#include "treeitem.h"
-#include "repository.h"
-#include "mod.h"
-#include "treemodel.h"
-#include "global.h"
-#include "modadapter.h"
-#include "deletabledetector.h"
-#include "settingsmodel.h"
-#include "processmonitor.h"
+#include <QDir>
+#include <QFile>
+#include <QStringList>
 #include "afisync.h"
+#include "afisynclogger.h"
+#include "apis/libtorrent/libtorrentapi.h"
+#include "deletabledetector.h"
+#include "global.h"
+#include "mod.h"
+#include "modadapter.h"
+#include "processmonitor.h"
+#include "repository.h"
+#include "settingsmodel.h"
+#include "treeitem.h"
+#include "treemodel.h"
 
 TreeModel::TreeModel(QObject* parent):
     QObject(parent),
     download_(0),
     upload_(0),
-    haltGui_(false), //TODO: Remove, QML
     sync_(nullptr)
 {
     LOG;
@@ -74,11 +73,6 @@ void TreeModel::createSync(const JsonReader& jsonReader)
     sync_ = Global::sync;
 }
 
-void TreeModel::setHaltGui(bool halt)
-{
-    haltGui_ = halt;
-}
-
 TreeModel::~TreeModel()
 {
     LOG;
@@ -110,13 +104,6 @@ void TreeModel::enableRepositories()
         repo->startUpdates();
         repo->setTicked(true);
     }
-}
-
-// TODO: Delete, QML specific
-void TreeModel::checkboxClicked(const QModelIndex& index)
-{
-    SyncItem* item = static_cast<SyncItem*>(index.internalPointer());
-    item->checkboxClicked();
 }
 
 QString TreeModel::bandwithString(int amount) const
@@ -151,31 +138,6 @@ QString TreeModel::downloadStr() const
 QString TreeModel::uploadStr() const
 {
     return bandwithString(upload_);
-}
-
-//TODO: Remove, QML
-void TreeModel::launch(const QModelIndex& repoIdx) const
-{
-    Repository* repo = static_cast<Repository*>(repoIdx.internalPointer());
-    repo->start();
-}
-
-//TODO: Remove, QML
-void TreeModel::join(const QModelIndex& repoIdx) const
-{
-    Repository* repo = static_cast<Repository*>(repoIdx.internalPointer());
-    repo->join();
-}
-
-//TODO: Remove, QML
-void TreeModel::check(const QModelIndex& idx)
-{
-    SyncItem* syncItem = static_cast<SyncItem*>(idx.internalPointer());
-    if (syncItem)
-    {
-        LOG << "Rechecking: " << syncItem->name();
-        syncItem->check();
-    }
 }
 
 void TreeModel::updateSpeed()
@@ -237,12 +199,12 @@ void TreeModel::updateRepositories()
             if (mod->repositories().isEmpty())
             {
                 const QString key = mod->key();
-                mod->deleteLater();
                 connect(mod, &QObject::destroyed, [=] (QObject* obj)
                 {
                     Q_UNUSED(obj)
                     sync_->removeFolder(key);
                 });
+                mod->deleteLater();
             }
         }
         delete repo;
@@ -258,18 +220,6 @@ QList<IRepository*> TreeModel::toIrepositories(const QList<Repository*>& reposit
         irepositories.append(repository);
     }
     return irepositories;
-}
-
-bool TreeModel::ready(const QModelIndex& idx) const
-{
-    SyncItem* item = static_cast<SyncItem*>(idx.internalPointer());
-    if (item)
-    {
-        return item->statusStr() == SyncStatus::READY;
-    }
-
-    LOG_ERROR << "Ticked asked from non-syncitem object: " << idx.internalPointer();
-    return false;
 }
 
 void TreeModel::update()

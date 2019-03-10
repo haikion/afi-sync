@@ -56,6 +56,7 @@ QString Mod::path() const
 
 void Mod::init()
 {
+    updateTicked();
     repositoryChanged();
     update();
     LOG << "name = " << name() << " key = " << key() << " Completed";
@@ -369,6 +370,7 @@ void Mod::removeRepositorySlot(Repository* repository)
         }
     }
     updateTicked();
+    emit repositoriesChanged(repositories_);
 }
 
 //Returns true only if all adapters are optional

@@ -1,7 +1,6 @@
 #ifndef TREEMODEL_H
 #define TREEMODEL_H
 
-#include <QModelIndex>
 #include <QVariant>
 #include <QVariant>
 #include <QObject>
@@ -30,12 +29,7 @@ public:
 public slots:
     QString downloadStr() const override;
     QString uploadStr() const override;
-    void checkboxClicked(const QModelIndex& index);
-    void launch(const QModelIndex& repoIdx) const;
-    void join(const QModelIndex& repoIdx) const;
-    void check(const QModelIndex& idx);
     void updateSpeed();
-    bool ready(const QModelIndex& idx) const;
 
 signals:
     void repositoriesChanged(QList<IRepository*> repositories);
@@ -47,7 +41,6 @@ private slots:
 private:
     unsigned download_;
     unsigned upload_;
-    bool haltGui_;
     QList<Repository*> repositories_;
     QTimer updateTimer_;
     ISync* sync_;

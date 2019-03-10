@@ -378,23 +378,26 @@ bool Repository::removeMod(const QString& key)
 
 bool Repository::removeMod(Mod* mod, bool removeFromSync)
 {
-    //Removes mod view adapter.
-    mod->removeRepository(this);
-    if (mod->repositories().isEmpty() && removeFromSync)
+    //Asynchronously remove repository from mod
+    QObject::connect(mod, &Mod::repositoriesChanged, [=] (QSet<Repository*> repositories)
     {
-        const QString key = mod->key();
-        /* Deleting a QObject while pending events are waiting to be delivered can cause a crash.
-         * You must not delete the QObject directly if it exists in a different thread than the
-         * one currently executing. Use deleteLater() instead, which will cause the event loop
-         * to delete the object after all pending events have been delivered to it.
-         */
-        mod->deleteLater(); //Mod runs in worker thread.
-        QObject::connect(mod, &QObject::destroyed, [=] (QObject* obj)
+        if (repositories.isEmpty() && removeFromSync)
         {
-            Q_UNUSED(obj)
-            sync_->removeFolder(key);
-        });
-    }
+            const QString key = mod->key();
+            /* Deleting a QObject while pending events are waiting to be delivered can cause a crash.
+             * You must not delete the QObject directly if it exists in a different thread than the
+             * one currently executing. Use deleteLater() instead, which will cause the event loop
+             * to delete the object after all pending events have been delivered to it.
+             */
+            QObject::connect(mod, &QObject::destroyed, [=] (QObject* obj)
+            {
+                Q_UNUSED(obj)
+                sync_->removeFolder(key);
+            });
+            mod->deleteLater(); //Mod runs in worker thread.
+        }
+    });
+    mod->removeRepository(this);
     return true;
 }
 
