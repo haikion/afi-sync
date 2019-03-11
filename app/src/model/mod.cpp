@@ -32,11 +32,7 @@ Mod::Mod(const QString& name, const QString& key, ISync* sync):
 
 Mod::~Mod()
 {
-    for (ModAdapter* adp : modAdapters())
-    {
-        LOG << "Destroying adapter";
-        delete adp;
-    }
+    LOG << "name = " << name();
 }
 
 void Mod::threadConstructor()
@@ -269,9 +265,37 @@ void Mod::repositoryChanged()
     updateTicked();
 }
 
+void Mod::removeModAdapter(ModAdapter* modAdapter)
+{
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+
+    adapters_.removeAll(modAdapter);
+    if (adapters_.isEmpty())
+    {
+        deleteLater();
+    }
+}
+
+void Mod::removeModAdapter(Repository* repository)
+{
+    QList<ModAdapter*> modAdapters = adapters_;
+    for (ModAdapter* modAdapter : modAdapters)
+    {
+        if (modAdapter->repo() == repository)
+        {
+            delete modAdapter;
+        }
+    }
+}
+
 QSet<Repository*> Mod::repositories() const
 {
-    return repositories_;
+    QSet<Repository*> retVal;
+    for (ModAdapter* modAdapter : adapters_)
+    {
+        retVal.insert(modAdapter->repo());
+    }
+    return retVal;
 }
 
 QString Mod::key() const
@@ -310,36 +334,6 @@ void Mod::stopUpdatesSlot()
     updateTimer_->stop();
 }
 
-void Mod::appendRepository(Repository* repository)
-{
-    repositoriesMutex_.lock();
-    repositories_.insert(repository);
-    const int size = repositories_.size();
-    repositoriesMutex_.unlock();
-
-    if (size == 1)
-    {
-        //First repository added -> initialize mod.
-        if (sync_->ready())
-        {
-            LOG << "name = " << name() << " Calling init directly";
-            QMetaObject::invokeMethod(this, &Mod::init, Qt::QueuedConnection);
-        }
-        else
-        {
-            connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(init()));
-            LOG << "name = " << name() << " initCompleted connection created";
-        }
-        return;
-    }
-    QMetaObject::invokeMethod(this, &Mod::repositoryChanged, Qt::QueuedConnection);
-}
-
-void Mod::removeRepository(Repository* repository)
-{
-    QMetaObject::invokeMethod(this, "removeRepositorySlot", Qt::QueuedConnection, Q_ARG(Repository*, repository));
-}
-
 bool Mod::selected()
 {
     for (ModAdapter* adp : modAdapters())
@@ -350,27 +344,6 @@ bool Mod::selected()
         }
     }
     return false;
-}
-
-void Mod::removeRepositorySlot(Repository* repository)
-{
-    repositories_.remove(repository);
-
-    QList<ModAdapter*> adps = modAdapters();
-    for (ModAdapter* adp : adps)
-    {
-        if (adp->repo() == repository)
-        {
-            adaptersMutex_.lock();
-            adapters_.removeAll(adp);
-            adaptersMutex_.unlock();
-            delete adp;
-            LOG << "Mod View Adapter removed.";
-            updateTicked();
-        }
-    }
-    updateTicked();
-    emit repositoriesChanged(repositories_);
 }
 
 //Returns true only if all adapters are optional
@@ -396,7 +369,24 @@ void Mod::appendModAdapter(ModAdapter* adapter)
 {
     adaptersMutex_.lock();
     adapters_.append(adapter);
+    int size = adapters_.size();
     adaptersMutex_.unlock();
+
+    if (size == 1)
+    {
+        //First repository added -> initialize mod.
+        if (sync_->ready())
+        {
+            LOG << "name = " << name() << " Calling init directly";
+            QMetaObject::invokeMethod(this, &Mod::init, Qt::QueuedConnection);
+        }
+        else
+        {
+            connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(init()));
+            LOG << "name = " << name() << " initCompleted connection created";
+        }
+        return;
+    }
 }
 
 void Mod::updateStatus()
@@ -555,7 +545,7 @@ void Mod::checkboxClickedSlot()
 
 bool Mod::reposInactive()
 {
-    for (Repository* repo : repositories_)
+    for (Repository* repo : repositories())
     {
         if (repo->statusStr() != SyncStatus::INACTIVE)
         {
@@ -563,15 +553,4 @@ bool Mod::reposInactive()
         }
     }
     return true;
-}
-
-void Mod::updateEta() //TODO: Remove, ETA
-{
-    if (statusStr() == SyncStatus::INACTIVE
-            || statusStr() == SyncStatus::ERRORED || statusStr() == SyncStatus::READY)
-    {
-        setEta(0);
-        return;
-    }
-    setEta(sync_->folderEta(key_));
 }

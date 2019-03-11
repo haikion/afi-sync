@@ -151,6 +151,16 @@ void Repository::changed()
     }
 }
 
+void Repository::clearModAdapters()
+{
+    QList<ModAdapter*> modAdapters = modAdapters_;
+    for (ModAdapter* modAdapter : modAdapters)
+    {
+        delete modAdapter;
+        // Destructor removes from modAdapters_
+    }
+}
+
 void Repository::checkboxClicked()
 {
     setTicked(!ticked());
@@ -241,15 +251,36 @@ QSet<QString> Repository::createReadyStatuses()
     return readyStatuses;
 }
 
-void Repository::removeAdapterByKey(const QString& key)
+void Repository::removeAdapter(const Mod* mod)
 {
     QList<ModAdapter*> adapters = modAdapters_;
     for (ModAdapter* modAdapter : adapters)
     {
+        if (modAdapter->mod() == mod)
+        {
+            removeModAdapter(modAdapter);
+        }
+    }
+}
+
+void Repository::removeAdapter(const QString& key)
+{
+    QList<ModAdapter*> modAdapters = modAdapters_;
+    for (ModAdapter* modAdapter : modAdapters)
+    {
         if (modAdapter->key() == key)
         {
-            modAdapters_.removeAll(modAdapter);
+            delete modAdapter;
         }
+    }
+}
+
+void Repository::removeModAdapter(ModAdapter* modAdapter)
+{
+    modAdapters_.removeAll(modAdapter);
+    if (modAdapters_.isEmpty())
+    {
+        delete this;
     }
 }
 
@@ -361,46 +392,6 @@ void Repository::enableMods()
     }
 }
 
-bool Repository::removeMod(const QString& key)
-{
-    for (Mod* mod : mods())
-    {
-        if (mod->key() == key)
-        {
-            LOG << "Removing mod " << mod->name() << " from repository " << name();
-            removeMod(mod);
-            return true;
-        }
-    }
-    LOG << "Key " << key << " not found in repository " << name();
-    return false;
-}
-
-bool Repository::removeMod(Mod* mod, bool removeFromSync)
-{
-    //Asynchronously remove repository from mod
-    QObject::connect(mod, &Mod::repositoriesChanged, [=] (QSet<Repository*> repositories)
-    {
-        if (repositories.isEmpty() && removeFromSync)
-        {
-            const QString key = mod->key();
-            /* Deleting a QObject while pending events are waiting to be delivered can cause a crash.
-             * You must not delete the QObject directly if it exists in a different thread than the
-             * one currently executing. Use deleteLater() instead, which will cause the event loop
-             * to delete the object after all pending events have been delivered to it.
-             */
-            QObject::connect(mod, &QObject::destroyed, [=] (QObject* obj)
-            {
-                Q_UNUSED(obj)
-                sync_->removeFolder(key);
-            });
-            mod->deleteLater(); //Mod runs in worker thread.
-        }
-    });
-    mod->removeRepository(this);
-    return true;
-}
-
 bool Repository::contains(const QString& key) const
 {
     for (const Mod* mod : mods())
@@ -426,14 +417,8 @@ void Repository::removeDeprecatedMods(const QSet<QString>& jsonMods)
     const QSet<QString> deprecatedMods = modKeys() - jsonMods;
     for (const QString& key : deprecatedMods)
     {
-        removeMod(key);
-        removeAdapterByKey(key);
+        removeAdapter(key);
     }
-}
-
-void Repository::clearModAdapters()
-{
-    modAdapters_.clear();
 }
 
 QList<IMod*> Repository::uiMods() const

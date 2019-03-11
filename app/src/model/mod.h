@@ -22,14 +22,13 @@ public:
 
     // Moves files after mods download path has been changed
     void moveFiles();
-    void check();
+    void check() override;
     QString key() const;
-    void appendRepository(Repository* repository);
-    virtual void checkboxClicked();
+    void checkboxClicked() override;
     QSet<Repository*> repositories() const;
     void deleteExtraFiles();
-    virtual bool ticked();
-    void processCompletion();
+    bool ticked() override;
+    void processCompletion() override;
     QList<ModAdapter*> modAdapters();
     void appendModAdapter(ModAdapter* adapter);
     bool optional() override;
@@ -39,17 +38,15 @@ public:
     void forceCheck();
     qint64 totalWanted() const;
     qint64 totalWantedDone() const;
-    virtual QString progressStr();
+    QString progressStr() override;
     static QString bytesToMegasCeilStr(const qint64 bytes);
     static QString toProgressStr(const qint64 totalWanted, qint64 totalWantedDone);
-    void removeRepository(Repository* repository);
     bool selected() override;
 
 public slots:
     void repositoryChanged();
-
-signals:
-    void repositoriesChanged(QSet<Repository*> repositories);
+    void removeModAdapter(ModAdapter* modAdapter);
+    void removeModAdapter(Repository* repository);
 
 private:
     static const unsigned COMPLETION_WAIT_DURATION;
@@ -57,7 +54,6 @@ private:
     QString key_;
     ISync* sync_;
     QTimer* updateTimer_;
-    QSet<Repository*> repositories_;
     unsigned waitTime_;
     QList<ModAdapter*> adapters_;
     QAtomicInteger<qint64> totalWanted_;
@@ -67,7 +63,6 @@ private:
     QMutex adaptersMutex_;
 
     void buildPathHash();
-    void updateEta();
     bool reposInactive();
     void start();
     bool stop();
@@ -85,7 +80,6 @@ private slots:
     void stopUpdatesSlot();
     void startUpdatesSlot();
     void moveFilesSlot();
-    void removeRepositorySlot(Repository* repository);
     void checkboxClickedSlot();
 };
 

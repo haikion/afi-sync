@@ -1,3 +1,4 @@
+#include <QMetaObject>
 #include "afisynclogger.h"
 #include "modadapter.h"
 #include "repository.h"
@@ -7,13 +8,19 @@ ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index):
     SyncItem(mod->name()),
     mod_(mod),
     repo_(repo),
-    isOptional_(isOptional)
+    isOptional_(isOptional),
+    key_(mod->key())
 {
     //Connect everything
     setFileSize(mod->fileSize());
     repo->appendModAdapter(this, index);
     mod->appendModAdapter(this);
-    mod->appendRepository(repo);
+}
+
+ModAdapter::~ModAdapter()
+{
+    repo_->removeModAdapter(this);
+    QMetaObject::invokeMethod(mod_, "removeModAdapter", Qt::BlockingQueuedConnection, Q_ARG(ModAdapter*, this));
 }
 
 void ModAdapter::check()
@@ -108,5 +115,5 @@ bool ModAdapter::selected()
 
 QString ModAdapter::key() const
 {
-    return mod_->key();
+    return key_;
 }

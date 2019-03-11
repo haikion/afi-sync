@@ -47,6 +47,7 @@ public:
     QSet<QString> modKeys() const;    
     void removeDeprecatedMods(const QSet<QString>& jsonMods);
     void clearModAdapters();
+    void removeModAdapter(ModAdapter* modAdapter);
 
 private:
     ISync* sync_;
@@ -66,7 +67,8 @@ private:
     void changed();
     QList<ModAdapter*> modAdapters() const;
     static QSet<QString> createReadyStatuses();
-    void removeAdapterByKey(const QString& key);
+    void removeAdapter(const Mod* mod);
+    void removeAdapter(const QString& key);
 };
 
 #endif // REPOSITORYITEM_H

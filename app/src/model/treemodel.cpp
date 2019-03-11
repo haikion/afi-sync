@@ -10,6 +10,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QList>
 #include <QStringList>
 #include "afisync.h"
 #include "afisynclogger.h"
@@ -44,6 +45,7 @@ TreeModel::TreeModel(QObject* parent):
     repoUpdateTimer_.start();
 
     qRegisterMetaType<Repository*>("Repository*");
+    qRegisterMetaType<QList<Repository*>>("QList<Repository>");
 }
 
 //TODO: Remove
@@ -78,6 +80,16 @@ TreeModel::~TreeModel()
     LOG;
     const DeletableDetector deletableDetector(SettingsModel::modDownloadPath(), toIrepositories(repositories_));
     AfiSync::printDeletables(deletableDetector);
+
+    updateTimer_.stop();
+    repoUpdateTimer_.stop();
+    stopUpdates();
+    // Destroy repositories
+    for (Repository* repo : repositories_)
+    {
+        repo->clearModAdapters();
+        // Repos and mods are destroyed once their adapters are cleared
+    }
     delete sync_;
 }
 
@@ -191,23 +203,9 @@ void TreeModel::updateRepositories()
 
     for (Repository* repo : deletables)
     {
-        QList<Mod*> mods = repo->mods();
         repo->clearModAdapters();
-        for (Mod* mod : mods)
-        {
-            mod->removeRepository(repo);
-            if (mod->repositories().isEmpty())
-            {
-                const QString key = mod->key();
-                connect(mod, &QObject::destroyed, [=] (QObject* obj)
-                {
-                    Q_UNUSED(obj)
-                    sync_->removeFolder(key);
-                });
-                mod->deleteLater();
-            }
-        }
-        delete repo;
+        // Mods and repos delete themselves if ModAdapters are
+        // all removed.
     }
     emit repositoriesChanged(toIrepositories(repositories_));
 }
