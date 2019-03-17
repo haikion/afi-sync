@@ -54,7 +54,7 @@ bool JsonReader::updateAvailable()
     return JsonUtils::bytesToJsonMap(bytes) != jsonMap_;
 }
 
-QList<Repository*> JsonReader::repositories(ISync* sync)
+QList<Repository*> JsonReader::repositories(std::shared_ptr<ISync> sync)
 {
     QList<Repository*> retVal;
     updateRepositories(sync, retVal);
@@ -83,7 +83,7 @@ void JsonReader::setSyncNetworkAccessManager(std::unique_ptr<SyncNetworkAccessMa
     nam_ = std::move(syncNetworkAccessManager);
 }
 
-QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repositories)
+QSet<QString> JsonReader::updateRepositoriesOffline(std::shared_ptr<ISync> sync, QList<Repository*>& repositories)
 {
     const QList<QVariant> jsonRepositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
     QSet<QString> previousModKeys;
@@ -108,7 +108,7 @@ QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repositor
         const QString password = qvariant_cast<QString>(repository.value("password", ""));
         if (repo == nullptr)
         {
-            repo = new Repository(repoName, serverAddress, serverPort, password, sync);
+            repo = new Repository(repoName, serverAddress, serverPort, password);
         }
         else
         {
@@ -152,7 +152,7 @@ QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repositor
 }
 
 // Updates repository list and returns set of deleted mod keys
-QSet<QString> JsonReader::updateRepositories(ISync* sync, QList<Repository*>& repositories)
+QSet<QString> JsonReader::updateRepositories(std::shared_ptr<ISync> sync, QList<Repository*>& repositories)
 {
     updateJsonMap();
     return updateRepositoriesOffline(sync, repositories);

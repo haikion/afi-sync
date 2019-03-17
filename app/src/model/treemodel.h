@@ -1,6 +1,7 @@
 #ifndef TREEMODEL_H
 #define TREEMODEL_H
 
+#include <memory>
 #include <QVariant>
 #include <QVariant>
 #include <QObject>
@@ -43,7 +44,7 @@ private:
     unsigned upload_;
     QList<Repository*> repositories_;
     QTimer updateTimer_;
-    ISync* sync_;
+    std::shared_ptr<ISync> sync_;
     QTimer repoUpdateTimer_;
     JsonReader jsonReader_;
 

@@ -40,7 +40,7 @@ TreeModel::TreeModel(QObject* parent):
     connect(&updateTimer_, &QTimer::timeout, this, &TreeModel::update);
     updateTimer_.start();
 
-    repoUpdateTimer_.setInterval(30000);
+    repoUpdateTimer_.setInterval(1000); //30000);
     connect(&repoUpdateTimer_, &QTimer::timeout, this, &TreeModel::periodicRepoUpdate);
     repoUpdateTimer_.start();
 
@@ -67,12 +67,13 @@ void TreeModel::createSync(const JsonReader& jsonReader)
     const QString deltaUpdatesKey = jsonReader.deltaUpdatesKey();
     if (deltaUpdatesKey != QString())
     {
-        Global::sync = new LibTorrentApi(deltaUpdatesKey);
-        sync_ = Global::sync;
-        return;
+        sync_ = std::make_shared<LibTorrentApi>(deltaUpdatesKey);
     }
-    Global::sync = new LibTorrentApi();
-    sync_ = Global::sync;
+    else
+    {
+        sync_ = std::make_shared<LibTorrentApi>();
+    }
+    Global::sync = sync_.get();
 }
 
 TreeModel::~TreeModel()
@@ -90,7 +91,8 @@ TreeModel::~TreeModel()
         repo->clearModAdapters();
         // Repos and mods are destroyed once their adapters are cleared
     }
-    delete sync_;
+    //delete sync_;
+    qDebug() << "Destroying TreeModel";
 }
 
 void TreeModel::stopUpdates()

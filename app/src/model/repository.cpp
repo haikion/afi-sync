@@ -13,9 +13,8 @@
 #include "settingsmodel.h"
 #include "global.h"
 
-Repository::Repository(const QString& name, const QString& serverAddress, unsigned port, const QString& password, ISync* sync):
+Repository::Repository(const QString& name, const QString& serverAddress, unsigned port, const QString& password):
     SyncItem(name),
-    sync_(sync),
     serverAddress_(serverAddress),
     port_(port),
     password_(password),
@@ -372,11 +371,6 @@ void Repository::appendModAdapter(ModAdapter* adp, int index)
 {
     setFileSize(fileSize() + adp->mod()->fileSize());
     modAdapters_.insert(index, adp);
-}
-
-ISync* Repository::sync() const
-{
-    return sync_;
 }
 
 void Repository::enableMods()

@@ -1,6 +1,7 @@
 #ifndef MODITEM_H
 #define MODITEM_H
 
+#include <memory>
 #include <QObject>
 #include <QTimer>
 #include <QSet>
@@ -17,7 +18,7 @@ class Mod : public QObject, public SyncItem, virtual public IMod
     Q_OBJECT
 
 public:
-    Mod(const QString& name, const QString& key, ISync* sync);
+    Mod(const QString& name, const QString& key, std::shared_ptr<ISync> sync);
     ~Mod();
 
     // Moves files after mods download path has been changed
@@ -52,7 +53,7 @@ private:
     static const unsigned COMPLETION_WAIT_DURATION;
 
     QString key_;
-    ISync* sync_;
+    std::shared_ptr<ISync> sync_;
     QTimer* updateTimer_;
     unsigned waitTime_;
     QList<ModAdapter*> adapters_;

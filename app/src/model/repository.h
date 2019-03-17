@@ -16,7 +16,7 @@
 class Repository : public SyncItem, virtual public IRepository
 {
 public:
-    Repository(const QString& name, const QString& serverAddress, unsigned port, const QString& password, ISync* sync);
+    Repository(const QString& name, const QString& serverAddress, unsigned port, const QString& password);
     ~Repository() override;
 
     static Repository* findRepoByName(const QString& name, QList<Repository*> repositories);
@@ -50,7 +50,6 @@ public:
     void removeModAdapter(ModAdapter* modAdapter);
 
 private:
-    ISync* sync_;
     //Server details
     QString serverAddress_;
     unsigned port_;
