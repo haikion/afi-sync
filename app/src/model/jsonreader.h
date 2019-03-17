@@ -8,6 +8,7 @@
 #include <QString>
 #include <QHash>
 #include <QList>
+#include <QSet>
 #include "mod.h"
 #include "syncnetworkaccessmanager.h"
 #include "interfaces/irepository.h"
@@ -22,7 +23,7 @@ public:
     bool updateAvailable();
     QList<Repository*> repositories(ISync* sync);
     QString deltaUpdatesKey() const;    
-    void updateRepositories(ISync* sync, QList<Repository*>& updateRepositories);
+    QSet<QString> updateRepositories(ISync* sync, QList<Repository*>& updateRepositories);
 
 protected:
     virtual bool writeJsonBytes(const QByteArray& bytes);
@@ -40,7 +41,7 @@ private:
     QString updateUrl() const;
     QByteArray fetchJsonBytes(QString url);
     bool readJsonFile();
-    void updateRepositoriesOffline(ISync* sync, QList<Repository*>& updateRepositories);
+    QSet<QString> updateRepositoriesOffline(ISync* sync, QList<Repository*>& updateRepositories);
 };
 
 #endif // JSONREADER_H

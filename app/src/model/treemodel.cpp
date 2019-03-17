@@ -187,7 +187,11 @@ void TreeModel::periodicRepoUpdate()
 void TreeModel::updateRepositories()
 {
     QList<Repository*> updatedList = repositories_;
-    jsonReader_.updateRepositories(sync_, updatedList);
+    const QSet<QString>& removeFromSync = jsonReader_.updateRepositories(sync_, updatedList);
+    for (const QString& key : removeFromSync)
+    {
+        sync_->removeFolder(key);
+    }
 
     QList<Repository*> deletables;
     for (Repository* repo : repositories_)

@@ -32,6 +32,7 @@ public:
     void forceCheck() const;
     bool selected() override;
     QString key() const;
+    void stopUpdates();
 
 protected:
     virtual void setTicked(bool ticked);

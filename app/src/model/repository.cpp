@@ -29,10 +29,9 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
 
 void Repository::stopUpdates()
 {
-    for (Mod* mod : mods())
+    for (ModAdapter* modAdapter : modAdapters_)
     {
-        // TODO: Instead call modAdapter
-        mod->stopUpdates();
+        modAdapter->stopUpdates();
     }
 }
 

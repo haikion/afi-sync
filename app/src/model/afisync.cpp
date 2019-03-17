@@ -42,3 +42,13 @@ void AfiSync::printDeletables(const DeletableDetector& deletableDetector)
     }
     LOG << "Delete inactive mods (Space used: " + QString::number(deletableDetector.totalSize()/1000000000) + " GB) rmdir /s" + modList;
 }
+
+QSet<QString> AfiSync::combine(const QList<QSet<QString>>& list)
+{
+    QSet<QString> retVal;
+    for (QSet<QString> set : list)
+    {
+        retVal += set;
+    }
+    return retVal;
+}

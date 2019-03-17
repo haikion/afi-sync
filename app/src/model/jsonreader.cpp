@@ -6,6 +6,7 @@
 #include <QJsonValue>
 #include <QNetworkReply>
 #include <QVariantMap>
+#include "afisync.h"
 #include "afisynclogger.h"
 #include "jsonreader.h"
 #include "mod.h"
@@ -82,15 +83,17 @@ void JsonReader::setSyncNetworkAccessManager(std::unique_ptr<SyncNetworkAccessMa
     nam_ = std::move(syncNetworkAccessManager);
 }
 
-void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repositories)
+QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repositories)
 {
     const QList<QVariant> jsonRepositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
+    QSet<QString> previousModKeys;
     QMap<QString, Mod*> modMap; // Add same key mods only once
     for (Repository* repository : repositories)
     {
         for (Mod* mod : repository->mods())
         {
             modMap.insert(mod->key(), mod);
+            previousModKeys.insert(mod->key());
         }
     }
     QHash<Repository*, QSet<QString>> repositoryJsonModKeys;
@@ -145,12 +148,14 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
     }
     repositories.clear();
     repositories.append(orderedRepositoryList);
+    return previousModKeys - AfiSync::combine(repositoryJsonModKeys.values());
 }
 
-void JsonReader::updateRepositories(ISync* sync, QList<Repository*>& repositories)
+// Updates repository list and returns set of deleted mod keys
+QSet<QString> JsonReader::updateRepositories(ISync* sync, QList<Repository*>& repositories)
 {
     updateJsonMap();
-    updateRepositoriesOffline(sync, repositories);
+    return updateRepositoriesOffline(sync, repositories);
 }
 
 QString JsonReader::deltaUpdatesKey() const

@@ -117,3 +117,8 @@ QString ModAdapter::key() const
 {
     return key_;
 }
+
+void ModAdapter::stopUpdates()
+{
+    mod_->stopUpdates();
+}
