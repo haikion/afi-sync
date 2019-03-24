@@ -1,7 +1,6 @@
 #ifndef JSONREADER_H
 #define JSONREADER_H
 
-#include <memory>
 #include <QByteArray>
 #include <QJsonDocument>
 #include <QVariantMap>
@@ -21,9 +20,9 @@ public:
     JsonReader();
 
     bool updateAvailable();
-    QList<Repository*> repositories(std::shared_ptr<ISync> sync);
+    QList<Repository*> repositories(ISync* sync);
     QString deltaUpdatesKey() const;    
-    QSet<QString> updateRepositories(std::shared_ptr<ISync> sync, QList<Repository*>& updateRepositories);
+    QSet<QString> updateRepositories(ISync* sync, QList<Repository*>& updateRepositories);
 
 protected:
     virtual bool writeJsonBytes(const QByteArray& bytes);
@@ -41,7 +40,7 @@ private:
     QString updateUrl() const;
     QByteArray fetchJsonBytes(QString url);
     bool readJsonFile();
-    QSet<QString> updateRepositoriesOffline(std::shared_ptr<ISync> sync, QList<Repository*>& updateRepositories);
+    QSet<QString> updateRepositoriesOffline(ISync* sync, QList<Repository*>& updateRepositories);
 };
 
 #endif // JSONREADER_H

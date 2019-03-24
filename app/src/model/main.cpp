@@ -55,7 +55,7 @@ TreeModel* generalInit(QObject* parent = nullptr)
 
     LOG << "Version: " << VERSION_CHARS;
     Global::workerThread = new QThread();
-    Global::workerThread->setObjectName("workerThread");
+    Global::workerThread->setObjectName("AFISync worker thread");
     Global::workerThread->start();
     LOG << "Worker thread started";
     Global::model = new TreeModel(parent);
@@ -73,9 +73,7 @@ int gui(int argc, char* argv[])
         msgBox.exec();
         exit(1);
     }
-    #ifndef QT_DEBUG
-            AfiSyncLogger* logger = initStandalone();
-    #endif
+    AfiSyncLogger* logger = initStandalone();
 
     MainWindow* mainWindow = new MainWindow();
     TreeModel* treeModel = generalInit(mainWindow);
@@ -86,14 +84,12 @@ int gui(int argc, char* argv[])
                      mainWindow->treeWidget(), &AsTreeWidget::setRepositories);
 
     const int rVal = app.exec();
-    #ifndef QT_DEBUG
-        delete logger;
-    #endif
     // Needs to be done before shutting down workerThread
     treeModel->stopUpdates();
     delete mainWindow;
+    delete logger;
     Global::workerThread->quit();
-    Global::workerThread->wait(1000);
+    Global::workerThread->wait(20000);
     Global::workerThread->terminate();
     Global::workerThread->wait(1000);
     return rVal;

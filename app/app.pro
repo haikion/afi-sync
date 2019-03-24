@@ -37,6 +37,7 @@ unix {
 }
 
 SOURCES += src/model/main.cpp \
+    src/model/destructionwaiter.cpp \
     src/model/afisync.cpp \
     src/model/deletable.cpp \
     src/model/treeitem.cpp \
@@ -80,6 +81,7 @@ SOURCES += src/model/main.cpp \
     src/model/apis/libtorrent/storagemovemanager.cpp
 
 HEADERS += \
+    src/model/destructionwaiter.h \
     src/model/afisync.h \
     src/model/deletable.h \
     src/model/treeitem.h \
@@ -130,7 +132,6 @@ HEADERS += \
     src/model/apis/libtorrent/storagemovemanager.h \
     src/model/interfaces/imod.h \
     src/model/interfaces/imod.h
-
 DISTFILES += \
     AFISync.rc \
     manifest.xml

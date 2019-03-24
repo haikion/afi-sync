@@ -7,6 +7,11 @@ StorageMoveManager::StorageMoveManager():
 {
 }
 
+bool StorageMoveManager::inactive()
+{
+    return dirWatchers_.isEmpty();
+}
+
 bool StorageMoveManager::contains(const QString& key)
 {
     return dirWatchers_.contains(key);

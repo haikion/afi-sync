@@ -13,7 +13,7 @@
 
 const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 
-Mod::Mod(const QString& name, const QString& key, std::shared_ptr<ISync> sync):
+Mod::Mod(const QString& name, const QString& key, ISync* sync):
     SyncItem(name),
     key_(key),
     sync_(sync),
@@ -42,7 +42,7 @@ void Mod::threadConstructor()
     updateTimer_->setTimerType(Qt::VeryCoarseTimer);
     updateTimer_->setInterval(1000);
     connect(updateTimer_, &QTimer::timeout, this, &Mod::update);
-    connect(dynamic_cast<QObject*>(sync_.get()), SIGNAL(initCompleted()), this, SLOT(repositoryChanged()));
+    connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(repositoryChanged()));
 }
 
 QString Mod::path() const
@@ -316,15 +316,13 @@ void Mod::startUpdatesSlot()
     }
     else
     {
-        connect(dynamic_cast<QObject*>(sync_.get()), SIGNAL(initCompleted()), updateTimer_, SLOT(start()));
+        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), updateTimer_, SLOT(start()));
     }
 }
 
 //This should always be run in UI Thread
 void Mod::stopUpdates()
 {
-    Q_ASSERT(QThread::currentThread() != Global::workerThread);
-
     LOG << name();
     //Updates need to be stopped before object destruction, hence blocking.
     QMetaObject::invokeMethod(this, &Mod::stopUpdatesSlot, Qt::BlockingQueuedConnection);
@@ -332,7 +330,6 @@ void Mod::stopUpdates()
 
 void Mod::stopUpdatesSlot()
 {
-    Q_ASSERT(QThread::currentThread() == Global::workerThread);
     updateTimer_->stop();
 }
 
@@ -384,7 +381,7 @@ void Mod::appendModAdapter(ModAdapter* adapter)
         }
         else
         {
-            connect(dynamic_cast<QObject*>(sync_.get()), SIGNAL(initCompleted()), this, SLOT(init()));
+            connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(init()));
             LOG << "name = " << name() << " initCompleted connection created";
         }
         return;

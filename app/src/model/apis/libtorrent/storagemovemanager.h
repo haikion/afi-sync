@@ -15,6 +15,7 @@ public slots:
 
 public:
     StorageMoveManager();
+    bool inactive();
     bool contains(const QString& key);
     void insert(const QString& key, const QString& fromPath, const QString& toPath);
     qint64 totalWanted(const QString& key);

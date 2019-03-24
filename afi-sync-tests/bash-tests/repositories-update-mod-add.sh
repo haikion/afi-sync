@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ${TESTS_DIR}/functions.sh
+
 CURRENT_REPOSITORIES_JSON=${TESTS_DIR}/files/repositories1mod.json
 UPDATED_REPOSITORIES_JSON=${TESTS_DIR}/files/repositories2mods.json
 INI_FILE=${TESTS_DIR}/files/AFISync-primary-enabled.ini
@@ -11,7 +13,7 @@ cp ${INI_FILE} settings/AFISync/AFISync.ini
 cp ${CURRENT_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
 cp -R ${MODS_DIR}/* .
 
-./AFISync &
+xvfb-run ./AFISync &
 sleep 3
 
 cp ${UPDATED_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
@@ -24,4 +26,11 @@ killall AFISync
 while [[ $(ls settings/sync | wc -w) != 7 ]]; do
     sleep 1
 done
+
+kill_and_wait
+
+if [ -f core* ]; then
+    echo -e "\e[31m$1Core file detected\e[0m"
+    exit 1
+fi
 exit 0

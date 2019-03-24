@@ -25,7 +25,7 @@
 
 // TODO: Split this into more classes in order to reduce complexity.
 // create class for managing settings
-class LibTorrentApi : public QObject, public ISync
+class LibTorrentApi : public QObject, virtual public ISync
 {
     Q_OBJECT
     Q_INTERFACES(ISync)
@@ -33,7 +33,7 @@ class LibTorrentApi : public QObject, public ISync
 public:
     explicit LibTorrentApi();
     explicit LibTorrentApi(const QString& deltaUpdatesKey);
-    ~LibTorrentApi();
+    ~LibTorrentApi() override;
 
     void setDeltaUpdatesFolder(const QString& key) override;
     QString deltaUpdatesKey() override;
@@ -82,8 +82,6 @@ public:
     bool ready() override;
     //Sets outgoing port.
     void setPort(int port) override;
-    //Restarts sync
-    void start() override;
     bool folderDownloadingPatches(const QString& key) override;
     void disableQueue(const QString& key) override;
     qint64 folderTotalWanted(const QString& key) override;

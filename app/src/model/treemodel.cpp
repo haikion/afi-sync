@@ -11,11 +11,13 @@
 #include <QDir>
 #include <QFile>
 #include <QList>
+#include <QSet>
 #include <QStringList>
 #include "afisync.h"
 #include "afisynclogger.h"
 #include "apis/libtorrent/libtorrentapi.h"
 #include "deletabledetector.h"
+#include "destructionwaiter.h"
 #include "global.h"
 #include "mod.h"
 #include "modadapter.h"
@@ -67,13 +69,13 @@ void TreeModel::createSync(const JsonReader& jsonReader)
     const QString deltaUpdatesKey = jsonReader.deltaUpdatesKey();
     if (deltaUpdatesKey != QString())
     {
-        sync_ = std::make_shared<LibTorrentApi>(deltaUpdatesKey);
+        sync_ = new LibTorrentApi(deltaUpdatesKey);
     }
     else
     {
-        sync_ = std::make_shared<LibTorrentApi>();
+        sync_ = new LibTorrentApi();
     }
-    Global::sync = sync_.get();
+    Global::sync = sync_;
 }
 
 TreeModel::~TreeModel()
@@ -85,14 +87,28 @@ TreeModel::~TreeModel()
     updateTimer_.stop();
     repoUpdateTimer_.stop();
     stopUpdates();
-    // Destroy repositories
+
+    QSet<QObject*> mods;
+    for (Repository* repo : repositories_)
+    {
+        for (Mod* mod : repo->mods())
+        {
+            mods.insert(mod);
+        }
+    }
+    DestructionWaiter waiter(mods);
+
     for (Repository* repo : repositories_)
     {
         repo->clearModAdapters();
         // Repos and mods are destroyed once their adapters are cleared
     }
-    //delete sync_;
-    qDebug() << "Destroying TreeModel";
+    waiter.wait();
+
+    QObject* syncObject = dynamic_cast<QObject*>(sync_);
+    DestructionWaiter syncWaiter(syncObject);
+    syncObject->deleteLater();
+    syncWaiter.wait(15); // libTorrent session delete might hang
 }
 
 void TreeModel::stopUpdates()

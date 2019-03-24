@@ -7,12 +7,10 @@ export MODS_DIR=${TESTS_DIR}/files/mods
 
 run_test () {
     timeout 40 ${TESTS_DIR}/$1 && echo -e "\e[32m$1 passed\e[0m" || echo -e "\e[31m$1 failed\e[0m"
-    killall AFISync
 }
 
 run_negative_test () {
     timeout 15 ${TESTS_DIR}/$1 && echo -e "\e[31m$1 failed\e[0m"  || echo -e "\e[32m$1 passed\e[0m"
-    killall AFISync
 }
 
 compile () {
@@ -20,9 +18,10 @@ compile () {
     mkdir ${WORKING_DIR}
     cp -R ../../app/* ${WORKING_DIR}/
     cd ${WORKING_DIR}
-    qmake && make
+    qmake CONFIG+=debug && make -j8
 }
 
+ulimit -c unlimited
 sudo service apache2 start
 compile
 cd ${WORKING_DIR}

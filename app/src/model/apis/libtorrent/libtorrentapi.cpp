@@ -98,16 +98,8 @@ void LibTorrentApi::generalThreadInit()
 
 LibTorrentApi::~LibTorrentApi()
 {
-    QMetaObject::invokeMethod(this, &LibTorrentApi::shutdown, Qt::QueuedConnection);
-    // Wait for shutdown signal for 15 s. LibTorrent might hang at destruction.
-    // Implement better solution once such thing is discovered.
-    QTimer timer;
-    timer.setSingleShot(true);
-    QEventLoop loop;
-    connect(this, &LibTorrentApi::shutdownCompleted, &loop, &QEventLoop::quit);
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    timer.start(15000);
-    loop.exec();
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+    shutdown();
 }
 
 bool LibTorrentApi::createSession()
@@ -657,16 +649,16 @@ void LibTorrentApi::shutdown()
         LOG << "Delta Download torrent saved.";
     }
     LOG << "Settings saved";
+    deleteSession = deleteSession && storageMoveManager_->inactive();
+    delete storageMoveManager_;
     if (session_ && deleteSession)
     {
         //FIXME: Hangs here if downloading metadata.
         delete session_;
         session_ = nullptr;
         LOG << "Session deleted";
-        keyHash_.clear();
-        LOG << "keyHash_ cleared";
     }
-    delete storageMoveManager_;
+    LOG << "Shutdown completed.";
     emit shutdownCompleted();
 }
 
@@ -738,25 +730,6 @@ void LibTorrentApi::setPortSlot(int port)
     lt::settings_pack pack;
     pack.set_str(lt::settings_pack::listen_interfaces, "0.0.0.0:" + QString::number(port).toStdString());
     session_->apply_settings(pack);
-}
-
-// TODO: Remove deprecated
-void LibTorrentApi::start()
-{
-    LOG << "Reloading settings...";
-    if (session_)
-    {
-        LOG_ERROR << "Session is not null. Shutting down...";
-        shutdown();
-    }
-    createSession();
-    if (SettingsModel::deltaPatchingEnabled() && deltaUpdatesKey_ != "" && !deltaManager_)
-    {
-        setDeltaUpdatesFolder(deltaUpdatesKey_);
-        LOG << "Delta manager restored.";
-    }
-
-    timer_->start();
 }
 
 void LibTorrentApi::handleAlerts()
