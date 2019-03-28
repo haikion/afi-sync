@@ -6,10 +6,21 @@ export TESTS_DIR=$PWD
 export MODS_DIR=${TESTS_DIR}/files/mods
 
 run_test () {
-    timeout 40 ${TESTS_DIR}/$1 && echo -e "\e[32m$1 passed\e[0m" || echo -e "\e[31m$1 failed\e[0m"
+    if [ -f core ]; then
+        echo -e "\e[31mCore file detected\e[0m"
+        exit 1
+    fi
+
+    timeout 60 ${TESTS_DIR}/$1 && echo -e "\e[32m$1 passed\e[0m" || echo -e "\e[31m$1 failed\e[0m"
+    mv afisync.log ${1}.log
 }
 
 run_negative_test () {
+    if [ -f core ]; then
+        echo -e "\e[31m$1Core file detected\e[0m"
+        exit 1
+    fi
+
     timeout 15 ${TESTS_DIR}/$1 && echo -e "\e[31m$1 failed\e[0m"  || echo -e "\e[32m$1 passed\e[0m"
 }
 
