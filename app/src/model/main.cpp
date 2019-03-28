@@ -91,7 +91,8 @@ int gui(int argc, char* argv[])
     Global::workerThread->quit();
     Global::workerThread->wait(20000);
     Global::workerThread->terminate();
-    Global::workerThread->wait(1000);
+    // TODO: Uncomment or remove line below
+    // Global::workerThread->wait(1000);
     return rVal;
 }
 
