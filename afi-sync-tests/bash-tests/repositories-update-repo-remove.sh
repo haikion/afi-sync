@@ -17,8 +17,8 @@ xvfb-run ./AFISync &
 sleep 3
 
 cp ${UPDATED_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
-while ! grep "Deleting repository: armafinland.fi Primary 2" afisync.log; do
-while ! grep "Deleting repository: armafinland.fi Primary 2" afisync.log; do
+
+while ! grep "~Repository" afisync.log; do
     sleep 1
 done
 
