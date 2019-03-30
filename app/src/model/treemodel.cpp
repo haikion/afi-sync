@@ -216,6 +216,7 @@ void TreeModel::updateRepositories()
     {
         if (!updatedList.contains(repo))
         {
+            LOG << "Deleting repository: " << repo->nameText();
             deletables.append(repo);
         }
     }
