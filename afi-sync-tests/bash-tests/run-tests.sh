@@ -41,6 +41,7 @@ run_test log-rotate.sh
 run_test repositories-update.sh
 run_test repositories-update-mod-add.sh
 run_test repositories-update-mod-remove.sh
+run_test repositories-update-repo-remove.sh
 run_negative_test repositories-update-corrupted.sh
 
 sudo service apache2 stop
