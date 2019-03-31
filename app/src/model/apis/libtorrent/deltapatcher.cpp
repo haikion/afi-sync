@@ -143,7 +143,7 @@ void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches, int
     else
     {
         //Try as long as downloading and after that 10 times with 10s delays.
-        if (handle_.status().is_finished)
+        if (handle_.status().state == libtorrent::torrent_status::state_t::finished)
         {
             handle_.force_recheck();
             ++attempts;

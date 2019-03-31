@@ -21,7 +21,7 @@ public:
 
     bool updateAvailable();
     QList<Repository*> repositories(ISync* sync);
-    QString deltaUpdatesKey() const;    
+    QString deltaUpdatesKey();
     QSet<QString> updateRepositories(ISync* sync, QList<Repository*>& updateRepositories);
 
 protected:

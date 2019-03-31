@@ -34,7 +34,7 @@ TreeModel::TreeModel(QObject* parent):
     sync_(nullptr)
 {
     LOG;
-    createSync(jsonReader_);
+    createSync(jsonReader_.deltaUpdatesKey());
     repositories_ = jsonReader_.repositories(sync_);
     LOG << "readJson completed";
 
@@ -42,7 +42,7 @@ TreeModel::TreeModel(QObject* parent):
     connect(&updateTimer_, &QTimer::timeout, this, &TreeModel::update);
     updateTimer_.start();
 
-    repoUpdateTimer_.setInterval(1000); //30000);
+    repoUpdateTimer_.setInterval(30000);
     connect(&repoUpdateTimer_, &QTimer::timeout, this, &TreeModel::periodicRepoUpdate);
     repoUpdateTimer_.start();
 
@@ -50,23 +50,8 @@ TreeModel::TreeModel(QObject* parent):
     qRegisterMetaType<QList<Repository*>>("QList<Repository>");
 }
 
-//TODO: Remove
-void TreeModel::manageDeltaUpdates(const JsonReader& jsonReader)
+void TreeModel::createSync(const QString& deltaUpdatesKey)
 {
-    const QString deltaUpdatesKey = jsonReader.deltaUpdatesKey();
-    if (deltaUpdatesKey != QString())
-    {
-        sync_->setDeltaUpdatesFolder(deltaUpdatesKey);
-        if (SettingsModel::deltaPatchingEnabled())
-        {
-            sync_->enableDeltaUpdates();
-        }
-    }
-}
-
-void TreeModel::createSync(const JsonReader& jsonReader)
-{
-    const QString deltaUpdatesKey = jsonReader.deltaUpdatesKey();
     if (deltaUpdatesKey != QString())
     {
         sync_ = new LibTorrentApi(deltaUpdatesKey);

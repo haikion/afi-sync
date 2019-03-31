@@ -50,8 +50,7 @@ private:
     void postInit();
     QString bandwithString(int amount) const;
     QSet<Mod*> mods() const;
-    void manageDeltaUpdates(const JsonReader& jsonReader);
-    void createSync(const JsonReader& jsonReader);
+    void createSync(const QString& deltaUpdatesKey);
     void updateRepositories();
     static QList<IRepository*> toIrepositories(const QList<Repository*>& repositories);
 };

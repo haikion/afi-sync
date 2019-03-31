@@ -57,7 +57,7 @@ bool JsonReader::updateAvailable()
 QList<Repository*> JsonReader::repositories(ISync* sync)
 {
     QList<Repository*> retVal;
-    updateRepositories(sync, retVal);
+    updateRepositoriesOffline(sync, retVal);
     return retVal;
 }
 
@@ -158,8 +158,9 @@ QSet<QString> JsonReader::updateRepositories(ISync* sync, QList<Repository*>& re
     return updateRepositoriesOffline(sync, repositories);
 }
 
-QString JsonReader::deltaUpdatesKey() const
+QString JsonReader::deltaUpdatesKey()
 {
+    updateJsonMap();
     return jsonMap_.value("deltaUpdates").toString();
 }
 
