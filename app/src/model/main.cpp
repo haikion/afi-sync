@@ -127,9 +127,9 @@ int cli(int argc, char* argv[])
     }
 
     //Delta hash
-    const QString deltaPath = parser.value("delta-hash");
-    if (!deltaPath.isEmpty())
+    if (parser.isSet("delta-hash"))
     {
+        const QString deltaPath = parser.value("delta-hash");
         LOG << "Hash for " << deltaPath << " is " << AHasher::hash(deltaPath);
         return 0;
     }
@@ -140,37 +140,39 @@ int cli(int argc, char* argv[])
     {
         if (missingArgs.size() != 0)
         {
-            return 2;
+            parser.showHelp(1);
         }
-        QString oldPath = parser.value(DELTA_ARGS.at(0));
-        QString newPath = parser.value(DELTA_ARGS.at(1));
-        QString patchesPath = parser.value(DELTA_ARGS.at(2));
-        //TODO: This should be done with static functions
+        const QString& oldPath = parser.value(DELTA_ARGS.at(0));
+        const QString& newPath = parser.value(DELTA_ARGS.at(1));
+        const QString& patchesPath = parser.value(DELTA_ARGS.at(2));
         DeltaPatcher dp(patchesPath, libtorrent::torrent_handle());
         dp.delta(oldPath, newPath);
 
         return 0;
     }
     LOG << "Fail " << missingArgs.size() << " " << missingArgs;
-    TreeModel* model = generalInit();
-
     // Mirror
-    QFileInfo dir(parser.value("mirror"));
-    QString modDownloadPath = dir.absoluteFilePath();
-    if (!dir.isDir() || !dir.isWritable())
+    if (parser.isSet("mirror"))
     {
-        LOG << "Invalid path:" << modDownloadPath;
-        QCoreApplication::exit(2);
-    }
-    LOG << "Setting mod download path: " << modDownloadPath;
-    SettingsModel::setModDownloadPath(modDownloadPath);
+        TreeModel* model = generalInit();
+        QFileInfo dir(parser.value("mirror"));
+        QString modDownloadPath = dir.absoluteFilePath();
+        if (!dir.isDir() || !dir.isWritable())
+        {
+            LOG << "Invalid path:" << modDownloadPath;
+            QCoreApplication::exit(2);
+        }
+        LOG << "Setting mod download path: " << modDownloadPath;
+        SettingsModel::setModDownloadPath(modDownloadPath);
 
-    Global::guiless = true;
-    SettingsModel::setDeltaPatchingEnabled(true);
-    LOG << "Delta updates enabled due to the mirror mode.";
-    SettingsModel::setPort(parser.value("port"), true);
-    model->enableRepositories();
-    return QCoreApplication::exec();
+        Global::guiless = true;
+        SettingsModel::setDeltaPatchingEnabled(true);
+        LOG << "Delta updates enabled due to the mirror mode.";
+        SettingsModel::setPort(parser.value("port"), true);
+        model->enableRepositories();
+        return QCoreApplication::exec();
+    }
+    parser.showHelp(3);
 }
 
 int main(int argc, char* argv[])
