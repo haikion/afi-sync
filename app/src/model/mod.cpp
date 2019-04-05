@@ -414,6 +414,15 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::CHECKING);
     }
+    else if (sync_->folderDownloading(key_))
+    {
+        if (statusStr() != SyncStatus::DOWNLOADING)
+        {
+            setStatus(SyncStatus::DOWNLOADING);
+            //Heavy operation -> only set when entering downloading state.
+            setProcessCompletion(true);
+        }
+    }
     //Wait for ready just in case
     else if (statusStr() == SyncStatus::WAITING)
     {
@@ -469,14 +478,10 @@ void Mod::updateStatus()
         {
             setStatus(SyncStatus::DOWNLOADING_PATCHES);
         }
-        else if (eta() > 0)
+        else
         {
-            if (statusStr() != SyncStatus::DOWNLOADING)
-            {
-                setStatus(SyncStatus::DOWNLOADING);
-                //Heavy operation -> only set when entering downloading state.
-                setProcessCompletion(true);
-            }
+            LOG << "ERROR: Unable to determine mod state. name = " << name();
+            setStatus(SyncStatus::ERRORED);
         }
     }
 

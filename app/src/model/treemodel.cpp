@@ -36,6 +36,17 @@ TreeModel::TreeModel(QObject* parent):
     LOG;
     createSync(jsonReader_.deltaUpdatesKey());
     repositories_ = jsonReader_.repositories(sync_);
+
+    QSet<QString> usedKeys;
+    for (Repository* repo : repositories_)
+    {
+        for (QString key : repo->modKeys())
+        {
+            usedKeys.insert(key);
+        }
+    }
+    sync_->cleanUnusedFiles(usedKeys);
+
     LOG << "readJson completed";
 
     updateTimer_.setInterval(1000);

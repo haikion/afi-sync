@@ -49,6 +49,7 @@ public:
     bool folderReady(const QString& key) override;
     //Returns true if folder is indexing or checking files.
     bool folderChecking(const QString& key) override;
+    bool folderDownloading(const QString& key) override;
     bool folderMovingFiles(const QString& key) override;
     bool folderQueued(const QString& key) override;
     //Fetches eta to ready state. Returns time in seconds.

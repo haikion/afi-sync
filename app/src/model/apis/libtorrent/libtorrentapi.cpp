@@ -236,7 +236,8 @@ bool LibTorrentApi::folderReady(const QString& key)
         return false;
 
     lt::torrent_status status = handle.status();
-    return status.is_finished;
+    // is_finished reports incorrent value
+    return status.progress == 1;
 }
 
 bool LibTorrentApi::folderChecking(const lt::torrent_status& status) const
@@ -260,6 +261,17 @@ bool LibTorrentApi::folderChecking(const QString& key)
 
     lt::torrent_status status = handle.status();
     return folderChecking(status);
+}
+
+bool LibTorrentApi::folderDownloading(const QString& key)
+{
+    lt::torrent_handle handle = getHandle(key);
+    if (!handle.is_valid())
+        return false;
+
+    lt::torrent_status status = handle.status();
+    return status.state == lt::torrent_status::state_t::downloading ||
+            status.state == lt::torrent_status::downloading_metadata;
 }
 
 bool LibTorrentApi::folderMovingFiles(const QString& key)
