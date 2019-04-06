@@ -73,6 +73,13 @@ int gui(int argc, char* argv[])
         msgBox.exec();
         exit(1);
     }
+    if (ProcessMonitor::arma3Running())
+    {
+        QMessageBox msgBox;
+        msgBox.setText("AFISync cannot be started while Arma 3 is running.");
+        msgBox.exec();
+        exit(2);
+    }
     AfiSyncLogger* logger = initStandalone();
 
     MainWindow* mainWindow = new MainWindow();
