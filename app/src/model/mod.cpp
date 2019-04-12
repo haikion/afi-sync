@@ -414,6 +414,10 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::CHECKING);
     }
+    else if (sync_->folderDownloadingPatches(key_))
+    {
+        setStatus(SyncStatus::DOWNLOADING_PATCHES);
+    }
     else if (sync_->folderDownloading(key_))
     {
         if (statusStr() != SyncStatus::DOWNLOADING)
@@ -473,10 +477,6 @@ void Mod::updateStatus()
         else if (sync_->folderNoPeers(key_))
         {
             setStatus(SyncStatus::NO_PEERS);
-        }
-        else if (sync_->folderDownloadingPatches(key_))
-        {
-            setStatus(SyncStatus::DOWNLOADING_PATCHES);
         }
         else
         {
