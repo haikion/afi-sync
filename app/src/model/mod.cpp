@@ -273,7 +273,9 @@ void Mod::removeModAdapter(ModAdapter* modAdapter)
     if (adapters_.isEmpty())
     {
         deleteLater();
+        return;
     }
+    QMetaObject::invokeMethod(this, &Mod::repositoryChanged, Qt::QueuedConnection);
 }
 
 void Mod::removeModAdapter(Repository* repository)
@@ -386,6 +388,7 @@ void Mod::appendModAdapter(ModAdapter* adapter)
         }
         return;
     }
+    QMetaObject::invokeMethod(this, &Mod::repositoryChanged, Qt::QueuedConnection);
 }
 
 void Mod::updateStatus()
