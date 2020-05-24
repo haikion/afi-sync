@@ -5,7 +5,16 @@ Console::Console(QObject* parent):
     QObject(parent)
 {
     process_ = new QProcess();
-    connect(process_, SIGNAL(readyRead()), this, SLOT(printOutput()));
+    connect(process_, &QProcess::channelReadyRead, this, [=] (int) {
+        const QByteArray output = process_->readAllStandardOutput();
+        if (!output.isEmpty()) {
+            LOG << output.toStdString().c_str();
+        }
+        const QByteArray errorOutput = process_->readAllStandardError();
+        if (!errorOutput.isEmpty()) {
+            LOG << errorOutput.toStdString().c_str();
+        }
+    });
 }
 
 Console::~Console()
@@ -30,11 +39,6 @@ QProcess* Console::runCmdAsync(const QString& cmd)
 
     process_->start(cmd);
     return process_;
-}
-
-void Console::printOutput()
-{
-    LOG << process_->readAll().toStdString().c_str();
 }
 
 void Console::terminate()
