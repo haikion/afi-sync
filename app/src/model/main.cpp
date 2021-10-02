@@ -121,7 +121,7 @@ int cli(int argc, char* argv[])
                           {DELTA_ARGS.at(0), "Delta patch generation:  Defines path to old version", DELTA_ARGS.at(0)},
                           {DELTA_ARGS.at(1), "Delta patch generation:  Defines path to new version", DELTA_ARGS.at(1)},
                           {DELTA_ARGS.at(2), "Delta patch generation:  Defines path to patches directory", DELTA_ARGS.at(2)},
-                          {PATCH, "Delta Patching: Patches mod directory with given patch file. Usage: ./AFISync --patch patch.7z --mod @testmod", PATCH},
+                          {PATCH, "Delta Patching: Patches mod directory with given patch file. Usage: AFISync.exe --patch patch.7z --mod @testmod", PATCH},
                           {MOD, "Delta Patching: Old mod directory", MOD}
                      });
 
