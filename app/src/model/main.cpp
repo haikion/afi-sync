@@ -105,6 +105,9 @@ int gui(int argc, char* argv[])
 
 int cli(int argc, char* argv[])
 {
+    static const QString MOD = "mod";
+    static const QString PATCH = "patch";
+
     QCoreApplication app(argc, argv);
     QCommandLineParser parser;
     parser.addHelpOption();
@@ -118,6 +121,8 @@ int cli(int argc, char* argv[])
                           {DELTA_ARGS.at(0), "Delta patch generation:  Defines path to old version", DELTA_ARGS.at(0)},
                           {DELTA_ARGS.at(1), "Delta patch generation:  Defines path to new version", DELTA_ARGS.at(1)},
                           {DELTA_ARGS.at(2), "Delta patch generation:  Defines path to patches directory", DELTA_ARGS.at(2)},
+                          {PATCH, "Delta Patching: Patches mod directory with given patch file. Usage: ./AFISync --patch patch.7z --mod @testmod", PATCH},
+                          {MOD, "Delta Patching: Old mod directory", MOD}
                      });
 
     QStringList args;
@@ -139,6 +144,20 @@ int cli(int argc, char* argv[])
         const QString deltaPath = parser.value("delta-hash");
         LOG << "Hash for " << deltaPath << " is " << AHasher::hash(deltaPath);
         return 0;
+    }
+    if (parser.isSet(PATCH) || parser.isSet("mod")) {
+        if (!parser.isSet(PATCH)) {
+            LOG << "Missing patch";
+            return 1;
+        }
+        if (!parser.isSet(MOD)) {
+            LOG << "Missing mod";
+            return 1;
+        }
+        const QString patch = parser.value("patch");
+        const QString mod = parser.value("mod");
+        DeltaPatcher dp;
+        return dp.patchAbsolutePath(patch, mod) ? 0 : 1;
     }
 
     //Delta patching

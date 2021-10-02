@@ -42,6 +42,19 @@ DeltaPatcher::DeltaPatcher(const QString& patchesPath, const libtorrent::torrent
                               Q_ARG(QString, patchesPath));
 }
 
+// Used for command line interface. Does not use worker thread
+// TODO: Separate synchronous operations into different class and use that class instead
+// with command line
+DeltaPatcher::DeltaPatcher():
+    QObject(nullptr),
+    bytesPatched_(0),
+    extractingPatches_(false),
+    totalBytes_(-1)
+{
+    threadConstructor("");
+}
+
+
 DeltaPatcher::~DeltaPatcher()
 {
     thread_.quit();
@@ -230,6 +243,16 @@ bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
         return false;
 
     return patchExtracted(patchesFi_->absoluteFilePath() + "/" + PATCH_DIR, modPath);
+}
+
+bool DeltaPatcher::patchAbsolutePath(const QString& patch, const QString& modPath)
+{
+    LOG << "Patching " << modPath << " with " << patch;
+    QFileInfo(patch).absoluteFilePath();
+    if (!extract(patch))
+        return false;
+
+    return patchExtracted(QFileInfo(patch).dir().absolutePath() + "/" + PATCH_DIR, modPath);
 }
 
 void DeltaPatcher::cleanUp(QDir& deltaDir, QDir& tmpDir)

@@ -26,6 +26,7 @@ class DeltaPatcher: public QObject
 
 public:
     DeltaPatcher(const QString& patchesPath, const libtorrent::torrent_handle& handle);
+    DeltaPatcher();
     ~DeltaPatcher() override;
 
     //Patches dir to latest version.
@@ -42,6 +43,7 @@ public:
     void stop();    
     bool patching(const QString& modName);
     bool patchExtracting();
+    bool patchAbsolutePath(const QString& patch, const QString& modPath);
 
 signals:
     void patched(QString modPath, bool success);

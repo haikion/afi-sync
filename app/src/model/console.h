@@ -25,9 +25,6 @@ public slots:
     bool runCmd(const QString& cmd) const;
     void terminate();
 
-private slots:
-    void printOutput();
-
 private:
     QProcess* process_;
 };
