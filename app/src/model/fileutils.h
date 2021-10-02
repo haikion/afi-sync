@@ -26,12 +26,13 @@ public:
     static void safeRemoveEmptyDirs(const QString& path);
     //For testability
     static void appendSafePath(const QString& path);
+    static QString casedPath(const QString& path);
+    static bool filesIdentical(const QString& path1, const QString& path2);
 
 private:
     static QStringList safeSubpaths_;
 
     static bool pathIsSafe(const QString& path);
-    static QString casedPath(const QString& path);
 };
 
 #endif // FILEUTILS_H

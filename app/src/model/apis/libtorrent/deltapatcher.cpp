@@ -321,25 +321,25 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
     return true;
 }
 
-bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
+bool DeltaPatcher::delta(const QString& oldModPath, QString newModPath)
 {
     QString patchesPath = patchesFi_->absoluteFilePath();
     QDir patchesDir(patchesPath);
     QString deltaPath = patchesPath + "/" + PATCH_DIR;
     QDir deltaDir(deltaPath);
-    QString oldHash = AHasher::hash(oldPath);
-    QString modName = QFileInfo(oldPath).fileName();
+    QString oldHash = AHasher::hash(oldModPath);
+    QString modName = QFileInfo(oldModPath).fileName();
     QString patchName = modName + SEPARATOR
             + QString::number(latestVersion(modName) + 1) + SEPARATOR + oldHash + ".7z";
     QString patchPath = patchesPath + "/" + patchName;
 
-    QFileInfo laterFi = QFileInfo(laterPath);
+    QFileInfo laterFi = QFileInfo(newModPath);
     if (!laterFi.exists())
     {
-        LOG_ERROR << "Path " << laterPath << " does not exist.";
+        LOG_ERROR << "Path " << newModPath << " does not exist.";
         return false;
     }
-    laterPath = laterFi.absoluteFilePath();
+    newModPath = laterFi.absoluteFilePath();
 
     QStringList conflictingFiles =
             patchesDir.entryList().filter(QRegExp(modName + "\\..*\\." + oldHash + "\\.7z" ));
@@ -362,34 +362,39 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
     }
 
     QDir().mkpath(deltaPath);
-    QDirIterator it(laterPath, QDir::Files, QDirIterator::Subdirectories);
+    QDirIterator it(newModPath, QDir::Files, QDirIterator::Subdirectories);
     bool rVal = false;
     while (it.hasNext())
     {
         QFileInfo newFile = it.next();
 
-        QString relPath = newFile.absoluteFilePath().remove(laterPath);
-        LOG << relPath << " " << laterPath;
-        QFileInfo oldFile = QFileInfo(oldPath + "/" + relPath);
-        QString outputPath = deltaPath + relPath;
+        QString relPath = newFile.absoluteFilePath().remove(newModPath);
+        if (relPath.startsWith("/")) {
+            relPath.remove(0, 1);
+        }
+        LOG << relPath << " " << newModPath;
+        QFileInfo oldFile = QFileInfo(oldModPath + "/" + relPath);
+        QString outputPath = deltaPath + "/" + relPath;
         QString parentPath = QFileInfo(outputPath).absolutePath();
         QString newPath = newFile.absoluteFilePath();
 
-        if (!oldFile.exists())
+        // Do not create patch if path is differently cased
+        // for example Addons/thing.pbo vs addons/thing.pbo
+        auto casedPath = FileUtils::casedPath(oldFile.absoluteFilePath());
+        if (!oldFile.exists() || !casedPath.contains(relPath))
         {
             LOG << "Copying " << newPath << " to " << outputPath;
             QFile::copy(newPath, outputPath);
             QDir().mkpath(parentPath);
-            rVal = true;
             continue;
         }
 
         outputPath = outputPath + DELTA_EXTENSION;
         QString oldPath = QDir::toNativeSeparators(oldFile.absoluteFilePath());
         QString laterPath = QDir::toNativeSeparators(newPath);
-        if (oldFile.size() == QFileInfo(laterPath).size())
+        if (FileUtils::filesIdentical(oldPath, laterPath))
         {
-            LOG << "Files " << oldPath << " and file " << laterPath << " are (size) identical. Delta patch generation aborted.";
+            LOG << "Files " << oldPath << " and file " << laterPath << " are dentical. Delta patch generation aborted.";
             continue;
         }
         QDir().mkpath(parentPath);
@@ -404,8 +409,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
     if (!rVal)
     {
         FileUtils::safeRemoveRecursively(deltaDir);
-        LOG_ERROR << "Directories " << oldPath << " and " << laterPath
-            << " are identical. Patch generation aborted.";
+        LOG << "No patchable files found. Delta patch generation aborted.";
         return false;
     }
 
@@ -416,7 +420,7 @@ bool DeltaPatcher::delta(const QString& oldPath, QString laterPath)
 
     //Verify that the latest version doesn't get delta patched
     //due to hash collision.
-    QStringList deletedFiles = removePatchesFromLatest(laterPath, patchesPath);
+    QStringList deletedFiles = removePatchesFromLatest(newModPath, patchesPath);
 
     return rVal && !deletedFiles.contains(patchName);
 }

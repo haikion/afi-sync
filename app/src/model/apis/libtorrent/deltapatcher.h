@@ -33,7 +33,7 @@ public:
     void patch(const QString& modPath);
     //Creates a patch file synchronously.
     //Patch file is a 7zip archive consisting of all xdelta patches.
-    bool delta(const QString& oldPath, QString laterDir);
+    bool delta(const QString& oldModPath, QString laterDir);
     static QStringList filterPatches(const QString& modPath, const QStringList& allPatches);
     qint64 bytesPatched(const QString& modName);
     //Returns total number of bytes in a patch when patch is being applied.

@@ -170,7 +170,11 @@ int cli(int argc, char* argv[])
         }
         const QString& oldPath = parser.value(DELTA_ARGS.at(0));
         const QString& newPath = parser.value(DELTA_ARGS.at(1));
-        const QString& patchesPath = parser.value(DELTA_ARGS.at(2));
+        QString patchesPath = parser.value(DELTA_ARGS.at(2));
+        if (patchesPath.endsWith("/") || patchesPath.endsWith("\\")) {
+            patchesPath.remove(patchesPath.size()-1, 1);
+        }
+        FileUtils::appendSafePath(patchesPath);
         DeltaPatcher dp(patchesPath, libtorrent::torrent_handle());
         dp.delta(oldPath, newPath);
 
