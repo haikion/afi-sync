@@ -70,6 +70,7 @@ HEADERS += \
     ../app/src/model/version.h \
     ../app/src/model/deletable.h \
     ../app/src/model/afisync.h \
+    ../app/src/model/destructionwaiter.h \
     mocksyncitem.h \
     mockmod.h \
     mockrepository.h \
@@ -112,4 +113,5 @@ SOURCES += \
     deletabledetectortest.cpp \
     ../app/src/model/deletable.cpp \
     ../app/src/model/afisync.cpp \
+    ../app/src/model/destructionwaiter.cpp \
     afisynctest.cpp
