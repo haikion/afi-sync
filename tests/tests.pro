@@ -31,7 +31,6 @@ HEADERS += \
     ../app/src/model/apis/libtorrent/deltadownloader.h \
     ../app/src/model/apis/libtorrent/deltamanager.h \
     ../app/src/model/apis/libtorrent/deltapatcher.h \
-    ../app/src/model/apis/libtorrent/directorywatcher.cpp.TtKWIM \
     ../app/src/model/apis/libtorrent/directorywatcher.h \
     ../app/src/model/apis/libtorrent/libtorrentapi.h \
     ../app/src/model/apis/libtorrent/speedestimator.h \

@@ -3,20 +3,23 @@
 #include "../../global.h"
 #include "directorywatcher.h"
 
-DirectoryWatcher::DirectoryWatcher(const QString& fromPath, const QString& toPath, const QString& key, const qint64& totalWanted):
+DirectoryWatcher::DirectoryWatcher(const QString& fromPath, const QString& toPath, const QString& key, const qint64 totalWantedForce):
     fromPath_(fromPath),
     toPath_(toPath),
-    key_(key),
-    totalWanted_(totalWanted)
+    totalWanted_(totalWantedForce),
+    key_(key)
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
-    totalWanted_ = FileUtils::dirSize(fromPath);
+    if (totalWanted_ < 0) {
+        totalWanted_ = FileUtils::dirSize(fromPath);
+    }
 }
 
 bool DirectoryWatcher::done()
 {
     totalWantedDone_=  FileUtils::dirSize(toPath_);
-    return totalWantedDone_ == totalWanted_;
+    // Libtorrent will delete the source directory (fromPath_) once move_storage is done
+    return totalWantedDone_ == totalWanted_ || !QFileInfo::exists(fromPath_);;
 }
 
 QString DirectoryWatcher::key() const

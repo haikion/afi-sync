@@ -320,8 +320,12 @@ bool LibTorrentApi::folderQueued(const QString& key)
 void LibTorrentApi::setFolderPath(const QString& key, const QString& path)
 {
     lt::torrent_handle handle = getHandle(key);
-    const std::string name = handle.name();
-    storageMoveManager_->insert(key, QString::fromStdString(handle.save_path() + "/" + name), path + "/" + QString::fromStdString(name));
+    const QString name = QString::fromStdString(handle.name());
+    const QString savePath = QString::fromStdString(handle.save_path());
+    // Path can be drive root in which case it ends with "\" for example "C:\"
+    const QString fromPath = QDir::fromNativeSeparators(savePath + (savePath.endsWith("\\") ? "" : "\\") + name);
+    const QString toPath = QDir::fromNativeSeparators(path + (path.endsWith("\\") ? "" : "\\") + name);
+    storageMoveManager_->insert(key, fromPath, toPath, handle.status().total_wanted_done);
     handle.move_storage(path.toStdString());
 }
 

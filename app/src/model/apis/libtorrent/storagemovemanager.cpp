@@ -31,9 +31,9 @@ void StorageMoveManager::update()
     dirWatchers_.removeAll(removeThese);
 }
 
-void StorageMoveManager::insert(const QString& key, const QString& fromPath, const QString& toPath)
+void StorageMoveManager::insert(const QString& key, const QString& fromPath, const QString& toPath, const qint64 totalDownloaded)
 {
-    dirWatchers_.insert(key, DirectoryWatcher(fromPath, toPath, key));
+    dirWatchers_.insert(key, DirectoryWatcher(fromPath, toPath, key, totalDownloaded));
 }
 
 qint64 StorageMoveManager::totalWanted(const QString& key)
