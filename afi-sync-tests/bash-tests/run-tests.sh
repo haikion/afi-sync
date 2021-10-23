@@ -26,7 +26,7 @@ run_negative_test () {
 
 compile () {
     trash ${WORKING_DIR}
-    mkdir ${WORKING_DIR}
+    mkdir -p ${WORKING_DIR}
     cp -R ../../app/* ${WORKING_DIR}/
     cd ${WORKING_DIR}
     qmake CONFIG+=debug && make -j8

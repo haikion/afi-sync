@@ -6,6 +6,7 @@ CURRENT_REPOSITORIES_JSON=${TESTS_DIR}/files/repositories.json
 UPDATED_REPOSITORIES_JSON=${TESTS_DIR}/files/repositories-updated.json
 UPDATED_HASH=$(cat ${UPDATED_REPOSITORIES_JSON})
 
+mkdir -p settings/AFISync
 cp ${CURRENT_REPOSITORIES_JSON} settings/repositories.json
 cp ${UPDATED_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
 
