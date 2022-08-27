@@ -11,8 +11,8 @@ run_test () {
         exit 1
     fi
 
-    timeout 60 ${TESTS_DIR}/$1 && echo -e "\e[32m$1 passed\e[0m" || echo -e "\e[31m$1 failed\e[0m"
-    mv afisync.log ${1}.log
+    timeout 60 ${TESTS_DIR}/$1 &> ${1}_shell.log && echo -e "\e[32m$1 passed\e[0m" || echo -e "\e[31m$1 failed\e[0m"
+    mv afisync.log ${1}_afisync.log
 }
 
 run_negative_test () {
@@ -29,12 +29,24 @@ compile () {
     mkdir -p ${WORKING_DIR}
     cp -R ../../app/* ${WORKING_DIR}/
     cd ${WORKING_DIR}
-    qmake CONFIG+=debug && make -j8
+    qmake CONFIG+=debug &> compile.log && make -j8 &>> compile.log && return 0
+    return 1
 }
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
 
 ulimit -c unlimited
 sudo service apache2 start
-compile
+echo -n "Compiling... "
+if compile ; then
+    echo -e "${GREEN}success${NC}"
+else
+    echo -e "${RED}fail!${NC}"
+    echo "See ${WORKING_DIR}/compile.log for details"
+    exit 1
+fi
 cd ${WORKING_DIR}
 
 run_test log-rotate.sh

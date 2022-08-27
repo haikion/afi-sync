@@ -226,7 +226,7 @@ void Mod::updateTicked()
 
     for (ModAdapter* adp : modAdapters())
     {
-        if (adp->ticked())
+        if (adp->ticked() && adp->repo()->ticked())
         {
             ticked_ = true;
             return;
@@ -347,15 +347,16 @@ bool Mod::selected()
     return false;
 }
 
-//Returns true only if all adapters are optional
+//Returns true only if at least one adapter is optional
 bool Mod::optional()
 {
-    bool rVal = true;
     for (ModAdapter* adp : modAdapters())
     {
-        rVal = rVal && adp->optional();
+        if (adp->optional()) {
+            return true;
+        }
     }
-    return rVal;
+    return false;
 }
 
 QList<ModAdapter*> Mod::modAdapters()

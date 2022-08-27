@@ -8,8 +8,6 @@
 #include "afisynclogger.h"
 #include "apis/libtorrent/ahasher.h"
 #include "apis/libtorrent/deltapatcher.h"
-#include "apis/libtorrent/libtorrentapi.h"
-#include "constantsmodel.h"
 #include "crashhandler/crashhandler.h"
 #include "fileutils.h"
 #include "global.h"
@@ -18,7 +16,6 @@
 #include "settingsuimodel.h"
 #include "treemodel.h"
 #include "version.h"
-#include "deletabledetector.h"
 
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
 
@@ -161,7 +158,10 @@ int cli(int argc, char* argv[])
     }
 
     //Delta patching
-    const QSet<QString> missingArgs = DELTA_ARGS.toSet() - parser.optionNames().toSet();
+    const auto deltaArgsSet = QSet<QString>(DELTA_ARGS.begin(), DELTA_ARGS.end());
+    const auto parserOptions = parser.optionNames();
+    const auto parserOptionsSet = QSet<QString>(parserOptions.begin(), parserOptions.end());
+    const QSet<QString> missingArgs = deltaArgsSet - parserOptionsSet;
     if (missingArgs.size() < DELTA_ARGS.size())
     {
         if (missingArgs.size() != 0)
