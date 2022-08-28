@@ -245,6 +245,7 @@ void Mod::repositoryChanged()
     {
         return;
     }
+    updateTicked();
     if (reposInactive() || !ticked())
     {
         // No checking for paused state because torrent might have been

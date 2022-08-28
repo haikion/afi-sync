@@ -507,6 +507,10 @@ qint64 LibTorrentApi::folderTotalWantedDone(const QString& key)
     {
         return -1;
     }
+    // Circumvent bug within libTorrent.
+    if (status.total_wanted_done == 0 && folderChecking(status)) {
+        return status.progress * status.total_wanted;
+    }
     return status.total_wanted_done;
 }
 
