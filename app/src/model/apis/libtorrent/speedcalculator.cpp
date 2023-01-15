@@ -30,6 +30,5 @@ qint64 SpeedCalculator::calculateSpeed(qint64 prev, qint64 curr, libtorrent::tim
     if (interval <= 0) {
         return 0;
     }
-    auto val = ((curr - prev)*lt::microseconds(1s).count()) / interval;
     return ((curr - prev)*lt::microseconds(1s).count()) / interval;
 }
