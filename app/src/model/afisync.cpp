@@ -46,7 +46,7 @@ void AfiSync::printDeletables(const DeletableDetector& deletableDetector)
 QSet<QString> AfiSync::combine(const QList<QSet<QString>>& list)
 {
     QSet<QString> retVal;
-    for (QSet<QString> set : list)
+    for (const QSet<QString>& set : list)
     {
         retVal += set;
     }

@@ -4,7 +4,9 @@
 #include <vector>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/torrent_handle.hpp>
+#include <libtorrent/performance_counters.hpp>
 #include <QObject>
+#include "speedcalculator.h"
 
 class AlertHandler : public QObject
 {
@@ -19,8 +21,13 @@ public:
 signals:
     void storageMoved(libtorrent::torrent_handle handle);
     void storageMoveFailed(libtorrent::torrent_handle handle);
+    void uploadAndDownloadChanged(quint64 ul, quint64 dl);
 
 private:
+    int uploadIdx_;
+    int downloadIdx_;
+    SpeedCalculator speedCalculator_;
+
     void handleAlert(libtorrent::alert* alert);
     void handleFastresumeRejectedAlert(const libtorrent::fastresume_rejected_alert* alert) const;
     void handleListenFailedAlert(const libtorrent::listen_failed_alert* alert) const;
@@ -29,6 +36,7 @@ private:
     void handleMetadataReceivedAlert(const libtorrent::metadata_received_alert* alert) const;
     void handlePortmapAlert(const libtorrent::portmap_alert* alert) const;
     void handlePortmapErrorAlert(const libtorrent::portmap_error_alert* alert) const;
+    void handleSessionStatsAlert(const libtorrent::session_stats_alert* alert);
     void handleStorageMoveFailedAlert(const libtorrent::storage_moved_failed_alert* alert);
     void handleStorageMovedAlert(const libtorrent::storage_moved_alert* alert);
     void handleTorrentCheckAlert(const libtorrent::torrent_checked_alert* alert) const;

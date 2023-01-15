@@ -22,7 +22,7 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
     if (srcFi.isDir())
     {
         QDir().mkpath(dstPath);
-        if (!QFileInfo(dstPath).exists())
+        if (!QFile::exists(dstPath))
         {
             LOG_ERROR << "Failed to create directory" << dstPath;
             return false;
@@ -71,7 +71,7 @@ bool FileUtils::move(const QString& srcPath, const QString& dstPath)
     if (srcFi.isDir())
     {
         QDir().mkpath(dstPath);
-        if (!QFileInfo(dstPath).exists())
+        if (!QFile::exists(dstPath))
         {
             LOG_ERROR << "Failed to create directory " << dstPath;
             return false;

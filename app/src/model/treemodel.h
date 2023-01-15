@@ -25,10 +25,10 @@ public:
     QList<IRepository*> repositories() const;
     void moveFiles();
     void stopUpdates();
-
-public slots:
     QString downloadStr() const override;
     QString uploadStr() const override;
+
+public slots:
     void updateSpeed();
 
 signals:

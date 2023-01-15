@@ -13,7 +13,7 @@ const unsigned AHasher::MAX_VALUE = 1679615; // ZZZZ
 QString AHasher::hash(QList<QFileInfo> files)
 {
     qint64 size = 0;
-    for (QFileInfo fi : files)
+    for (const QFileInfo& fi : files)
         size += fi.size();
 
     qint64 modulated = size % MAX_VALUE; //Ensures the value is within 4 chars.

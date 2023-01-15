@@ -118,7 +118,7 @@ void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches, int
     if (!handle_.status().is_finished)
     {
         // Wait for torrent to finish (Might occur if recheck was needed)
-        QTimer::singleShot(10000, [=] {applyPatches(modPath, patches, attempts);});
+        QTimer::singleShot(10000, this, [=] {applyPatches(modPath, patches, attempts);});
         LOG << "Waiting for 10 s for patches torrent to finish. modPath = " << modPath << " patches = "
             << patches << " attempts = " << attempts << "/" << MAX_ATTEMPTS;
         return;
@@ -161,7 +161,7 @@ void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches, int
             handle_.force_recheck();
             ++attempts;
         }
-        QTimer::singleShot(10000, [=] {applyPatches(modPath, patches, attempts);});
+        QTimer::singleShot(10000, this, [=] {applyPatches(modPath, patches, attempts);});
     }
 }
 

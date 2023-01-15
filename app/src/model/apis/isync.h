@@ -34,8 +34,6 @@ public:
     virtual void setFolderPath(const QString& key, const QString& path) = 0;
     //Sets folder in paused mode or starts if if value is set to false.
     virtual void setFolderPaused(const QString& key, bool value) = 0;
-    //Fetches eta to ready state. Returns time in seconds.
-    virtual int folderEta(const QString& key) = 0;
     virtual bool folderPatching(const QString& key) = 0;
     //Returns true if downloading patches for specific folder.
     virtual bool folderDownloadingPatches(const QString& key) = 0;

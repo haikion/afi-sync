@@ -6,12 +6,10 @@
 #include <QTextStream>
 #include "afisynclogger.h"
 #include "fileutils.h"
-#include "installer.h"
 #include "modadapter.h"
 #include "repository.h"
 #include "settingsmodel.h"
 #include "settingsmodel.h"
-#include "global.h"
 
 Repository::Repository(const QString& name, const QString& serverAddress, unsigned port, const QString& password):
     SyncItem(name),
@@ -21,9 +19,12 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
     battlEyeEnabled_(true)
 {
     LOG << "Created repo name = " << name;
-    update();
-    if (ticked())
+    if (ticked()) {
+        setStatus(SyncStatus::WAITING);
+        activeTimer_.start();
         startUpdates();
+    }
+    update();
 }
 
 void Repository::stopUpdates()
@@ -161,12 +162,15 @@ void Repository::clearModAdapters()
 
 void Repository::checkboxClicked()
 {
-    setTicked(!ticked());
-    setStatus("Processing new mods...");
-    update();
-    changed();
-    if (ticked())
+    SettingsModel::setTicked("", name(), !ticked());
+    if (ticked()) {
+        setStatus(SyncStatus::WAITING);
+        activeTimer_.start();
         startUpdates();
+    } else {
+        update();
+    }
+    changed();
 }
 
 void Repository::join()
@@ -288,6 +292,11 @@ void Repository::update()
 {
     static QSet<QString> readyStatuses = createReadyStatuses();
 
+    if (activeTimer_.elapsed() < 2000 && ticked()) {
+        // Give mods time to adjust
+        return;
+    }
+
     QSet<QString> modStatuses;
     for (Mod* item : mods())
     {
@@ -300,6 +309,7 @@ void Repository::update()
     }
     else if ((modStatuses - readyStatuses).isEmpty())
     {
+        auto elapss = activeTimer_.elapsed();
         //All mods are ready so repo is ready.
         setStatus(SyncStatus::READY);
     }

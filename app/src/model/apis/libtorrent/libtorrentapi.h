@@ -52,8 +52,6 @@ public:
     bool folderDownloading(const QString& key) override;
     bool folderMovingFiles(const QString& key) override;
     bool folderQueued(const QString& key) override;
-    //Fetches eta to ready state. Returns time in seconds.
-    int folderEta(const QString& key) override;
     bool folderPatching(const QString& key) override;
     //Adds folder, path is local system directory, key is source.
     bool addFolder(const QString& key, const QString& name) override;
@@ -108,7 +106,7 @@ signals:
     void shutdownCompleted();
 
 private:
-    static const int NOT_FOUND; //Unable to fetch eta
+    static const int NOT_FOUND;
     static const QString ERROR_KEY_NOT_FOUND;
     static const QString ERROR_SESSION_NULL;
 
@@ -129,6 +127,8 @@ private:
     AlertHandler* alertHandler_;
     StorageMoveManager* storageMoveManager_;
     std::atomic<bool> ready_;
+    qint64 uploadSpeed_{0};
+    qint64 downloadSpeed_{0};
 
     bool loadLtSettings();
     void saveSettings();

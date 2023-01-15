@@ -6,6 +6,7 @@
 #ifndef REPOSITORYITEM_H
 #define REPOSITORYITEM_H
 
+#include <QElapsedTimer>
 #include <QHash>
 #include <QObject>
 #include <QPair>
@@ -58,6 +59,7 @@ private:
     // TODO: Create IModAdapter and use that instead so Repository
     // can be unit tested
     QList<ModAdapter*> modAdapters_;
+    QElapsedTimer activeTimer_;
 
     QString modsParameter();
     QStringList joinParameters() const;

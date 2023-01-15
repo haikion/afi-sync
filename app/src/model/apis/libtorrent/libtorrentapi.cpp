@@ -21,6 +21,7 @@
 #include <libtorrent/settings_pack.hpp>
 #include <libtorrent/time.hpp>
 #include <libtorrent/torrent_info.hpp>
+#include <libtorrent/session_stats.hpp>
 #pragma warning(pop)
 
 #include "../../fileutils.h"
@@ -88,6 +89,10 @@ void LibTorrentApi::generalThreadInit()
     createSession();
     storageMoveManager_ = new StorageMoveManager();
     alertHandler_ = new AlertHandler(this);
+    connect(alertHandler_, &AlertHandler::uploadAndDownloadChanged, this, [=] (quint64 ul, quint64 dl) {
+        uploadSpeed_ = ul;
+        downloadSpeed_ = dl;
+    });
     timer_ = new QTimer(this);
     connect(timer_, &QTimer::timeout, this, &LibTorrentApi::handleAlerts);
     connect(timer_, &QTimer::timeout, storageMoveManager_, &StorageMoveManager::update);
@@ -320,8 +325,9 @@ bool LibTorrentApi::folderQueued(const QString& key)
 void LibTorrentApi::setFolderPath(const QString& key, const QString& path)
 {
     lt::torrent_handle handle = getHandle(key);
-    const QString name = QString::fromStdString(handle.name());
-    const QString savePath = QString::fromStdString(handle.save_path());
+    auto status = handle.status(lt::torrent_handle::query_save_path | lt::torrent_handle::query_name);
+    const QString name = QString::fromStdString(status.name);
+    const QString savePath = QString::fromStdString(status.save_path);
     // Path can be drive root in which case it ends with "\" for example "C:\"
     const QString fromPath = QDir::fromNativeSeparators(savePath + (savePath.endsWith("\\") ? "" : "\\") + name);
     const QString toPath = QDir::fromNativeSeparators(path + (path.endsWith("\\") ? "" : "\\") + name);
@@ -356,18 +362,11 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
     }
 }
 
-// TODO: Remove, ETA
-int LibTorrentApi::folderEta(const QString& key)
-{
-    LOG_ERROR << "ERROR: folderEta() called while being deprecated";
-    return -1;
-}
-
 int LibTorrentApi::queuedDownloadEta(const lt::torrent_status& status) const
 {
     qint64 totalBytesToDownload = status.total_wanted;
     qint64 totalBytesToCheck =  status.total_wanted;
-    for (const lt::torrent_handle handle : keyHash_.values())
+    for (const lt::torrent_handle& handle : keyHash_.values())
     {
         lt::torrent_status otherStatus = handle.status();
         if (otherStatus.state == lt::torrent_status::state_t::downloading &&
@@ -426,7 +425,7 @@ int LibTorrentApi::downloadEta(const lt::torrent_status& status) const
     }    
 
     qint64 totalBytesToCheck = 0;
-    for (const lt::torrent_handle handle : keyHash_.values())
+    for (const lt::torrent_handle& handle : keyHash_.values())
     {
         lt::torrent_status otherStatus = handle.status();
         if ( otherStatus.state == lt::torrent_status::state_t::checking_files ||
@@ -483,7 +482,7 @@ qint64 LibTorrentApi::folderTotalWanted(const QString& key)
 
     if (deltaManager_ && deltaManager_->contains(key))
     {
-        return folderChecking(status) ? handle.get_torrent_info().total_size() : deltaManager_->totalWanted(key);
+        return folderChecking(status) ? handle.torrent_file()->total_size() : deltaManager_->totalWanted(key);
     }
 
     return status.state == lt::torrent_status::downloading_metadata ? -1 : status.total_wanted;
@@ -688,6 +687,8 @@ qint64 LibTorrentApi::upload()
         return 0;
 
     return session_->status().payload_upload_rate;
+    // TODO: Use this instead once libtorrent has been updated
+    //return uploadSpeed_;
 }
 
 qint64 LibTorrentApi::download() const
@@ -696,6 +697,8 @@ qint64 LibTorrentApi::download() const
         return 0;
 
     return session_->status().payload_download_rate;
+    // TODO: Use this instead once libtorrent has been updated
+    //return downloadSpeed_;
 }
 
 void LibTorrentApi::setMaxUpload(const int limit)
@@ -760,6 +763,7 @@ void LibTorrentApi::handleAlerts()
         return;
     }
 
+    session_->post_session_stats();
     auto alerts = new std::vector<lt::alert*>();
     session_->pop_alerts(alerts);
     alertHandler_->handleAlerts(alerts);
@@ -961,7 +965,7 @@ lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key)
     }
     lt::add_torrent_params atp;
     //Check if key is path or url
-    if (QFileInfo(key).exists())
+    if (QFile::exists(key))
     {
         atp.ti = loadFromFile(key);
     }
@@ -970,7 +974,7 @@ lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key)
         atp.url = key.toStdString();
     }
     atp.save_path = QDir::toNativeSeparators(fi.absoluteFilePath()).toStdString();
-    atp.paused = true;
+    atp.flags |= libtorrent::add_torrent_params::flag_paused;
     LOG << "url = " << QString::fromStdString(atp.url)
         << " save_path = " << QString::fromStdString(atp.save_path);
     lt::error_code ec;

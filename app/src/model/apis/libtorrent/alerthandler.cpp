@@ -1,3 +1,4 @@
+#include <libtorrent/session_stats.hpp>
 #include "../../afisynclogger.h"
 #include "alerthandler.h"
 
@@ -5,6 +6,8 @@ using namespace libtorrent;
 
 AlertHandler::AlertHandler(QObject *parent) : QObject(parent)
 {
+    downloadIdx_ = lt::find_metric_idx("net.recv_payload_bytes");
+    uploadIdx_ = lt::find_metric_idx("net.sent_payload_bytes");
 }
 
 void AlertHandler::handleAlerts(const std::vector<alert*>* alerts)
@@ -33,6 +36,9 @@ void AlertHandler::handleAlert(alert* alert)
             case save_resume_data_alert::alert_type:
                 break;
             case save_resume_data_failed_alert::alert_type:
+                break;
+            case session_stats_alert::alert_type:
+                handleSessionStatsAlert(static_cast<session_stats_alert*>(alert));
                 break;
             case storage_moved_alert::alert_type:
                 handleStorageMovedAlert(static_cast<storage_moved_alert*>(alert));
@@ -143,6 +149,15 @@ void AlertHandler::handlePortmapAlert(const portmap_alert* alert) const
 void AlertHandler::handlePortmapErrorAlert(const portmap_error_alert* alert) const
 {
     LOG << "Port map error alert received: " << alert->message().c_str();
+}
+
+void AlertHandler::handleSessionStatsAlert(const libtorrent::session_stats_alert* alert) {
+    quint64 dl = alert->values[downloadIdx_];
+    quint64 ul =  alert->values[uploadIdx_];
+    auto updated = speedCalculator_.update(dl, ul, alert->timestamp());
+    if (updated) {
+        emit uploadAndDownloadChanged(speedCalculator_.getUploadSpeed(), speedCalculator_.getDownloadSpeed());
+    }
 }
 
 void AlertHandler::handleStorageMoveFailedAlert(const storage_moved_failed_alert* alert)
