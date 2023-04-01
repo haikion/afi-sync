@@ -6,7 +6,6 @@
 #include "global.h"
 #include "pathfinder.h"
 
-
 QString PathFinder::arma3Path()
 {
     //Windows 7

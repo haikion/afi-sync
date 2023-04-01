@@ -39,6 +39,11 @@ NC='\033[0m' # No Color
 
 ulimit -c unlimited
 sudo service apache2 start
+sudo mkdir -p /var/www/html/afisync-tests/torrents
+user=$(whoami)
+sudo chown -R $user /var/www/html/afisync-tests
+cp ${TESTS_DIR}/files/torrents/* /var/www/html/afisync-tests/torrents/
+
 echo -n "Compiling... "
 if compile ; then
     echo -e "${GREEN}success${NC}"
