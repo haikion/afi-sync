@@ -3,7 +3,6 @@
 #include "afisynclogger.h"
 #include "destructionwaiter.h"
 
-
 DestructionWaiter::DestructionWaiter(QObject* object)
 {
     QSet<QObject*> set;

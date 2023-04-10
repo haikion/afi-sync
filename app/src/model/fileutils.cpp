@@ -188,7 +188,6 @@ QString FileUtils::casedPath(const QString& path)
         {
             if (!it.hasNext())
             {
-                LOG_ERROR << "Unable to construct case sensitive path from " << path;
                 return QString();
             }
             QFileInfo fi = it.next();
@@ -296,7 +295,7 @@ bool FileUtils::pathIsSafe(const QString& path)
     safeSubpaths.append(".");
     safeSubpaths.append(safeSubpaths_);
 
-    for (QString safeSubpath : safeSubpaths)
+    for (const QString& safeSubpath : safeSubpaths)
     {
         QString safeUpper = QFileInfo(safeSubpath).absoluteFilePath().toUpper();
         //Shortest possible save path: C:/d (4 characters)

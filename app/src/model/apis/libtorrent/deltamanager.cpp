@@ -17,7 +17,7 @@ DeltaManager::DeltaManager(lt::torrent_handle handle, QObject* parent):
     handle_(handle)
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
-    connect(patcher_, SIGNAL(patched(QString, bool)), this, SLOT(handlePatched(QString, bool)));
+    connect(patcher_, &DeltaPatcher::patched, this, &DeltaManager::handlePatched);
     updateTimer_.setInterval(1000);
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
 }

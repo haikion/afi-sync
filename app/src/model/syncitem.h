@@ -21,8 +21,6 @@ public:
     virtual QString statusStr();
     virtual void processCompletion() = 0;
     virtual void check() = 0;
-    virtual int eta() const;
-    virtual QString etaStr() const;
     virtual bool optional() = 0;
     virtual bool ticked() = 0;
     virtual void checkboxClicked() = 0;
@@ -36,14 +34,10 @@ public:
     virtual bool active() const;
     virtual QString progressStr() = 0;
 
-protected:
-    virtual void setEta(const int& eta);
-
 private:
     QString name_;
     QString status_;
-    int eta_; //TODO: Remove, eta
-    quint64 fileSize_;
+    std::atomic<quint64> fileSize_;
     QMutex statusMutex_;
 
     static QSet<QString> createActiveStatuses();

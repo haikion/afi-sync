@@ -11,11 +11,12 @@
 #include "jsonreader.h"
 #include "mod.h"
 #include "modadapter.h"
-#include "repository.h"
 #include "settingsmodel.h"
 #include "treemodel.h"
+#include "repository.h"
 #include "fileutils.h"
 #include "jsonutils.h"
+#include "settingsmodel.h"
 
 const QString JsonReader::JSON_RELATIVE_PATH = "/settings/repositories.json";
 
@@ -83,8 +84,15 @@ void JsonReader::setSyncNetworkAccessManager(std::unique_ptr<SyncNetworkAccessMa
     nam_ = std::move(syncNetworkAccessManager);
 }
 
+// TODO: No need to remove mods anymore, instead just add them if needed
 QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repositories)
 {
+    const QString deltaUpdatesUrl = qvariant_cast<QString>(jsonMap_.value("deltaUpdates"));
+    if (SettingsModel::deltaPatchingEnabled() && !deltaUpdatesUrl.isEmpty()) {
+        sync->setDeltaUpdatesFolder(deltaUpdatesUrl);
+    } else {
+        sync->setDeltaUpdatesFolder("");
+    }
     const QList<QVariant> jsonRepositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
     QSet<QString> previousModKeys;
     QMap<QString, Mod*> modMap; // Add same key mods only once
@@ -149,6 +157,38 @@ QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repositor
     repositories.clear();
     repositories.append(orderedRepositoryList);
     return previousModKeys - AfiSync::combine(repositoryJsonModKeys.values());
+}
+
+QSet<QString> JsonReader::getRemovables(QList<Repository*>& repositories)
+{
+    updateJsonMap();
+    return getRemovablesOffline(repositories);
+}
+
+QSet<QString> JsonReader::getRemovablesOffline(QList<Repository*>& repositories) const
+{
+    const QList<QVariant> jsonRepositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
+    QSet<QString> previousModKeys;
+    for (Repository* repository : repositories)
+    {
+        for (Mod* mod : repository->mods())
+        {
+            previousModKeys.insert(mod->key());
+        }
+    }
+    QSet<QString> jsonModKeys;
+    for (const QVariant& repoVar : jsonRepositories)
+    {
+        QVariantMap repository = qvariant_cast<QVariantMap>(repoVar);
+        QList<QVariant> mods = qvariant_cast<QList<QVariant>>(repository.value("mods"));
+        for (int i = 0; i < mods.size(); ++i)
+        {
+            const QVariantMap mod = qvariant_cast<QVariantMap>(mods.at(i));
+            const QString key = qvariant_cast<QString>(mod.value("key")).toLower();
+            jsonModKeys.insert(key);
+        }
+    }
+    return previousModKeys - jsonModKeys;
 }
 
 // Updates repository list and returns set of deleted mod keys

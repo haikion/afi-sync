@@ -12,6 +12,7 @@
 #include <QFile>
 #include <QList>
 #include <QSet>
+#include <QString>
 #include <QStringList>
 #include "afisync.h"
 #include "afisynclogger.h"
@@ -20,11 +21,9 @@
 #include "destructionwaiter.h"
 #include "global.h"
 #include "mod.h"
-#include "modadapter.h"
 #include "processmonitor.h"
 #include "repository.h"
 #include "settingsmodel.h"
-#include "treeitem.h"
 #include "treemodel.h"
 
 TreeModel::TreeModel(QObject* parent):
@@ -40,7 +39,7 @@ TreeModel::TreeModel(QObject* parent):
     QSet<QString> usedKeys;
     for (Repository* repo : repositories_)
     {
-        for (QString key : repo->modKeys())
+        for (const QString& key : repo->modKeys())
         {
             usedKeys.insert(key);
         }
@@ -56,9 +55,6 @@ TreeModel::TreeModel(QObject* parent):
     repoUpdateTimer_.setInterval(30000);
     connect(&repoUpdateTimer_, &QTimer::timeout, this, &TreeModel::periodicRepoUpdate);
     repoUpdateTimer_.start();
-
-    qRegisterMetaType<Repository*>("Repository*");
-    qRegisterMetaType<QList<Repository*>>("QList<Repository>");
 }
 
 void TreeModel::createSync(const QString& deltaUpdatesKey)
@@ -201,12 +197,12 @@ void TreeModel::periodicRepoUpdate()
 void TreeModel::updateRepositories()
 {
     QList<Repository*> updatedList = repositories_;
-    const QSet<QString>& removeFromSync = jsonReader_.updateRepositories(sync_, updatedList);
+    const QSet<QString> removeFromSync = jsonReader_.getRemovables(updatedList);
     for (const QString& key : removeFromSync)
     {
         sync_->removeFolder(key);
     }
-
+    jsonReader_.updateRepositories(sync_, updatedList);
     QList<Repository*> deletables;
     for (Repository* repo : repositories_)
     {

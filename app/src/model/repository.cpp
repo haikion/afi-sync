@@ -309,7 +309,6 @@ void Repository::update()
     }
     else if ((modStatuses - readyStatuses).isEmpty())
     {
-        auto elapss = activeTimer_.elapsed();
         //All mods are ready so repo is ready.
         setStatus(SyncStatus::READY);
     }

@@ -9,6 +9,7 @@
 #include <QList>
 #include <QSet>
 #include "mod.h"
+#include "apis/isync.h"
 #include "syncnetworkaccessmanager.h"
 #include "interfaces/irepository.h"
 
@@ -22,6 +23,7 @@ public:
     bool updateAvailable();
     QList<Repository*> repositories(ISync* sync);
     QString deltaUpdatesKey();
+    QSet<QString> getRemovables(QList<Repository *>& updateRepositories);
     QSet<QString> updateRepositories(ISync* sync, QList<Repository*>& updateRepositories);
 
 protected:
@@ -40,6 +42,7 @@ private:
     QString updateUrl() const;
     QByteArray fetchJsonBytes(QString url);
     bool readJsonFile();
+    QSet<QString> getRemovablesOffline(QList<Repository*>& updatedRepositories) const;
     QSet<QString> updateRepositoriesOffline(ISync* sync, QList<Repository*>& updateRepositories);
 };
 

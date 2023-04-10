@@ -53,25 +53,6 @@ bool SyncItem::active() const
     return activeStatuses.contains(status_);
 }
 
-int SyncItem::eta() const //TODO: Remove, ETA
-{
-    return eta_;
-}
-
-QString SyncItem::etaStr() const //TODO: Remove, ETA
-{
-    //In repository multiple MAX_ETA maybe summed so we use >=.
-    if (eta_ >= Constants::MAX_ETA)
-        return "??:??:??";
-
-    return QTime(0,0,0).addSecs(eta_).toString();
-}
-
-void SyncItem::setEta(const int& eta) //TODO: Remove, ETA
-{
-    eta_ = eta;
-}
-
 QSet<QString> SyncItem::createActiveStatuses()
 {
     QSet<QString> retVal;

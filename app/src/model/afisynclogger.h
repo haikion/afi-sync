@@ -8,7 +8,6 @@
 #include <QSet>
 #include <QString>
 #include <QVector>
-#include "runningtime.h"
 #include "szip.h"
 #include "qstreams.h"
 

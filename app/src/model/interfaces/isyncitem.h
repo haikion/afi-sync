@@ -34,7 +34,6 @@ public:
     virtual ~ISyncItem() = default;
     virtual QString name() const = 0;
     virtual QString statusStr() = 0;
-    virtual QString etaStr() const = 0;
     virtual QString sizeStr() const = 0;
     virtual bool optional() = 0; // Mutex reading
     virtual bool ticked() = 0;

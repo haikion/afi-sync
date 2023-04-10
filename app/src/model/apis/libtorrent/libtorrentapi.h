@@ -93,7 +93,8 @@ private slots:
     void handleAlerts();
     void handlePatched(const QString& key, const QString& modName, bool success);
     void init();
-    bool removeFolderSlot(const QString& key);    
+    bool removeFolderSlot(const QString& key);
+    void setDeltaUpdatesFolderSlot(const QString& key);
     void setMaxUploadSlot(const int limit);
     void setMaxDownloadSlot(const int limit);
     void setPortSlot(int port);
@@ -143,15 +144,12 @@ private:
     bool createSession();
     libtorrent::torrent_handle addFolderGeneric(const QString& key);
     libtorrent::torrent_handle addFolderGenericAsync(const QString& key);
-    int folderEta(libtorrent::torrent_handle getHandle);
     libtorrent::torrent_handle getHandle(const QString& key);
     bool addFolder(const QString& key, const QString& name, bool patchingEnabled);
     void createDeltaManager(libtorrent::torrent_handle handle, const QString& key);
     libtorrent::torrent_handle getHandleSilent(const QString& key);
     bool folderChecking(const libtorrent::torrent_status& status) const;
     bool folderQueued(const libtorrent::torrent_status& status) const;
-    int queuedCheckingEta(const libtorrent::torrent_status& status) const;
-    int queuedDownloadEta(const libtorrent::torrent_status& status) const;
     int downloadEta(const libtorrent::torrent_status& status) const;
     libtorrent::torrent_handle addFolderFromParams(const QString& key);
     void removeFiles(const QString& hashString);

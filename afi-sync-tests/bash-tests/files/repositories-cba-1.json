@@ -1,0 +1,27 @@
+{
+    "updateUrl":  "http://localhost/afisync-tests/repositories.json",
+    "deltaUpdates":  "http://localhost/afisync-tests/torrents/afisync_patches_1.torrent",
+    "repositories":  [
+                         {
+                             "name":  "armafinland.fi Primary",
+                             "serverAddress":  "a3.armafinland.fi",
+                             "serverPort":  2302,
+                             "password":  "kotka",
+                             "battlEyeEnabled":  true,
+                             "mods":  [
+                                          {
+                                              "name":  "@cz75_nochain_a3",
+                                              "fileSize":  40113,
+                                              "key":  "http://localhost/afisync-tests/torrents/@cz75_nochain_a3_7.torrent",
+                                              "optional":  true
+                                          },
+                                          {
+                                              "name":  "@cba_a3",
+                                              "fileSize":  4026314,
+                                              "key":  "http://localhost/afisync-tests/torrents/@cba_a3_1.torrent",
+                                              "optional":  false
+                                          }
+                                      ]
+                         }
+                     ]
+}

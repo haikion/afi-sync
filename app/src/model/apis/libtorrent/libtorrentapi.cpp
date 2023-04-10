@@ -362,83 +362,6 @@ void LibTorrentApi::setFolderPaused(const QString& key, bool value)
     }
 }
 
-int LibTorrentApi::queuedDownloadEta(const lt::torrent_status& status) const
-{
-    qint64 totalBytesToDownload = status.total_wanted;
-    qint64 totalBytesToCheck =  status.total_wanted;
-    for (const lt::torrent_handle& handle : keyHash_.values())
-    {
-        lt::torrent_status otherStatus = handle.status();
-        if (otherStatus.state == lt::torrent_status::state_t::downloading &&
-                otherStatus.queue_position < status.queue_position)
-        {
-            totalBytesToDownload += otherStatus.total_wanted;
-            totalBytesToCheck += otherStatus.total_wanted;
-        }
-        if (otherStatus.state == lt::torrent_status::state_t::checking_files)
-        {
-            totalBytesToCheck += otherStatus.total_wanted;
-        }
-    }
-    if (download() == 0 || checkingSpeed_ == 0)
-    {
-        return Constants::MAX_ETA;
-    }
-
-    return (totalBytesToDownload / download()) + (totalBytesToCheck / checkingSpeed_);
-}
-
-//TODO: Remove ETA
-int LibTorrentApi::queuedCheckingEta(const lt::torrent_status& status) const
-{
-    //Caching
-    static QMap<lt::sha1_hash, std::pair<int, int64_t>> cache;
-    if (cache.contains(status.info_hash)
-            && (runningTimeS() - cache[status.info_hash].second) < 1 )
-    {
-        return cache[status.info_hash].first;
-    }
-
-    if (checkingSpeed_ == 0)
-        return Constants::MAX_ETA;
-
-    int rVal = (status.total_wanted - status.total_wanted_done) / checkingSpeed_;
-    for (const lt::torrent_handle& handle : keyHash_.values())
-    {
-        if (handle.queue_position() == (status.queue_position - 1)
-                && handle.status().state == lt::torrent_status::state_t::checking_files)
-        {
-            rVal += cache.contains(handle.info_hash()) ? cache[handle.info_hash()].first : 0;
-            break;
-        }
-    }
-    cache[status.info_hash] = std::pair<int, int64_t>(rVal, runningTimeS());
-
-    return rVal;
-}
-
-int LibTorrentApi::downloadEta(const lt::torrent_status& status) const
-{
-    if (status.download_rate == 0)
-    {
-        return Constants::MAX_ETA;
-    }    
-
-    qint64 totalBytesToCheck = 0;
-    for (const lt::torrent_handle& handle : keyHash_.values())
-    {
-        lt::torrent_status otherStatus = handle.status();
-        if ( otherStatus.state == lt::torrent_status::state_t::checking_files ||
-                otherStatus.state == lt::torrent_status::state_t::queued_for_checking ||
-                otherStatus.state == lt::torrent_status::state_t::downloading)
-        {
-            totalBytesToCheck += status.total_wanted;
-        }
-    }
-
-    return ((status.total_wanted - status.total_wanted_done) / status.download_rate) + (totalBytesToCheck / checkingSpeed_);
-}
-
 bool LibTorrentApi::folderCheckingPatches(const QString& key)
 {
     return deltaManager_ && deltaManager_->contains(key) && folderChecking(key);
@@ -837,8 +760,19 @@ bool LibTorrentApi::removeFolderSlot(const QString& key)
 
 void LibTorrentApi::setDeltaUpdatesFolder(const QString& key)
 {
+    QMetaObject::invokeMethod(this, "setDeltaUpdatesFolderSlot", Qt::QueuedConnection, Q_ARG(QString, key));
+}
+
+void LibTorrentApi::setDeltaUpdatesFolderSlot(const QString& key)
+{
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+    if (key == deltaUpdatesKey_)
+    {
+        return;
+    }
     disableDeltaUpdatesNoTorrents();
     deltaUpdatesKey_ = key;
+    enableDeltaUpdatesSlot();
 }
 
 bool LibTorrentApi::disableDeltaUpdates()
@@ -1162,8 +1096,7 @@ void LibTorrentApi::createDeltaManager(lt::torrent_handle handle, const QString&
         //Re-apply pending patches.
         deltaManager_->patch(name, key);
     }
-    connect(deltaManager_, SIGNAL(patched(QString, QString, bool)),
-            this, SLOT(handlePatched(QString, QString, bool)));
+    connect(deltaManager_, &DeltaManager::patched, this, &LibTorrentApi::handlePatched);
 }
 
 // TODO: Instead of loading, simply cache.

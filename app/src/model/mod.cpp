@@ -524,7 +524,7 @@ QString Mod::toProgressStr(const qint64 totalWanted, qint64 totalWantedDone)
     {
         totalWantedDone = totalWantedDone > Constants::MEGA_DIVIDER ? totalWantedDone - Constants::MEGA_DIVIDER : 0;
     }
-    return QString("%1 / %2").arg(bytesToMegasCeilStr(totalWantedDone)).arg(bytesToMegasCeilStr(totalWanted));
+    return QString("%1 / %2").arg(bytesToMegasCeilStr(totalWantedDone), bytesToMegasCeilStr(totalWanted));
 }
 
 void Mod::processCompletion()

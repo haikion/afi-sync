@@ -20,11 +20,9 @@ public:
     void check() override;
     QString checkText() override;
     QString statusStr() override;
-    QString etaStr() const override;
     void checkboxClicked() override;
     bool ticked() override;
     void processCompletion() override;
-    int eta() const override;
     bool optional() override;
     QString progressStr() override;
     Mod* mod() const;

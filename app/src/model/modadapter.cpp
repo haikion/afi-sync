@@ -42,11 +42,6 @@ QString ModAdapter::statusStr()
     return mod_->statusStr();
 }
 
-QString ModAdapter::etaStr() const
-{
-    return mod_->etaStr();
-}
-
 void ModAdapter::checkboxClicked()
 {
     setTicked(!ticked());
@@ -64,11 +59,6 @@ bool ModAdapter::ticked()
 void ModAdapter::processCompletion()
 {
     mod_->processCompletion();
-}
-
-int ModAdapter::eta() const
-{
-    return mod_->eta();
 }
 
 void ModAdapter::setTicked(bool checked)
