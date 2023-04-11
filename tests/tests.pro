@@ -33,6 +33,7 @@ HEADERS += \
     ../app/src/model/apis/libtorrent/deltapatcher.h \
     ../app/src/model/apis/libtorrent/directorywatcher.h \
     ../app/src/model/apis/libtorrent/libtorrentapi.h \
+    ../app/src/model/apis/libtorrent/speedcalculator.h \
     ../app/src/model/apis/libtorrent/speedestimator.h \
     ../app/src/model/apis/libtorrent/storagemovemanager.h \
     ../app/src/model/apis/isync.h \
@@ -84,6 +85,7 @@ SOURCES += \
     ../app/src/model/apis/libtorrent/deltapatcher.cpp \
     ../app/src/model/apis/libtorrent/directorywatcher.cpp \
     ../app/src/model/apis/libtorrent/libtorrentapi.cpp \
+    ../app/src/model/apis/libtorrent/speedcalculator.cpp \
     ../app/src/model/apis/libtorrent/speedestimator.cpp \
     ../app/src/model/apis/libtorrent/storagemovemanager.cpp \
     ../app/src/model/afisynclogger.cpp \
