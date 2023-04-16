@@ -9,6 +9,8 @@ export TESTS_DIR=$PWD
 export MODS_DIR=${TESTS_DIR}/files/mods
 export TORRENTS_DIR=${TESTS_DIR}/files/torrents
 
+source ${TESTS_DIR}/functions.sh
+
 run_test () {
     if [ -f core ]; then
         echo -e "\e[31mCore file detected\e[0m"
@@ -25,7 +27,13 @@ run_negative_test () {
         exit 1
     fi
 
-    timeout 15 ${TESTS_DIR}/$1 && echo -e "\e[31m$1 failed\e[0m"  || echo -e "\e[32m$1 passed\e[0m"
+    timeout 15 ${TESTS_DIR}/$1 &> ${1}_shell.log && echo -e "\e[31m$1 failed\e[0m"  || echo -e "\e[32m$1 passed\e[0m"
+    mv afisync.log ${1}_afisync.log
+    kill_and_wait >> {1}_shell.log
+    if [ -f core ]; then
+        echo -e "\e[31m$1Core file detected\e[0m"
+        exit 1
+    fi
 }
 
 compile () {
@@ -70,6 +78,7 @@ cd ${WORKING_DIR}
 
 run_test log-rotate.sh
 run_test repositories-update.sh
+run_test repositories-update-chain-patch.sh
 run_test repositories-update-mod-add.sh
 run_test repositories-update-mod-remove.sh
 run_test repositories-update-patch.sh

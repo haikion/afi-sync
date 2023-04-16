@@ -6,7 +6,7 @@ set VS_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community
 set CURRDIR=%cd%
 cd %~dp0%..\..\..
 set ROOT_DIR=%cd%
-set RC_ZIP=%ROOT_DIR%\AFISync-releases\AFISync_rc.zip
+set RC_ZIP=D:\Dropbox\afisync2\AFISync-releases\AFISync_rc.zip
 set SRC_DIR=%ROOT_DIR%\afi-sync\app
 set SRC_BIN=%SRC_DIR%\bin
 set BUILD_DIR=%ROOT_DIR%\build-AFISync-static
@@ -14,6 +14,8 @@ set RELEASE_DIR=%ROOT_DIR%\AFISync
 set PERSONAL_DIR=%ROOT_DIR%\personal
 set JSON_FILE=%PERSONAL_DIR%\settings\repositories.json
 set PATH=%QT_STATIC_BINS%;%VS_DIR%\VC\Auxiliary\Build;%QT_PATH%\5.15.2\msvc2019_64\bin;%ROOT_DIR%;%systemroot%;%systemroot%\System32;%SRC_BIN%
+
+goto create-zip
 
 rmdir /S %BUILD_DIR%
 rmdir /S %RELEASE_DIR%
