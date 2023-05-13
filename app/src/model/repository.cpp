@@ -341,12 +341,20 @@ QString Repository::modsParameter()
         return QString();
     }
     QString rVal = "-mod=";
+    auto charCounter = rVal.size();
     for (ModAdapter* modAdapter : modAdapters())
     {
         if (modAdapter->ticked())
         {
             QDir modDir(SettingsModel::modDownloadPath() + "/" + modAdapter->name());
+            if ((charCounter + modDir.absolutePath().size()) >= 4096) {
+                rVal.remove(rVal.length() - 1, 1);
+                rVal += "\n-mod=";
+                charCounter = 5;
+                LOG << "Mod parameter split because it exceeded 4096 character limit.";
+            }
             rVal += modDir.absolutePath() + ";";
+            charCounter += (modDir.absolutePath().size() + 1);
         }
     }
     rVal.remove(rVal.length() - 1, 1);
