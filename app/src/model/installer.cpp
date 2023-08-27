@@ -2,7 +2,6 @@
 #include "fileutils.h"
 #include "installer.h"
 #include "pathfinder.h"
-#include "repository.h"
 #include "settingsmodel.h"
 
 void Installer::install(const Mod* mod)
@@ -10,7 +9,7 @@ void Installer::install(const Mod* mod)
     QString modPath = SettingsModel::modDownloadPath() + "/" + mod->name();
     //TeamSpeak 3 plugins. Install to all possible plugin locations.
     QDir tsDir(modPath + "/teamspeak 3 client");
-    install(tsDir, SettingsModel::teamSpeak3Path()); //TeamSpeak 3 path
+    install(tsDir, SettingsModel::teamSpeak3Path() + "/config"); //TeamSpeak 3 path
     install(tsDir, PathFinder::teamspeak3AppDataPath()); //AppData plugins
 
     QDir(SettingsModel::arma3Path()).mkdir("userconfig");

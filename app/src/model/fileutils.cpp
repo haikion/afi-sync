@@ -8,7 +8,6 @@
 #include "afisynclogger.h"
 #include "fileutils.h"
 #include "pathfinder.h"
-#include "qstreams.h"
 #include "settingsmodel.h"
 
 QStringList FileUtils::safeSubpaths_;
@@ -43,8 +42,8 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
     else if (srcFi.isFile())
     {
         QFile dstFile(dstPath);
-        LOG << "Copying " << srcPath << " to " << dstPath;
         FileUtils::safeRemove(dstFile);
+        LOG << "Copying " << srcPath << " to " << dstPath;
         if (dstFile.exists())
         {
             LOG << "Cannot overwrite file " << dstPath;
