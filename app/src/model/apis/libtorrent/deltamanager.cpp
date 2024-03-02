@@ -225,7 +225,7 @@ QSet<QString> DeltaManager::torrentFilesUpper()
     if (!handle.is_valid())
         return rVal;
 
-    boost::shared_ptr<const lt::torrent_info> torrentFile = handle.torrent_file();
+    auto torrentFile = handle.torrent_file();
     if (!torrentFile)
     {
         LOG_ERROR << "torrent_file is null";

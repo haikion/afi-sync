@@ -179,7 +179,7 @@ void LibTorrentApi::saveSettings()
 
     lt::entry e(lt::entry::data_type::dictionary_t);
     session_->save_state(e);
-    std::map<std::string, lt::entry> map = e.dict();
+    auto map = e.dict();
     QByteArray bytes;
     lt::bencode(std::back_inserter(bytes), e);
     FileUtils::writeFile(bytes, settingsPath_);
@@ -470,7 +470,7 @@ int64_t LibTorrentApi::bytesToCheck(const lt::torrent_status& status) const
 boost::shared_ptr<const lt::torrent_info> LibTorrentApi::getTorrentFile(
         const lt::torrent_handle& handle) const
 {
-    boost::shared_ptr<const lt::torrent_info> torrentFile = handle.torrent_file();
+    auto torrentFile = handle.torrent_file();
     for (int i = 0; !torrentFile; ++i)
     {
         QThread::sleep(1);
@@ -489,7 +489,7 @@ QSet<QString> LibTorrentApi::folderFilesUpper(const QString& key)
     if (!handle.is_valid())
         return rVal;
 
-    boost::shared_ptr<const lt::torrent_info> torrentFile = getTorrentFile(handle);
+    auto torrentFile = getTorrentFile(handle);
     if (!torrentFile)
     {
         LOG_ERROR << "torrent_file is null";
@@ -961,7 +961,7 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& name, bool patc
         deltaManager_->patch(name, key);
         return true;
     }
-    lt::torrent_handle handle = addFolderGenericAsync(key);
+    auto handle = addFolderGenericAsync(key);
     keyHash_.insert(key, handle);
     handle.resume();
 
@@ -991,7 +991,7 @@ bool LibTorrentApi::saveTorrentFile(const lt::torrent_handle& handle) const
 {
     QString filePrefix = SettingsModel::syncSettingsPath() + "/" + getHashString(handle);
     //Torrent file
-    boost::shared_ptr<lt::torrent_info const> ti = getTorrentFile(handle);
+    auto ti = getTorrentFile(handle);
     LOG << "name = " << QString::fromStdString(handle.status(lt::torrent_handle::query_name).name);
     if (!ti)
     {
@@ -1152,7 +1152,7 @@ boost::shared_ptr<lt::torrent_info> LibTorrentApi::loadFromFile(const QString& p
 {
     lt::error_code ec;
     std::string np = QDir::toNativeSeparators(path).toStdString();
-    boost::shared_ptr<lt::torrent_info> info = boost::shared_ptr<lt::torrent_info>(new lt::torrent_info(np, ec));
+    auto info = boost::shared_ptr<lt::torrent_info>(new lt::torrent_info(np, ec));
     if (ec)
     {
         QString error = QString::fromUtf8(ec.message().c_str());

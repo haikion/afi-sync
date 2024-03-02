@@ -20,7 +20,7 @@ namespace lt = libtorrent;
 DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle):
     handle_(handle)
 {
-    boost::shared_ptr<const lt::torrent_info> torrent = handle_.torrent_file();
+    auto torrent = handle_.torrent_file();
     if (!torrent || !torrent->is_valid())
     {
         LOG_ERROR << "Torrent is invalid.";
