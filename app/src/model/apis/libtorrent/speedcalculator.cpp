@@ -2,7 +2,7 @@
 
 using namespace std::chrono_literals;
 
-bool SpeedCalculator::update(qint64 downloaded, qint64 uploaded, libtorrent::time_point timepoint) {
+bool SpeedCalculator::update(int64_t downloaded, int64_t uploaded, libtorrent::time_point timepoint) {
     auto ul = calculateSpeed(totalUploaded_, uploaded, timepoint);
     auto dl = calculateSpeed(totalDownloaded_, downloaded, timepoint);
     auto retVal = uploadSpeed_ != ul || downloadSpeed_ != dl;
@@ -14,19 +14,19 @@ bool SpeedCalculator::update(qint64 downloaded, qint64 uploaded, libtorrent::tim
     return retVal;
 }
 
-qint64 SpeedCalculator::getDownloadSpeed()
+int64_t SpeedCalculator::getDownloadSpeed()
 {
     return downloadSpeed_;
 }
 
-qint64 SpeedCalculator::getUploadSpeed()
+int64_t SpeedCalculator::getUploadSpeed()
 {
     return uploadSpeed_;
 }
 
-qint64 SpeedCalculator::calculateSpeed(qint64 prev, qint64 curr, libtorrent::time_point timepoint)
+int64_t SpeedCalculator::calculateSpeed(int64_t prev, int64_t curr, libtorrent::time_point timepoint)
 {
-    const qint64 interval = lt::total_microseconds(timepoint - prevTimepoint_);
+    const auto interval = lt::total_microseconds(timepoint - prevTimepoint_);
     if (interval <= 0) {
         return 0;
     }

@@ -1,0 +1,3 @@
+[submodule "deps/try_signal"]
+	path = deps/try_signal
+	url = https://github.com/arvidn/try_signal.git

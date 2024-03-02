@@ -1,13 +1,11 @@
 #include <QDebug>
 #include <QDirIterator>
 #include <QFileInfo>
-#include <QRegExp>
 #include <QStringList>
 #include <QTimer>
+#include "../../afisynclogger.h"
 #include "libtorrent/torrent_status.hpp"
 #include "../../fileutils.h"
-#include "../../global.h"
-#include "../../runningtime.h"
 #include "ahasher.h"
 #include "deltapatcher.h"
 
@@ -53,7 +51,6 @@ DeltaPatcher::DeltaPatcher():
 {
     threadConstructor("");
 }
-
 
 DeltaPatcher::~DeltaPatcher()
 {
@@ -430,8 +427,9 @@ QStringList DeltaPatcher::removePatchesFromLatest(const QString& latestPath, con
     QString hash = AHasher::hash(latestPath);
     QString modName = QFileInfo(latestPath).fileName();
     QRegExp regEx(modName + ".*" + hash + ".*\\.7z");
-    QStringList matches = QDir(patchesPath).entryList().filter(regEx);
+    const QStringList matches = QDir(patchesPath).entryList().filter(regEx);
     QStringList rVal;
+    rVal.reserve(matches.size());
     for (const QString& name : matches)
     {
         FileUtils::safeRemove(patchesPath + "/" + name);

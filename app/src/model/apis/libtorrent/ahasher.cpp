@@ -1,10 +1,7 @@
-#include <iomanip>
-#include <sstream>
-#include <string>
 #include <QChar>
+#include <QDebug>
 #include <QDir>
 #include <QDirIterator>
-#include <QDebug>
 #include "ahasher.h"
 
 const unsigned AHasher::BASE = 36;

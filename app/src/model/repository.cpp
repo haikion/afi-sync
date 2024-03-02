@@ -434,6 +434,7 @@ void Repository::removeDeprecatedMods(const QSet<QString>& jsonMods)
 QList<IMod*> Repository::uiMods() const
 {
     QList<IMod*> retVal;
+    retVal.reserve(modAdapters_.size());
     for (ModAdapter* item : modAdapters_)
     {
         retVal.append(item);

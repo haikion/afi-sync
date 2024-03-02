@@ -21,7 +21,7 @@ public:
 signals:
     void storageMoved(libtorrent::torrent_handle handle);
     void storageMoveFailed(libtorrent::torrent_handle handle);
-    void uploadAndDownloadChanged(quint64 ul, quint64 dl);
+    void uploadAndDownloadChanged(int64_t ul, int64_t dl);
 
 private:
     int uploadIdx_;

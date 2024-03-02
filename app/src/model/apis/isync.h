@@ -54,8 +54,8 @@ public:
     //Returns file system path of the folder with specific key.
     virtual QString folderPath(const QString& key) = 0;
     //Returns total bandwidths
-    virtual qint64 download() const = 0;
-    virtual qint64 upload() = 0;
+    virtual int64_t download() const = 0;
+    virtual int64_t upload() = 0;
     //Sets global max upload
     virtual void setMaxUpload(const int limit) = 0;
     //Sets global max download
@@ -65,7 +65,7 @@ public:
     //Sets outgoing port.
     virtual void setPort(int port) = 0;
     //Adds folder, key is source.
-    virtual void addFolder(const QString& key, const QString& name) = 0;
+    virtual bool addFolder(const QString& key, const QString& name) = 0;
     virtual void disableQueue(const QString& key) = 0;
     virtual qint64 folderTotalWanted(const QString& key) = 0;
     virtual qint64 folderTotalWantedDone(const QString& key) = 0;

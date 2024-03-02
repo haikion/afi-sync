@@ -94,7 +94,8 @@ void Mod::start()
     {
         removeConflicting();
         //Add folder
-        sync_->addFolder(key_, name());
+        bool resumeDataFound = sync_->addFolder(key_, name());
+        setProcessCompletion(!resumeDataFound);
     }
 }
 

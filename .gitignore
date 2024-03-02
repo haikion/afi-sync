@@ -1,7 +1,4 @@
-#api key
-apikey.h
 # C++ objects and libs
-
 *.slo
 *.lo
 *.o
@@ -11,10 +8,11 @@ apikey.h
 *.so
 *.dylib
 
-# Qt-es
-
-/.qmake.cache
-/.qmake.stash
+.cache
+.clangd
+.qmake.cache
+.qmake.stash
+compile_commands.json
 *.pro.user
 *.pro.user.*
 *.qbs.user
@@ -27,7 +25,6 @@ Makefile*
 *build-*
 
 # QtCreator
-
 *.autosave
 
 #QtCtreator Qml

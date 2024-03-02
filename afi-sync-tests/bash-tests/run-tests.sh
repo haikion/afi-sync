@@ -19,6 +19,7 @@ export WORKING_DIR=~/afisync-tests/work
 export TESTS_DIR=$PWD
 export MODS_DIR=${TESTS_DIR}/files/mods
 export TORRENTS_DIR=${TESTS_DIR}/files/torrents
+export APP_DIR=${TESTS_DIR}/../../app
 
 source ${TESTS_DIR}/functions.sh
 
@@ -52,7 +53,7 @@ compile () {
     mkdir -p ${WORKING_DIR}
     cp -R ../../app/* ${WORKING_DIR}/
     cd ${WORKING_DIR}
-    qmake CONFIG+=debug &> compile.log && make -j8 &>> compile.log && return 0
+    qmake CONFIG+=debug ${APP_DIR} &> compile.log && make -j8 &>> compile.log && return 0
     return 1
 }
 
@@ -72,7 +73,7 @@ GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 ulimit -c unlimited
-sudo service apache2 start
+sudo systemctl start apache2
 
 test -f ${WORKING_DIR}/settings && trash ${WORKING_DIR}/settings
 mkdir -p ${WORKING_DIR}/settings/AFISync

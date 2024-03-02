@@ -22,6 +22,7 @@ QStringList listFilesInRelativeForm(const QDir &directory) {
 
     // Get the list of files in the directory
     QStringList currentFiles = directory.entryList(QDir::Files);
+    filesList.reserve(currentFiles.size());
     for (const QString &file : currentFiles) {
         filesList.append(directory.relativeFilePath(file));
     }

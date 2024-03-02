@@ -41,6 +41,6 @@ std::ostream& operator<<(std::ostream& outStream, const QList<QString>& qList)
 
 std::ostream& operator<<(std::ostream& outStream, const QSet<QString>& qSet)
 {
-    outStream << qSet.toList();
+    outStream << qSet.values();
     return outStream;
 }

@@ -5,7 +5,6 @@
     models.
 */
 
-#include <csignal>
 #include <sys/types.h>
 #include <QCoreApplication>
 #include <QDir>
@@ -246,6 +245,7 @@ void TreeModel::update()
 QList<IRepository*> TreeModel::repositories() const
 {
     QList<IRepository*> retVal;
+    retVal.reserve(repositories_.size());
     for (Repository* repo : repositories_)
     {
         retVal.append(repo);

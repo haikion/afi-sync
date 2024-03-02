@@ -27,7 +27,7 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
             return false;
         }
         QDir srcDir(srcPath);
-        QStringList fileNames = srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+        const QStringList fileNames = srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
         for (const QString& fileName : fileNames)
         {
             const QString newSrcPath

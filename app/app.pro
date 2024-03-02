@@ -5,22 +5,22 @@ CONFIG += c++14
 TARGET = AFISync
 
 win32 {
-    #Google Crashpad crash reporting
-    include(src\model\crashhandler\crashhandler.pri)
     DEFINES += _WIN32_WINNT=0x0501
-    INCLUDEPATH += $$_PRO_FILE_PWD_\..\..\src\libtorrent-rasterbar-1.1.7\include
-    INCLUDEPATH += $$_PRO_FILE_PWD_\..\..\src\boost_1_66_0
+    INCLUDEPATH += $$_PRO_FILE_PWD_\..\..\src\libtorrent-rasterbar-2.0.10\include
+    INCLUDEPATH += $$_PRO_FILE_PWD_\..\..\src\boost_1_84_0
     RC_ICONS = src/view/armafin-logo-64px2.ico
     LIBS += -L$$_PRO_FILE_PWD_\..\..\lib
     !Release {
         QMAKE_CXXFLAGS += -wd4250
         DEFINES += BOOST_ALL_DYN_LINK
-        POSTFIX = vc140-mt-gd-x64-1_66
-        LIBS += -lboost_log_setup-$${POSTFIX} -lboost_log-$${POSTFIX} -lboost_filesystem-$${POSTFIX} -lboost_system-$${POSTFIX} -lboost_date_time-$${POSTFIX} -lboost_thread-$${POSTFIX} -lboost_regex-$${POSTFIX} -lboost_atomic-$${POSTFIX} -lboost_random-$${POSTFIX} -lws2_32 -ltorrent
+        DEFINES += TORRENT_LINKING_SHARED
+        POSTFIX = vc143-mt-gd-x64-1_84
+        LIBS += -lboost_log_setup-$${POSTFIX} -lboost_log-$${POSTFIX} -lboost_filesystem-$${POSTFIX} -lboost_system-$${POSTFIX} -lboost_date_time-$${POSTFIX} -lboost_thread-$${POSTFIX} -lboost_atomic-$${POSTFIX} -lboost_random-$${POSTFIX} -lws2_32 -ltorrent
     }
     Release {
         #Static build
-        LIBS += -llibboost_system-vc141-mt-s-x64-1_66 -llibboost_atomic-vc141-mt-s-x64-1_66 -llibboost_random-vc141-mt-s-x64-1_66 -lws2_32 -llibtorrent
+        POSTFIX = vc143-mt-s-x64-1_84
+        LIBS += -lbcrypt -llibboost_system-$${POSTFIX} -llibboost_atomic-$${POSTFIX} -llibboost_random-$${POSTFIX} -lws2_32 -llibtorrent-rasterbar
         DEFINES += STATIC_BUILD=1
         #Generate pdb debug symbols for crash dumps
         QMAKE_CXXFLAGS+=/Zi
@@ -36,7 +36,10 @@ unix {
    LIBS += -lboost_system -lboost_atomic -lboost_random -lboost_date_time -lboost_log_setup -lboost_filesystem -lboost_log -lboost_thread -ltorrent-rasterbar
 }
 
-SOURCES += src/model/main.cpp \
+SOURCES += \
+    ../deps/try_signal/signal_error_code.cpp \
+    ../deps/try_signal/try_signal.cpp \
+    src/model/main.cpp \
     src/model/destructionwaiter.cpp \
     src/model/afisync.cpp \
     src/model/deletable.cpp \
@@ -82,6 +85,8 @@ SOURCES += src/model/main.cpp \
     src/model/apis/libtorrent/storagemovemanager.cpp
 
 HEADERS += \
+    ../deps/try_signal/signal_error_code.hpp \
+    ../deps/try_signal/try_signal.hpp \
     src/model/destructionwaiter.h \
     src/model/afisync.h \
     src/model/deletable.h \

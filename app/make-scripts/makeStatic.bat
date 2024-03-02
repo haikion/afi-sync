@@ -1,7 +1,7 @@
 :Compiles static 64 bit single exe build of AFISync with MSVC
 set QT_PATH=D:\Qt
 set QT_STATIC_BINS=D:\qts\bin
-set VS_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community
+set VS_DIR=D:\Program Files\Microsoft Visual Studio\2022\Community
 
 set CURRDIR=%cd%
 cd %~dp0%..\..\..

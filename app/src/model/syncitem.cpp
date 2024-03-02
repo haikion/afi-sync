@@ -1,6 +1,4 @@
-#include <limits>
 #include <QTime>
-#include "global.h"
 #include "syncitem.h"
 
 SyncItem::SyncItem(const QString& name):

@@ -24,8 +24,6 @@ void AlertHandler::handleAlert(alert* alert)
     {
         switch (alert->type())
         {
-            case stats_alert::alert_type:
-                break;
             case file_renamed_alert::alert_type:
                 break;
             case file_completed_alert::alert_type:
@@ -152,8 +150,10 @@ void AlertHandler::handlePortmapErrorAlert(const portmap_error_alert* alert) con
 }
 
 void AlertHandler::handleSessionStatsAlert(const libtorrent::session_stats_alert* alert) {
-    quint64 dl = alert->values[downloadIdx_];
-    quint64 ul =  alert->values[uploadIdx_];
+    const auto stats = alert->counters();
+    const int64_t dl = stats[downloadIdx_];
+    const int64_t ul = stats[uploadIdx_];
+
     auto updated = speedCalculator_.update(dl, ul, alert->timestamp());
     if (updated) {
         emit uploadAndDownloadChanged(speedCalculator_.getUploadSpeed(), speedCalculator_.getDownloadSpeed());

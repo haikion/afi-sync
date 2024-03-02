@@ -8,7 +8,6 @@
 #include "afisynclogger.h"
 #include "apis/libtorrent/ahasher.h"
 #include "apis/libtorrent/deltapatcher.h"
-#include "crashhandler/crashhandler.h"
 #include "fileutils.h"
 #include "global.h"
 #include "processmonitor.h"
@@ -36,9 +35,6 @@ struct CleanExit
 
 AfiSyncLogger* initStandalone()
 {
-    #ifdef Q_OS_WIN
-        Breakpad::CrashHandler::instance()->Init(QStringLiteral("."));
-    #endif
     AfiSyncLogger* logger = new AfiSyncLogger();
     logger->initFileLogging();
     return logger;

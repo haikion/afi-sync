@@ -1,7 +1,6 @@
 #ifndef MODITEM_H
 #define MODITEM_H
 
-#include <memory>
 #include <QObject>
 #include <QTimer>
 #include <QSet>
@@ -9,6 +8,11 @@
 #include "apis/isync.h"
 #include "syncitem.h"
 #include "interfaces/imod.h"
+
+#ifdef Q_OS_WIN
+#pragma warning(push)
+#pragma warning(disable: 4250)
+#endif
 
 class Repository;
 class ModAdapter;

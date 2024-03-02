@@ -3,7 +3,6 @@
 
 #include <QWidget>
 #include <QTimer>
-#include "../model/interfaces/ibandwidthmeter.h"
 #include "../model/interfaces/isettings.h"
 
 namespace Ui {

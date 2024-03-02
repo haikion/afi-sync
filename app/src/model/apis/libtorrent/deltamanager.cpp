@@ -1,7 +1,6 @@
 #include <QFileInfo>
 #include <QDirIterator>
 #include <QThread>
-#include "libtorrent/torrent_info.hpp"
 #include "../../global.h"
 #include "../../settingsmodel.h"
 #include "../../fileutils.h"
@@ -174,7 +173,7 @@ void DeltaManager::deleteExtraFiles()
             localFiles.insert(fi.absoluteFilePath().toUpper());
     }
 
-    QSet<QString> extraFiles = localFiles - torrentFiles;
+    const QSet<QString> extraFiles = localFiles - torrentFiles;
     for (const QString& filePath : extraFiles)
     {
         LOG << "Deleting " << filePath;
@@ -186,7 +185,6 @@ bool DeltaManager::checkingFiles()
 {
     const auto status = handle_.status().state;
     return status == libtorrent::torrent_status::state_t::checking_files
-            || status == libtorrent::torrent_status::state_t::queued_for_checking
             || status == libtorrent::torrent_status::state_t::checking_resume_data;
 }
 

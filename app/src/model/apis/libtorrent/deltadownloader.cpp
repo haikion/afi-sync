@@ -1,12 +1,8 @@
-#include <algorithm>
-#include <string>
 #include <vector>
-#include <libtorrent/file_pool.hpp>
 #include <libtorrent/file_storage.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 #include <QDir>
-#include <QRegExp>
 #include "../../afisynclogger.h"
 #include "../../global.h"
 #include "../../settingsmodel.h"
@@ -26,11 +22,11 @@ DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle):
         return;
     }
     //Always seed.
-    handle_.auto_managed(false);
+    handle_.set_flags(lt::torrent_flags::auto_managed);
     handle_.pause();
     fileStorage_ = torrent->files();
     createFilePaths();
-    handle.set_sequential_download(true); //Download patches one by one
+    handle.set_flags(lt::torrent_flags::sequential_download);
     for (int i = 0; i < fileStorage_.num_files(); ++i)
     {
         if (Global::guiless) //Seed everything in mirror mode.
@@ -40,7 +36,6 @@ DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle):
         //Do not download anything. Sets priority to 0 whenever file does not exist.
         handle_.file_priority(i, DownloadPriority::NO_DOWNLOAD);
     }
-    auto priors = handle_.file_priorities();
     handle_.resume();
 }
 
@@ -48,8 +43,8 @@ void DeltaDownloader::createFilePaths()
 {
     for (int i = 0; i < fileStorage_.num_files(); ++i)
     {
-        //path is sometimes "".
-        QString name = QString::fromStdString(fileStorage_.file_name(i));
+        auto strView = fileStorage_.file_name(i);
+        QString name = QString::fromUtf8(strView.data(), strView.size());
         QString pathQ = QDir::fromNativeSeparators(name);
         LOG << "Appending " << pathQ;
         patches_.append(pathQ);

@@ -9,7 +9,6 @@
 #include <QAtomicPointer>
 #include <QMutex>
 #include "interfaces/isyncitem.h"
-#include "treeitem.h"
 
 class SyncItem : virtual public ISyncItem
 {

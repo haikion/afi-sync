@@ -1,8 +1,6 @@
 #ifndef LIBTORRENTAPI_H
 #define LIBTORRENTAPI_H
 
-#include <vector>
-
 #include <QObject>
 #include <QDir>
 #include <QHash>
@@ -24,8 +22,6 @@
 #include "speedestimator.h" // TODO: Remove?
 #include "storagemovemanager.h"
 
-// TODO: Split this into more classes in order to reduce complexity.
-// create class for managing settings
 class LibTorrentApi : public QObject, virtual public ISync
 {
     Q_OBJECT
@@ -55,7 +51,7 @@ public:
     bool folderQueued(const QString& key) override;
     bool folderPatching(const QString& key) override;
     //Adds folder, path is local system directory, key is source.
-    void addFolder(const QString& key, const QString& name) override;
+    bool addFolder(const QString& key, const QString& name) override;
     //Removes folder with specific key.
     void removeFolder(const QString& key) override;
     //Returns list of files in folder in upper case format.
@@ -72,8 +68,8 @@ public:
     //Returns file system path of the folder with specific key.
     QString folderPath(const QString& key) override;
     //Total bandwiths
-    qint64 download() const override;
-    qint64 upload() override;
+    int64_t download() const override;
+    int64_t upload() override;
     //Sets global max upload
     void setMaxUpload(const int limit) override;
     //Sets global max download
@@ -122,34 +118,31 @@ private:
     CiHash<libtorrent::add_torrent_params> torrentParams_;
     CiHash<QString> prefixMap_;
 
+    AlertHandler* alertHandler_;
     DeltaManager* deltaManager_;
-    int numResumeData_;
-    SpeedEstimator speedEstimator_;
     QQueue<QPair<QString, QString>> pendingFolder_;
     QString deltaUpdatesKey_;
     QString settingsPath_;
-    int64_t checkingSpeed_; // TODO: Remove?
-    AlertHandler* alertHandler_;
+    SpeedEstimator speedEstimator_;
     StorageMoveManager* storageMoveManager_;
+    int numResumeData_;
+    libtorrent::time_point statsLastTimestamp_;
+    int64_t downloadSpeed_{0};
+    int64_t uploadSpeed_{0};
     std::atomic<bool> ready_;
-    qint64 uploadSpeed_{0};
-    qint64 downloadSpeed_{0};
 
-    bool loadLtSettings();
-    void saveSettings();
-    boost::shared_ptr<libtorrent::torrent_info> loadFromFile(const QString& path) const;
+    std::shared_ptr<libtorrent::torrent_info> loadFromFile(const QString& path) const;
     void loadTorrentFiles(const QDir& dir);
     bool saveTorrentFile(const libtorrent::torrent_handle& getHandle) const;
     void generateResumeData() const;
-    std::vector<char> loadResumeData(const QString& path) const;
-    boost::shared_ptr<const libtorrent::torrent_info> getTorrentFile(const libtorrent::torrent_handle& getHandle) const;
+    std::shared_ptr<const libtorrent::torrent_info> getTorrentFile(const libtorrent::torrent_handle& getHandle) const;
     QString getHashString(const libtorrent::torrent_handle& getHandle) const;
     int64_t bytesToCheck(const libtorrent::torrent_status& status) const;
-    bool createSession();
+    void createSession();
     void addFolderGeneric(const QString& key);
-    void addFolderGenericAsync(const QString& key);
+    bool addFolderGenericAsync(const QString& key);
     libtorrent::torrent_handle getHandle(const QString& key);
-    void addFolder(const QString& key, const QString& name, bool patchingEnabled);
+    bool addFolder(const QString& key, const QString& name, bool patchingEnabled);
     void createDeltaManager(libtorrent::torrent_handle handle, const QString& key);
     libtorrent::torrent_handle getHandleSilent(const QString& key);
     bool folderChecking(const libtorrent::torrent_status& status) const;
