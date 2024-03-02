@@ -8,7 +8,8 @@ cp ${CURRENT_REPOSITORIES_JSON} settings/repositories.json
 
 trash *7z
 touch afisync.log
-xvfb-run ./AFISync &
+killall xvfb-run
+xvfb-run --auto-servernum --server-num=1 ./AFISync &
 while [ ! -f *7z ]; do
    sleep 2
 done

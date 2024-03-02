@@ -11,7 +11,7 @@ cp ${INI_FILE} settings/AFISync/AFISync.ini
 cp ${CURRENT_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
 cp -R ${MODS_DIR}/* .
 
-xvfb-run ./AFISync &
+xvfb-run --auto-servernum --server-num=1 ./AFISync &
 sleep 3
 
 cp ${UPDATED_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json

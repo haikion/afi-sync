@@ -10,7 +10,7 @@ cd ${WORKING_DIR}
 cp ${CURRENT_REPOSITORIES_JSON} settings/repositories.json
 cp ${UPDATED_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
 
-xvfb-run ./AFISync &
+xvfb-run --auto-servernum --server-num=1 ./AFISync &
 
 hash=$(cat settings/repositories.json)
 while [[ "$hash" != "$UPDATED_HASH" ]]; do

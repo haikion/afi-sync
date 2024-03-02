@@ -1,9 +1,20 @@
 #!/bin/bash
 
-command -v apache2 > /dev/null  || (echo "No apache2" && exit 1)
-command -v trash > /dev/null || (echo "No trash" && exit 1)
+command_exists() {
+    local cmd=$1
+    if ! command -v "$cmd" > /dev/null; then
+        echo "Missing executable: $cmd"
+        return 1
+    else
+        return 0
+    fi
+}
 
-export MODS_DIR=~/afisync-tests/mods
+command_exists apache2  || exit 1
+command_exists trash || exit 1
+command_exists xvfb-run || exit 1
+command_exists 7za || exit 1
+
 export WORKING_DIR=~/afisync-tests/work
 export TESTS_DIR=$PWD
 export MODS_DIR=${TESTS_DIR}/files/mods
@@ -63,7 +74,7 @@ NC='\033[0m' # No Color
 ulimit -c unlimited
 sudo service apache2 start
 
-trash ${WORKING_DIR}/settings
+test -f ${WORKING_DIR}/settings && trash ${WORKING_DIR}/settings
 mkdir -p ${WORKING_DIR}/settings/AFISync
 rm -rf /var/www/html/afisync-tests/*
 sudo mkdir -p /var/www/html/afisync-tests/torrents
