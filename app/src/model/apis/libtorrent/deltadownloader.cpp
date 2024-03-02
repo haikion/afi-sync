@@ -14,7 +14,6 @@
 #include "deltadownloader.h"
 #include "deltapatcher.h"
 
-
 namespace lt = libtorrent;
 
 DeltaDownloader::DeltaDownloader(const libtorrent::torrent_handle& handle):
@@ -79,7 +78,7 @@ bool DeltaDownloader::patchDownloaded(const QString& modName)
 //Downloads patches one by one.
 bool DeltaDownloader::downloadPatch(const QString& modName)
 {
-    QVector<int> indexes = patchIndexes(modName);
+    const QVector<int> indexes = patchIndexes(modName);
     for (int i : indexes)
     {
         handle_.file_priority(i, DownloadPriority::NORMAL);
@@ -160,7 +159,7 @@ QVector<int> DeltaDownloader::patchIndexes(const QString& modName)
 
     //No cache found. Build one.
     QVector<int> indexes;
-    QStringList modPatches = patches(modName);
+    const QStringList modPatches = patches(modName);
     for (const QString& patchName : modPatches)
     {
         indexes.append(patches_.indexOf(patchName));
