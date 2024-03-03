@@ -1,0 +1,20 @@
+{
+    "updateUrl":  "http://localhost/afisync-tests/repositories.json",
+    "repositories":  [
+                         {
+                             "name":  "armafinland.fi Primary",
+                             "serverAddress":  "a3.armafinland.fi",
+                             "serverPort":  2302,
+                             "password":  "kotka",
+                             "battlEyeEnabled":  true,
+                             "mods":  [
+                                          {
+                                              "name":  "@tfar_beta",
+                                              "fileSize":  27825,
+                                              "key":  "http://localhost/afisync-tests/torrents/@tfar_beta_1.torrent",
+                                              "optional":  false
+                                          }
+                                      ]
+                         }
+                     ]
+}

@@ -24,9 +24,16 @@ void Installer::install(const Mod* mod)
 
 void Installer::install(const QDir& src, const QDir& dst)
 {
-    if (!src.exists())
+    auto path = FileUtils::casedPath(src.absolutePath());
+    if (path.isEmpty())
     {
         LOG << "Nothing to install from " << src.absolutePath();
+        return;
+    }
+    auto casedSrc = QDir(path);
+    if (!casedSrc.exists())
+    {
+        LOG << "Nothing to install from " << casedSrc.absolutePath();
         return;
     }
     if (!dst.exists())
@@ -34,6 +41,6 @@ void Installer::install(const QDir& src, const QDir& dst)
         LOG_WARNING << "Destination directory: " << dst.absolutePath() << " does not exist.";
         return;
     }
-    LOG << "Installing " << src.absolutePath() << " to " << dst.absolutePath();
-    FileUtils::copy(src.absolutePath(), dst.absolutePath());
+    LOG << "Installing " << casedSrc.absolutePath() << " to " << casedSrc.absolutePath();
+    FileUtils::copy(casedSrc.absolutePath(), dst.absolutePath());
 }
