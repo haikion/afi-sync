@@ -99,6 +99,7 @@ void LibTorrentApi::generalThreadInit()
     timer_->setInterval(1000);
     timer_->start();
     ready_ = true;
+    networkAccessManager_ = new QNetworkAccessManager(this);
 }
 
 LibTorrentApi::~LibTorrentApi()
@@ -821,36 +822,20 @@ void LibTorrentApi::enableDeltaUpdatesSlot()
         return;
     }
     lt::torrent_handle handle = addFolderFromParams(deltaUpdatesKey_);
-    if (!handle.is_valid())
+    if (handle.is_valid()) {
+        createDeltaManager(handle, deltaUpdatesKey_);
+        LOG << "Delta torrent loaded from disk";
+    }
+    else
     {
         //Create new deltaManager_;
-        handle = addFolderGeneric(deltaUpdatesKey_);
-        if (!handle.is_valid())
-        {
-            LOG_WARNING << "Torrent is invalid. Delta patching disabled.";
-            return;
-        }
+        addFolderGenericAsync(deltaUpdatesKey_);
     }
-
-    createDeltaManager(handle, deltaUpdatesKey_);
 }
 
-lt::torrent_handle LibTorrentApi::addFolderGeneric(const QString& key)
+void LibTorrentApi::addFolderGeneric(const QString& key)
 {
-    lt::torrent_handle handle = addFolderGenericAsync(key);
-    lt::torrent_status status = handle.status();
-    for (int a = 0; a < 100 && status.state == lt::torrent_status::downloading_metadata; ++a)
-    {
-        QThread::msleep(100);
-        status = handle.status();
-    }
-    if (status.state == lt::torrent_status::downloading_metadata)
-    {
-        LOG_ERROR << "Failure downloading torrent from " << key << ":" << status.error.c_str();
-        return lt::torrent_handle();
-    }
-
-    return handle;
+    addFolderGenericAsync(key);
 }
 
 lt::torrent_handle LibTorrentApi::addFolderFromParams(const QString& key)
@@ -870,19 +855,21 @@ lt::torrent_handle LibTorrentApi::addFolderFromParams(const QString& key)
 }
 
 //Does not wait for torrent-file download to finish.
-lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key)
+void LibTorrentApi::addFolderGenericAsync(const QString& key)
 {
-    lt::torrent_handle handle = addFolderFromParams(key);
-    if (handle.is_valid())
+    lt::torrent_handle existingHandle = addFolderFromParams(key);
+    if (existingHandle.is_valid())
     {
-        return handle;
+        onFolderAdded(key, existingHandle);
+        return;
     }
 
     // TODO: Remove? Might be too defensive
     if (!session_)
     {
         LOG << ERROR_SESSION_NULL;
-        return lt::torrent_handle();
+        onFolderAdded(key, lt::torrent_handle());
+        return;
     }
 
     QFileInfo fi(SettingsModel::modDownloadPath());
@@ -890,37 +877,44 @@ lt::torrent_handle LibTorrentApi::addFolderGenericAsync(const QString& key)
     if (!fi.isReadable())
     {
         LOG_ERROR << "Parent dir " << fi.absoluteFilePath() << " is not readable.";
-        return lt::torrent_handle();
+        onFolderAdded(key, lt::torrent_handle());
+        return;
     }
     if (folderExists(key))
     {
         LOG_ERROR << "Torrent already added.";
-        return lt::torrent_handle();
-    }
-    lt::add_torrent_params atp;
-    //Check if key is path or url
-    if (QFile::exists(key))
-    {
-        atp.ti = loadFromFile(key);
-    }
-    else
-    {
-        atp.url = key.toStdString();
-    }
-    atp.save_path = QDir::toNativeSeparators(fi.absoluteFilePath()).toStdString();
-    atp.flags |= libtorrent::add_torrent_params::flag_paused;
-    LOG << "url = " << QString::fromStdString(atp.url)
-        << " save_path = " << QString::fromStdString(atp.save_path);
-    lt::error_code ec;
-    LOG << "Adding " << key << " to sync";
-    handle = session_->add_torrent(atp, ec);
-    if (ec)
-    {
-        LOG_ERROR << "Adding torrent failed: " << ec.message().c_str();
-        return lt::torrent_handle();
+        onFolderAdded(key, lt::torrent_handle());
+        return;
     }
 
-    return handle;
+    auto reply = networkAccessManager_->get(QNetworkRequest(QUrl(key)));
+    connect(reply, &QNetworkReply::finished, this, [=] () {
+        if (reply->error() != QNetworkReply::NoError) {
+            LOG_ERROR << "Torrent download failed" << reply->errorString();
+            return;
+        }
+
+        QByteArray torrentData = reply->readAll();
+        reply->deleteLater();
+
+        lt::add_torrent_params atp;
+        auto ptr = new lt::torrent_info(torrentData.constData(), torrentData.size());
+        atp.ti = boost::shared_ptr<lt::torrent_info>(ptr);
+
+        atp.save_path = QDir::toNativeSeparators(fi.absoluteFilePath()).toStdString();
+        atp.flags |= libtorrent::add_torrent_params::flag_paused;
+        LOG << "Adding torrent from URL: " << reply->url().toString().toStdString()
+            << ", save_path = " << QString::fromStdString(atp.save_path);
+        lt::error_code ec;
+        LOG << "Adding " << key << " to sync";
+        lt::torrent_handle handle = session_->add_torrent(atp, ec);
+        if (ec)
+        {
+            LOG_ERROR << "Adding torrent failed: " << ec.message().c_str();
+            return;
+        }
+        onFolderAdded(key, handle);
+    });
 }
 
 //Does not print error message.
@@ -947,25 +941,56 @@ lt::torrent_handle LibTorrentApi::getHandle(const QString& key)
     return rVal;
 }
 
-bool LibTorrentApi::addFolder(const QString& key, const QString& name)
+void LibTorrentApi::addFolder(const QString& key, const QString& name)
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
-    return addFolder(key, name, true);
+    if (!deltaManager_ && !deltaUpdatesKey_.isEmpty() && SettingsModel::deltaPatchingEnabled())
+    {
+        // Wait for the delta torrent to be processed before adding
+        // mod torrents.
+        pendingFolder_.enqueue({key, name});
+        LOG << "Folder add postponed " << key << " " << name;
+    }
+    else
+    {
+        addFolder(key, name, true);
+    }
 }
 
-bool LibTorrentApi::addFolder(const QString& key, const QString& name, bool patchingEnabled)
+void LibTorrentApi::addFolder(const QString& key, const QString& name, bool patchingEnabled)
 {
     if (SettingsModel::deltaPatchingEnabled() &&
             patchingEnabled && deltaManager_ && deltaManager_->patchAvailable(name))
     {
         deltaManager_->patch(name, key);
-        return true;
+        return;
     }
-    auto handle = addFolderGenericAsync(key);
+    addFolderGenericAsync(key);
+    // continues at onFolderAdded
+}
+
+void LibTorrentApi::onFolderAdded(const QString& key, lt::torrent_handle handle) {
+    if (key == deltaUpdatesKey_) {
+        if (handle.is_valid())
+        {
+            createDeltaManager(handle, deltaUpdatesKey_);
+            while (!pendingFolder_.isEmpty())
+            {
+                auto p = pendingFolder_.dequeue();
+                addFolder(p.first, p.second);
+                LOG << "Added pending folder " << p.first << " " << p.second;
+            }
+        }
+        else
+        {
+            LOG_WARNING << "Torrent is invalid. Delta patching disabled.";
+        }
+        return;
+    }
+
     keyHash_.insert(key, handle);
     handle.resume();
-
-    return true;
+    emit folderAdded(key);
 }
 
 void LibTorrentApi::handlePatched(const QString& key, const QString& modName, bool success)

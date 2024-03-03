@@ -78,6 +78,7 @@ private slots:
     void update();
     void init();
     void threadConstructor();
+    void onFolderAdded(QString key);
     void stopUpdatesSlot();
     void startUpdatesSlot();
     void moveFilesSlot();

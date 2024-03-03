@@ -4,10 +4,11 @@
 #include <vector>
 
 #include <QObject>
-#include <QHash>
 #include <QDir>
-#include <QTimer>
+#include <QHash>
+#include <QNetworkAccessManager>
 #include <QSet>
+#include <QTimer>
 
 #pragma warning(push, 0)
 #include <libtorrent/session.hpp>
@@ -54,7 +55,7 @@ public:
     bool folderQueued(const QString& key) override;
     bool folderPatching(const QString& key) override;
     //Adds folder, path is local system directory, key is source.
-    bool addFolder(const QString& key, const QString& name) override;
+    void addFolder(const QString& key, const QString& name) override;
     //Removes folder with specific key.
     void removeFolder(const QString& key) override;
     //Returns list of files in folder in upper case format.
@@ -105,6 +106,7 @@ private slots:
 signals:
     void initCompleted();
     void shutdownCompleted();
+    void folderAdded(QString key);
 
 private:
     static const int NOT_FOUND;
@@ -112,6 +114,7 @@ private:
     static const QString ERROR_SESSION_NULL;
 
     QTimer* timer_;
+    QNetworkAccessManager* networkAccessManager_{nullptr};
     libtorrent::session* session_;
     // TODO: Create single type called TorrentHandle
     // and combine these.
@@ -122,6 +125,7 @@ private:
     DeltaManager* deltaManager_;
     int numResumeData_;
     SpeedEstimator speedEstimator_;
+    QQueue<QPair<QString, QString>> pendingFolder_;
     QString deltaUpdatesKey_;
     QString settingsPath_;
     int64_t checkingSpeed_; // TODO: Remove?
@@ -142,10 +146,10 @@ private:
     QString getHashString(const libtorrent::torrent_handle& getHandle) const;
     int64_t bytesToCheck(const libtorrent::torrent_status& status) const;
     bool createSession();
-    libtorrent::torrent_handle addFolderGeneric(const QString& key);
-    libtorrent::torrent_handle addFolderGenericAsync(const QString& key);
+    void addFolderGeneric(const QString& key);
+    void addFolderGenericAsync(const QString& key);
     libtorrent::torrent_handle getHandle(const QString& key);
-    bool addFolder(const QString& key, const QString& name, bool patchingEnabled);
+    void addFolder(const QString& key, const QString& name, bool patchingEnabled);
     void createDeltaManager(libtorrent::torrent_handle handle, const QString& key);
     libtorrent::torrent_handle getHandleSilent(const QString& key);
     bool folderChecking(const libtorrent::torrent_status& status) const;
@@ -156,6 +160,7 @@ private:
     void generalThreadInit();
     void generalInit();
     qint64 folderTotalWantedMoving(const QString& key);
+    void onFolderAdded(const QString &key, libtorrent::torrent_handle handle);
 };
 
 #endif // LIBTORRENTAPI_H

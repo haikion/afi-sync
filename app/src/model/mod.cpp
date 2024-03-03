@@ -43,6 +43,7 @@ void Mod::threadConstructor()
     updateTimer_->setInterval(1000);
     connect(updateTimer_, &QTimer::timeout, this, &Mod::update);
     connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(repositoryChanged()));
+    connect(dynamic_cast<QObject*>(sync_), SIGNAL(folderAdded(QString)), this, SLOT(onFolderAdded(QString)));
 }
 
 QString Mod::path() const
@@ -95,6 +96,14 @@ void Mod::start()
         //Add folder
         sync_->addFolder(key_, name());
     }
+}
+
+void Mod::onFolderAdded(QString key)
+{
+    if (key != key_) {
+        return; // Not for me
+    }
+
     //Sanity checks
     const QString error = sync_->folderError(key_);
     if (!error.isEmpty())
