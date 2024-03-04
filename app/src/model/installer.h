@@ -17,7 +17,7 @@ private:
     static const QString TS_DIR;
     static const QString USER_CONFIG_DIR;
 
-    static void install(const QDir& src, const QDir& dst);
+    static bool install(const QDir& src, const QDir& dst);
 };
 
 #endif // INSTALLER_H

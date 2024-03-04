@@ -19,7 +19,7 @@ xvfb-run --auto-servernum --server-num=1 ./AFISync &
 while [ ! -f config/plugins/TFAR_win64.dll ]; do
    sleep 2
 done
-# TODO: Test addons.ini
+grep -RIi remote_start.wav config/addons.ini || exit 1
 
 kill_and_wait
 if [ -f core* ]; then
