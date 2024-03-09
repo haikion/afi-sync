@@ -13,7 +13,7 @@ cp ${INI_FILE} settings/AFISync.ini
 cp ${CURRENT_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
 cp -R ${MODS_DIR}/* .
 
-xvfb-run ./AFISync &
+xvfb-run --auto-servernum --server-num=1 ./AFISync &
 
 while ! grep "cba_a3_1.torrent Completed" afisync.log; do
     sleep 1
