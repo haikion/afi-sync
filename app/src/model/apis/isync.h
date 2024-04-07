@@ -19,7 +19,7 @@ public:
     //Rechecks folder
     virtual void checkFolder(const QString& key) = 0;
     //Returns list of keys of added folders.
-    virtual QList<QString> folderKeys() = 0;
+    virtual QStringList folderKeys() = 0;
     //Returns true if there are no peers.
     virtual bool folderNoPeers(const QString& key) = 0;
     //Returns true if folder is moving files

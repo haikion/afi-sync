@@ -27,6 +27,7 @@
 #pragma warning(pop)
 #endif
 
+#include "../../afisynclogger.h"
 #include "../../fileutils.h"
 #include "../../global.h"
 #include "../../settingsmodel.h"
@@ -175,9 +176,9 @@ void LibTorrentApi::checkFolder(const QString& key)
 }
 
 // TODO: Use mutexes here as keyHash is written in worker thread and read in ui thread.
-QList<QString> LibTorrentApi::folderKeys()
+QStringList LibTorrentApi::folderKeys()
 {
-    QList<QString> rVal = keyHash_.keys();
+    auto rVal = keyHash_.keys();
     if (deltaManager_)
         rVal += deltaManager_->folderKeys();
 
@@ -922,7 +923,7 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& name, bool patc
         deltaManager_->patch(name, key);
         return false;
     }
-    addFolderGenericAsync(key);
+    return addFolderGenericAsync(key);
     // continues at onFolderAdded
 }
 

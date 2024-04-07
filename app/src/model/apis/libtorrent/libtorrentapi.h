@@ -8,18 +8,21 @@
 #include <QSet>
 #include <QTimer>
 
+#ifdef Q_OS_WIN
 #pragma warning(push, 0)
+#endif
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/alert.hpp>
+#ifdef Q_OS_WIN
 #pragma warning(pop)
+#endif
 
 #include "../../cihash.h"
 #include "../isync.h"
 #include "alerthandler.h"
 #include "deltamanager.h"
-#include "speedestimator.h" // TODO: Remove?
 #include "storagemovemanager.h"
 
 class LibTorrentApi : public QObject, virtual public ISync
@@ -42,7 +45,7 @@ public:
     //Returns true if there are no peers.
     bool folderNoPeers(const QString& key) override;
     //Returns list of keys of added folders.
-    QList<QString> folderKeys() override;
+    QStringList folderKeys() override;
     bool folderReady(const QString& key) override;
     //Returns true if folder is indexing or checking files.
     bool folderChecking(const QString& key) override;
@@ -123,7 +126,6 @@ private:
     QQueue<QPair<QString, QString>> pendingFolder_;
     QString deltaUpdatesKey_;
     QString settingsPath_;
-    SpeedEstimator speedEstimator_;
     StorageMoveManager* storageMoveManager_;
     int numResumeData_;
     libtorrent::time_point statsLastTimestamp_;

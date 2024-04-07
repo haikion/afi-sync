@@ -1,7 +1,7 @@
 TEMPLATE = app
 
 QT += core gui network widgets
-CONFIG += c++14
+CONFIG += c++17
 TARGET = AFISync
 
 win32 {
@@ -22,15 +22,13 @@ win32 {
         POSTFIX = vc143-mt-s-x64-1_84
         LIBS += -lbcrypt -llibboost_system-$${POSTFIX} -llibboost_atomic-$${POSTFIX} -llibboost_random-$${POSTFIX} -lws2_32 -llibtorrent-rasterbar
         DEFINES += STATIC_BUILD=1
-        #Generate pdb debug symbols for crash dumps
-        QMAKE_CXXFLAGS+=/Zi
-        QMAKE_LFLAGS+= /INCREMENTAL:NO /Debug
         #Ask administrator permissions during startup
         !console: QMAKE_POST_LINK += mt.exe -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$${TARGET}.exe
     }
 }
 
 unix {
+   QMAKE_CXX = ccache $$QMAKE_CXX
    DEFINES += BOOST_LOG_DYN_LINK
    QMAKE_CXXFLAGS += -Wno-unknown-pragmas
    LIBS += -lboost_system -lboost_atomic -lboost_random -lboost_date_time -lboost_log_setup -lboost_filesystem -lboost_log -lboost_thread -ltorrent-rasterbar
@@ -59,7 +57,6 @@ SOURCES += \
     src/model/apis/libtorrent/libtorrentapi.cpp \
     src/model/apis/libtorrent/speedcalculator.cpp \
     src/model/syncnetworkaccessmanager.cpp \
-    src/model/apis/libtorrent/speedestimator.cpp \
     src/model/apis/libtorrent/ahasher.cpp \
     src/model/apis/libtorrent/deltadownloader.cpp \
     src/model/apis/libtorrent/deltapatcher.cpp \
@@ -108,7 +105,6 @@ HEADERS += \
     src/model/apis/libtorrent/speedcalculator.h \
     src/model/cihash.h \
     src/model/syncnetworkaccessmanager.h \
-    src/model/apis/libtorrent/speedestimator.h \
     src/model/version.h \
     src/model/apis/libtorrent/ahasher.h \
     src/model/apis/libtorrent/deltadownloader.h \

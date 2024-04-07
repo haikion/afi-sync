@@ -19,14 +19,14 @@ public:
     Console(QObject* parent = nullptr);
     ~Console();
 
-    QProcess*runCmdAsync(const QString& cmd);
-    bool runCmd(const QString& cmd) const;
+    QProcess* runCmdAsync(const QString& cmd);
+    bool runCmd(const QString& cmd);
 
 public slots:
     void terminate();
 
 private:
-    QProcess* process_;
+    QProcess process_;
 };
 
 #endif // CONSOLE_H

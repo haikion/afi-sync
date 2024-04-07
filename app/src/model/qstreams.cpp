@@ -28,17 +28,6 @@ std::ostream& operator<<(std::ostream& outStream, const QStringList& qList)
     return outStream;
 }
 
-std::ostream& operator<<(std::ostream& outStream, const QList<QString>& qList)
-{
-    outStream << " [" << qList.at(0);
-    for (int i = 1; i < qList.size(); ++i)
-    {
-        outStream << ", " << qList.at(i);
-    }
-    outStream << "]";
-    return outStream;
-}
-
 std::ostream& operator<<(std::ostream& outStream, const QSet<QString>& qSet)
 {
     outStream << qSet.values();

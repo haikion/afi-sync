@@ -238,7 +238,7 @@ QString Repository::createParFile(const QString& parameters)
     FileUtils::safeRemove(file);
     file.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream fileStream(&file);
-    fileStream.setCodec("UTF-8");
+    fileStream.setEncoding(QStringConverter::Encoding::Utf8);
     fileStream << parameters;
     file.close();
     return FILE_NAME;

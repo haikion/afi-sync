@@ -8,7 +8,7 @@ class Szip
 public:
     Szip() = default;
 
-    bool compress(const QString& dir, const QString& archivePath) const;
+    bool compress(const QString& dir, const QString& archivePath);
     QProcess* compressAsync(const QString& dir, const QString& archivePath);
 
 private:

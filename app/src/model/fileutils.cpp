@@ -189,7 +189,7 @@ QString FileUtils::casedPath(const QString& path)
             {
                 return QString();
             }
-            QFileInfo fi = it.next();
+            QFileInfo fi = it.nextFileInfo();
             if (fi.fileName().toUpper() == ciName.toUpper())
             {
                 casedPath += (casedPath.endsWith("/") ? "" : "/") + fi.fileName();

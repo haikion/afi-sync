@@ -283,7 +283,7 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
     }
     while (it.hasNext())
     {
-        QFileInfo patchFile = it.next();
+        QFileInfo patchFile = it.nextFileInfo();
         QString diffPath = patchFile.absoluteFilePath();
 
         QString relPath = diffPath;
@@ -364,7 +364,7 @@ bool DeltaPatcher::delta(const QString& oldModPath, QString newModPath)
     bool rVal = false;
     while (it.hasNext())
     {
-        QFileInfo newFile = it.next();
+        QFileInfo newFile = it.nextFileInfo();
 
         QString relPath = newFile.absoluteFilePath().remove(newModPath);
         if (relPath.startsWith("/")) {

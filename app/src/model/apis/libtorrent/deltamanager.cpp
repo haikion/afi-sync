@@ -1,9 +1,10 @@
 #include <QFileInfo>
 #include <QDirIterator>
 #include <QThread>
+#include "../../afisynclogger.h"
+#include "../../fileutils.h"
 #include "../../global.h"
 #include "../../settingsmodel.h"
-#include "../../fileutils.h"
 #include "deltamanager.h"
 
 namespace lt = libtorrent;
@@ -168,7 +169,7 @@ void DeltaManager::deleteExtraFiles()
     QDirIterator it(savePath + "/" + Constants::DELTA_PATCHES_NAME);
     while (it.hasNext())
     {
-        QFileInfo fi = it.next();
+        QFileInfo fi = it.nextFileInfo();
         if (fi.isFile())
             localFiles.insert(fi.absoluteFilePath().toUpper());
     }

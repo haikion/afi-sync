@@ -48,10 +48,14 @@ run_negative_test () {
     fi
 }
 
-compile () {
+clean () {
     trash ${WORKING_DIR}
     mkdir -p ${WORKING_DIR}
     cp -R ../../app/* ${WORKING_DIR}/
+}
+
+compile () {
+    # clean
     cd ${WORKING_DIR}
     qmake CONFIG+=debug ${APP_DIR} &> compile.log && make -j8 &>> compile.log && return 0
     return 1

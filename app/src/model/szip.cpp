@@ -18,7 +18,7 @@
 //-sdel delete files after compression
 const QString Szip::COMMAND = SZIP_EXECUTABLE  + " a -r -y -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on -sdel";
 
-bool Szip::compress(const QString& dir, const QString& archivePath) const
+bool Szip::compress(const QString& dir, const QString& archivePath)
 {
     return console_.runCmd(COMMAND + " " + QDir::toNativeSeparators(archivePath) + " "
                       + QDir::toNativeSeparators(dir));

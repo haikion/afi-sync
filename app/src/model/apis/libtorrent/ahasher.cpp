@@ -27,7 +27,7 @@ QString AHasher::hash(const QString& dirPath)
     QDirIterator it(dirPath, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext())
     {
-        QFileInfo fi = it.next();
+        QFileInfo fi = it.nextFileInfo();
         files.append(fi);
     }
     return hash(files);

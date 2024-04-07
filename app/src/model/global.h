@@ -2,10 +2,9 @@
 #define GLOBAL_H
 #include <QString>
 #include <QTextStream>
+#include "apis/isync.h"
 #include "treemodel.h"
 #include "version.h"
-#include "apis/isync.h"
-#include "afisynclogger.h"
 
 namespace Constants
 {

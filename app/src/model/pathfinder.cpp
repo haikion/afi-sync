@@ -2,9 +2,11 @@
 #include <QDir>
 #include <QSettings>
 #include <QStandardPaths>
+#include "pathfinder.h"
+#ifdef Q_OS_WIN
 #include "afisynclogger.h"
 #include "global.h"
-#include "pathfinder.h"
+#endif
 
 QString PathFinder::arma3Path()
 {
@@ -76,14 +78,16 @@ QString PathFinder::arma3MyDocuments()
 }
 
 //Prints error if path is default which means it wasn't found from regs.
+#ifdef Q_OS_WIN
 void PathFinder::checkPath(const QString& path, const QString& name)
 {
-    #ifndef Q_OS_LINUX
     if (path == QCoreApplication::applicationDirPath()
             && !Global::guiless)
     {
         LOG_ERROR << "Unable to find path for " << name
             << " Using default: " << path;
     }
-    #endif
 }
+#else
+void PathFinder::checkPath(const QString&, const QString&) {}
+#endif
