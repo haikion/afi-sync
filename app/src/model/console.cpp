@@ -25,6 +25,7 @@ bool Console::runCmd(const QString& cmd)
 {
     LOG << "Running command: " << cmd.toStdString().c_str();
     process_.startCommand(cmd);
+    process_.waitForFinished(-1);
     return process_.exitCode() == 0;
 }
 

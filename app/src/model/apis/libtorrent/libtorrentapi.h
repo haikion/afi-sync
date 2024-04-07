@@ -85,7 +85,7 @@ public:
     void disableQueue(const QString& key) override;
     qint64 folderTotalWanted(const QString& key) override;
     qint64 folderTotalWantedDone(const QString& key) override;
-    void cleanUnusedFiles(const QSet<QString> usedKeys) override;
+    void cleanUnusedFiles(const QSet<QString>& usedKeys) override;
     bool folderExtractingPatch(const QString& key) override;
     bool folderCheckingPatches(const QString& key) override;
 

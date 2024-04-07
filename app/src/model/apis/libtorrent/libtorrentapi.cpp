@@ -4,6 +4,7 @@
 #include <QEventLoop>
 #include <QFile>
 #include <QFileInfo>
+#include <QStringLiteral>
 #include <QThread>
 
 #ifdef Q_OS_WINDOWS
@@ -33,11 +34,13 @@
 #include "../../settingsmodel.h"
 #include "libtorrentapi.h"
 
+using namespace Qt::StringLiterals;
+
 namespace lt = libtorrent;
 
 const int LibTorrentApi::NOT_FOUND = -404;
-const QString LibTorrentApi::ERROR_KEY_NOT_FOUND = "ERROR: not found. key = ";
-const QString LibTorrentApi::ERROR_SESSION_NULL = "ERROR: session is null.";
+const QString LibTorrentApi::ERROR_KEY_NOT_FOUND = u"ERROR: not found. key = "_s;
+const QString LibTorrentApi::ERROR_SESSION_NULL = u"ERROR: session is null."_s;
 
 LibTorrentApi::LibTorrentApi() :
     QObject(nullptr)
@@ -145,9 +148,9 @@ void LibTorrentApi::createSession()
     //Load bandwidth limits
     const QString uLimit = SettingsModel::maxUpload();
     const QString dLimit = SettingsModel::maxDownload();
-    if (uLimit != "")
+    if (!uLimit.isEmpty())
         settings.set_int(lt::settings_pack::upload_rate_limit, uLimit.toInt() * 1024);
-    if (dLimit != "")
+    if (dLimit.isEmpty())
         settings.set_int(lt::settings_pack::download_rate_limit, dLimit.toInt() * 1024);
 
     //Sanity check
@@ -284,8 +287,8 @@ void LibTorrentApi::setFolderPath(const QString& key, const QString& path)
     const QString name = QString::fromStdString(status.name);
     const QString savePath = QString::fromStdString(status.save_path);
     // Path can be drive root in which case it ends with "\" for example "C:\"
-    const QString fromPath = QDir::fromNativeSeparators(savePath + (savePath.endsWith("\\") ? "" : "\\") + name);
-    const QString toPath = QDir::fromNativeSeparators(path + (path.endsWith("\\") ? "" : "\\") + name);
+    const QString fromPath = QDir::fromNativeSeparators(savePath + (savePath.endsWith('\\') ? QString() : u"\\"_s) + name);
+    const QString toPath = QDir::fromNativeSeparators(path + (path.endsWith('\\') ? QString() : u"\\"_s) + name);
     storageMoveManager_->insert(key, fromPath, toPath, handle.status().total_wanted_done);
     handle.move_storage(path.toStdString());
 }
@@ -392,7 +395,7 @@ qint64 LibTorrentApi::folderTotalWantedDone(const QString& key)
 }
 
 // Cleans unused torrent, link and resume datas
-void LibTorrentApi::cleanUnusedFiles(const QSet<QString> usedKeys)
+void LibTorrentApi::cleanUnusedFiles(const QSet<QString>& usedKeys)
 {
     const auto keys = torrentParams_.keys();
     for (const QString& key : keys)

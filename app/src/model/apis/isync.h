@@ -69,7 +69,7 @@ public:
     virtual void disableQueue(const QString& key) = 0;
     virtual qint64 folderTotalWanted(const QString& key) = 0;
     virtual qint64 folderTotalWantedDone(const QString& key) = 0;
-    virtual void cleanUnusedFiles(const QSet<QString> usedKeys) = 0;
+    virtual void cleanUnusedFiles(const QSet<QString>& usedKeys) = 0;
     virtual bool folderCheckingPatches(const QString& key) = 0;
 
 signals: // <- ignored by moc and only serves as documentation aid
