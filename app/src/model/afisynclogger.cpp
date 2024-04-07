@@ -15,8 +15,8 @@
 #include <QDateTime>
 #include <QDirIterator>
 #include <QStringList>
-#include "global.h"
 #include "afisynclogger.h"
+#include "global.h"
 #include "fileutils.h"
 
 using namespace boost::log;
@@ -56,8 +56,8 @@ bool AfiSyncLogger::rotateLogs()
     if (!logFile.exists())
         return false;
 
-    QStringList patchArchives =
-            QDir(".").entryList(QDir::Files).filter(QRegExp(Constants::LOG_FILE + ".*7z" ));
+    static const QRegularExpression regExp{Constants::LOG_FILE + ".*7z"};
+    QStringList patchArchives = QDir(".").entryList(QDir::Files).filter(regExp);
 
     patchArchives.sort();
     for (int i = 0; i <= (patchArchives.size() - MAX_LOG_FILES); ++i)

@@ -1,10 +1,11 @@
 #include <QDebug>
 #include <QDirIterator>
 #include <QFileInfo>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QTimer>
-#include "../../afisynclogger.h"
 #include "libtorrent/torrent_status.hpp"
+#include "../../afisynclogger.h"
 #include "../../fileutils.h"
 #include "ahasher.h"
 #include "deltapatcher.h"
@@ -175,7 +176,7 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
     QStringList patches;
     const QString hash = AHasher::hash(modPath);
     LOG << "Calculated hash for " << modPath << ". Result: " << hash;
-    const QRegExp regEx(modName + ".*" + hash + "\\" + SEPARATOR + "7z");
+    const QRegularExpression regEx(modName + ".*" + hash + "\\" + SEPARATOR + "7z");
     const QStringList matches = allPatches.filter(regEx);
     if (matches.isEmpty())
         return QStringList();
@@ -187,7 +188,7 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
     while (version != ltstVersion)
     {
         ++version;
-        QRegExp regExp(modName + "\\." + QString::number(version) + ".*7z");
+        QRegularExpression regExp(modName + "\\." + QString::number(version) + ".*7z");
         QStringList matches = allPatches.filter(regExp);
         if (matches.size() != 1)
         {
@@ -339,7 +340,7 @@ bool DeltaPatcher::delta(const QString& oldModPath, QString newModPath)
     newModPath = laterFi.absoluteFilePath();
 
     QStringList conflictingFiles =
-            patchesDir.entryList().filter(QRegExp(modName + "\\..*\\." + oldHash + "\\.7z" ));
+            patchesDir.entryList().filter(QRegularExpression(modName + "\\..*\\." + oldHash + "\\.7z" ));
     if (!conflictingFiles.isEmpty())
     {
         LOG_ERROR << "patch " << patchName << " collides with files: " << conflictingFiles;
@@ -426,7 +427,7 @@ QStringList DeltaPatcher::removePatchesFromLatest(const QString& latestPath, con
 {
     QString hash = AHasher::hash(latestPath);
     QString modName = QFileInfo(latestPath).fileName();
-    QRegExp regEx(modName + ".*" + hash + ".*\\.7z");
+    QRegularExpression regEx(modName + ".*" + hash + ".*\\.7z");
     const QStringList matches = QDir(patchesPath).entryList().filter(regEx);
     QStringList rVal;
     rVal.reserve(matches.size());
@@ -505,7 +506,7 @@ int DeltaPatcher::latestVersion(const QString& modName, const QStringList& fileN
     int rVal = -1;
     for (const QString& fileName : fileNames)
     {
-        if (!fileName.contains(QRegExp(modName + ".*7z")))
+        if (!fileName.contains(QRegularExpression(modName + ".*7z")))
             continue;
 
         //@mod.1.2133.7z
