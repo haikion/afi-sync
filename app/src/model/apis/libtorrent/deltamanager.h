@@ -9,9 +9,13 @@
 #include <QList>
 #include <QTimer>
 
+#ifdef Q_OS_WIN
 #pragma warning(push, 0)
+#endif
 #include "libtorrent/torrent_handle.hpp"
+#ifdef Q_OS_WIN
 #pragma warning(pop)
+#endif
 
 #include "../../cihash.h"
 #include "deltapatcher.h"
