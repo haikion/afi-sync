@@ -26,7 +26,7 @@ private slots:
     void update();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow* ui;
     QTimer updateTimer;
     IBandwidthMeter* bwMeter;
 };

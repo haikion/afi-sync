@@ -2,7 +2,7 @@
 #include "optionalsetting.h"
 #include "ui_optionalsetting.h"
 
-OptionalSetting::OptionalSetting(QWidget *parent) :
+OptionalSetting::OptionalSetting(QWidget* parent) :
     QWidget(parent),
     ui(new Ui::optionalSetting)
 {

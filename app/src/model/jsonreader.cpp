@@ -1,24 +1,27 @@
 #include <QCoreApplication>
 #include <QFile>
-#include <QFileInfo> //Debug prints
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QNetworkReply>
+#include <QStringLiteral>
 #include <QVariantMap>
+
 #include "afisync.h"
 #include "afisynclogger.h"
+#include "fileutils.h"
 #include "jsonreader.h"
+#include "jsonutils.h"
 #include "mod.h"
 #include "modadapter.h"
-#include "settingsmodel.h"
-#include "treemodel.h"
 #include "repository.h"
-#include "fileutils.h"
-#include "jsonutils.h"
+#include "settingsmodel.h"
 #include "settingsmodel.h"
 
-const QString JsonReader::JSON_RELATIVE_PATH = "/settings/repositories.json";
+using namespace Qt::StringLiterals;
+
+const QString JsonReader::JSON_RELATIVE_PATH = u"/settings/repositories.json"_s;
 
 JsonReader::JsonReader()
 {
@@ -87,13 +90,15 @@ void JsonReader::setSyncNetworkAccessManager(std::unique_ptr<SyncNetworkAccessMa
 // TODO: No need to remove mods anymore, instead just add them if needed
 QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repositories)
 {
-    const QString deltaUpdatesUrl = qvariant_cast<QString>(jsonMap_.value("deltaUpdates"));
+    const QString deltaUpdatesUrl = qvariant_cast<QString>(
+        jsonMap_.value(u"deltaUpdates"_s));
     if (SettingsModel::deltaPatchingEnabled() && !deltaUpdatesUrl.isEmpty()) {
         sync->setDeltaUpdatesFolder(deltaUpdatesUrl);
     } else {
-        sync->setDeltaUpdatesFolder("");
+        sync->setDeltaUpdatesFolder({});
     }
-    const QList<QVariant> jsonRepositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
+    const QList<QVariant> jsonRepositories = qvariant_cast<QList<QVariant>>(
+        jsonMap_.value(u"repositories"_s));
     QSet<QString> previousModKeys;
     QMap<QString, Mod*> modMap; // Add same key mods only once
     for (Repository* repository : repositories)
@@ -109,11 +114,14 @@ QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repositor
     for (const QVariant& repoVar : jsonRepositories)
     {
         QVariantMap repository = qvariant_cast<QVariantMap>(repoVar);
-        QString repoName = qvariant_cast<QString>(repository.value("name"));
+        QString repoName = qvariant_cast<QString>(repository.value(u"name"_s));
         Repository* repo = Repository::findRepoByName(repoName, repositories);
-        const QString serverAddress = qvariant_cast<QString>(repository.value("serverAddress"));
-        const unsigned serverPort = qvariant_cast<unsigned>(repository.value("serverPort"));
-        const QString password = qvariant_cast<QString>(repository.value("password", ""));
+        const QString serverAddress = qvariant_cast<QString>(
+            repository.value(u"serverAddress"_s));
+        const unsigned serverPort = qvariant_cast<unsigned>(
+            repository.value(u"serverPort"_s));
+        const QString password = qvariant_cast<QString>(
+            repository.value(u"password"_s, ""));
         if (repo == nullptr)
         {
             repo = new Repository(repoName, serverAddress, serverPort, password);
@@ -125,23 +133,25 @@ QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repositor
             repo->setPort(serverPort);
             repo->setPassword(password);
         }
-        repo->setBattlEyeEnabled(qvariant_cast<bool>(repository.value("battlEyeEnabled", true)));
+        repo->setBattlEyeEnabled(
+            qvariant_cast<bool>(repository.value(u"battlEyeEnabled"_s, true)));
 
-        QList<QVariant> mods = qvariant_cast<QList<QVariant>>(repository.value("mods"));
+        QList<QVariant> mods = qvariant_cast<QList<QVariant>>(
+            repository.value(u"mods"_s));
         QSet<QString> jsonModKeys;
         for (int i = 0; i < mods.size(); ++i)
         {
             const QVariantMap mod = qvariant_cast<QVariantMap>(mods.at(i));
-            const QString key = qvariant_cast<QString>(mod.value("key")).toLower();
+            const QString key = qvariant_cast<QString>(mod.value(u"key"_s)).toLower();
             jsonModKeys.insert(key);
             if (repo->contains(key))
                 continue; // Mod is already included in the repository.
 
-            const QString modName = mod.value("name").toString().toLower();
+            const QString modName = mod.value(u"name"_s).toString().toLower();
             Mod* newMod = modMap.contains(key) ? modMap.value(key) : new Mod(modName, key, sync);
             modMap.insert(key, newMod); //add if doesn't already exist
-            newMod->setFileSize(qvariant_cast<quint64>(mod.value("fileSize", "0")));
-            new ModAdapter(newMod, repo, mod.value("optional", false).toBool(), i);
+            newMod->setFileSize(qvariant_cast<quint64>(mod.value(u"fileSize"_s, "0")));
+            new ModAdapter(newMod, repo, mod.value(u"optional"_s, false).toBool(), i);
         }
         repositoryJsonModKeys.insert(repo, jsonModKeys);
         orderedRepositoryList.append(repo);
@@ -167,7 +177,8 @@ QSet<QString> JsonReader::getRemovables(QList<Repository*>& repositories)
 
 QSet<QString> JsonReader::getRemovablesOffline(QList<Repository*>& repositories) const
 {
-    const QList<QVariant> jsonRepositories = qvariant_cast<QList<QVariant>>(jsonMap_.value("repositories"));
+    const QList<QVariant> jsonRepositories = qvariant_cast<QList<QVariant>>(
+        jsonMap_.value(u"repositories"_s));
     QSet<QString> previousModKeys;
     for (Repository* repository : repositories)
     {
@@ -180,11 +191,12 @@ QSet<QString> JsonReader::getRemovablesOffline(QList<Repository*>& repositories)
     for (const QVariant& repoVar : jsonRepositories)
     {
         QVariantMap repository = qvariant_cast<QVariantMap>(repoVar);
-        QList<QVariant> mods = qvariant_cast<QList<QVariant>>(repository.value("mods"));
+        QList<QVariant> mods = qvariant_cast<QList<QVariant>>(
+            repository.value(u"mods"_s));
         for (int i = 0; i < mods.size(); ++i)
         {
             const QVariantMap mod = qvariant_cast<QVariantMap>(mods.at(i));
-            const QString key = qvariant_cast<QString>(mod.value("key")).toLower();
+            const QString key = qvariant_cast<QString>(mod.value(u"key"_s)).toLower();
             jsonModKeys.insert(key);
         }
     }
@@ -201,7 +213,7 @@ QSet<QString> JsonReader::updateRepositories(ISync* sync, QList<Repository*>& re
 QString JsonReader::deltaUpdatesKey()
 {
     updateJsonMap();
-    return jsonMap_.value("deltaUpdates").toString();
+    return jsonMap_.value(u"deltaUpdates"_s).toString();
 }
 
 bool JsonReader::writeJsonBytes(const QByteArray& data)

@@ -1,12 +1,14 @@
-#include "afisynclogger.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
+#include <QStringLiteral>
+
+#include "afisynclogger.h"
 #include "global.h"
 #include "pathfinder.h"
 #include "settingsmodel.h"
 
-//TODO: Combine set and enabled
+using namespace Qt::StringLiterals;
 
 QSettings* SettingsModel::settings_ = nullptr;
 
@@ -18,9 +20,9 @@ SettingsModel::SettingsModel(QObject* parent):
 
 void SettingsModel::createSettings()
 {
-    QCoreApplication::setOrganizationName("AFISync");
-    QCoreApplication::setOrganizationDomain("armafinland.fi");
-    QCoreApplication::setApplicationName("AFISync");
+    QCoreApplication::setOrganizationName(u"AFISync"_s);
+    QCoreApplication::setOrganizationDomain(u"armafinland.fi"_s);
+    QCoreApplication::setApplicationName(u"AFISync"_s);
 
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, SettingsModel::settingsPath());
     QSettings::setDefaultFormat(QSettings::IniFormat);
@@ -64,12 +66,12 @@ QString SettingsModel::setting(const QString& key, const QString& defaultValue)
 
 QString SettingsModel::arma3Path()
 {
-   return QDir::toNativeSeparators(setting("arma3Dir", PathFinder::arma3Path()));
+    return QDir::toNativeSeparators(setting(u"arma3Dir"_s, PathFinder::arma3Path()));
 }
 
 void SettingsModel::setArma3Path(const QString& path)
 {
-    saveDir("arma3Dir", path);
+    saveDir(u"arma3Dir"_s, path);
 }
 
 void SettingsModel::resetArma3Path()
@@ -79,12 +81,13 @@ void SettingsModel::resetArma3Path()
 
 QString SettingsModel::teamSpeak3Path()
 {
-   return QDir::toNativeSeparators(setting("teamSpeak3Path", PathFinder::teamspeak3Path()));
+    return QDir::toNativeSeparators(
+        setting(u"teamSpeak3Path"_s, PathFinder::teamspeak3Path()));
 }
 
 void SettingsModel::setTeamSpeak3Path(const QString& path)
 {
-    saveDir("teamSpeak3Path", path);
+    saveDir(u"teamSpeak3Path"_s, path);
 }
 
 void SettingsModel::resetTeamSpeak3Path()
@@ -189,14 +192,14 @@ QString SettingsModel::settingsPath()
 
 void SettingsModel::setTicked(const QString& modName, QString repoName, bool value)
 {
-    QString repoStr = repoName.replace("/| ","_");
+    QString repoStr = repoName.replace("/| "_L1, "_"_L1);
     QString key = modName.isEmpty() ? repoName + "/checked" : modName + "/" + repoStr + "ticked";
     settings()->setValue(key, value);
 }
 
 bool SettingsModel::ticked(const QString& modName, QString repoName)
 {
-    QString repoStr = repoName.replace("/| ","_");
+    QString repoStr = repoName.replace("/| "_L1, "_"_L1);
     QString key = modName.isEmpty() ? repoName + "/checked" : modName + "/" + repoStr + "ticked";
     return settings()->value(key, false).toBool();
 }
@@ -268,8 +271,7 @@ void SettingsModel::setModDownloadPath(QString path)
 {
     LOG << "path = " << path;
     path = QDir::fromNativeSeparators(path);
-    if (!saveDir("modDownloadPath", path))
-    {
+    if (!saveDir(u"modDownloadPath"_s, path)) {
         LOG_WARNING << "Failed to set mod download path. modDownloadPath() = "
             << modDownloadPath() << " path = " << path;
         return;

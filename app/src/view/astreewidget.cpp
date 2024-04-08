@@ -1,10 +1,14 @@
 #include <utility>
+
 #include <QHeaderView>
 #include <QMenu>
 #include <QPushButton>
+
 #include "../model/modadapter.h"
 #include "astreeitem.h"
 #include "astreewidget.h"
+
+using namespace Qt::StringLiterals;
 
 AsTreeWidget::AsTreeWidget(QWidget* parent): QTreeWidget(parent)
 {
@@ -42,26 +46,14 @@ void AsTreeWidget::showContextMenu(const QPoint& point)
         IRepository* repository = dynamic_cast<IRepository*>(syncItem);
         if(repository != nullptr)
         {
-            menu.addAction("Force join", [=] ()
-            {
-                repository->join();
-            });
-            menu.addAction("Force start", [=] ()
-            {
-                repository->start();
-            });
-            menu.addAction("Recheck", [=] ()
-            {
-                syncItem->check();
-            });
+            menu.addAction(u"Force join"_s, [=] () { repository->join(); });
+            menu.addAction(u"Force start"_s, [=] () { repository->start(); });
+            menu.addAction(u"Recheck"_s, [=] () { syncItem->check(); });
         }
         else
         {
             const ModAdapter* modAdapter = dynamic_cast<ModAdapter*>(syncItem);
-            menu.addAction("Recheck", [=] ()
-            {
-                modAdapter->forceCheck();
-            });
+            menu.addAction(u"Recheck"_s, [=]() { modAdapter->forceCheck(); });
         }
         menu.exec(QCursor::pos());
     }
@@ -87,8 +79,8 @@ void AsTreeWidget::addRepositories(QList<IRepository*> repositories)
     {
         QCheckBox* repoCheckBox = new QCheckBox(this);
 
-        QPushButton* startButton = new QPushButton("Start Game", this);
-        QPushButton* joinButton = new QPushButton("Join Server", this);
+        QPushButton* startButton = new QPushButton(u"Start Game"_s, this);
+        QPushButton* joinButton = new QPushButton(u"Join Server"_s, this);
         AsTreeItem* repoItem = new AsTreeItem(this, repo, repoCheckBox, startButton, joinButton);
         addTopLevelItem(repoItem);
 

@@ -14,7 +14,7 @@ class PathSetting : public QWidget
     Q_OBJECT
 
 public:
-    explicit PathSetting(QWidget *parent = 0);
+    explicit PathSetting(QWidget* parent = 0);
     ~PathSetting();
 
     void init(const QString& labelText, const QString& value);
@@ -30,7 +30,7 @@ private slots:
     void setValueUser(const QString& value);
 
 private:
-    Ui::PathSetting *ui;
+    Ui::PathSetting* ui;
     QFileDialog fileDialog;
 };
 

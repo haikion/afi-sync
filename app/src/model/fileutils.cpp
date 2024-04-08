@@ -1,14 +1,19 @@
 #include <fstream>
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
 #include <QStringList>
+#include <QStringLiteral>
+
 #include "afisynclogger.h"
 #include "fileutils.h"
 #include "pathfinder.h"
 #include "settingsmodel.h"
+
+using namespace Qt::StringLiterals;
 
 QStringList FileUtils::safeSubpaths_;
 
@@ -156,7 +161,7 @@ bool FileUtils::writeFile(const QByteArray& data, const QString& path)
 {
     QFile file(path);
     QDir parentDir = QFileInfo(path).dir();
-    parentDir.mkpath(".");
+    parentDir.mkpath(u"."_s);
     safeRemove(file);
     file.open(QFile::WriteOnly);
 
@@ -176,8 +181,9 @@ QString FileUtils::casedPath(const QString& path)
     LOG << "Input: " << path;
     QString pathCi = QFileInfo(path).absoluteFilePath();
     //Construct case sentive path by comparing file or dir names to case sentive ones.
-    QStringList ciNames = pathCi.split("/");
-    QString casedPath = ciNames.first().endsWith(":") ? ciNames.first() + "/" : "/";
+    QStringList ciNames = pathCi.split('/');
+    QString casedPath = ciNames.first().endsWith(':') ? ciNames.first() + "/"
+                                                                     : u"/"_s;
     ciNames.removeFirst(); //Drive letter on windows or "" on linux.
 
     for (const QString& ciName : ciNames)
@@ -192,7 +198,7 @@ QString FileUtils::casedPath(const QString& path)
             QFileInfo fi = it.nextFileInfo();
             if (fi.fileName().toUpper() == ciName.toUpper())
             {
-                casedPath += (casedPath.endsWith("/") ? "" : "/") + fi.fileName();
+                casedPath += (casedPath.endsWith('/') ? "" : "/") + fi.fileName();
                 break;
             }
         }
@@ -291,7 +297,7 @@ bool FileUtils::pathIsSafe(const QString& path)
     safeSubpaths.append(SettingsModel::teamSpeak3Path());
     safeSubpaths.append(PathFinder::teamspeak3AppDataPath());
     safeSubpaths.append(QCoreApplication::applicationDirPath());
-    safeSubpaths.append(".");
+    safeSubpaths.append(u"."_s);
     safeSubpaths.append(safeSubpaths_);
 
     for (const QString& safeSubpath : safeSubpaths)

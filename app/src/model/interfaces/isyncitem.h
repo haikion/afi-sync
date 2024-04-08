@@ -5,24 +5,24 @@
 #include <QString>
 
 namespace SyncStatus {
-    static const QString CHECKING = "Checking...";
-    static const QString CHECKING_PATCHES = "Checking Patches...";
-    static const QString DOWNLOADING = "Downloading...";
-    static const QString DOWNLOADING_PATCHES = "Downloading Patch...";
-    static const QString ERRORED = "Error: ";
-    static const QString EXTRACTING_PATCH = "Extracting Patch...";
-    static const QString INACTIVE = "Inactive";
-    static const QString MOVING_FILES = "Moving files...";
-    static const QString NO_FILES = "No Files";
-    static const QString NO_PEERS = "No Peers";
-    static const QString NO_SYNC_CONNECTION = "No Sync Connection.";
-    static const QString PATCHING = "Patching...";
-    static const QString PAUSED = "Paused";
-    static const QString QUEUED = "Queued";
-    static const QString READY = "Ready";
-    static const QString READY_PAUSED = "Ready and Paused";
-    static const QString STARTING = "Starting...";
-    static const QString WAITING = "Waiting...";
+static const QString CHECKING = QStringLiteral("Checking...");
+static const QString CHECKING_PATCHES = QStringLiteral("Checking Patches...");
+static const QString DOWNLOADING = QStringLiteral("Downloading...");
+static const QString DOWNLOADING_PATCHES = QStringLiteral("Downloading Patch...");
+static const QString ERRORED = QStringLiteral("Error: ");
+static const QString EXTRACTING_PATCH = QStringLiteral("Extracting Patch...");
+static const QString INACTIVE = QStringLiteral("Inactive");
+static const QString MOVING_FILES = QStringLiteral("Moving files...");
+static const QString NO_FILES = QStringLiteral("No Files");
+static const QString NO_PEERS = QStringLiteral("No Peers");
+static const QString NO_SYNC_CONNECTION = QStringLiteral("No Sync Connection.");
+static const QString PATCHING = QStringLiteral("Patching...");
+static const QString PAUSED = QStringLiteral("Paused");
+static const QString QUEUED = QStringLiteral("Queued");
+static const QString READY = QStringLiteral("Ready");
+static const QString READY_PAUSED = QStringLiteral("Ready and Paused");
+static const QString STARTING = QStringLiteral("Starting...");
+static const QString WAITING = QStringLiteral("Waiting...");
 }
 
 /**

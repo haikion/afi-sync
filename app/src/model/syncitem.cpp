@@ -1,5 +1,8 @@
+#include <QStringLiteral>
 #include <QTime>
 #include "syncitem.h"
+
+using namespace Qt::StringLiterals;
 
 SyncItem::SyncItem(const QString& name):
     name_(name),
@@ -32,12 +35,13 @@ QString SyncItem::statusStr()
 QString SyncItem::sizeStr() const
 {
     if (fileSize_ == 0)
-        return QString("??.?? MB");
+        return u"??.?? MB"_s;
 
     double size = fileSize_;
     int i = 0;
     QStringList list;
-    list << "B" << "kB" << "MB" << "GB";
+    list << u"B"_s << u"kB"_s << u"MB"_s
+         << u"GB"_s;
 
     for (i = 0; i < list.size() && size > 1024; ++i)
         size = size / 1024;

@@ -1,9 +1,12 @@
 #include <csignal>
 #include <libtorrent/torrent_handle.hpp>
+
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QMessageBox>
+#include <QStringLiteral>
+
 #include "../view/mainwindow.h"
 #include "afisynclogger.h"
 #include "apis/libtorrent/ahasher.h"
@@ -15,6 +18,8 @@
 #include "settingsuimodel.h"
 #include "treemodel.h"
 #include "version.h"
+
+using namespace Qt::StringLiterals;
 
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
 
@@ -62,14 +67,14 @@ int gui(int argc, char* argv[])
     if (ProcessMonitor::afiSyncRunning())
     {
         QMessageBox msgBox;
-        msgBox.setText("AFISync process is already running.");
+        msgBox.setText(u"AFISync process is already running."_s);
         msgBox.exec();
         exit(1);
     }
     if (ProcessMonitor::arma3Running())
     {
         QMessageBox msgBox;
-        msgBox.setText("AFISync cannot be started while Arma 3 is running.");
+        msgBox.setText(u"AFISync cannot be started while Arma 3 is running."_s);
         msgBox.exec();
         exit(2);
     }
@@ -98,8 +103,8 @@ int gui(int argc, char* argv[])
 
 int cli(int argc, char* argv[])
 {
-    static const QString MOD = "mod";
-    static const QString PATCH = "patch";
+    static const QString MOD = u"mod"_s;
+    static const QString PATCH = u"patch"_s;
 
     QCoreApplication app(argc, argv);
     QCommandLineParser parser;
@@ -132,13 +137,12 @@ int cli(int argc, char* argv[])
     }
 
     //Delta hash
-    if (parser.isSet("delta-hash"))
-    {
-        const QString deltaPath = parser.value("delta-hash");
+    if (parser.isSet(u"delta-hash"_s)) {
+        const QString deltaPath = parser.value(u"delta-hash"_s);
         LOG << "Hash for " << deltaPath << " is " << AHasher::hash(deltaPath);
         return 0;
     }
-    if (parser.isSet(PATCH) || parser.isSet("mod")) {
+    if (parser.isSet(PATCH) || parser.isSet(u"mod"_s)) {
         if (!parser.isSet(PATCH)) {
             LOG << "Missing patch";
             return 1;
@@ -147,8 +151,8 @@ int cli(int argc, char* argv[])
             LOG << "Missing mod";
             return 1;
         }
-        const QString patch = parser.value("patch");
-        const QString mod = parser.value("mod");
+        const QString patch = parser.value(u"patch"_s);
+        const QString mod = parser.value(u"mod"_s);
         DeltaPatcher dp;
         return dp.patchAbsolutePath(patch, mod) ? 0 : 1;
     }
@@ -167,7 +171,7 @@ int cli(int argc, char* argv[])
         const QString& oldPath = parser.value(DELTA_ARGS.at(0));
         const QString& newPath = parser.value(DELTA_ARGS.at(1));
         QString patchesPath = parser.value(DELTA_ARGS.at(2));
-        if (patchesPath.endsWith("/") || patchesPath.endsWith("\\")) {
+        if (patchesPath.endsWith('/') || patchesPath.endsWith('\\')) {
             patchesPath.remove(patchesPath.size()-1, 1);
         }
         FileUtils::appendSafePath(patchesPath);
@@ -178,10 +182,9 @@ int cli(int argc, char* argv[])
     }
     LOG << "Fail " << missingArgs.size() << " " << missingArgs;
     // Mirror
-    if (parser.isSet("mirror"))
-    {
+    if (parser.isSet(u"mirror"_s)) {
         TreeModel* model = generalInit();
-        QFileInfo dir(parser.value("mirror"));
+        QFileInfo dir(parser.value(u"mirror"_s));
         QString modDownloadPath = dir.absoluteFilePath();
         if (!dir.isDir() || !dir.isWritable())
         {
@@ -194,7 +197,7 @@ int cli(int argc, char* argv[])
         Global::guiless = true;
         SettingsModel::setDeltaPatchingEnabled(true);
         LOG << "Delta updates enabled due to the mirror mode.";
-        SettingsModel::setPort(parser.value("port"), true);
+        SettingsModel::setPort(parser.value(u"port"_s), true);
         model->enableRepositories();
         return QCoreApplication::exec();
     }

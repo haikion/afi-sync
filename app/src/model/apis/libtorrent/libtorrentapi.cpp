@@ -487,7 +487,7 @@ QString LibTorrentApi::folderError(const QString& key)
 {
     lt::torrent_handle handle = getHandle(key);
     if (!handle.is_valid())
-        return "";
+        return {};
 
     auto errc = handle.status().errc;
     if (!errc)
@@ -502,7 +502,7 @@ QString LibTorrentApi::folderPath(const QString& key)
 {
     lt::torrent_handle handle = getHandle(key);
     if (!handle.is_valid())
-        return "";
+        return {};
 
     lt::torrent_status status = handle.status();
     QString rVal = QDir::fromNativeSeparators(QString::fromStdString(status.save_path)) + "/";
@@ -1099,14 +1099,13 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
     while (it.hasNext())
     {
         QString filePath = it.filePath();
-        if (!filePath.endsWith(".torrent"))
-        {
+        if (!filePath.endsWith(".torrent"_L1)) {
             it.next();
             continue;
         }
         LOG << "Processing: " << filePath;
 
-        QString pathPrefix = filePath.remove(".torrent");
+        QString pathPrefix = filePath.remove(u".torrent"_s);
         // Load resume data
         QByteArray bytes = FileUtils::readFile(pathPrefix + ".fastresume");
         if (bytes.isEmpty()) {
@@ -1120,7 +1119,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         params.save_path = SettingsModel::modDownloadPath().toStdString();
         //FIXME: Sometimes this becomes off as empty.
         QString url = QString::fromLocal8Bit(FileUtils::readFile(pathPrefix + ".link")).toLower();
-        prefixMap_.insert(url, it.fileName().remove(".torrent"));
+        prefixMap_.insert(url, it.fileName().remove(u".torrent"_s));
         if (params.ti == 0 || url.isEmpty() || !params.ti->is_valid())
         {
             LOG_ERROR << "Loading torrent " << filePath << " url = " << url;

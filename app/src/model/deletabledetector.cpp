@@ -53,8 +53,7 @@ QList<QFileInfo> DeletableDetector::deletableFileInfos(const QStringList& active
     {
         const QFileInfo fileInfo(it.next());
         const QString fileName = fileInfo.fileName();
-        if (fileName.startsWith("@") && !activeMods.contains(fileName))
-        {
+        if (fileName.startsWith('@') && !activeMods.contains(fileName)) {
             retVal.append(fileInfo);
         }
     }

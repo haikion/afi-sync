@@ -1,28 +1,31 @@
 #include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/expressions/attr_fwd.hpp>
 #include <boost/log/expressions/attr.hpp>
+#include <boost/log/expressions/attr_fwd.hpp>
 #include <boost/log/expressions/formatters/date_time.hpp>
+#include <boost/log/sinks/text_file_backend.hpp>
+#include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/support/date_time.hpp>
-#include <QFile>
+#include <boost/log/trivial.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/file.hpp>
+
 #include <QDateTime>
 #include <QDirIterator>
+#include <QFile>
 #include <QStringList>
+
 #include "afisynclogger.h"
 #include "global.h"
 #include "fileutils.h"
 
+using namespace Qt::StringLiterals;
 using namespace boost::log;
 
 #ifdef Q_OS_LINUX
-    const QString AfiSyncLogger::SZIP_EXECUTABLE = "7za";
+const QString AfiSyncLogger::SZIP_EXECUTABLE = u"7za"_s;
 #else
     const QString AfiSyncLogger::SZIP_EXECUTABLE = "bin\\7za.exe";
 #endif
@@ -57,7 +60,7 @@ bool AfiSyncLogger::rotateLogs()
         return false;
 
     static const QRegularExpression regExp{Constants::LOG_FILE + ".*7z"};
-    QStringList patchArchives = QDir(".").entryList(QDir::Files).filter(regExp);
+    QStringList patchArchives = QDir(u"."_s).entryList(QDir::Files).filter(regExp);
 
     patchArchives.sort();
     for (int i = 0; i <= (patchArchives.size() - MAX_LOG_FILES); ++i)
@@ -65,7 +68,9 @@ bool AfiSyncLogger::rotateLogs()
         const QString deleteThis = patchArchives.at(i);
         FileUtils::safeRemove(deleteThis);
     }
-    const QString filePrefix = QString(Constants::LOG_FILE) + "_" + QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss");
+    const QString filePrefix = QString(Constants::LOG_FILE) + "_"
+                               + QDateTime::currentDateTime().toString(
+                                   u"yyyy.MM.dd.hh.mm.ss"_s);
     const QString logName =  filePrefix + ".log";
     FileUtils::move(Constants::LOG_FILE, logName);
     return szip_.compressAsync(logName, filePrefix + ".7z");

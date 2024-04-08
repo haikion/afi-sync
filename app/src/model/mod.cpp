@@ -1,7 +1,9 @@
 #include <QCoreApplication>
 #include <QDirIterator>
+#include <QStringLiteral>
 #include <QTimer>
 #include <QtMath>
+
 #include "afisynclogger.h"
 #include "fileutils.h"
 #include "global.h"
@@ -10,6 +12,8 @@
 #include "modadapter.h"
 #include "repository.h"
 #include "settingsmodel.h"
+
+using namespace Qt::StringLiterals;
 
 const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 
@@ -136,7 +140,7 @@ void Mod::moveFilesSlot()
 
 void Mod::setProcessCompletion(const bool value)
 {
-    SettingsModel::setProcessed(name(), !value ? key_ : "");
+    SettingsModel::setProcessed(name(), !value ? key_ : ""_L1);
     LOG << "Process (completion) set to " << value << " for " << name();
 }
 
@@ -511,7 +515,7 @@ void Mod::forceCheck()
 QString Mod::progressStr()
 {
     if (!ticked() || statusStr() == SyncStatus::STARTING)
-        return "???";
+        return u"???"_s;
 
     return toProgressStr(totalWanted_, totalWantedDone_);
 }
@@ -527,14 +531,15 @@ QString Mod::bytesToMegasCeilStr(const qint64 bytes)
 QString Mod::toProgressStr(const qint64 totalWanted, qint64 totalWantedDone)
 {
     if (totalWanted < 0 || totalWantedDone < 0)
-        return "???";
+        return u"???"_s;
 
     // Do not ceil to 100 %
     if (totalWantedDone < totalWanted)
     {
         totalWantedDone = totalWantedDone > Constants::MEGA_DIVIDER ? totalWantedDone - Constants::MEGA_DIVIDER : 0;
     }
-    return QString("%1 / %2").arg(bytesToMegasCeilStr(totalWantedDone), bytesToMegasCeilStr(totalWanted));
+    return u"%1 / %2"_s.arg(bytesToMegasCeilStr(totalWantedDone),
+                                         bytesToMegasCeilStr(totalWanted));
 }
 
 void Mod::processCompletion()

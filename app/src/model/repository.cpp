@@ -1,15 +1,17 @@
-#include <algorithm>
-#include <QDateTime>
 #include <QDir>
 #include <QProcess>
 #include <QStandardPaths>
+#include <QStringLiteral>
 #include <QTextStream>
+
 #include "afisynclogger.h"
 #include "fileutils.h"
 #include "modadapter.h"
 #include "repository.h"
 #include "settingsmodel.h"
 #include "settingsmodel.h"
+
+using namespace Qt::StringLiterals;
 
 Repository::Repository(const QString& name, const QString& serverAddress, unsigned port, const QString& password):
     SyncItem(name),
@@ -42,19 +44,19 @@ void Repository::setBattlEyeEnabled(bool battleEyeEnabled)
 
 bool Repository::ticked()
 {
-    return SettingsModel::ticked("", name());
+    return SettingsModel::ticked({}, name());
 }
 
 void Repository::setTicked(bool ticked)
 {
-    SettingsModel::setTicked("", name(), ticked);
+    SettingsModel::setTicked({}, name(), ticked);
     update();
 }
 
 QString Repository::progressStr()
 {
     if (!ticked())
-        return "???";
+        return u"???"_s;
 
     qint64 totalWanted = 0;
     qint64 totalWantedDone = 0;
@@ -162,7 +164,7 @@ void Repository::clearModAdapters()
 
 void Repository::checkboxClicked()
 {
-    SettingsModel::setTicked("", name(), !ticked());
+    SettingsModel::setTicked({}, name(), !ticked());
     if (ticked()) {
         setStatus(SyncStatus::WAITING);
         activeTimer_.start();
@@ -202,7 +204,8 @@ void Repository::generalLaunch(const QStringList& extraParams)
     if (QFileInfo::exists(steamExecutable))
     {
         LOG << "Using params file";
-        arguments << "-applaunch" << "107410" << "-par=" + paramsFile;
+        arguments << u"-applaunch"_s << u"107410"_s
+                  << "-par=" + paramsFile;
         executable = steamExecutable;
     }
     else if (modsParameter().size() > 0)
@@ -210,9 +213,9 @@ void Repository::generalLaunch(const QStringList& extraParams)
         LOG << "Failsafe activated because parameter file path is incorrect. paramsFile = " << paramsFile;
         arguments << modsParameter();
     }
-    arguments << "-noLauncher";
+    arguments << u"-noLauncher"_s;
     if (battlEyeEnabled_)
-        arguments << "-useBe";
+        arguments << u"-useBe"_s;
 
     if (!extraParams.isEmpty())
         arguments << extraParams;
@@ -220,7 +223,7 @@ void Repository::generalLaunch(const QStringList& extraParams)
     QString paramsString = SettingsModel::launchParameters();
     if (paramsString.size() > 0)
     {
-        QStringList userParams = paramsString.split(" ");
+        QStringList userParams = paramsString.split(u" "_s);
         arguments << userParams;
     }
     LOG << "name() = " << name()
@@ -231,7 +234,7 @@ void Repository::generalLaunch(const QStringList& extraParams)
 
 QString Repository::createParFile(const QString& parameters)
 {
-    static const QString FILE_NAME = "afiSyncParameters.txt";
+    static const QString FILE_NAME = u"afiSyncParameters.txt"_s;
     const QString path = SettingsModel::arma3Path() + "/" + FILE_NAME;
     LOG << path;
     QFile file(path);
@@ -340,7 +343,7 @@ QString Repository::modsParameter()
     {
         return QString();
     }
-    QString rVal = "-mod=";
+    QString rVal = u"-mod="_s;
     auto charCounter = rVal.size();
     for (ModAdapter* modAdapter : modAdapters())
     {
@@ -349,7 +352,7 @@ QString Repository::modsParameter()
             QDir modDir(SettingsModel::modDownloadPath() + "/" + modAdapter->name());
             if ((charCounter + modDir.absolutePath().size()) >= 4096) {
                 rVal.remove(rVal.length() - 1, 1);
-                rVal += "\n-mod=";
+                rVal += "\n-mod="_L1;
                 charCounter = 5;
                 LOG << "Mod parameter split because it exceeded 4096 character limit.";
             }
@@ -377,8 +380,7 @@ QStringList Repository::joinParameters() const
     QStringList rVal;
     rVal << "-connect=" + serverAddress_
          << "-port=" + QString::number(port_);
-    if (password_ != "")
-    {
+    if (!password_.isEmpty()) {
         rVal << "-password=" + password_;
     }
     return rVal;

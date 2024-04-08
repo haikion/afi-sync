@@ -8,14 +8,14 @@
 
 namespace Constants
 {
-    static const QString DEFAULT_PASSWORD = "password";
-    static const QString DEFAULT_PORT = "41000";
-    static const QString DEFAULT_USERNAME = "user";
-    static const QString DELTA_PATCHES_NAME = "afisync_patches";
-    static const QString LOG_FILE = "afisync.log";
-    static const QString VERSION_STRING = VERSION_CHARS;
-    static const int MAX_ETA = std::numeric_limits<int>::max()/100;
-    static const qint64 MEGA_DIVIDER = 1024*1024;
+static const QString DEFAULT_PASSWORD = QStringLiteral("password");
+static const QString DEFAULT_PORT = QStringLiteral("41000");
+static const QString DEFAULT_USERNAME = QStringLiteral("user");
+static const QString DELTA_PATCHES_NAME = QStringLiteral("afisync_patches");
+static const QString LOG_FILE = QStringLiteral("afisync.log");
+static const QString VERSION_STRING = VERSION_CHARS;
+static const int MAX_ETA = std::numeric_limits<int>::max() / 100;
+static const qint64 MEGA_DIVIDER = 1024 * 1024;
 }
 
 namespace Global

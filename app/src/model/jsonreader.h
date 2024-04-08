@@ -11,7 +11,6 @@
 #include "mod.h"
 #include "apis/isync.h"
 #include "syncnetworkaccessmanager.h"
-#include "interfaces/irepository.h"
 
 class Repository;
 

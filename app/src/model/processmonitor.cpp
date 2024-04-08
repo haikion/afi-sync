@@ -1,12 +1,16 @@
-#include <QProcess>
 #include <QCoreApplication>
+#include <QProcess>
+#include <QStringLiteral>
+
 #include "processmonitor.h"
 #include "afisynclogger.h"
 
-const QString ProcessMonitor::ARMA3_PROCESS = "arma3.exe";
-const QString ProcessMonitor::ARMA3_PROCESS_BE = "arma3battleye.exe";
-const QString ProcessMonitor::ARMA3_LAUNCHER = "arma3launcher.exe";
-const QString ProcessMonitor::AFISYNC_PROCESS = "AFISync.exe";
+using namespace Qt::StringLiterals;
+
+const QString ProcessMonitor::ARMA3_PROCESS = u"arma3.exe"_s;
+const QString ProcessMonitor::ARMA3_PROCESS_BE = u"arma3battleye.exe"_s;
+const QString ProcessMonitor::ARMA3_LAUNCHER = u"arma3launcher.exe"_s;
+const QString ProcessMonitor::AFISYNC_PROCESS = u"AFISync.exe"_s;
 
 ProcessMonitor::ProcessMonitor(QObject* parent): QObject(parent)
 {
@@ -30,12 +34,14 @@ bool ProcessMonitor::isRunning(const QString& process, const qint64 pidFilter)
     #endif
     QProcess tasklist;
     QStringList params;
-    params << "/NH" << "/FO" << "CSV" << "/FI" << QString("IMAGENAME eq %1").arg(process);
+    params << u"/NH"_s << u"/FO"_s << u"CSV"_s
+           << u"/FI"_s << u"IMAGENAME eq %1"_s.arg(process);
     if (pidFilter != 0)
-        params << "/FI" << QString("PID ne %1").arg(QString::number(pidFilter));
+        params << u"/FI"_s
+               << u"PID ne %1"_s.arg(QString::number(pidFilter));
 
-    tasklist.start("tasklist", params);
+    tasklist.start(u"tasklist"_s, params);
     tasklist.waitForFinished();
     QString output = tasklist.readAllStandardOutput();
-    return output.startsWith(QString("\"%1").arg(process));
+    return output.startsWith(QStringLiteral("\"%1").arg(process));
 }

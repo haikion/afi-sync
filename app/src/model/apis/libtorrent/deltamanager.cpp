@@ -75,12 +75,12 @@ bool DeltaManager::contains(const QString& key)
 
 QString DeltaManager::name(const QString& key)
 {
-    return keyHash_.value(key, "");
+    return keyHash_.value(key, {});
 }
 
 bool DeltaManager::patchDownloading(const QString& key) const
 {
-    QString modName = keyHash_.value(key, "");
+    QString modName = keyHash_.value(key, {});
     if (modName.isEmpty())
         return false;
 
@@ -201,7 +201,7 @@ bool DeltaManager::queued(const QString& key)
 
 bool DeltaManager::patchExtracting(const QString& key)
 {
-    const QString modName = keyHash_.value(key, "");
+    const QString modName = keyHash_.value(key, {});
     if (modName.isEmpty())
         return false;
 
@@ -210,7 +210,7 @@ bool DeltaManager::patchExtracting(const QString& key)
 
 bool DeltaManager::patching(const QString& key)
 {
-    const QString modName = keyHash_.value(key, "");
+    const QString modName = keyHash_.value(key, {});
     if (modName.isEmpty())
         return false;
 

@@ -2,51 +2,59 @@
 #include <QDir>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QStringLiteral>
+
 #include "pathfinder.h"
 #ifdef Q_OS_WIN
 #include "afisynclogger.h"
 #include "global.h"
 #endif
 
+using namespace Qt::StringLiterals;
+
 QString PathFinder::arma3Path()
 {
     //Windows 7
     //HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Bohemia Interactive\arma 3
-    QSettings settings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Bohemia Interactive\\arma 3", QSettings::NativeFormat);
+    QSettings
+        settings(QStringLiteral(
+                     "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Bohemia Interactive\\arma 3"),
+                 QSettings::NativeFormat);
     QString path = settings.value( "main", QCoreApplication::applicationDirPath()).toString();
     if (path == QCoreApplication::applicationDirPath())
     {
         //Windows 8.1
         //HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 107410
-        QSettings settings2("HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410", QSettings::NativeFormat);
+        QSettings settings2(u"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410"_s, QSettings::NativeFormat);
         path = settings2.value( "InstallLocation", QCoreApplication::applicationDirPath()).toString();
     }
-    checkPath(path, "arma 3");
+    checkPath(path, u"arma 3"_s);
     return QDir::toNativeSeparators(path);
 }
 
 QString PathFinder::teamspeak3Path()
 {
     //Windows 8.1
-    QSettings settings2("HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\TeamSpeak 3 Client", QSettings::NativeFormat);
+    QSettings settings2(u"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\TeamSpeak 3 Client"_s, QSettings::NativeFormat);
     QString path = settings2.value( "InstallLocation", QCoreApplication::applicationDirPath()).toString();
     if (path == QCoreApplication::applicationDirPath())
     {
         //Windows 7
-        QSettings settings("HKEY_CLASSES_ROOT\\ts3file\\shell\\open\\command", QSettings::NativeFormat);
+        QSettings settings(u"HKEY_CLASSES_ROOT\\ts3file\\shell\\open\\command"_s,
+                           QSettings::NativeFormat);
         path = settings.value("Default", QCoreApplication::applicationDirPath()).toString();
-        path.remove(" \"%1\"");
-        path.replace("\\ts3client_win64.exe", "");
-        path.remove("\"");
+        path.remove(" \"%1\""_L1);
+        path.replace("\\ts3client_win64.exe"_L1, ""_L1);
+        path.remove('\"');
     }
-    checkPath(path, "TeamSpeak 3");
+    checkPath(path, u"TeamSpeak 3"_s);
     return QDir::toNativeSeparators(path);
 }
 
 QString PathFinder::teamspeak3AppDataPath()
 {
     QDir dir =  QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
-    dir.cd("../../TS3Client");
+    dir.cd(u"../../TS3Client"_s);
 
     return QDir::toNativeSeparators(dir.absolutePath()); //TODO: Consider discarding this as toNative conversion should be done only on UI-layer.
 }
@@ -54,12 +62,17 @@ QString PathFinder::teamspeak3AppDataPath()
 
 QString PathFinder::steamPath()
 {
-    QString path = readRegPath("HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Valve\\Steam", "InstallPath");
+    QString path = readRegPath(QStringLiteral(
+                                   "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Valve\\Steam"),
+                               u"InstallPath"_s);
     if (path == QCoreApplication::applicationDirPath())
     {
-        path = readRegPath("HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam", "InstallLocation");
+        path = readRegPath(
+            "HKEY_LOCAL_"
+            "MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam",
+            u"InstallLocation"_s);
     }
-    checkPath(path, "Steam");
+    checkPath(path, u"Steam"_s);
     return path;
 }
 
@@ -73,7 +86,7 @@ QString PathFinder::readRegPath(const QString& path, const QString& key)
 QString PathFinder::arma3MyDocuments()
 {
     QString path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/Arma 3";
-    checkPath(path, "My Documents\\Arma3");
+    checkPath(path, u"My Documents\\Arma3"_s);
     return QDir::toNativeSeparators(path);
 }
 

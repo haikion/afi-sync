@@ -3,6 +3,7 @@
 #include <QFileInfo>
 #include <QRegularExpression>
 #include <QStringList>
+#include <QStringLiteral>
 #include <QTimer>
 #include "libtorrent/torrent_status.hpp"
 #include "../../afisynclogger.h"
@@ -10,9 +11,11 @@
 #include "ahasher.h"
 #include "deltapatcher.h"
 
+using namespace Qt::StringLiterals;
+
 #ifdef Q_OS_LINUX
-    const QString DeltaPatcher::XDELTA_EXECUTABLE = "xdelta3";
-    const QString DeltaPatcher::SZIP_EXECUTABLE = "7za";
+const QString DeltaPatcher::XDELTA_EXECUTABLE = u"xdelta3"_s;
+const QString DeltaPatcher::SZIP_EXECUTABLE = u"7za"_s;
 #else
     const QString DeltaPatcher::XDELTA_EXECUTABLE = "bin\\xdelta3.exe";
     const QString DeltaPatcher::SZIP_EXECUTABLE = "bin\\7za.exe";
@@ -20,10 +23,10 @@
 
 //20 minutes. 7za compression may take a while
 const int DeltaPatcher::TIMEOUT = 20*60000;
-const QString DeltaPatcher::DELTA_POSTFIX = "_patch";
-const QString DeltaPatcher::DELTA_EXTENSION = ".vcdiff";
-const QString DeltaPatcher::SEPARATOR = ".";
-const QString DeltaPatcher::PATCH_DIR = "delta_patch";
+const QString DeltaPatcher::DELTA_POSTFIX = u"_patch"_s;
+const QString DeltaPatcher::DELTA_EXTENSION = u".vcdiff"_s;
+const QString DeltaPatcher::SEPARATOR = u"."_s;
+const QString DeltaPatcher::PATCH_DIR = u"delta_patch"_s;
 
 DeltaPatcher::DeltaPatcher(const QString& patchesPath, const libtorrent::torrent_handle& handle):
     QObject(nullptr),
@@ -50,7 +53,7 @@ DeltaPatcher::DeltaPatcher():
     extractingPatches_(false),
     totalBytes_(-1)
 {
-    threadConstructor("");
+    threadConstructor({});
 }
 
 DeltaPatcher::~DeltaPatcher()
@@ -129,7 +132,7 @@ void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches, int
         bytesPatched_ = 0;
 
         mutex_.lock();
-        patchingMod_ = "";
+        patchingMod_ = {};
         mutex_.unlock();
 
         return;
@@ -144,7 +147,7 @@ void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches, int
             bytesPatched_ = 0;
 
             mutex_.lock();
-            patchingMod_ = "";
+            patchingMod_ = {};
             mutex_.unlock();
 
             return;
@@ -367,7 +370,7 @@ bool DeltaPatcher::delta(const QString& oldModPath, QString newModPath)
         QFileInfo newFile = it.nextFileInfo();
 
         QString relPath = newFile.absoluteFilePath().remove(newModPath);
-        if (relPath.startsWith("/")) {
+        if (relPath.startsWith('/')) {
             relPath.remove(0, 1);
         }
         LOG << relPath << " " << newModPath;
@@ -486,8 +489,7 @@ bool DeltaPatcher::createEmptyDir(QDir dir) const
         }
     }
     LOG << "Creating directory: " << dir.absolutePath();
-    if (!dir.mkpath("."))
-    {
+    if (!dir.mkpath(u"."_s)) {
         LOG_ERROR << "Unable to create tmp dir: " << dir.absolutePath();
         return false;
     }

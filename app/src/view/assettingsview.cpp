@@ -1,9 +1,13 @@
-#include <QIntValidator>
 #include <QDesktopServices>
+#include <QIntValidator>
+#include <QStringLiteral>
+
 #include "assettingsview.h"
-#include "pathsetting.h"
 #include "optionalsetting.h"
+#include "pathsetting.h"
 #include "ui_assettingsview.h"
+
+using namespace Qt::StringLiterals;
 
 AsSettingsView::AsSettingsView(QWidget *parent) :
     QWidget(parent),
@@ -23,7 +27,7 @@ void AsSettingsView::init(ISettings* settingsModel)
     this->settingsModel = settingsModel;
     ui->parametersLineEdit->setText(settingsModel->launchParameters());
 
-    ui->steamPathSetting->init("Steam", settingsModel->steamPath());
+    ui->steamPathSetting->init(u"Steam"_s, settingsModel->steamPath());
     connect(ui->steamPathSetting, &PathSetting::textEdited, this, &AsSettingsView::setSteamPath);
     connect(ui->steamPathSetting, &PathSetting::resetPressed, [=]
     {
@@ -31,7 +35,7 @@ void AsSettingsView::init(ISettings* settingsModel)
         ui->steamPathSetting->setValue(settingsModel->steamPath());
     });
 
-    ui->modsPathSetting->init("Mod Download", settingsModel->modDownloadPath());
+    ui->modsPathSetting->init(u"Mod Download"_s, settingsModel->modDownloadPath());
     connect(ui->modsPathSetting, &PathSetting::textEdited, this, &AsSettingsView::setModDownloadPath);
     connect(ui->modsPathSetting, &PathSetting::resetPressed, [=]
     {
@@ -39,7 +43,7 @@ void AsSettingsView::init(ISettings* settingsModel)
         ui->modsPathSetting->setValue(settingsModel->modDownloadPath());
     });
 
-    ui->teamspeakPathSetting->init("TeamSpeak 3", settingsModel->teamSpeak3Path());
+    ui->teamspeakPathSetting->init(u"TeamSpeak 3"_s, settingsModel->teamSpeak3Path());
     connect(ui->teamspeakPathSetting, &PathSetting::textEdited, this, &AsSettingsView::setTeamSpeak3Path);
     connect(ui->teamspeakPathSetting, &PathSetting::resetPressed, [=]
     {
@@ -47,14 +51,16 @@ void AsSettingsView::init(ISettings* settingsModel)
         ui->teamspeakPathSetting->setValue(settingsModel->teamSpeak3Path());
     });
 
-    ui->arma3PathSetting->init("Arma 3", settingsModel->arma3Path());
+    ui->arma3PathSetting->init(u"Arma 3"_s, settingsModel->arma3Path());
     connect(ui->arma3PathSetting, &PathSetting::textEdited, this, &AsSettingsView::setArma3Path);
     connect(ui->arma3PathSetting, &PathSetting::resetPressed, [=] {
         settingsModel->resetArma3Path();
         ui->arma3PathSetting->setValue(settingsModel->arma3Path());
     });
 
-    ui->downloadSetting->init("Download limit:", settingsModel->maxDownload(), settingsModel->maxDownloadEnabled());
+    ui->downloadSetting->init(u"Download limit:"_s,
+                              settingsModel->maxDownload(),
+                              settingsModel->maxDownloadEnabled());
     connect(ui->downloadSetting, &OptionalSetting::checked, [=] (bool ticked)
     {
         settingsModel->setMaxDownloadEnabled(ticked);
@@ -63,7 +69,9 @@ void AsSettingsView::init(ISettings* settingsModel)
     {
         settingsModel->setMaxDownload(newValue);
     });
-    ui->uploadSetting->init("Upload limit:", settingsModel->maxUpload(), settingsModel->maxUploadEnabled());
+    ui->uploadSetting->init(u"Upload limit:"_s,
+                            settingsModel->maxUpload(),
+                            settingsModel->maxUploadEnabled());
     connect(ui->uploadSetting, &OptionalSetting::checked, [=] (bool ticked) {
         settingsModel->setMaxUploadEnabled(ticked);
     });

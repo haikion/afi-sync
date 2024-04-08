@@ -1,8 +1,11 @@
 #include <QMetaObject>
+
 #include "afisynclogger.h"
 #include "modadapter.h"
 #include "repository.h"
 #include "settingsmodel.h"
+
+using namespace Qt::StringLiterals;
 
 ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index):
     SyncItem(mod->name()),
@@ -31,7 +34,7 @@ void ModAdapter::check()
 QString ModAdapter::checkText()
 {
     if (!optional())
-        return "disabled";
+        return u"disabled"_s;
 
     QString rVal = ticked() ? "true" : "false";
     return rVal;

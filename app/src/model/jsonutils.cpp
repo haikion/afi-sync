@@ -1,5 +1,9 @@
 #include <QJsonDocument>
+#include <QStringLiteral>
+
 #include "jsonutils.h"
+
+using namespace Qt::StringLiterals;
 
 QVariantMap JsonUtils::bytesToJsonMap(const QByteArray& bytes)
 {
@@ -14,5 +18,5 @@ QVariantMap JsonUtils::bytesToJsonMap(const QByteArray& bytes)
 
 QString JsonUtils::updateUrl(const QVariantMap& jsonMap)
 {
-    return qvariant_cast<QString>(jsonMap.value("updateUrl"));
+    return qvariant_cast<QString>(jsonMap.value(u"updateUrl"_s));
 }

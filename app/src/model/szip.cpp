@@ -1,8 +1,11 @@
 #include <QDir>
+#include <QStringLiteral>
 #include "szip.h"
 
+using namespace Qt::StringLiterals;
+
 #ifdef Q_OS_LINUX
-    const QString Szip::SZIP_EXECUTABLE = "7za";
+const QString Szip::SZIP_EXECUTABLE = u"7za"_s;
 #else
     const QString Szip::SZIP_EXECUTABLE = "bin\\7za.exe";
 #endif
