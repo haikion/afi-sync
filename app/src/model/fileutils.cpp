@@ -178,7 +178,6 @@ bool FileUtils::writeFile(const QByteArray& data, const QString& path)
 
 QString FileUtils::casedPath(const QString& path)
 {
-    LOG << "Input: " << path;
     QString pathCi = QFileInfo(path).absoluteFilePath();
     //Construct case sentive path by comparing file or dir names to case sentive ones.
     QStringList ciNames = pathCi.split('/');
@@ -203,7 +202,6 @@ QString FileUtils::casedPath(const QString& path)
             }
         }
     }
-    LOG << "Output: " << casedPath;
     return casedPath;
 }
 

@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QObject>
 
+// TODO: Make this a namespace
 class SettingsModel: public QObject
 {
     Q_OBJECT
@@ -21,7 +22,8 @@ public slots:
     static void setDeltaPatchingEnabled(bool enabled);
     static QString modDownloadPath();
     static void setModDownloadPath(QString path);
-    static void resetModDownloadPath();
+    static void resetModDownloadPath(); 
+    static QString patchesDownloadPath();
     static QString arma3Path();
     static void setArma3Path(const QString& path);
     static void resetArma3Path();

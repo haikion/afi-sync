@@ -10,7 +10,7 @@ command_exists() {
     fi
 }
 
-command_exists apache2  || exit 1
+command_exists apache2 || exit 1
 command_exists trash || exit 1
 command_exists xvfb-run || exit 1
 command_exists 7za || exit 1
@@ -24,25 +24,28 @@ export APP_DIR=${TESTS_DIR}/../../app
 source ${TESTS_DIR}/functions.sh
 
 run_test () {
-    if [ -f core ]; then
+    if [ -f core* ]; then
         echo -e "\e[31mCore file detected\e[0m"
         exit 1
     fi
 
-    timeout 60 ${TESTS_DIR}/$1 &> ${1}_shell.log && echo -e "\e[32m$1 passed\e[0m" || echo -e "\e[31m$1 failed\e[0m"
-    mv afisync.log ${1}_afisync.log
+    # ${TESTS_DIR}/$1
+    echo -n ${1} ...
+    timeout 60 ${TESTS_DIR}/$1 &> ${1}_shell.log && echo -e "\e[32m passed\e[0m" || echo -e "\e[31m failed\e[0m"
+    mv afisync.log ${1}_afisync.log 2>/dev/null
 }
 
 run_negative_test () {
-    if [ -f core ]; then
+    if [ -f core* ]; then
         echo -e "\e[31m$1Core file detected\e[0m"
         exit 1
     fi
 
-    timeout 15 ${TESTS_DIR}/$1 &> ${1}_shell.log && echo -e "\e[31m$1 failed\e[0m"  || echo -e "\e[32m$1 passed\e[0m"
+    echo -n ${1} ...
+    timeout 15 ${TESTS_DIR}/$1 &> ${1}_shell.log && echo -e "\e[31m failed\e[0m"  || echo -e "\e[32m passed\e[0m"
     mv afisync.log ${1}_afisync.log
     kill_and_wait >> {1}_shell.log
-    if [ -f core ]; then
+    if [ -f core* ]; then
         echo -e "\e[31m$1Core file detected\e[0m"
         exit 1
     fi
@@ -55,7 +58,7 @@ clean () {
 }
 
 compile () {
-    clean
+    # clean
     cd ${WORKING_DIR}
     qmake CONFIG+=debug ${APP_DIR} &> compile.log && make -j8 &>> compile.log && return 0
     return 1
@@ -87,12 +90,15 @@ user=$(whoami)
 sudo chown -R $user /var/www/html/afisync-tests
 cp -R ${TESTS_DIR}/files/torrents /var/www/html/afisync-tests/
 cp -R ${TESTS_DIR}/files/mods /var/www/html/afisync-tests/
+cp -R ${TESTS_DIR}/files/afisync_patches /var/www/html/afisync-tests/
 cp -R ${TESTS_DIR}/files/ver2 /var/www/html/afisync-tests/
+cp -R ${TESTS_DIR}/files/ver3 /var/www/html/afisync-tests/
 
 compileWithMessages
 cd ${WORKING_DIR}
 
 run_test log-rotate.sh
+run_test patch.sh
 run_test ts-plugin-install.sh
 run_test repositories-update.sh
 run_test repositories-update-chain-patch.sh
@@ -100,6 +106,8 @@ run_test repositories-update-mod-add.sh
 run_test repositories-update-mod-remove.sh
 run_test repositories-update-patch.sh
 run_test repositories-update-repo-remove.sh
+run_test mirror.sh
+run_test repositories-update-mirror.sh
 run_negative_test repositories-update-corrupted.sh
 
 sudo service apache2 stop

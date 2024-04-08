@@ -8,7 +8,6 @@
 #include <QStringLiteral>
 #include <QVariantMap>
 
-#include "afisync.h"
 #include "afisynclogger.h"
 #include "fileutils.h"
 #include "jsonreader.h"
@@ -16,8 +15,6 @@
 #include "mod.h"
 #include "modadapter.h"
 #include "repository.h"
-#include "settingsmodel.h"
-#include "settingsmodel.h"
 
 using namespace Qt::StringLiterals;
 
@@ -87,16 +84,8 @@ void JsonReader::setSyncNetworkAccessManager(std::unique_ptr<SyncNetworkAccessMa
     nam_ = std::move(syncNetworkAccessManager);
 }
 
-// TODO: No need to remove mods anymore, instead just add them if needed
-QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repositories)
+void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repositories)
 {
-    const QString deltaUpdatesUrl = qvariant_cast<QString>(
-        jsonMap_.value(u"deltaUpdates"_s));
-    if (SettingsModel::deltaPatchingEnabled() && !deltaUpdatesUrl.isEmpty()) {
-        sync->setDeltaUpdatesFolder(deltaUpdatesUrl);
-    } else {
-        sync->setDeltaUpdatesFolder({});
-    }
     const QList<QVariant> jsonRepositories = qvariant_cast<QList<QVariant>>(
         jsonMap_.value(u"repositories"_s));
     QSet<QString> previousModKeys;
@@ -109,6 +98,7 @@ QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repositor
             previousModKeys.insert(mod->key());
         }
     }
+    sync->setDeltaUrls(jsonMap_.value(u"deltaUpdates2"_s).toStringList());
     QHash<Repository*, QSet<QString>> repositoryJsonModKeys;
     QList<Repository*> orderedRepositoryList;
     for (const QVariant& repoVar : jsonRepositories)
@@ -136,8 +126,7 @@ QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repositor
         repo->setBattlEyeEnabled(
             qvariant_cast<bool>(repository.value(u"battlEyeEnabled"_s, true)));
 
-        QList<QVariant> mods = qvariant_cast<QList<QVariant>>(
-            repository.value(u"mods"_s));
+        QList<QVariant> mods = repository.value(u"mods"_s).toList();
         QSet<QString> jsonModKeys;
         for (int i = 0; i < mods.size(); ++i)
         {
@@ -159,23 +148,23 @@ QSet<QString> JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repositor
 
     // First add all mods and then remove deprecated in order to not
     // destroy moved mods.
-    for (Repository* repo: repositoryJsonModKeys.keys())
+    const auto& repos = repositoryJsonModKeys.keys();
+    for (Repository* repo: repos)
     {
         repo->removeDeprecatedMods(repositoryJsonModKeys.value(repo));
         repo->startUpdates();
     }
     repositories.clear();
     repositories.append(orderedRepositoryList);
-    return previousModKeys - AfiSync::combine(repositoryJsonModKeys.values());
 }
 
-QSet<QString> JsonReader::getRemovables(QList<Repository*>& repositories)
+QSet<QString> JsonReader::getRemovables(const QList<Repository*>& repositories)
 {
     updateJsonMap();
     return getRemovablesOffline(repositories);
 }
 
-QSet<QString> JsonReader::getRemovablesOffline(QList<Repository*>& repositories) const
+QSet<QString> JsonReader::getRemovablesOffline(const QList<Repository*>& repositories) const
 {
     const QList<QVariant> jsonRepositories = qvariant_cast<QList<QVariant>>(
         jsonMap_.value(u"repositories"_s));
@@ -204,16 +193,16 @@ QSet<QString> JsonReader::getRemovablesOffline(QList<Repository*>& repositories)
 }
 
 // Updates repository list and returns set of deleted mod keys
-QSet<QString> JsonReader::updateRepositories(ISync* sync, QList<Repository*>& repositories)
+void JsonReader::updateRepositories(ISync* sync, QList<Repository*>& repositories)
 {
     updateJsonMap();
-    return updateRepositoriesOffline(sync, repositories);
+    updateRepositoriesOffline(sync, repositories);
 }
 
-QString JsonReader::deltaUpdatesKey()
+QStringList JsonReader::deltaUrls()
 {
     updateJsonMap();
-    return jsonMap_.value(u"deltaUpdates"_s).toString();
+    return jsonMap_.value(u"deltaUpdates2"_s).toStringList();
 }
 
 bool JsonReader::writeJsonBytes(const QByteArray& data)

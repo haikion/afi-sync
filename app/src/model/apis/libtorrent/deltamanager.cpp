@@ -1,48 +1,89 @@
-#include <QFileInfo>
 #include <QDirIterator>
+#include <QFileInfo>
 #include <QThread>
-#include "../../afisynclogger.h"
-#include "../../fileutils.h"
-#include "../../global.h"
-#include "../../settingsmodel.h"
+
+#include "src/model/afisync.h"
+#include "src/model/afisynclogger.h"
+#include "src/model/fileutils.h"
+#include "src/model/global.h"
+#include "src/model/settingsmodel.h"
 #include "deltamanager.h"
 
 namespace lt = libtorrent;
+using namespace Qt::StringLiterals;
 
-DeltaManager::DeltaManager(lt::torrent_handle handle, QObject* parent):
-    QObject(parent),
-    downloader_(new DeltaDownloader(handle)),
-    patcher_(new DeltaPatcher(SettingsModel::modDownloadPath()
-                              + "/" + Constants::DELTA_PATCHES_NAME, handle)),
-    handle_(handle)
+DeltaManager::DeltaManager(const QStringList& deltaUrls, lt::session* session, QObject* parent):
+    QObject(parent)
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
+    patcher_ = new DeltaPatcher(SettingsModel::modDownloadPath() + u"/afisync_patches"_s);
+    patcher_->moveToThread(&patcherThread_);
     connect(patcher_, &DeltaPatcher::patched, this, &DeltaManager::handlePatched);
+    patcherThread_.setObjectName("Patcher Thread");
+    patcherThread_.start();
+
+
     updateTimer_.setInterval(1000);
-    connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(update()));
+    connect(&updateTimer_, &QTimer::timeout, this, &DeltaManager::update);
+    removeDeprecatedPatches(deltaUrls);
+    downloader_.setSession(session);
+    downloader_.setDeltaUrls(deltaUrls);
 }
 
 DeltaManager::~DeltaManager()
 {
     delete patcher_;
-    delete downloader_;
+    patcherThread_.quit();
+    patcherThread_.wait(10000);
+}
+
+void DeltaManager::mirrorDeltaPatches()
+{
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+    downloader_.mirrorDeltaPatches();
 }
 
 bool DeltaManager::patchAvailable(const QString& modName)
 {
-    return downloader_->patchAvailable(modName);
+    return downloader_.patchAvailable(modName);
 }
 
 void DeltaManager::update()
 {
-    QSet<QString> inDownload = inDownload_; //Prevents crash because loop edits itself.
-    for (const QString& modName : inDownload)
+    if (patcher_->isPatching())
     {
-        if (patcher_->notPatching() && downloader_->patchDownloaded(modName) && !checkingFiles())
+        return;
+    }
+
+    QString downloadedPatchMod = findDownloadedMod();
+    if (!downloadedPatchMod.isEmpty())
+    {
+        patcher_->patch(SettingsModel::modDownloadPath() + "/" + downloadedPatchMod);
+        inDownload_.remove(keyHash_.key(downloadedPatchMod));
+    }
+}
+
+QString DeltaManager::findDownloadedMod() const
+{
+    for (const QString& key: std::as_const(inDownload_))
+    {
+        if (downloader_.patchesDownloaded(key))
         {
-            patcher_->patch(SettingsModel::modDownloadPath() + "/" + modName);
-            inDownload_.remove(modName);
+            return keyHash_.value(key);
         }
+    }
+    return {};
+}
+
+void DeltaManager::removeDeprecatedPatches(const QStringList& urls)
+{
+    const QString patchesPath = SettingsModel::modDownloadPath()  + u"/afisync_patches"_s;
+    QDir dir(patchesPath);
+    QStringList files = dir.entryList(QDir::Files);
+    QStringList deprecatedPatches = AfiSync::filterDeprecatedPatches(files, urls);
+    for (const auto& file : deprecatedPatches)
+    {
+        FileUtils::rmCi(patchesPath + '/' + file);
     }
 }
 
@@ -51,26 +92,31 @@ CiHash<QString> DeltaManager::keyHash() const
     return keyHash_;
 }
 
-bool DeltaManager::patch(const QString& modName, const QString& key)
+void DeltaManager::patch(const QString& modName, const QString& key)
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
-    if (!patchAvailable(modName))
-    {
-        LOG_WARNING << "No patches found for" << modName;
-        return false;
-    }
-
+    LOG << "Patching " << modName << " ...";
     keyHash_.insert(key, modName);
     updateTimer_.start(); // Start update timer if it isn't already running
-    inDownload_.insert(modName);
-    downloader_->downloadPatch(modName);
-    return true;
+    inDownload_.insert(key);
+    downloader_.downloadPatches(modName, key);
     //Patch will be recalled once download is completed.
+}
+
+void DeltaManager::setDeltaUrls(const QStringList& deltaUrls)
+{
+    removeDeprecatedPatches(deltaUrls);
+    downloader_.setDeltaUrls(deltaUrls);
+}
+
+QStringList DeltaManager::deltaUrls() const
+{
+    return downloader_.deltaUrls();
 }
 
 bool DeltaManager::contains(const QString& key)
 {
-    return keyHash_.contains(key);
+    return keyHash_.contains(key) || inDownload_.contains(key);
 }
 
 QString DeltaManager::name(const QString& key)
@@ -80,17 +126,12 @@ QString DeltaManager::name(const QString& key)
 
 bool DeltaManager::patchDownloading(const QString& key) const
 {
-    QString modName = keyHash_.value(key, {});
-    if (modName.isEmpty())
-        return false;
-
-    boost::int64_t totalWanted = downloader_->totalWanted(modName);
-    return totalWanted > 0 && downloader_->totalWantedDone(modName) < totalWanted;
+    return inDownload_.contains(key);
 }
 
-libtorrent::torrent_handle DeltaManager::handle() const
+libtorrent::torrent_handle DeltaManager::getHandle(const QString& key) const
 {
-    return handle_;
+    return downloader_.getHandle(key);
 }
 
 int64_t DeltaManager::totalWanted(const QString& key)
@@ -102,11 +143,11 @@ int64_t DeltaManager::totalWanted(const QString& key)
         return -1;
     }
     const QString modName = it.value();
-    if (downloader_->patchDownloaded(modName))
+    if (downloader_.patchesDownloaded(modName))
     {
         return patcher_->totalBytes(modName);
     }
-    return downloader_->totalWanted(modName);
+    return downloader_.totalWanted(modName);
 }
 
 int64_t DeltaManager::totalWantedDone(const QString& key)
@@ -114,31 +155,15 @@ int64_t DeltaManager::totalWantedDone(const QString& key)
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
     {
-        LOG_ERROR << "Key" << key << "not found.";
+        LOG_ERROR << "Key " << key << " not found!";
         return -1;
     }
     const QString modName = it.value();
-    if (downloader_->patchDownloaded(modName))
+    if (downloader_.patchesDownloaded(modName))
     {
         return patcher_->bytesPatched(modName);
     }
-    return downloader_->totalWantedDone(modName);
-}
-
-// TODO: Remove, ETA
-int DeltaManager::patchingEta(const QString& key)
-{
-    static const qint64 SPEED =  600000;
-    QString modName = keyHash_.value(key);
-
-    //Returns extracted if being patched (more accurate)
-    qint64 totalBytes = patcher_->totalBytes(modName);
-    if (totalBytes == 0) //If downloading, return 7z size
-        totalBytes = totalWanted(key) * 1.4;
-
-    qint64 bytesPatched = patcher_->bytesPatched(modName);
-    qint64 bytesReq = totalBytes - bytesPatched;
-    return bytesReq/SPEED;
+    return downloader_.totalWantedDone(modName);
 }
 
 QStringList DeltaManager::folderKeys()
@@ -150,53 +175,35 @@ void DeltaManager::handlePatched(const QString& modPath, bool success)
 {
     const QString modName = QFileInfo(modPath).fileName();
     const QString key = keyHash_.key(modName);
-    LOG << key << " " << modName;
+    LOG << modName << " patched";
     keyHash_.remove(key);
     if (keyHash_.empty())
     {
-        deleteExtraFiles(); //Cleanup residue from older delta patches torrent.
         updateTimer_.stop();
     }
 
     emit patched(key, modName, success);
 }
 
-void DeltaManager::deleteExtraFiles()
-{
-    QString savePath = QString::fromStdString(downloader_->handle().status().save_path);
-    QSet<QString> torrentFiles = torrentFilesUpper();
-    QSet<QString> localFiles;
-    QDirIterator it(savePath + "/" + Constants::DELTA_PATCHES_NAME);
-    while (it.hasNext())
-    {
-        QFileInfo fi = it.nextFileInfo();
-        if (fi.isFile())
-            localFiles.insert(fi.absoluteFilePath().toUpper());
-    }
-
-    const QSet<QString> extraFiles = localFiles - torrentFiles;
-    for (const QString& filePath : extraFiles)
-    {
-        LOG << "Deleting " << filePath;
-        FileUtils::rmCi(filePath);
-    }
-}
-
-bool DeltaManager::checkingFiles()
-{
-    const auto status = handle_.status().state;
-    return status == libtorrent::torrent_status::state_t::checking_files
-            || status == libtorrent::torrent_status::state_t::checking_resume_data;
-}
-
 bool DeltaManager::queued(const QString& key)
 {
+    Q_ASSERT(!key.isEmpty());
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
         return false;
 
     const QString modName = it.value();
-    return downloader_->patchDownloaded(modName) && !patcher_->patching(modName) && !checkingFiles();
+    return downloader_.patchesDownloaded(modName) && !patcher_->patching(modName);
+}
+
+const QList<libtorrent::torrent_handle> DeltaManager::handles() const
+{
+    return downloader_.handles();
+}
+
+QString DeltaManager::getUrl(const libtorrent::torrent_handle& handle) const
+{
+    return downloader_.getUrl(handle);
 }
 
 bool DeltaManager::patchExtracting(const QString& key)
@@ -217,10 +224,10 @@ bool DeltaManager::patching(const QString& key)
     return patcher_->patching(modName);
 }
 
-QSet<QString> DeltaManager::torrentFilesUpper()
+QSet<QString> DeltaManager::torrentFilesUpper(const QString& url)
 {
     QSet<QString> rVal;
-    lt::torrent_handle handle = downloader_->handle();
+    lt::torrent_handle handle = downloader_.getHandle(url);
     if (!handle.is_valid())
         return rVal;
 
@@ -239,5 +246,4 @@ QSet<QString> DeltaManager::torrentFilesUpper()
         rVal.insert(value);
     }
     return rVal;
-
 }

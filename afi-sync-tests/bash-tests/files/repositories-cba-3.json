@@ -1,27 +1,31 @@
 {
-    "updateUrl":  "http://localhost/afisync-tests/repositories.json",
-    "deltaUpdates":  "http://localhost/afisync-tests/torrents/afisync_patches_3.torrent",
-    "repositories":  [
-                         {
-                             "name":  "armafinland.fi Primary",
-                             "serverAddress":  "a3.armafinland.fi",
-                             "serverPort":  2302,
-                             "password":  "kotka",
-                             "battlEyeEnabled":  true,
-                             "mods":  [
-                                          {
-                                              "name":  "@cz75_nochain_a3",
-                                              "fileSize":  40113,
-                                              "key":  "http://localhost/afisync-tests/torrents/@cz75_nochain_a3_7.torrent",
-                                              "optional":  true
-                                          },
-                                          {
-                                              "name":  "@cba_a3",
-                                              "fileSize": 4026554,
-                                              "key":  "http://localhost/afisync-tests/torrents/@cba_a3_3.torrent",
-                                              "optional":  false
-                                          }
-                                      ]
-                         }
-                     ]
+    "updateUrl": "http://localhost/afisync-tests/repositories.json",
+    "deltaUpdates2": [
+        "http://localhost/afisync-tests/torrents/@cba_a3.0.5c668c74b841d239fb6418e978a07fa5.7z.torrent",
+        "http://localhost/afisync-tests/torrents/@dummy.0.5c668c74b841d239fb6418e978a07fa5.7z.torrent",
+        "http://localhost/afisync-tests/torrents/@cba_a3.1.7b21612bc886c7e38bc0bf033fb40cb4.7z.torrent"
+    ],
+    "repositories": [
+        {
+            "name": "armafinland.fi Primary",
+            "serverAddress": "a3.armafinland.fi",
+            "serverPort": 2302,
+            "password": "kotka",
+            "battlEyeEnabled": true,
+            "mods": [
+                {
+                    "name": "@cz75_nochain_a3",
+                    "fileSize": 40113,
+                    "key": "http://localhost/afisync-tests/torrents/@cz75_nochain_a3_7.torrent",
+                    "optional": true
+                },
+                {
+                    "name": "@cba_a3",
+                    "fileSize": 4026554,
+                    "key": "http://localhost/afisync-tests/torrents/@cba_a3_3.torrent",
+                    "optional": false
+                }
+            ]
+        }
+    ]
 }

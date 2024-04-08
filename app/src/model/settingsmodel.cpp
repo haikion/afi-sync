@@ -97,7 +97,6 @@ void SettingsModel::resetTeamSpeak3Path()
 
 QString SettingsModel::steamPath()
 {
-    LOG;
     return QDir::toNativeSeparators(settings()->value("steamPath", PathFinder::steamPath()).toString());
 }
 
@@ -277,18 +276,20 @@ void SettingsModel::setModDownloadPath(QString path)
         return;
     }
     settings()->setValue("modDownloadPath", path);
-    if (Global::model == nullptr) //TODO: Consider removing, seems too defensive.
+    if (Global::model)
     {
-        LOG_ERROR << "model == nullptr";
-        return;
+        Global::model->moveFiles();
     }
-
-    Global::model->moveFiles();
 }
 
 void SettingsModel::resetModDownloadPath()
 {
     setModDownloadPath(PathFinder::arma3Path());
+}
+
+QString SettingsModel::patchesDownloadPath()
+{
+    return modDownloadPath() + "/afisync_patches";
 }
 
 QString SettingsModel::launchParameters()

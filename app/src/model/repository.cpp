@@ -42,6 +42,17 @@ void Repository::setBattlEyeEnabled(bool battleEyeEnabled)
     battlEyeEnabled_ = battleEyeEnabled;
 }
 
+bool Repository::isReady() const {
+    for (ModAdapter* modAdapter : modAdapters_)
+    {
+        if (modAdapter->statusStr() != SyncStatus::READY)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool Repository::ticked()
 {
     return SettingsModel::ticked({}, name());

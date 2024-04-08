@@ -9,14 +9,9 @@
 #include <QString>
 #include <QStringList>
 #include <QProcess>
-#include <QThread>
 #include <QDir>
 #include <QQueue>
 #include <QMutex>
-
-#pragma warning(push, 0)
-#include "libtorrent/torrent_handle.hpp"
-#pragma warning(pop)
 
 #include "../../console.h"
 
@@ -25,9 +20,9 @@ class DeltaPatcher: public QObject
     Q_OBJECT
 
 public:
-    DeltaPatcher(const QString& patchesPath, const libtorrent::torrent_handle& handle);
+    DeltaPatcher(const QString& patchesPath);
     DeltaPatcher();
-    ~DeltaPatcher() override;
+    ~DeltaPatcher();
 
     //Patches dir to latest version.
     void patch(const QString& modPath);
@@ -39,7 +34,7 @@ public:
     //Returns total number of bytes in a patch when patch is being applied.
     //Returns zero otherwise.
     qint64 totalBytes(const QString& modName);
-    bool notPatching();
+    bool isPatching();
     void stop();    
     bool patching(const QString& modName);
     bool patchExtracting();
@@ -61,11 +56,9 @@ private:
     std::atomic<bool> extractingPatches_;
     QAtomicInteger<qint64> totalBytes_;
     QFileInfo* patchesFi_;
-    QThread thread_;
     //Contains the name of the mod being patched.
     QString patchingMod_;
-    Console* console_;
-    libtorrent::torrent_handle handle_;
+    Console* console_{nullptr};
     QMutex mutex_;
 
     bool extract(const QString& zipPath);
@@ -77,10 +70,9 @@ private:
     //Applies single patch to mod dir
     bool patch(const QString& patch, const QString& modPath);
     QStringList removePatchesFromLatest(const QString& latestPath, const QString& deltaPath) const;
-    void applyPatches(const QString& modPath, QStringList patches, int attempts);
+    void applyPatches(const QString& modPath, QStringList patches);
 
 private slots:
-    void threadConstructor(const QString& patchesPath);
     void patchDirSync(const QString& modPath);
     void compress(const QString& dir, const QString& archivePath);
 };

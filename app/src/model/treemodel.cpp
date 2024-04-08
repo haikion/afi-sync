@@ -32,7 +32,7 @@ TreeModel::TreeModel(QObject* parent):
     sync_(nullptr)
 {
     LOG;
-    createSync(jsonReader_.deltaUpdatesKey());
+    createSync(jsonReader_.deltaUrls());
     repositories_ = jsonReader_.repositories(sync_);
 
     QSet<QString> usedKeys;
@@ -45,7 +45,7 @@ TreeModel::TreeModel(QObject* parent):
     }
     sync_->cleanUnusedFiles(usedKeys);
 
-    LOG << "readJson completed";
+    LOG << "repositories.json read successfully";
 
     updateTimer_.setInterval(1000);
     connect(&updateTimer_, &QTimer::timeout, this, &TreeModel::update);
@@ -56,11 +56,11 @@ TreeModel::TreeModel(QObject* parent):
     repoUpdateTimer_.start();
 }
 
-void TreeModel::createSync(const QString& deltaUpdatesKey)
+void TreeModel::createSync(const QStringList& deltaUrls)
 {
-    if (deltaUpdatesKey != QString())
+    if (!deltaUrls.isEmpty())
     {
-        sync_ = new LibTorrentApi(deltaUpdatesKey);
+        sync_ = new LibTorrentApi(deltaUrls);
     }
     else
     {
@@ -186,6 +186,7 @@ void TreeModel::periodicRepoUpdate()
     }
     if (jsonReader_.updateAvailable())
     {
+        mirroringDeltaPatches_ = false;
         LOG << "Updating repositories";
         updateRepositories();
         return;
@@ -195,12 +196,12 @@ void TreeModel::periodicRepoUpdate()
 
 void TreeModel::updateRepositories()
 {
-    QList<Repository*> updatedList = repositories_;
-    const QSet<QString> removeFromSync = jsonReader_.getRemovables(updatedList);
+    const QSet<QString> removeFromSync = jsonReader_.getRemovables(repositories_);
     for (const QString& key : removeFromSync)
     {
         sync_->removeFolder(key);
     }
+    QList<Repository*> updatedList = repositories_;
     jsonReader_.updateRepositories(sync_, updatedList);
     QList<Repository*> deletables;
     for (Repository* repo : repositories_)
@@ -210,10 +211,7 @@ void TreeModel::updateRepositories()
             deletables.append(repo);
         }
     }
-
-    repositories_.clear();
-    repositories_.append(updatedList);
-
+    repositories_ = updatedList;
     for (Repository* repo : deletables)
     {
         repo->clearModAdapters();
@@ -235,11 +233,22 @@ QList<IRepository*> TreeModel::toIrepositories(const QList<Repository*>& reposit
 
 void TreeModel::update()
 {
+    bool allDone = true;
     for (Repository* repository : repositories_)
     {
         repository->update();
+        if (!repository->isReady())
+        {
+            allDone = false;
+        }
     }
     updateSpeed();
+    if (allDone && !mirroringDeltaPatches_ && Global::guiless)
+    {
+        LOG << "All mods downloaded. Mirroring delta patches ...";
+        sync_->mirrorDeltaPatches();
+        mirroringDeltaPatches_ = true;
+    }
 }
 
 QList<IRepository*> TreeModel::repositories() const

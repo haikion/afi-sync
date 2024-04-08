@@ -22,7 +22,7 @@ done
 
 kill_and_wait
 
-if [ -f core ]; then
+if [ -f core* ]; then
     echo -e "\e[31m$1Core file detected\e[0m"
     exit 1
 fi

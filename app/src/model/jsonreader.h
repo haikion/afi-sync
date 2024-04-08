@@ -21,9 +21,9 @@ public:
 
     bool updateAvailable();
     QList<Repository*> repositories(ISync* sync);
-    QString deltaUpdatesKey();
-    QSet<QString> getRemovables(QList<Repository *>& updateRepositories);
-    QSet<QString> updateRepositories(ISync* sync, QList<Repository*>& updateRepositories);
+    QStringList deltaUrls();
+    QSet<QString> getRemovables(const QList<Repository *>& updateRepositories);
+    void updateRepositories(ISync* sync, QList<Repository*>& updateRepositories);
 
 protected:
     virtual bool writeJsonBytes(const QByteArray& bytes);
@@ -41,8 +41,8 @@ private:
     QString updateUrl() const;
     QByteArray fetchJsonBytes(QString url);
     bool readJsonFile();
-    QSet<QString> getRemovablesOffline(QList<Repository*>& updatedRepositories) const;
-    QSet<QString> updateRepositoriesOffline(ISync* sync, QList<Repository*>& updateRepositories);
+    QSet<QString> getRemovablesOffline(const QList<Repository*>& updatedRepositories) const;
+    void updateRepositoriesOffline(ISync* sync, QList<Repository*>& repositories);
 };
 
 #endif // JSONREADER_H

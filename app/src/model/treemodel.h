@@ -46,11 +46,12 @@ private:
     ISync* sync_;
     QTimer repoUpdateTimer_;
     JsonReader jsonReader_;
+    bool mirroringDeltaPatches_{false};
 
     void postInit();
     QString bandwithString(int amount) const;
     QSet<Mod*> mods() const;
-    void createSync(const QString& deltaUpdatesKey);
+    void createSync(const QStringList& deltaUrls);
     void updateRepositories();
     static QList<IRepository*> toIrepositories(const QList<Repository*>& repositories);
 };

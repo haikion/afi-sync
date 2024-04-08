@@ -7,6 +7,8 @@ UPDATED_REPOSITORIES_JSON=${TESTS_DIR}/files/repositories-cba-2.json
 INI_FILE=${TESTS_DIR}/files/AFISync-primary-enabled.ini
 
 trash "${WORKING_DIR}/@cba_a3"
+trash settings
+trash afisync.log
 mkdir -p settings/AFISync
 cp ${CURRENT_REPOSITORIES_JSON} settings/repositories.json
 cp ${INI_FILE} settings/AFISync.ini
@@ -15,7 +17,7 @@ cp -R ${MODS_DIR}/* .
 
 xvfb-run --auto-servernum --server-num=1 ./AFISync &
 
-while ! grep "cba_a3_1.torrent Completed" afisync.log; do
+while ! grep "cba_a3 synced" afisync.log; do
     sleep 1
 done
 echo "First version of cba_a3 completed"
@@ -26,7 +28,7 @@ while ! grep "Delta patching successful" afisync.log; do
 done
 kill_and_wait
 
-if [ -f core ]; then
+if [ -f core* ]; then
     echo -e "\e[31m$1Core file detected\e[0m"
     exit 1
 fi

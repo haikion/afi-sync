@@ -11,8 +11,9 @@ class ISync
 public:
     virtual ~ISync() = default;
 
+    virtual void mirrorDeltaPatches() = 0;
     virtual void setDeltaUpdatesFolder(const QString& key) = 0;
-    virtual QString deltaUpdatesKey() = 0;
+    virtual QStringList deltaUrls() = 0;
     virtual bool disableDeltaUpdates() = 0;
     virtual void enableDeltaUpdates() = 0;
 
@@ -31,6 +32,7 @@ public:
     //Returns true if folder is indexing or checking files.
     virtual bool folderChecking(const QString& key) = 0;
     virtual bool folderDownloading(const QString& key) = 0;
+    virtual void setDeltaUrls(const QStringList& urls) = 0;
     virtual void setFolderPath(const QString& key, const QString& path) = 0;
     //Sets folder in paused mode or starts if if value is set to false.
     virtual void setFolderPaused(const QString& key, bool value) = 0;

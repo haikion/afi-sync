@@ -96,8 +96,6 @@ int gui(int argc, char* argv[])
     Global::workerThread->quit();
     Global::workerThread->wait(20000);
     Global::workerThread->terminate();
-    // TODO: Uncomment or remove line below
-    // Global::workerThread->wait(1000);
     return rVal;
 }
 
@@ -116,6 +114,7 @@ int cli(int argc, char* argv[])
                           {"port", "External Port. Current value: " + SettingsModel::port()
                            , "port", SettingsModel::port()},
                           {"delta-hash", "Prints delta hash for the mod. Used for debugging", "mod directory", "."},
+                          {"delta-hash-legacy", "Prints delta hash for the mod. Used for debugging", "mod directory", "."},
                           {DELTA_ARGS.at(0), "Delta patch generation:  Defines path to old version", DELTA_ARGS.at(0)},
                           {DELTA_ARGS.at(1), "Delta patch generation:  Defines path to new version", DELTA_ARGS.at(1)},
                           {DELTA_ARGS.at(2), "Delta patch generation:  Defines path to patches directory", DELTA_ARGS.at(2)},
@@ -142,7 +141,13 @@ int cli(int argc, char* argv[])
         LOG << "Hash for " << deltaPath << " is " << AHasher::hash(deltaPath);
         return 0;
     }
-    if (parser.isSet(PATCH) || parser.isSet(u"mod"_s)) {
+    if (parser.isSet(u"delta-hash-legacy"_s))
+    {
+        const QString deltaPath = parser.value(u"delta-hash"_s);
+        LOG << "Hash for " << deltaPath << " is " << AHasher::legacyHash(deltaPath);
+        return 0;
+    }
+    if (parser.isSet(PATCH) || parser.isSet("mod")) {
         if (!parser.isSet(PATCH)) {
             LOG << "Missing patch";
             return 1;
@@ -175,7 +180,7 @@ int cli(int argc, char* argv[])
             patchesPath.remove(patchesPath.size()-1, 1);
         }
         FileUtils::appendSafePath(patchesPath);
-        DeltaPatcher dp(patchesPath, libtorrent::torrent_handle());
+        DeltaPatcher dp{patchesPath};
         dp.delta(oldPath, newPath);
 
         return 0;
@@ -183,7 +188,7 @@ int cli(int argc, char* argv[])
     LOG << "Fail " << missingArgs.size() << " " << missingArgs;
     // Mirror
     if (parser.isSet(u"mirror"_s)) {
-        TreeModel* model = generalInit();
+        Global::guiless = true;
         QFileInfo dir(parser.value(u"mirror"_s));
         QString modDownloadPath = dir.absoluteFilePath();
         if (!dir.isDir() || !dir.isWritable())
@@ -194,7 +199,8 @@ int cli(int argc, char* argv[])
         LOG << "Setting mod download path: " << modDownloadPath;
         SettingsModel::setModDownloadPath(modDownloadPath);
 
-        Global::guiless = true;
+        TreeModel* model = generalInit();
+
         SettingsModel::setDeltaPatchingEnabled(true);
         LOG << "Delta updates enabled due to the mirror mode.";
         SettingsModel::setPort(parser.value(u"port"_s), true);

@@ -39,6 +39,7 @@ public:
     void startUpdates();
     void stopUpdates();
     void setBattlEyeEnabled(bool battlEyeEnabled);
+    bool isReady() const;
     bool ticked() override;
     virtual void setTicked(bool ticked);
     QString progressStr() override;

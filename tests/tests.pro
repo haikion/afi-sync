@@ -5,6 +5,7 @@ QT += core gui network widgets
 CONFIG += c++17
 CONFIG -= app_bundle
 CONFIG += thread
+INCLUDEPATH += ../app
 
 win32 {
     DEFINES += _WIN32_WINNT=0x0501

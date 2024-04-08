@@ -1,64 +1,63 @@
 /*
  * Manages Download of delta patches.
  */
-#ifndef DELTADOWNLOADER_H
-#define DELTADOWNLOADER_H
+#pragma once
 
-#include <QString>
-#include <QVector>
 #include <QHash>
-#include <QSet>
+#include <QNetworkAccessManager>
 #include <QObject>
+#include <QSet>
+#include <QString>
+#include <QThread>
+
+#ifdef Q_OS_WIN
 #pragma warning(push, 0)
+#endif
 #include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/file_storage.hpp>
 #include <libtorrent/alert_types.hpp>
+#ifdef Q_OS_WIN
 #pragma warning(pop)
+#endif
+
 #include "../../cihash.h"
-#include "deltapatcher.h"
 
-/*
- 0. piece is not downloaded at all
- 1. normal priority. Download order is dependent on availability
- 2. higher than normal priority. Pieces are preferred over pieces with the same availability, but not over pieces with lower availability
- 3. pieces are as likely to be picked as partial pieces.
- 4. pieces are preferred over partial pieces, but not over pieces with lower availability
- 5  currently the same as 4
- 6. piece is as likely to be picked as any piece with availability 1
- 7. maximum priority, availability is disregarded, the piece is preferred over any other piece with lower priority
- */
-enum DownloadPriority
+// TODO: Implement mirror
+class DeltaDownloader: public QObject
 {
-    NO_DOWNLOAD = 0,
-    NORMAL = 1
-};
-
-class DeltaDownloader
-{
+    Q_OBJECT
 public:
-    DeltaDownloader(const libtorrent::torrent_handle& handle);
+    DeltaDownloader();
+    ~DeltaDownloader() = default;
 
+    void mirrorDeltaPatches();
     bool patchAvailable(const QString& modName);
-    bool patchDownloaded(const QString& modName);
-    bool downloadPatch(const QString& modName);
-    bool noPeers() const;
-    void setPaused(bool value);
-    libtorrent::torrent_handle handle();
+    bool downloadPatches(const QString& modName, const QString& key);
+    libtorrent::torrent_handle getHandle(const QString& key) const;
     boost::int64_t totalWanted(const QString& modName);
-    boost::int64_t totalWantedDone(const QString& modName);
+    int64_t totalWantedDone(const QString& modName);
+    bool patchDownloading(const QString& modName) const;
+    bool patchesDownloaded(const QString& key) const;
+    void setDeltaUrls(const QStringList& deltaUrls);
+    QStringList deltaUrls() const;
+    const QList<libtorrent::torrent_handle> handles() const;
+    QString getUrl(const libtorrent::torrent_handle&) const;
+    void setSession(libtorrent::session* newSession);
+
+signals:
+    void patchDlFailed();
 
 private:
-    libtorrent::torrent_handle handle_;
-    libtorrent::file_storage fileStorage_;
-    QStringList patches_;
+    QMap<QString, QList<libtorrent::torrent_handle>> handleMap_;
+    CiHash<libtorrent::torrent_handle> urlHandleMap_;
+    QStringList inDl_;
     QHash<QString, QVector<int>> fileIndexCache_;
+    QNetworkAccessManager nam_;
+    QStringList deltaUrls_;
+    QStringList mirrored_;
+    libtorrent::session* session_{nullptr};
 
-    QStringList patches(const QString& modName) const;
-    void createFilePaths();
+    void addToHandleMap(const QString& key, const libtorrent::torrent_handle& torrentHandle);
+    QStringList getDeltaUrls(const QString& modName) const;
     QString hash(const QString& modName) const;
-    QVector<int> patchIndexes(const QString& modName);
-    boost::int64_t totalWantedDone(const QVector<int>& indexes);
-    boost::int64_t totalWanted(const QVector<int>& indexes);
 };
-
-#endif // DELTADOWNLOADER_H

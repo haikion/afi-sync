@@ -59,7 +59,6 @@ void Mod::init()
 {
     updateTicked();
     repositoryChanged();
-    LOG << "name = " << name() << " key = " << key() << " Completed";
 }
 
 void Mod::update()
@@ -91,8 +90,6 @@ void Mod::removeConflicting() const
 //If mod is not in sync it will be added to it.
 void Mod::start()
 {
-    LOG << "name = " << name();
-
     if (!sync_->folderExists(key_))
     {
         removeConflicting();
@@ -106,6 +103,12 @@ void Mod::onFolderAdded(QString key)
 {
     if (key != key_) {
         return; // Not for me
+    }
+    if (moveFilesPostponed_)
+    {
+        moveFilesPostponed_ = false;
+        moveFilesNow();
+        LOG << "Files moved to " << SettingsModel::modDownloadPath();
     }
 
     //Do the actual starting
@@ -121,6 +124,21 @@ void Mod::moveFiles()
 
 void Mod::moveFilesSlot()
 {
+    if (statusStr() == SyncStatus::PATCHING ||
+        statusStr() == SyncStatus::DOWNLOADING_PATCHES ||
+        statusStr() == SyncStatus::EXTRACTING_PATCH ||
+        statusStr() == SyncStatus::STARTING)
+    {
+        LOG << "Waiting for mod patching to finish before moving files ...";
+        moveFilesPostponed_ = true;
+        return;
+    }
+    moveFilesNow();
+    LOG << "Files moved to " << SettingsModel::modDownloadPath();
+}
+
+void Mod::moveFilesNow()
+{
     deleteExtraFiles();
     if (sync_->folderExists(key_))
     {
@@ -131,7 +149,6 @@ void Mod::moveFilesSlot()
 void Mod::setProcessCompletion(const bool value)
 {
     SettingsModel::setProcessed(name(), !value ? key_ : ""_L1);
-    LOG << "Process (completion) set to " << value << " for " << name();
 }
 
 bool Mod::getProcessCompletion() const
@@ -182,10 +199,9 @@ bool Mod::stop()
 
 void Mod::deleteExtraFiles()
 {
-    LOG << "name = " << name();
     if (!ticked())
     {
-        LOG << "Mod " << name()  << " is inactive, doing nothing.";
+        LOG << name()  << " is inactive, extra file deletion skipped.";
         return;
     }
 
@@ -201,7 +217,7 @@ void Mod::deleteExtraFiles()
     //Fail safe if there is torrent without files.
     if (remoteFiles.size() == 0)
     {
-        LOG_ERROR << "Not deleting extra files because torrent contains 0 files.";
+        LOG_WARNING << "Not deleting extra files because torrent contains 0 files.";
         return; //Would delete everything otherwise
     }
 
@@ -212,7 +228,6 @@ void Mod::deleteExtraFiles()
         FileUtils::rmCi(path);
     }
     FileUtils::safeRemoveEmptyDirs(dir.absolutePath());
-    LOG << "Completed name = " << name();
 }
 
 bool Mod::ticked()
@@ -264,7 +279,7 @@ void Mod::repositoryChanged()
     //At least one repo active and mod checked
     if (!sync_->folderExists(key_) || sync_->folderPaused(key_))
     {
-        LOG << "Starting mod transfer. name = " << name();
+        LOG << "Starting sync for " << name();
         start();
     }
     updateTicked();
@@ -384,13 +399,11 @@ void Mod::appendModAdapter(ModAdapter* adapter)
         //First repository added -> initialize mod.
         if (sync_->ready())
         {
-            LOG << "name = " << name() << " Calling init directly";
             QMetaObject::invokeMethod(this, &Mod::init, Qt::QueuedConnection);
         }
         else
         {
             connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(init()));
-            LOG << "name = " << name() << " initCompleted connection created";
         }
         return;
     }
@@ -460,7 +473,7 @@ void Mod::updateStatus()
     {
         //New block for error initialization
         const QString error = sync_->folderError(key_);
-        if (error != QString())
+        if (!error.isEmpty())
         {
             setStatus(SyncStatus::ERRORED + error);
         }
@@ -489,7 +502,7 @@ void Mod::updateStatus()
         }
         else
         {
-            LOG << "ERROR: Unable to determine mod state. name = " << name();
+            LOG_ERROR << "Unable to determine mod state. name = " << name();
             setStatus(SyncStatus::ERRORED);
         }
     }
@@ -536,6 +549,7 @@ void Mod::processCompletion()
 {
     deleteExtraFiles();
     Installer::install(this);
+    LOG <<  name() << " synced";
 }
 
 void Mod::check()

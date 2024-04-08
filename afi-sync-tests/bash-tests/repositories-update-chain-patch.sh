@@ -16,7 +16,7 @@ xvfb-run --auto-servernum --server-num=1 ./AFISync &
 sleep 1
 ps -A | grep AFISync || exit 1
 
-while ! grep "cba_a3_1.torrent Completed" afisync.log; do
+while ! grep "cba_a3 synced" afisync.log; do
     sleep 1
 done
 echo "First version of cba_a3 completed"
@@ -27,7 +27,7 @@ while [ $(grep -i "Delta patching successful" afisync.log  | wc -l) -lt 2 ]; do
 done
 kill_and_wait
 
-if [ -f core ]; then
+if [ -f core* ]; then
     echo -e "\e[31m$1Core file detected\e[0m"
     exit 1
 fi

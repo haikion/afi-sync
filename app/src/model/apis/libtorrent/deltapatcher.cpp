@@ -5,7 +5,7 @@
 #include <QStringList>
 #include <QStringLiteral>
 #include <QTimer>
-#include "libtorrent/torrent_status.hpp"
+
 #include "../../afisynclogger.h"
 #include "../../fileutils.h"
 #include "ahasher.h"
@@ -28,20 +28,14 @@ const QString DeltaPatcher::DELTA_EXTENSION = u".vcdiff"_s;
 const QString DeltaPatcher::SEPARATOR = u"."_s;
 const QString DeltaPatcher::PATCH_DIR = u"delta_patch"_s;
 
-DeltaPatcher::DeltaPatcher(const QString& patchesPath, const libtorrent::torrent_handle& handle):
+DeltaPatcher::DeltaPatcher(const QString& patchesPath):
     QObject(nullptr),
     bytesPatched_(0),
     extractingPatches_(false),
     totalBytes_(-1),
-    handle_(handle)
+    patchesFi_(new QFileInfo(patchesPath)),
+    console_(new Console(this))
 {
-    //Required because patching process is ran
-    //synchronously but still needs to be shutdownable.
-    moveToThread(&thread_);
-    thread_.setObjectName("DeltaPatcher Thread");
-    thread_.start();
-    QMetaObject::invokeMethod(this, "threadConstructor", Qt::BlockingQueuedConnection,
-                              Q_ARG(QString, patchesPath));
 }
 
 // Used for command line interface. Does not use worker thread
@@ -53,30 +47,16 @@ DeltaPatcher::DeltaPatcher():
     extractingPatches_(false),
     totalBytes_(-1)
 {
-    threadConstructor({});
 }
 
 DeltaPatcher::~DeltaPatcher()
 {
-    thread_.quit();
-    thread_.wait(1000);
-    thread_.terminate();
-    thread_.wait();
-}
-
-void DeltaPatcher::threadConstructor(const QString& patchesPath)
-{
-    patchesFi_ = new QFileInfo(patchesPath);
-    console_ = new Console(this);
+    delete patchesFi_;
 }
 
 void DeltaPatcher::stop()
 {
-    if (thread_.isRunning())
-    {
-        console_->terminate();
-        thread_.terminate();
-    }
+    console_->terminate();
 }
 
 void DeltaPatcher::patch(const QString& modPath)
@@ -88,8 +68,7 @@ void DeltaPatcher::patchDirSync(const QString& modPath)
 {
     QDir patchesDir = QDir(patchesFi_->absoluteFilePath());
     const QStringList allPatches = patchesDir.entryList(QDir::Files);
-    LOG << allPatches << " " << patchesDir.absolutePath()
-        << " " << patchesFi_->absoluteFilePath() << modPath;
+    Q_ASSERT(!allPatches.isEmpty());
     QString modName = QFileInfo(modPath).fileName();
 
     mutex_.lock();
@@ -99,74 +78,33 @@ void DeltaPatcher::patchDirSync(const QString& modPath)
     QStringList patches = filterPatches(modPath, allPatches);
     if (patches.isEmpty())
     {
-        LOG_ERROR << "no patches found for" << modName << "from"
-            << allPatches << "hash =" << AHasher::hash(modPath);
+        LOG_ERROR << "No patches found for " << modName << " from "
+            << allPatches << " hash = " << AHasher::hash(modPath);
         emit patched(modPath, false);
         return;
     }
-    applyPatches(modPath, patches, 0);
+    LOG << "Patching " << modName << " with " << patches << " ...";
+    applyPatches(modPath, patches);
 }
 
 //Recursively applies all patches to modPath
-//
-//libTorrent may report downloaded bytes early.
-//which means AFISync may try apply the patch before it is actually downloaded
-//This functions tries to wait for the libTorrent to actually finish the download.
-void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches, int attempts)
+void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches)
 {
-    static const int MAX_ATTEMPTS = 10;
-
-    if (!handle_.status().is_finished)
+    while (!patches.isEmpty())
     {
-        // Wait for torrent to finish (Might occur if recheck was needed)
-        QTimer::singleShot(10000, this, [=] {applyPatches(modPath, patches, attempts);});
-        LOG << "Waiting for 10 s for patches torrent to finish. modPath = " << modPath << " patches = "
-            << patches << " attempts = " << attempts << "/" << MAX_ATTEMPTS;
-        return;
+        auto patchFileName = patches.takeFirst();
+        bool result = patch(patchFileName, modPath);
+        Q_ASSERT(result);
     }
+    //SUCCESS
+    emit patched(modPath, true);
+    bytesPatched_ = 0;
 
-    if (attempts > MAX_ATTEMPTS)
-    {
-        //FAIL
-        emit patched(modPath, false);
-        bytesPatched_ = 0;
-
-        mutex_.lock();
-        patchingMod_ = {};
-        mutex_.unlock();
-
-        return;
-    }
-    if (patch(patches.first(), modPath))
-    {
-        patches.takeFirst();
-        if (patches.isEmpty())
-        {
-            //SUCCESS
-            emit patched(modPath, true);
-            bytesPatched_ = 0;
-
-            mutex_.lock();
-            patchingMod_ = {};
-            mutex_.unlock();
-
-            return;
-        }
-        applyPatches(modPath, patches, attempts);
-    }
-    else
-    {
-        //Try as long as downloading and after that 10 times with 10s delays.
-        if (handle_.status().state == libtorrent::torrent_status::state_t::finished)
-        {
-            handle_.force_recheck();
-            ++attempts;
-        }
-        QTimer::singleShot(10000, this, [=] {applyPatches(modPath, patches, attempts);});
-    }
+    mutex_.lock();
+    patchingMod_ = {};
+    mutex_.unlock();
 }
 
-// TODO: Move to DeltaUtils
 QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringList& allPatches)
 {
     const QString modName = QFileInfo(modPath).fileName();
@@ -185,7 +123,7 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
         return QStringList();
 
     const QString& patchName = matches.at(0);
-    //First version. TODO: Why not just match hashes in recursive manner?
+    // First version
     int version = patchName.split(SEPARATOR).at(1).toInt();
     patches.append(patchName);
     while (version != ltstVersion)
@@ -228,12 +166,9 @@ bool DeltaPatcher::patching(const QString& modName)
     return retVal;
 }
 
-bool DeltaPatcher::notPatching()
+bool DeltaPatcher::isPatching()
 {
-    mutex_.lock();
-    const bool retVal = patchingMod_.size() == 0;
-    mutex_.unlock();
-    return retVal;
+    return !patchingMod_.isEmpty();
 }
 
 //Synchronous patch function
@@ -302,7 +237,6 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
             continue;
         }
         QString targetFilePath = targetPath + relPath;
-
         bool rVal = console_->runCmd(XDELTA_EXECUTABLE + " -d -s " + " \""
                            + QDir::toNativeSeparators(targetFilePath) + "\" \""
                            + QDir::toNativeSeparators(diffPath) + "\" \""
@@ -449,6 +383,7 @@ bool DeltaPatcher::extract(const QString& zipPath)
     extractingPatches_ = true;
     LOG << "Extracting " << zipPath;
     QFileInfo fi = QFileInfo(zipPath);
+
     console_->runCmd(SZIP_EXECUTABLE + " -y x \""
            + QDir::toNativeSeparators(zipPath)
            + "\" -o\"" + QDir::toNativeSeparators(fi.absolutePath()) + "\"");
@@ -508,7 +443,8 @@ int DeltaPatcher::latestVersion(const QString& modName, const QStringList& fileN
     int rVal = -1;
     for (const QString& fileName : fileNames)
     {
-        if (!fileName.contains(QRegularExpression(modName + ".*7z")))
+        static const QRegularExpression exp{modName + u".*7z"_s};
+        if (!fileName.contains(exp))
             continue;
 
         //@mod.1.2133.7z

@@ -1,11 +1,13 @@
 #ifndef LIBTORRENTAPI_H
 #define LIBTORRENTAPI_H
 
-#include <QObject>
 #include <QDir>
 #include <QHash>
 #include <QNetworkAccessManager>
+#include <QObject>
+#include <QPointer>
 #include <QSet>
+#include <QStringList>
 #include <QTimer>
 
 #ifdef Q_OS_WIN
@@ -32,13 +34,14 @@ class LibTorrentApi : public QObject, virtual public ISync
 
 public:
     explicit LibTorrentApi();
-    explicit LibTorrentApi(const QString& deltaUpdatesKey);
+    explicit LibTorrentApi(const QStringList& deltaUrls);
     ~LibTorrentApi() override;
 
+    void mirrorDeltaPatches() override;
     void setDeltaUpdatesFolder(const QString& key) override;
-    QString deltaUpdatesKey() override;
+    QStringList deltaUrls() override;
     bool disableDeltaUpdates() override;
-    bool disableDeltaUpdatesNoTorrents();
+    void disableDeltaUpdatesNoTorrents();
     void enableDeltaUpdates() override;
 
     void checkFolder(const QString& key) override;
@@ -61,6 +64,7 @@ public:
     QSet<QString> folderFilesUpper(const QString& key) override;
     //Returns true if folder with specific key exists.
     bool folderExists(const QString& key) override;
+    void setDeltaUrls(const QStringList& urls) override;
     void setFolderPath(const QString& key, const QString& path) override;
     //Returns true if folder is paused
     bool folderPaused(const QString& key) override;
@@ -89,16 +93,18 @@ public:
     bool folderExtractingPatch(const QString& key) override;
     bool folderCheckingPatches(const QString& key) override;
 
+    static QPair<libtorrent::error_code, libtorrent::add_torrent_params> toAddTorrentParams(const QByteArray& torrentData);
+
 private slots:
     void handleAlerts();
     void handlePatched(const QString& key, const QString& modName, bool success);
     void init();
     bool removeFolderSlot(const QString& key);
-    void setDeltaUpdatesFolderSlot(const QString& key);
+    void setDeltaUrlsSlot(const QStringList &key);
     void setMaxUploadSlot(const int limit);
     void setMaxDownloadSlot(const int limit);
     void setPortSlot(int port);
-    bool enableDeltaUpdatesSlot();
+    void enableDeltaUpdatesSlot();
     void initDelta();
     void shutdown();    
 
@@ -122,11 +128,11 @@ private:
     CiHash<QString> prefixMap_;
     QSet<QString> torrentDownloading_;
 
-    AlertHandler* alertHandler_;
-    DeltaManager* deltaManager_;
+    AlertHandler* alertHandler_{nullptr};
+    DeltaManager* deltaManager_{nullptr};
     bool creatingDeltaManager_{false};
     QQueue<QPair<QString, QString>> pendingFolder_;
-    QString deltaUpdatesKey_;
+    QStringList deltaUrls_;
     QString settingsPath_;
     StorageMoveManager* storageMoveManager_;
     int numResumeData_;
@@ -147,7 +153,7 @@ private:
     bool addFolderGenericAsync(const QString& key);
     libtorrent::torrent_handle getHandle(const QString& key);
     bool addFolder(const QString& key, const QString& name, bool patchingEnabled);
-    void createDeltaManager(libtorrent::torrent_handle handle, const QString& key);
+    void createDeltaManager(const QStringList &deltaUrls);
     libtorrent::torrent_handle getHandleSilent(const QString& key);
     bool folderChecking(const libtorrent::torrent_status& status) const;
     bool folderQueued(const libtorrent::torrent_status& status) const;

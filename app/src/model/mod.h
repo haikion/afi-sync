@@ -56,6 +56,7 @@ public slots:
 private:
     static const unsigned COMPLETION_WAIT_DURATION;
 
+    bool moveFilesPostponed_{false};
     QString key_;
     ISync* sync_;
     QTimer* updateTimer_;
@@ -77,6 +78,7 @@ private:
     bool getProcessCompletion() const;
     void updateProgress();
     void updateTicked();
+    void moveFilesNow();
 
 private slots:
     void update();

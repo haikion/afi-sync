@@ -26,7 +26,7 @@ public slots:
     void terminate();
 
 private:
-    QProcess process_;
+    QProcess* process_{nullptr};
 };
 
 #endif // CONSOLE_H
