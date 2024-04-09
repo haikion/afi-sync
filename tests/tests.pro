@@ -2,7 +2,7 @@ include(gtest_dependency.pri)
 
 TEMPLATE = app
 QT += core gui network widgets
-CONFIG += c++14
+CONFIG += c++17
 CONFIG -= app_bundle
 CONFIG += thread
 
@@ -21,6 +21,7 @@ win32 {
 
 unix {
    DEFINES += BOOST_LOG_DYN_LINK
+   QMAKE_CXX = ccache $$QMAKE_CXX
    QMAKE_CXXFLAGS += -Wno-unknown-pragmas
    LIBS += -lboost_system -lboost_atomic -lboost_random -lboost_date_time -lboost_log_setup -lboost_filesystem -lboost_log -lboost_thread -ltorrent-rasterbar
 }
@@ -34,7 +35,6 @@ HEADERS += \
     ../app/src/model/apis/libtorrent/directorywatcher.h \
     ../app/src/model/apis/libtorrent/libtorrentapi.h \
     ../app/src/model/apis/libtorrent/speedcalculator.h \
-    ../app/src/model/apis/libtorrent/speedestimator.h \
     ../app/src/model/apis/libtorrent/storagemovemanager.h \
     ../app/src/model/apis/isync.h \
     ../app/src/model/interfaces/imod.h \
@@ -86,7 +86,6 @@ SOURCES += \
     ../app/src/model/apis/libtorrent/directorywatcher.cpp \
     ../app/src/model/apis/libtorrent/libtorrentapi.cpp \
     ../app/src/model/apis/libtorrent/speedcalculator.cpp \
-    ../app/src/model/apis/libtorrent/speedestimator.cpp \
     ../app/src/model/apis/libtorrent/storagemovemanager.cpp \
     ../app/src/model/afisynclogger.cpp \
     ../app/src/model/console.cpp \
