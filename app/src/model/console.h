@@ -20,9 +20,9 @@ public:
     ~Console();
 
     QProcess* runCmdAsync(const QString& cmd);
-    bool runCmd(const QString& cmd);
 
 public slots:
+    bool runCmd(const QString& cmd);
     void terminate();
 
 private:
