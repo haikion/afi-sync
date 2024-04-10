@@ -98,7 +98,7 @@ private slots:
     void setMaxUploadSlot(const int limit);
     void setMaxDownloadSlot(const int limit);
     void setPortSlot(int port);
-    void enableDeltaUpdatesSlot();
+    bool enableDeltaUpdatesSlot();
     void initDelta();
     void shutdown();    
 
@@ -120,9 +120,11 @@ private:
     CiHash<libtorrent::torrent_handle> keyHash_;
     CiHash<libtorrent::add_torrent_params> torrentParams_;
     CiHash<QString> prefixMap_;
+    QSet<QString> torrentDownloading_;
 
     AlertHandler* alertHandler_;
     DeltaManager* deltaManager_;
+    bool creatingDeltaManager_{false};
     QQueue<QPair<QString, QString>> pendingFolder_;
     QString deltaUpdatesKey_;
     QString settingsPath_;

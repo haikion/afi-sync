@@ -62,16 +62,20 @@ LibTorrentApi::LibTorrentApi(const QString& deltaUpdatesKey):
     QMetaObject::invokeMethod(this, &LibTorrentApi::init, Qt::QueuedConnection);
 }
 
+// Initializes LibTorrentApi with delta patching enabled
 void LibTorrentApi::initDelta()
 {
     generalThreadInit();
-    enableDeltaUpdatesSlot();
-    emit initCompleted();
+    if (enableDeltaUpdatesSlot()) {
+        ready_ = true;
+        emit initCompleted();
+    }
 }
 
 void LibTorrentApi::init()
 {
     generalThreadInit();
+    ready_ = true;
     emit initCompleted();
 }
 
@@ -105,7 +109,6 @@ void LibTorrentApi::generalThreadInit()
     connect(timer_, &QTimer::timeout, storageMoveManager_, &StorageMoveManager::update);
     timer_->setInterval(1000);
     timer_->start();
-    ready_ = true;
     networkAccessManager_ = new QNetworkAccessManager(this);
 }
 
@@ -273,6 +276,9 @@ bool LibTorrentApi::folderQueued(const QString& key)
     if (deltaManager_ && deltaManager_->contains(key))
     {
         return deltaManager_->queued(key);;
+    }
+    if (!keyHash_.contains(key)) {
+        return false;
     }
 
     lt::torrent_handle handle = keyHash_.value(key);
@@ -467,11 +473,16 @@ QSet<QString> LibTorrentApi::folderFilesUpper(const QString& key)
 
 bool LibTorrentApi::folderExists(const QString& key)
 {
+    for (const auto& pending : pendingFolder_) {
+        if (pending.first == key) {
+            return true;
+        }
+    }
+    if (torrentDownloading_.contains(key)) {
+        return true;
+    }
     lt::torrent_handle handle = getHandleSilent(key);
-    if (!handle.is_valid())
-        return false;
-
-    return true;
+    return handle.is_valid();
 }
 
 bool LibTorrentApi::folderPaused(const QString& key)
@@ -682,9 +693,6 @@ bool LibTorrentApi::removeFolderSlot(const QString& key)
 
     lt::torrent_handle handle = getHandle(key);
     if (!handle.is_valid())
-        return false;
-
-    if (!handle.is_valid())
     {
         lt::torrent_status sta = handle.status();
         LOG_ERROR << "Torrent is in invalid state. error = "
@@ -766,29 +774,31 @@ void LibTorrentApi::enableDeltaUpdates()
     QMetaObject::invokeMethod(this, &LibTorrentApi::enableDeltaUpdatesSlot, Qt::QueuedConnection);
 }
 
-void LibTorrentApi::enableDeltaUpdatesSlot()
+bool LibTorrentApi::enableDeltaUpdatesSlot()
 {
     LOG;
 
     if (deltaUpdatesKey_.isEmpty())
     {
         LOG_ERROR << "Unable to enable delta updates: deltaUpdatesKey_ is empty.";
-        return;
+        return true;
     }
-    if (deltaManager_)
+    if (deltaManager_ || creatingDeltaManager_)
     {
         LOG << "Delta updates already active, doing nothing.";
-        return;
+        return true;
     }
     lt::torrent_handle handle = addFolderFromParams(deltaUpdatesKey_);
     if (handle.is_valid()) {
         createDeltaManager(handle, deltaUpdatesKey_);
         LOG << "Delta torrent loaded from disk";
+        return true;
     }
     else
     {
         //Create new deltaManager_;
-        addFolderGenericAsync(deltaUpdatesKey_);
+        creatingDeltaManager_ = !addFolderGenericAsync(deltaUpdatesKey_);
+        return false;
     }
 }
 
@@ -847,7 +857,9 @@ bool LibTorrentApi::addFolderGenericAsync(const QString& key)
     }
 
     auto reply = networkAccessManager_->get(QNetworkRequest(QUrl(key)));
+    torrentDownloading_.insert(key);
     connect(reply, &QNetworkReply::finished, this, [=] () {
+        torrentDownloading_.remove(key);
         if (reply->error() != QNetworkReply::NoError) {
             LOG_ERROR << "Torrent download failed" << reply->errorString();
             return;
@@ -935,12 +947,15 @@ void LibTorrentApi::onFolderAdded(const QString& key, lt::torrent_handle handle)
         if (handle.is_valid())
         {
             createDeltaManager(handle, deltaUpdatesKey_);
+            creatingDeltaManager_ = false;
             while (!pendingFolder_.isEmpty())
             {
                 auto p = pendingFolder_.dequeue();
-                addFolder(p.first, p.second);
+                addFolder(p.first, p.second, true);
                 LOG << "Added pending folder " << p.first << " " << p.second;
             }
+            ready_ = true;
+            emit initCompleted();
         }
         else
         {

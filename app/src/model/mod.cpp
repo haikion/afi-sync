@@ -59,7 +59,6 @@ void Mod::init()
 {
     updateTicked();
     repositoryChanged();
-    update();
     LOG << "name = " << name() << " key = " << key() << " Completed";
 }
 
@@ -109,18 +108,9 @@ void Mod::onFolderAdded(QString key)
         return; // Not for me
     }
 
-    //Sanity checks
-    const QString error = sync_->folderError(key_);
-    if (!error.isEmpty())
-    {
-        LOG << "name = " << name() << " Re-adding directory. error = " << error;
-        //Disagreement between Sync and AFISync
-        sync_->removeFolder(key_);
-        sync_->addFolder(key_, name());
-        setProcessCompletion(true);
-    }
     //Do the actual starting
     sync_->setFolderPaused(key_, false);
+    update();
     startUpdates();
 }
 
