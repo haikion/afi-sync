@@ -1,13 +1,17 @@
+#include <chrono>
+
 #include <QDirIterator>
 #include <QFileInfo>
 #include <QThread>
 
+#include "deltamanager.h"
 #include "src/model/afisync.h"
 #include "src/model/afisynclogger.h"
 #include "src/model/fileutils.h"
 #include "src/model/global.h"
 #include "src/model/settingsmodel.h"
-#include "deltamanager.h"
+
+using namespace std::chrono_literals;
 
 namespace lt = libtorrent;
 using namespace Qt::StringLiterals;
@@ -22,8 +26,7 @@ DeltaManager::DeltaManager(const QStringList& deltaUrls, lt::session* session, Q
     patcherThread_.setObjectName("Patcher Thread");
     patcherThread_.start();
 
-
-    updateTimer_.setInterval(1000);
+    updateTimer_.setInterval(1s);
     connect(&updateTimer_, &QTimer::timeout, this, &DeltaManager::update);
     removeDeprecatedPatches(deltaUrls);
     downloader_.setSession(session);

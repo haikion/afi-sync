@@ -14,44 +14,44 @@ public:
     SettingsModel(QObject* parent = nullptr); //Should only be used when constructing for QQmlEngine
 
 public slots:
-    static QString launchParameters();
+    [[nodiscard]] static QString launchParameters();
     static void setLaunchParameters(const QString& parameters);
-    static bool battlEyeEnabled(); //TODO: Remove?
+    [[nodiscard]] static bool battlEyeEnabled(); //TODO: Remove?
     void setBattlEyeEnabled(bool enabled); //TODO: Remove?
-    static bool deltaPatchingEnabled();
+    [[nodiscard]] static bool deltaPatchingEnabled();
     static void setDeltaPatchingEnabled(bool enabled);
-    static QString modDownloadPath();
+    [[nodiscard]] static QString modDownloadPath();
     static void setModDownloadPath(QString path);
     static void resetModDownloadPath(); 
-    static QString patchesDownloadPath();
-    static QString arma3Path();
+    [[nodiscard]] static QString patchesDownloadPath();
+    [[nodiscard]] static QString arma3Path();
     static void setArma3Path(const QString& path);
     static void resetArma3Path();
-    static QString teamSpeak3Path();
+    [[nodiscard]] static QString teamSpeak3Path();
     static void setTeamSpeak3Path(const QString& path);
     static void resetTeamSpeak3Path();
-    static QString steamPath();
+    [[nodiscard]] static QString steamPath();
     static void setSteamPath(const QString& path);
     static void resetSteamPath();
     static void setMaxUpload(const QString& maxUpload);
-    static QString maxUpload();
-    static bool maxUploadEnabled();
+    [[nodiscard]] static QString maxUpload();
+    [[nodiscard]] static bool maxUploadEnabled();
     static void setMaxDownload(const QString& maxDownload);
-    static QString maxDownload();
+    [[nodiscard]] static QString maxDownload();
     static bool maxDownloadEnabled();
-    static void setInstallDate(const QString& repoName, const qint64& value);
-    static unsigned installDate(const QString& repoName);
+    static void setInstallDate(const QString& repoName, qint64 value);
+    [[nodiscard]] static unsigned installDate(const QString& repoName);
     static void setPort(const QString& port, bool enabled);
-    static QString port();
-    static QString syncSettingsPath();
-    static QString settingsPath();
+    [[nodiscard]] static QString port();
+    [[nodiscard]] static QString syncSettingsPath();
+    [[nodiscard]] static QString settingsPath();
     //Tells if syncitem is ticked (!= files checked)
     static void setTicked(const QString& modName, QString repoName, bool value);
-    static bool ticked(const QString& modName, QString repoName);
+    [[nodiscard]] static bool ticked(const QString& modName, QString repoName);
     //Tells if process completion (file checking, installation) is needed
     static void setProcessed(const QString& name, const QString& value);
-    static QString processed(const QString& name);
-    static bool portEnabled();
+    [[nodiscard]] static QString processed(const QString& name);
+    [[nodiscard]] static bool portEnabled();
     static void setMaxUploadEnabled(const bool maxUploadEnabled);
     static void setMaxDownloadEnabled(const bool maxDownloadEnabled);
     static void initBwLimits();

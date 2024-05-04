@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->topBar->setSettingsView(ui->settingsView);
-    setWindowTitle("AFISync " VERSION_CHARS);
+    setWindowTitle(QStringLiteral("AFISync " VERSION_CHARS));
 }
 
 MainWindow::~MainWindow()

@@ -1,10 +1,11 @@
 #ifndef ASTREEWIDGET_H
 #define ASTREEWIDGET_H
 
-#include <QTreeWidget>
+#include <QCheckBox>
 #include <QList>
 #include <QObject>
-#include <QCheckBox>
+#include <QTreeWidget>
+
 #include "../model/interfaces/irepository.h"
 #include "../model/interfaces/isyncitem.h"
 #include "astreeitem.h"
@@ -14,18 +15,18 @@ class AsTreeWidget : public QTreeWidget
     Q_OBJECT
 
 public:
-    explicit AsTreeWidget(QWidget* parent = 0);
+    explicit AsTreeWidget(QWidget* parent = nullptr);
 
 public slots:
     void update();
-    void setRepositories(QList<IRepository*> repositories);
+    void setRepositories(const QList<IRepository*>& repositories);
 
 private slots:
-    void showContextMenu(const QPoint& point);
+    void showContextMenu(QPoint point);
 
 private:
-    QList<AsTreeItem*> items;
-    void addRepositories(QList<IRepository*> repositories);
+    QList<AsTreeItem*> items_;
+    void addRepositories(const QList<IRepository*>& repositories);
     QCheckBox* createCheckBox(ISyncItem* syncItem);
 };
 

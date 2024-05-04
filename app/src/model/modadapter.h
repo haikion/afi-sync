@@ -18,18 +18,17 @@ public:
     ~ModAdapter() override;
 
     void check() override;
-    QString checkText() override;
-    QString statusStr() override;
+    [[nodiscard]] QString statusStr() override;
     void checkboxClicked() override;
-    bool ticked() override;
+    [[nodiscard]] bool ticked() override;
     void processCompletion() override;
-    bool optional() override;
-    QString progressStr() override;
+    [[nodiscard]] bool optional() override;
+    [[nodiscard]] QString progressStr() override;
     Mod* mod() const;
     Repository* repo() const;
     void forceCheck() const;
     bool selected() override;
-    QString key() const;
+    [[nodiscard]] QString key() const;
     void stopUpdates();
 
 protected:

@@ -101,7 +101,7 @@ void DeltaPatcher::applyPatches(const QString& modPath, QStringList patches)
     bytesPatched_ = 0;
 
     mutex_.lock();
-    patchingMod_ = {};
+    patchingMod_.clear();
     mutex_.unlock();
 }
 

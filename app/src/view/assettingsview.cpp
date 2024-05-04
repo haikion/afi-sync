@@ -29,7 +29,7 @@ void AsSettingsView::init(ISettings* settingsModel)
 
     ui->steamPathSetting->init(u"Steam"_s, settingsModel->steamPath());
     connect(ui->steamPathSetting, &PathSetting::textEdited, this, &AsSettingsView::setSteamPath);
-    connect(ui->steamPathSetting, &PathSetting::resetPressed, [=]
+    connect(ui->steamPathSetting, &PathSetting::resetPressed, this, [=]
     {
         settingsModel->resetSteamPath();
         ui->steamPathSetting->setValue(settingsModel->steamPath());
@@ -37,7 +37,7 @@ void AsSettingsView::init(ISettings* settingsModel)
 
     ui->modsPathSetting->init(u"Mod Download"_s, settingsModel->modDownloadPath());
     connect(ui->modsPathSetting, &PathSetting::textEdited, this, &AsSettingsView::setModDownloadPath);
-    connect(ui->modsPathSetting, &PathSetting::resetPressed, [=]
+    connect(ui->modsPathSetting, &PathSetting::resetPressed, this, [=]
     {
         settingsModel->resetModDownloadPath();
         ui->modsPathSetting->setValue(settingsModel->modDownloadPath());
@@ -45,7 +45,7 @@ void AsSettingsView::init(ISettings* settingsModel)
 
     ui->teamspeakPathSetting->init(u"TeamSpeak 3"_s, settingsModel->teamSpeak3Path());
     connect(ui->teamspeakPathSetting, &PathSetting::textEdited, this, &AsSettingsView::setTeamSpeak3Path);
-    connect(ui->teamspeakPathSetting, &PathSetting::resetPressed, [=]
+    connect(ui->teamspeakPathSetting, &PathSetting::resetPressed, this, [=]
     {
         settingsModel->resetTeamSpeak3Path();
         ui->teamspeakPathSetting->setValue(settingsModel->teamSpeak3Path());
@@ -53,7 +53,7 @@ void AsSettingsView::init(ISettings* settingsModel)
 
     ui->arma3PathSetting->init(u"Arma 3"_s, settingsModel->arma3Path());
     connect(ui->arma3PathSetting, &PathSetting::textEdited, this, &AsSettingsView::setArma3Path);
-    connect(ui->arma3PathSetting, &PathSetting::resetPressed, [=] {
+    connect(ui->arma3PathSetting, &PathSetting::resetPressed, this, [=] {
         settingsModel->resetArma3Path();
         ui->arma3PathSetting->setValue(settingsModel->arma3Path());
     });
@@ -61,21 +61,21 @@ void AsSettingsView::init(ISettings* settingsModel)
     ui->downloadSetting->init(u"Download limit:"_s,
                               settingsModel->maxDownload(),
                               settingsModel->maxDownloadEnabled());
-    connect(ui->downloadSetting, &OptionalSetting::checked, [=] (bool ticked)
+    connect(ui->downloadSetting, &OptionalSetting::checked, this, [=] (bool ticked)
     {
         settingsModel->setMaxDownloadEnabled(ticked);
     });
-    connect(ui->downloadSetting, &OptionalSetting::valueChanged, [=] (QString newValue)
+    connect(ui->downloadSetting, &OptionalSetting::valueChanged, this, [=] (const QString& newValue)
     {
         settingsModel->setMaxDownload(newValue);
     });
     ui->uploadSetting->init(u"Upload limit:"_s,
                             settingsModel->maxUpload(),
                             settingsModel->maxUploadEnabled());
-    connect(ui->uploadSetting, &OptionalSetting::checked, [=] (bool ticked) {
+    connect(ui->uploadSetting, &OptionalSetting::checked, this, [=] (bool ticked) {
         settingsModel->setMaxUploadEnabled(ticked);
     });
-    connect(ui->uploadSetting, &OptionalSetting::valueChanged, [=] (QString newValue)
+    connect(ui->uploadSetting, &OptionalSetting::valueChanged, this, [=] (const QString& newValue)
     {
         settingsModel->setMaxUpload(newValue);
     });
@@ -85,22 +85,22 @@ void AsSettingsView::init(ISettings* settingsModel)
     ui->deltaPatchingCheckbox->setChecked(settingsModel->deltaPatchingEnabled());
 }
 
-void AsSettingsView::setArma3Path(QString path)
+void AsSettingsView::setArma3Path(const QString& path)
 {
     settingsModel->setArma3Path(path);
 }
 
-void AsSettingsView::setSteamPath(QString path)
+void AsSettingsView::setSteamPath(const QString& path)
 {
     settingsModel->setSteamPath(path);
 }
 
-void AsSettingsView::setModDownloadPath(QString path)
+void AsSettingsView::setModDownloadPath(const QString& path)
 {
     settingsModel->setModDownloadPath(path);
 }
 
-void AsSettingsView::setTeamSpeak3Path(QString path)
+void AsSettingsView::setTeamSpeak3Path(const QString& path)
 {
     settingsModel->setTeamSpeak3Path(path);
 }
@@ -120,7 +120,7 @@ void AsSettingsView::on_reportButton_clicked()
     QDesktopServices::openUrl(QUrl::fromEncoded("https://form.jotformeu.com/61187638191361"));
 }
 
-void AsSettingsView::on_deltaPatchingCheckbox_toggled(const bool checked)
+void AsSettingsView::on_deltaPatchingCheckbox_toggled(bool checked)
 {
     settingsModel->setDeltaPatchingEnabled(checked);
 }

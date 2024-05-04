@@ -12,40 +12,40 @@ class SettingsUiModel : virtual public ISettings
 public:
     SettingsUiModel() = default;
 
-    virtual QString arma3Path();
-    virtual void resetArma3Path();
-    virtual void setArma3Path(QString path);
+    [[nodiscard]] QString arma3Path() override;
+    void resetArma3Path() override;
+    void setArma3Path(const QString& path) override;
 
-    virtual QString teamSpeak3Path();
-    virtual void resetTeamSpeak3Path();
-    virtual void setTeamSpeak3Path(QString teamSpeak3Path);
+    [[nodiscard]] QString teamSpeak3Path() override;
+    void resetTeamSpeak3Path() override;
+    void setTeamSpeak3Path(const QString& teamSpeak3Path) override;
 
-    virtual QString steamPath();
-    virtual void resetSteamPath();
-    virtual void setSteamPath(QString steamPath);
+    [[nodiscard]] QString steamPath() override;
+    void resetSteamPath() override;
+    void setSteamPath(const QString& steamPath) override;
 
-    virtual QString modDownloadPath();
-    virtual void resetModDownloadPath();
-    virtual void setModDownloadPath(QString modDownloadPath);
+    [[nodiscard]] QString modDownloadPath() override;
+    void resetModDownloadPath() override;
+    void setModDownloadPath(const QString& modDownloadPath) override;
 
-    virtual QString launchParameters();
-    virtual void setLaunchParameters(QString launchParameters);
+    [[nodiscard]] QString launchParameters() override;
+    void setLaunchParameters(const QString& launchParameters) override;
 
-    virtual QString port();
-    virtual void setPort(QString port);
+    [[nodiscard]] QString port() override;
+    void setPort(const QString &port) override;
 
-    virtual QString maxDownload();
-    virtual bool maxDownloadEnabled();
-    virtual void setMaxDownloadEnabled(const bool maxDownloadEnabled);
-    virtual void setMaxDownload(QString maxDownload);
+    [[nodiscard]] virtual QString maxDownload();
+    [[nodiscard]] virtual bool maxDownloadEnabled();
+    void setMaxDownloadEnabled(bool maxDownloadEnabled) override;
+    void setMaxDownload(const QString& maxDownload) override;
 
-    virtual QString maxUpload();
-    virtual bool maxUploadEnabled();
-    virtual void setMaxUploadEnabled(const bool maxUploadEnabled);
-    virtual void setMaxUpload(const QString& maxUpload);
+    [[nodiscard]] QString maxUpload() override;
+    [[nodiscard]] bool maxUploadEnabled() override;
+    void setMaxUploadEnabled(bool maxUploadEnabled) override;
+    void setMaxUpload(const QString& maxUpload) override;
 
-    virtual bool deltaPatchingEnabled() const;
-    virtual void setDeltaPatchingEnabled(const bool enabled);
+    [[nodiscard]] bool deltaPatchingEnabled() const override;
+    void setDeltaPatchingEnabled(bool enabled) override;
 
 private:
     TreeModel* treeModel;

@@ -101,7 +101,7 @@ void Repository::setServerAddress(const QString& serverAddress)
     serverAddress_ = serverAddress;
 }
 
-void Repository::setPort(const unsigned& port)
+void Repository::setPort(unsigned port)
 {
     port_ = port;
 }
@@ -111,7 +111,7 @@ void Repository::setPassword(const QString& password)
     password_ = password;
 }
 
-Repository* Repository::findRepoByName(const QString& name, QList<Repository*> repositories)
+Repository* Repository::findRepoByName(const QString& name, const QList<Repository*>& repositories)
 {
     for (Repository* repository : repositories)
     {
@@ -375,7 +375,7 @@ QString Repository::modsParameter()
     return rVal;
 }
 
-QSet<QString> Repository::modKeys() const
+const QSet<QString> Repository::modKeys() const
 {
     QSet<QString> rVal;
     for (Mod* mod : mods())

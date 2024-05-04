@@ -7,7 +7,6 @@
 #include <QStringList>
 #include "afisynclogger.h"
 #include "treeitem.h"
-#include "treemodel.h"
 
 TreeItem::TreeItem(const QString& name, TreeItem* parentItem)
 {

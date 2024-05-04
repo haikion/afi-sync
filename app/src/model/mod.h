@@ -28,25 +28,25 @@ public:
     // Moves files after mods download path has been changed
     void moveFiles();
     void check() override;
-    QString key() const;
+    [[nodiscard]] QString key() const;
     void checkboxClicked() override;
-    QSet<Repository*> repositories() const;
+    [[nodiscard]] const QSet<Repository *> repositories() const;
     void deleteExtraFiles();
     bool ticked() override;
     void processCompletion() override;
     QList<ModAdapter*> modAdapters();
     void appendModAdapter(ModAdapter* adapter);
-    bool optional() override;
+    [[nodiscard]] bool optional() override;
     void stopUpdates();
     void startUpdates();
     void updateStatus();
     void forceCheck();
-    qint64 totalWanted() const;
-    qint64 totalWantedDone() const;
-    QString progressStr() override;
-    static QString bytesToMegasCeilStr(const qint64 bytes);
-    static QString toProgressStr(const qint64 totalWanted, qint64 totalWantedDone);
-    bool selected() override;
+    [[nodiscard]] qint64 totalWanted() const;
+    [[nodiscard]] qint64 totalWantedDone() const;
+    [[nodiscard]] QString progressStr() override;
+    [[nodiscard]] static QString bytesToMegasCeilStr(qint64 bytes);
+    [[nodiscard]] static QString toProgressStr(qint64 totalWanted, qint64 totalWantedDone);
+    [[nodiscard]] bool selected() override;
 
 public slots:
     void repositoryChanged();
@@ -69,13 +69,13 @@ private:
     QMutex adaptersMutex_;
 
     void buildPathHash();
-    bool reposInactive();
+    [[nodiscard]] bool reposInactive();
     void start();
     bool stop();
     void removeConflicting() const;
-    QString path() const;
+    [[nodiscard]] QString path() const;
     void setProcessCompletion(const bool value);
-    bool getProcessCompletion() const;
+    [[nodiscard]] bool getProcessCompletion() const;
     void updateProgress();
     void updateTicked();
     void moveFilesNow();
@@ -84,7 +84,7 @@ private slots:
     void update();
     void init();
     void threadConstructor();
-    void onFolderAdded(QString key);
+    void onFolderAdded(const QString& key);
     void stopUpdatesSlot();
     void startUpdatesSlot();
     void moveFilesSlot();

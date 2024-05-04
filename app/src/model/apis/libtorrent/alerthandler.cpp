@@ -172,7 +172,7 @@ void AlertHandler::handleStorageMovedAlert(const storage_moved_alert* alert)
     emit storageMoved(alert->handle);
 }
 
-void AlertHandler::handleTorrentCheckAlert(const torrent_checked_alert* alert) const
+void AlertHandler::handleTorrentCheckAlert(const torrent_checked_alert* alert)
 {
     torrent_handle h = alert->handle;
     torrent_status s = h.status(torrent_handle::query_name);

@@ -30,20 +30,20 @@ AsTreeWidget::AsTreeWidget(QWidget* parent): QTreeWidget(parent)
 
 void AsTreeWidget::update()
 {
-    for (AsTreeItem* treeItem : items)
+    for (AsTreeItem* treeItem : items_)
     {
         treeItem->update();
     }
 }
 
-void AsTreeWidget::showContextMenu(const QPoint& point)
+void AsTreeWidget::showContextMenu(QPoint point)
 {
-    AsTreeItem* item = dynamic_cast<AsTreeItem*>(itemAt(point));
+    auto item = dynamic_cast<AsTreeItem*>(itemAt(point));
     if (item != nullptr)
     {
         QMenu menu(this);
         ISyncItem* syncItem = item->syncItem();
-        IRepository* repository = dynamic_cast<IRepository*>(syncItem);
+        auto repository = dynamic_cast<IRepository*>(syncItem);
         if(repository != nullptr)
         {
             menu.addAction(u"Force join"_s, [=] () { repository->join(); });
@@ -59,11 +59,11 @@ void AsTreeWidget::showContextMenu(const QPoint& point)
     }
 }
 
-void AsTreeWidget::setRepositories(QList<IRepository*> repositories)
+void AsTreeWidget::setRepositories(const QList<IRepository*>& repositories)
 {
     clear();
-    items.clear();
-    addRepositories(std::move(repositories));
+    items_.clear();
+    addRepositories(repositories);
     header()->resizeSections(QHeaderView::ResizeToContents);
     header()->resizeSection(2, header()->sectionSize(2) + 50); //Status
     header()->resizeSection(4, header()->sectionSize(4) + 25); //Size
@@ -73,7 +73,7 @@ void AsTreeWidget::setRepositories(QList<IRepository*> repositories)
     header()->setSectionResizeMode(1, QHeaderView::Interactive);
 }
 
-void AsTreeWidget::addRepositories(QList<IRepository*> repositories)
+void AsTreeWidget::addRepositories(const QList<IRepository*>& repositories)
 {
     for (IRepository* repo : repositories)
     {
@@ -96,14 +96,14 @@ void AsTreeWidget::addRepositories(QList<IRepository*> repositories)
         setItemWidget(repoItem, 0, repoCheckBox);
         setItemWidget(repoItem, 5, startButton);
         setItemWidget(repoItem, 6, joinButton);
-        items.append(repoItem);
+        items_.append(repoItem);
         for (ISyncItem* mod : repo->uiMods())
         {
             QCheckBox* modCheckBox = new QCheckBox(this);
             AsTreeItem* modItem = new AsTreeItem(repoItem, mod, modCheckBox);
             setItemWidget(modItem, 0, modCheckBox);
             repoItem->addChild(modItem);
-            items.append(modItem);
+            items_.append(modItem);
         }
     }
 }

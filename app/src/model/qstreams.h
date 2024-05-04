@@ -1,10 +1,12 @@
 #ifndef QSTREAMS_H
 #define QSTREAMS_H
+
 #include <ostream>
+
+#include <QList>
+#include <QSet>
 #include <QString>
 #include <QStringList>
-#include <QSet>
-#include <QList>
 
 std::ostream& operator<<(std::ostream& outStream, const QString& qString);
 std::ostream& operator<<(std::ostream& outStream, const QList<int>& qVector);

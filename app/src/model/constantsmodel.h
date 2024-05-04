@@ -10,10 +10,10 @@ class ConstantsModel: public QObject
 {
     Q_OBJECT
 public:
-    ConstantsModel(QObject* parent = nullptr);
+    explicit ConstantsModel(QObject* parent = nullptr);
 
 public slots:
-    static QString defaultPort();
+    [[nodiscard]] static QString defaultPort();
 };
 
 #endif // CONSTANTSMODEL_H

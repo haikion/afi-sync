@@ -11,7 +11,7 @@ void SettingsUiModel::resetArma3Path()
     SettingsModel::resetArma3Path();
 }
 
-void SettingsUiModel::setArma3Path(QString path)
+void SettingsUiModel::setArma3Path(const QString& path)
 {
     SettingsModel::setArma3Path(path);
 }
@@ -26,7 +26,7 @@ void SettingsUiModel::resetTeamSpeak3Path()
     SettingsModel::resetTeamSpeak3Path();
 }
 
-void SettingsUiModel::setTeamSpeak3Path(QString teamSpeak3Path)
+void SettingsUiModel::setTeamSpeak3Path(const QString& teamSpeak3Path)
 {
     SettingsModel::setTeamSpeak3Path(teamSpeak3Path);
 }
@@ -41,7 +41,7 @@ void SettingsUiModel::resetSteamPath()
     SettingsModel::resetSteamPath();
 }
 
-void SettingsUiModel::setSteamPath(QString steamPath)
+void SettingsUiModel::setSteamPath(const QString& steamPath)
 {
     SettingsModel::setSteamPath(steamPath);
 }
@@ -56,7 +56,7 @@ void SettingsUiModel::resetModDownloadPath()
     SettingsModel::resetModDownloadPath();
 }
 
-void SettingsUiModel::setModDownloadPath(QString modDownloadPath)
+void SettingsUiModel::setModDownloadPath(const QString& modDownloadPath)
 {
     SettingsModel::setModDownloadPath(modDownloadPath);
 }
@@ -66,7 +66,7 @@ QString SettingsUiModel::launchParameters()
     return SettingsModel::launchParameters();
 }
 
-void SettingsUiModel::setLaunchParameters(QString launchParameters)
+void SettingsUiModel::setLaunchParameters(const QString& launchParameters)
 {
     SettingsModel::setLaunchParameters(launchParameters);
 }
@@ -76,7 +76,7 @@ QString SettingsUiModel::port()
     return SettingsModel::port();
 }
 
-void SettingsUiModel::setPort(QString port)
+void SettingsUiModel::setPort(const QString& port)
 {
     SettingsModel::setPort(port, true);
 }
@@ -91,12 +91,12 @@ bool SettingsUiModel::maxDownloadEnabled()
     return SettingsModel::maxDownloadEnabled();
 }
 
-void SettingsUiModel::setMaxDownloadEnabled(const bool maxDownloadEnabled)
+void SettingsUiModel::setMaxDownloadEnabled(bool maxDownloadEnabled)
 {
     SettingsModel::setMaxDownloadEnabled(maxDownloadEnabled);
 }
 
-void SettingsUiModel::setMaxDownload(QString downloadLimit)
+void SettingsUiModel::setMaxDownload(const QString& downloadLimit)
 {
     SettingsModel::setMaxDownload(downloadLimit);
 }

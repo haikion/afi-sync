@@ -39,8 +39,8 @@ private:
     void handleSessionStatsAlert(const libtorrent::session_stats_alert* alert);
     void handleStorageMoveFailedAlert(const libtorrent::storage_moved_failed_alert* alert);
     void handleStorageMovedAlert(const libtorrent::storage_moved_alert* alert);
-    void handleTorrentCheckAlert(const libtorrent::torrent_checked_alert* alert) const;
-    void handleTorrentFinishedAlert(const libtorrent::torrent_finished_alert* alert);
+    static void handleTorrentCheckAlert(const libtorrent::torrent_checked_alert* alert);
+    static void handleTorrentFinishedAlert(const libtorrent::torrent_finished_alert* alert);
 };
 
 #endif // ALERTHANDLER_H

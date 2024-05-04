@@ -50,7 +50,7 @@ private:
 
     void postInit();
     QString bandwithString(int amount) const;
-    QSet<Mod*> mods() const;
+    const QSet<Mod*> mods() const;
     void createSync(const QStringList& deltaUrls);
     void updateRepositories();
     static QList<IRepository*> toIrepositories(const QList<Repository*>& repositories);

@@ -10,11 +10,11 @@ class FileUtils
 public:
     static bool copy(const QString& srcPath, const QString& dstPath);
     static bool move(const QString& srcPath, const QString& dstPath);
-    static qint64 dirSize(const QString& path);
-    static QByteArray readFile(const QString& path);
+    [[nodiscard]] static qint64 dirSize(const QString& path);
+    [[nodiscard]] static QByteArray readFile(const QString& path);
     static bool writeFile(const QByteArray& data, const QString& path);
     //Case insensitive removal
-    static bool rmCi(QString path);
+    static bool rmCi(const QString& path);
     //Safety functions. These assure that the file being handeled is in safe subpath.
     //Prevents nasty programming errors from deleting important files.
     static bool safeRemove(QFile& file);
@@ -26,8 +26,8 @@ public:
     static void safeRemoveEmptyDirs(const QString& path);
     //For testability
     static void appendSafePath(const QString& path);
-    static QString casedPath(const QString& path);
-    static bool filesIdentical(const QString& path1, const QString& path2);
+    [[nodiscard]] static QString casedPath(const QString& path);
+    [[nodiscard]] static bool filesIdentical(const QString& path1, const QString& path2);
 
 private:
     static QStringList safeSubpaths_;

@@ -7,7 +7,7 @@ class IMod : virtual public ISyncItem
 {
 public:
     virtual ~IMod() = default;
-    virtual bool selected() = 0;
+    [[nodiscard]] virtual bool selected() = 0;
 };
 
 #endif // IMOD_H

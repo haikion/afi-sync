@@ -6,11 +6,11 @@
 class PathFinder
 {
 public:
-    static QString arma3Path();
-    static QString arma3MyDocuments();
-    static QString teamspeak3Path();
-    static QString teamspeak3AppDataPath();
-    static QString steamPath();
+    [[nodiscard]] static QString arma3Path();
+    [[nodiscard]] static QString arma3MyDocuments();
+    [[nodiscard]] static QString teamspeak3Path();
+    [[nodiscard]] static QString teamspeak3AppDataPath();
+    [[nodiscard]] static QString steamPath();
 
 private:
     //static const QString DEFAULT_PATH;

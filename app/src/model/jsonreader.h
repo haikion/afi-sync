@@ -20,9 +20,9 @@ public:
     JsonReader();
 
     bool updateAvailable();
-    QList<Repository*> repositories(ISync* sync);
-    QStringList deltaUrls();
-    QSet<QString> getRemovables(const QList<Repository *>& updateRepositories);
+    [[nodiscard]] QList<Repository*> repositories(ISync* sync);
+    [[nodiscard]] QStringList deltaUrls();
+    [[nodiscard]] QSet<QString> getRemovables(const QList<Repository *>& updateRepositories);
     void updateRepositories(ISync* sync, QList<Repository*>& updateRepositories);
 
 protected:

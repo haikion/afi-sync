@@ -5,7 +5,9 @@
     models.
 */
 
+#include <chrono>
 #include <sys/types.h>
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -13,6 +15,7 @@
 #include <QSet>
 #include <QString>
 #include <QStringList>
+
 #include "afisync.h"
 #include "afisynclogger.h"
 #include "apis/libtorrent/libtorrentapi.h"
@@ -24,6 +27,8 @@
 #include "repository.h"
 #include "settingsmodel.h"
 #include "treemodel.h"
+
+using namespace std::chrono_literals;
 
 TreeModel::TreeModel(QObject* parent):
     QObject(parent),
@@ -47,11 +52,11 @@ TreeModel::TreeModel(QObject* parent):
 
     LOG << "repositories.json read successfully";
 
-    updateTimer_.setInterval(1000);
+    updateTimer_.setInterval(1s);
     connect(&updateTimer_, &QTimer::timeout, this, &TreeModel::update);
     updateTimer_.start();
 
-    repoUpdateTimer_.setInterval(30000);
+    repoUpdateTimer_.setInterval(30s);
     connect(&repoUpdateTimer_, &QTimer::timeout, this, &TreeModel::periodicRepoUpdate);
     repoUpdateTimer_.start();
 }
@@ -137,7 +142,7 @@ QString TreeModel::bandwithString(int amount) const
     return QString::number(amount/1000) + " kB/s";
 }
 
-QSet<Mod*> TreeModel::mods() const
+const QSet<Mod*> TreeModel::mods() const
 {
     // Filter duplicates
     QSet<Mod*> mods;

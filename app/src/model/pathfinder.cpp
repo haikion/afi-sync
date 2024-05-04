@@ -62,14 +62,12 @@ QString PathFinder::teamspeak3AppDataPath()
 
 QString PathFinder::steamPath()
 {
-    QString path = readRegPath(QStringLiteral(
-                                   "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Valve\\Steam"),
+    QString path = readRegPath(u"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Valve\\Steam"_s,
                                u"InstallPath"_s);
     if (path == QCoreApplication::applicationDirPath())
     {
         path = readRegPath(
-            "HKEY_LOCAL_"
-            "MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam",
+            u"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam"_s,
             u"InstallLocation"_s);
     }
     checkPath(path, u"Steam"_s);

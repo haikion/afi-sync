@@ -13,8 +13,8 @@ class DeletableDetector
 public:
     DeletableDetector(const QString& modDownloadPath, const QList<IRepository*>& repositories);
 
-    qint64 totalSize() const;
-    QStringList deletableNames() const;
+    [[nodiscard]] qint64 totalSize() const;
+    [[nodiscard]] QStringList deletableNames() const;
 
 private:
     static QList<QFileInfo> deletableFileInfos(const QStringList& activeMods, const QString& modDownloadPath);

@@ -35,12 +35,12 @@ public:
         }
     }
 
-    bool contains(const QString& key) const
+    [[nodiscard]] bool contains(const QString& key) const
     {
         return QHash<QString, T>::contains(key.toLower());
     }
 
-    CiHashIt find(const QString& key)
+    [[nodiscard]] CiHashIt find(const QString& key)
     {
         return QHash<QString, T>::find(key.toLower());
     }

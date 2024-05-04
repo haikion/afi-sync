@@ -6,6 +6,7 @@
 
 #include <QDir>
 #include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QUrl>
 
 #include "../../settingsmodel.h"
@@ -19,7 +20,7 @@ using namespace Qt::StringLiterals;
 namespace lt = libtorrent;
 
 DeltaDownloader::DeltaDownloader():
-    QObject(nullptr)
+    QObject()
 {}
 
 void DeltaDownloader::mirrorDeltaPatches()

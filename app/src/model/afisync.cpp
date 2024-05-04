@@ -22,7 +22,7 @@ QStringList AfiSync::activeModNames(const QList<IRepository*>& repositories)
     return retVal;
 }
 
-QSet<QString> AfiSync::activeModNames(const IRepository* repository)
+const QSet<QString> AfiSync::activeModNames(const IRepository* repository)
 {
     QSet<QString> retVal;
     for (IMod* mod : repository->uiMods())

@@ -53,12 +53,12 @@ QByteArray SyncNetworkAccessManager::fetchBytesSlot(const QString& url)
     return retVal;
 }
 
-void SyncNetworkAccessManager::syncGetSlot(QNetworkRequest req, QNetworkReply*& reply, int timeout)
+void SyncNetworkAccessManager::syncGetSlot(const QNetworkRequest& req, QNetworkReply*& reply, int timeout)
 {
     QEventLoop loop;
     reply = get(req);
-    connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-    QTimer::singleShot(timeout, &loop, SLOT(quit()));
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    QTimer::singleShot(timeout, &loop, &QEventLoop::quit);
     loop.exec();
     if (!reply->isFinished())
         LOG_ERROR << "Request timeout from url " << req.url().url();

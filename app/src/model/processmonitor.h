@@ -1,5 +1,6 @@
 #ifndef PROCESSMONITOR_H
 #define PROCESSMONITOR_H
+
 #include <QObject>
 #include <QString>
 
@@ -10,9 +11,9 @@ class ProcessMonitor: public QObject
 public:
     explicit ProcessMonitor(QObject* parent = 0);
 
-public slots:
-    static bool arma3Running();
-    static bool afiSyncRunning();
+public:
+    [[nodiscard]] static bool arma3Running();
+    [[nodiscard]] static bool afiSyncRunning();
 
 private:
     static const QString ARMA3_PROCESS;
@@ -20,7 +21,7 @@ private:
     static const QString ARMA3_LAUNCHER;
     static const QString AFISYNC_PROCESS;
 
-    bool static isRunning(const QString& process, const qint64 pidFilter = 0);
+    [[nodiscard]] bool static isRunning(const QString& process, qint64 pidFilter = 0);
 };
 
 #endif // PROCESSMONITOR_H

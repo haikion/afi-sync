@@ -69,6 +69,6 @@ private:
 
     QSet<QString> torrentFilesUpper(const QString &url);
     QString findDownloadedMod() const;
-    void removeDeprecatedPatches(const QStringList& urls);
+    static void removeDeprecatedPatches(const QStringList& urls);
 };
 #endif // DELTAMANAGER_H

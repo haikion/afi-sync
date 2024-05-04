@@ -35,10 +35,8 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
         const QStringList fileNames = srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
         for (const QString& fileName : fileNames)
         {
-            const QString newSrcPath
-                    = srcPath + QLatin1Char('/') + fileName;
-            const QString newDstPath
-                    = dstPath + QLatin1Char('/') + fileName;
+            const QString newSrcPath = srcPath + '/' + fileName;
+            const QString newDstPath = dstPath + '/' + fileName;
             if (!copy(newSrcPath, newDstPath))
                 return false;
         }
@@ -130,7 +128,7 @@ qint64 FileUtils::dirSize(const QString& path)
     return rVal;
 }
 
-bool FileUtils::rmCi(QString path)
+bool FileUtils::rmCi(const QString& path)
 {
     QString cPath = casedPath(path);
     if (cPath.length() <= 3) //D:/

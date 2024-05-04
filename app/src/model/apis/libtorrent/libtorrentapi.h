@@ -153,7 +153,7 @@ private:
     bool addFolderGenericAsync(const QString& key);
     libtorrent::torrent_handle getHandle(const QString& key);
     bool addFolder(const QString& key, const QString& name, bool patchingEnabled);
-    void createDeltaManager(const QStringList &deltaUrls);
+    void createDeltaManager(const QStringList& deltaUrls);
     libtorrent::torrent_handle getHandleSilent(const QString& key);
     bool folderChecking(const libtorrent::torrent_status& status) const;
     bool folderQueued(const libtorrent::torrent_status& status) const;
@@ -163,7 +163,7 @@ private:
     void generalThreadInit();
     void generalInit();
     qint64 folderTotalWantedMoving(const QString& key);
-    void onFolderAdded(const QString &key, libtorrent::torrent_handle handle);
+    void onFolderAdded(const QString& key, const libtorrent::torrent_handle& handle);
 };
 
 #endif // LIBTORRENTAPI_H

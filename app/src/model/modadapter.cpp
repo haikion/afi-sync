@@ -31,15 +31,6 @@ void ModAdapter::check()
     mod_->check();
 }
 
-QString ModAdapter::checkText()
-{
-    if (!optional())
-        return u"disabled"_s;
-
-    QString rVal = ticked() ? "true" : "false";
-    return rVal;
-}
-
 QString ModAdapter::statusStr()
 {
     return mod_->statusStr();

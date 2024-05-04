@@ -6,8 +6,8 @@
 class JsonUtils
 {
 public:
-    static QVariantMap bytesToJsonMap(const QByteArray& bytes);
-    static QString updateUrl(const QVariantMap& jsonMap);
+    [[nodiscard]] static QVariantMap bytesToJsonMap(const QByteArray& bytes);
+    [[nodiscard]] static QString updateUrl(const QVariantMap& jsonMap);
 };
 
 #endif // JSONUTILS_H

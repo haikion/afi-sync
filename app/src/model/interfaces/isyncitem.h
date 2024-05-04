@@ -32,16 +32,16 @@ class ISyncItem
 {
 public:
     virtual ~ISyncItem() = default;
-    virtual QString name() const = 0;
-    virtual QString statusStr() = 0;
-    virtual QString sizeStr() const = 0;
-    virtual bool optional() = 0; // Mutex reading
-    virtual bool ticked() = 0;
+    [[nodiscard]] virtual QString name() const = 0;
+    [[nodiscard]] virtual QString statusStr() = 0;
+    [[nodiscard]] virtual QString sizeStr() const = 0;
+    [[nodiscard]] virtual bool optional() = 0; // Mutex reading
+    [[nodiscard]] virtual bool ticked() = 0;
     virtual void checkboxClicked() = 0;
     virtual void check() = 0;
     // Item is being synchronized
-    virtual bool active() const = 0; // TODO: Rename to notReady ?
-    virtual QString progressStr() = 0;
+    [[nodiscard]] virtual bool active() const = 0; // TODO: Rename to notReady ?
+    [[nodiscard]] virtual QString progressStr() = 0;
 };
 
 #endif // ISYNCITEM_H

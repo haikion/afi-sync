@@ -11,12 +11,6 @@ SyncItem::SyncItem(const QString& name):
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
 }
 
-QString SyncItem::checkText() // TODO: Remove, QML
-{
-    QString rVal = ticked() ? "true" : "false";
-    return rVal;
-}
-
 QString SyncItem::nameText()
 {
     return name_;

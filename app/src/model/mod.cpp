@@ -1,3 +1,7 @@
+#include "mod.h"
+
+#include <chrono>
+
 #include <QCoreApplication>
 #include <QDirIterator>
 #include <QStringLiteral>
@@ -8,11 +12,11 @@
 #include "fileutils.h"
 #include "global.h"
 #include "installer.h"
-#include "mod.h"
 #include "modadapter.h"
 #include "repository.h"
 #include "settingsmodel.h"
 
+using namespace std::chrono_literals;
 using namespace Qt::StringLiterals;
 
 const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
@@ -44,7 +48,7 @@ void Mod::threadConstructor()
     updateTicked();
     updateTimer_ = new QTimer(this);
     updateTimer_->setTimerType(Qt::VeryCoarseTimer);
-    updateTimer_->setInterval(1000);
+    updateTimer_->setInterval(1s);
     connect(updateTimer_, &QTimer::timeout, this, &Mod::update);
     connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(repositoryChanged()));
     connect(dynamic_cast<QObject*>(sync_), SIGNAL(folderAdded(QString)), this, SLOT(onFolderAdded(QString)));
@@ -99,7 +103,7 @@ void Mod::start()
     }
 }
 
-void Mod::onFolderAdded(QString key)
+void Mod::onFolderAdded(const QString &key)
 {
     if (key != key_) {
         return; // Not for me
@@ -310,7 +314,7 @@ void Mod::removeModAdapter(Repository* repository)
     }
 }
 
-QSet<Repository*> Mod::repositories() const
+const QSet<Repository*> Mod::repositories() const
 {
     QSet<Repository*> retVal;
     for (ModAdapter* modAdapter : adapters_)

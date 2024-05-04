@@ -12,11 +12,11 @@
 namespace AfiSync
 {
     QStringList activeModNames(const QList<IRepository*>& repositories);
-    QSet<QString> activeModNames(const IRepository* repository);
+    [[nodiscard]] const QSet<QString> activeModNames(const IRepository* repository);
     void printDeletables(const DeletableDetector& deletableDetector);
-    QSet<QString> combine(const QList<QSet<QString>>& list);
-    QStringList filterDeprecatedPatches(const QStringList& allFiles, const QStringList& urls);
-    QStringList getDeltaUrlsForMod(const QString& modName, const QString& hash, const QStringList& deltaUrls);
+    [[nodiscard]] QSet<QString> combine(const QList<QSet<QString>>& list);
+    [[nodiscard]] QStringList filterDeprecatedPatches(const QStringList& allFiles, const QStringList& urls);
+    [[nodiscard]] QStringList getDeltaUrlsForMod(const QString& modName, const QString& hash, const QStringList& deltaUrls);
 }
 
 #endif // AFISYNC_H

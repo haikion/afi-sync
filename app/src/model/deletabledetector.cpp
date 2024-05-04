@@ -11,6 +11,7 @@ DeletableDetector::DeletableDetector(const QString& modDownloadPath, const QList
     QStringList modNames = AfiSync::activeModNames(repositories);
     modNames.sort(Qt::CaseInsensitive);
     QList<QFileInfo> files = deletableFileInfos(modNames, modDownloadPath);
+    deletables_.reserve(files.size());
     for (const QFileInfo& file : files)
     {
         Deletable deletable(file.fileName(), FileUtils::dirSize(file.filePath()));

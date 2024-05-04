@@ -1,9 +1,9 @@
 #ifndef RUNNINGTIME_H
 #define RUNNINGTIME_H
 
-#include <stdint.h>
+#include <cstdint>
 
-int64_t runningTimeMs();
-int64_t runningTimeS();
+[[nodiscard]] int64_t runningTimeMs();
+[[nodiscard]] int64_t runningTimeS();
 
 #endif // RUNNINGTIME_H

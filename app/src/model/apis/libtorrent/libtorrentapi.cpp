@@ -966,7 +966,7 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& name, bool patc
     // continues at onFolderAdded
 }
 
-void LibTorrentApi::onFolderAdded(const QString& key, lt::torrent_handle handle) {
+void LibTorrentApi::onFolderAdded(const QString& key, const lt::torrent_handle& handle) {
     keyHash_.insert(key, handle);
     handle.resume();
     emit folderAdded(key);
