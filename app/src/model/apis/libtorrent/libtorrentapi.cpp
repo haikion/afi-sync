@@ -180,7 +180,6 @@ void LibTorrentApi::checkFolder(const QString& key)
     h.force_recheck();
 }
 
-// TODO: Use mutexes here as keyHash is written in worker thread and read in ui thread.
 QStringList LibTorrentApi::folderKeys()
 {
     return keyHash_.keys();

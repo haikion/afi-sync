@@ -37,6 +37,7 @@ TreeModel::TreeModel(QObject* parent):
     sync_(nullptr)
 {
     LOG;
+    jsonReader_.readJson();
     createSync(jsonReader_.deltaUrls());
     repositories_ = jsonReader_.repositories(sync_);
 

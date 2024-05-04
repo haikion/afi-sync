@@ -17,8 +17,9 @@ class Repository;
 class JsonReader
 {
 public:
-    JsonReader();
+    JsonReader() = default;
 
+    void readJson();
     bool updateAvailable();
     [[nodiscard]] QList<Repository*> repositories(ISync* sync);
     [[nodiscard]] QStringList deltaUrls();
@@ -28,13 +29,12 @@ public:
 protected:
     virtual bool writeJsonBytes(const QByteArray& bytes);
     virtual QByteArray readJsonBytes() const;
-    void setSyncNetworkAccessManager(std::unique_ptr<SyncNetworkAccessManager> syncNetworkAccessManager);
 
 private:
     static const QString JSON_RELATIVE_PATH;
 
     QVariantMap jsonMap_;
-    std::unique_ptr<SyncNetworkAccessManager> nam_;
+    SyncNetworkAccessManager nam_;
 
     bool updateJsonMap();
     QString updateUrl(const QVariantMap& jsonMap) const;
