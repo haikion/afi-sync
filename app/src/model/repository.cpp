@@ -20,8 +20,8 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
     password_(password),
     battlEyeEnabled_(true)
 {
-    LOG << "Created repo name = " << name;
-    if (ticked()) {
+    LOG << "Created repo with name " << name;
+    if (SettingsModel::ticked({}, name)) {
         setStatus(SyncStatus::WAITING);
         activeTimer_.start();
         startUpdates();

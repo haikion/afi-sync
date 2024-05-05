@@ -116,9 +116,9 @@ signals:
 private:
     static const int NOT_FOUND;
 
-    QTimer* timer_;
+    QTimer* timer_{nullptr};
     QNetworkAccessManager* networkAccessManager_{nullptr};
-    libtorrent::session* session_;
+    libtorrent::session* session_{nullptr};
     // TODO: Create single type called TorrentHandle
     // and combine these.
     CiHash<libtorrent::torrent_handle> keyHash_;
