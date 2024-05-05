@@ -89,7 +89,7 @@ Repository* ModAdapter::repo() const
 
 void ModAdapter::forceCheck() const
 {
-    mod_->forceCheck();
+    QMetaObject::invokeMethod(mod_, &Mod::forceCheck);
 }
 
 bool ModAdapter::selected()

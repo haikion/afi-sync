@@ -89,7 +89,7 @@ void AsTreeItem::initCheckBox()
 {
     checkBox_->setEnabled(syncItem_->optional());
     checkBox_->setChecked(syncItem_->ticked());
-    QObject::connect(checkBox_, &QCheckBox::clicked, [=] (bool value) {
+    QObject::connect(checkBox_, &QCheckBox::clicked, &context_, [=] (bool value) {
         syncItem_->checkboxClicked();
         // New state is updated when sync item state updates
         wantedCheckBoxState_ = value;

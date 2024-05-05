@@ -18,11 +18,11 @@ DestructionWaiter::DestructionWaiter(const QSet<QObject*>& objects)
 void DestructionWaiter::wait(int timeout)
 {
     int seconds = 0;
-    while (counter > 0)
+    while (counter_ > 0)
     {
         if (seconds > timeout && timeout != -1)
         {
-            LOG << "ERROR: Timeout reached.";
+            LOG_ERROR << "Timeout reached.";
             break;
         }
         QThread::sleep(1);
@@ -34,15 +34,11 @@ void DestructionWaiter::init(const QSet<QObject*>& objects)
 {
     for (QObject* object : objects)
     {
-        counter++;
+        counter_++;
+        // clazy:skip
         QObject::connect(object, &QObject::destroyed, [=] ()
         {
-            this->decrement();
+            counter_--;
         });
     }
-}
-
-void DestructionWaiter::decrement()
-{
-    counter--;
 }

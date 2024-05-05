@@ -38,9 +38,7 @@ using namespace Qt::StringLiterals;
 
 namespace lt = libtorrent;
 
-const int LibTorrentApi::NOT_FOUND = -404;
-const QString LibTorrentApi::ERROR_KEY_NOT_FOUND = u"ERROR: not found. key = "_s;
-const QString LibTorrentApi::ERROR_SESSION_NULL = u"ERROR: session is null."_s;
+constexpr int LibTorrentApi::NOT_FOUND = -404;
 
 LibTorrentApi::LibTorrentApi() :
     QObject(nullptr)
@@ -681,7 +679,7 @@ void LibTorrentApi::handleAlerts()
 {
     if (!session_)
     {
-        LOG << ERROR_SESSION_NULL;
+        LOG_ERROR << "session is null.";
         return;
     }
 
@@ -858,7 +856,7 @@ bool LibTorrentApi::addFolderGenericAsync(const QString& key)
     // TODO: Remove? Might be too defensive
     if (!session_)
     {
-        LOG << ERROR_SESSION_NULL;
+        LOG_ERROR << "session is null.";
         onFolderAdded(key, lt::torrent_handle());
         return false;
     }
@@ -930,7 +928,7 @@ lt::torrent_handle LibTorrentApi::getHandle(const QString& key)
     lt::torrent_handle rVal = getHandleSilent(key);
     if (!rVal.is_valid())
     {
-        LOG << ERROR_KEY_NOT_FOUND << key;
+        LOG_ERROR << "Key "  << key << " not found";
     }
 
     return rVal;

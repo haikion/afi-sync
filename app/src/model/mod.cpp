@@ -515,6 +515,8 @@ void Mod::updateStatus()
 
 void Mod::forceCheck()
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+
     sync_->disableQueue(key_);
     check();
 }
@@ -558,6 +560,8 @@ void Mod::processCompletion()
 
 void Mod::check()
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+
     sync_->checkFolder(key_);
     // Process completion when checking is done
     setProcessCompletion(true);

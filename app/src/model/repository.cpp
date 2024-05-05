@@ -267,18 +267,6 @@ QSet<QString> Repository::createReadyStatuses()
     return readyStatuses;
 }
 
-void Repository::removeAdapter(const Mod* mod)
-{
-    QList<ModAdapter*> adapters = modAdapters_;
-    for (ModAdapter* modAdapter : adapters)
-    {
-        if (modAdapter->mod() == mod)
-        {
-            removeModAdapter(modAdapter);
-        }
-    }
-}
-
 void Repository::removeAdapter(const QString& key)
 {
     QList<ModAdapter*> modAdapters = modAdapters_;

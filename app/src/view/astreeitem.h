@@ -5,6 +5,8 @@
 #include <QTreeWidgetItem>
 #include <QCheckBox>
 #include <QPushButton>
+#include <QObject>
+
 #include "../model/interfaces/isyncitem.h"
 
 class AsTreeItem : public QTreeWidgetItem
@@ -18,11 +20,13 @@ public:
     ISyncItem* syncItem();
 
 private:
-    ISyncItem* syncItem_;
-    QCheckBox* checkBox_;
-    bool wantedCheckBoxState_ = false;
-    QPushButton* startButton_;
-    QPushButton* joinButton_;
+    ISyncItem* syncItem_{nullptr};
+    QCheckBox* checkBox_{nullptr};
+    bool wantedCheckBoxState_{false};
+    QPushButton* startButton_{nullptr};
+    QPushButton* joinButton_{nullptr};
+    // Keep this last
+    QObject context_;
 
     void init();
     void initCheckBox();

@@ -69,7 +69,6 @@ private:
     void changed();
     [[nodiscard]] QList<ModAdapter*> modAdapters() const;
     [[nodiscard]] static QSet<QString> createReadyStatuses();
-    void removeAdapter(const Mod* mod);
     void removeAdapter(const QString& key);
 };
 

@@ -35,8 +35,8 @@ protected:
     virtual void setTicked(bool ticked);
 
 private:
-    Mod* mod_;
-    Repository* repo_;
+    Mod* mod_{nullptr};
+    Repository* repo_{nullptr};
     bool isOptional_;
     QString key_;
 };

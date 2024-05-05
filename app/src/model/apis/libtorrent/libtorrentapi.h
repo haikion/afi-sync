@@ -115,8 +115,6 @@ signals:
 
 private:
     static const int NOT_FOUND;
-    static const QString ERROR_KEY_NOT_FOUND;
-    static const QString ERROR_SESSION_NULL;
 
     QTimer* timer_;
     QNetworkAccessManager* networkAccessManager_{nullptr};

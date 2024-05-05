@@ -40,7 +40,6 @@ public:
     void stopUpdates();
     void startUpdates();
     void updateStatus();
-    void forceCheck();
     [[nodiscard]] qint64 totalWanted() const;
     [[nodiscard]] qint64 totalWantedDone() const;
     [[nodiscard]] QString progressStr() override;
@@ -49,6 +48,7 @@ public:
     [[nodiscard]] bool selected() override;
 
 public slots:
+    void forceCheck();
     void repositoryChanged();
     void removeModAdapter(ModAdapter* modAdapter);
     void removeModAdapter(Repository* repository);

@@ -1,5 +1,6 @@
 #ifndef DESTRUCTIONWAITER_H
 #define DESTRUCTIONWAITER_H
+
 #include <QObject>
 #include <QSet>
 
@@ -11,8 +12,8 @@ public:
     void wait(int timeout = -1);
 
 private:
-    std::atomic<int> counter{0};
-    void decrement();
+    std::atomic<int> counter_{0};
+
     void init(const QSet<QObject*>& objects);
 };
 
