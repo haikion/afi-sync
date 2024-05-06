@@ -32,7 +32,7 @@ class ISyncItem
 {
 public:
     virtual ~ISyncItem() = default;
-    [[nodiscard]] virtual QString name() const = 0;
+    [[nodiscard]] virtual QString name() = 0;
     [[nodiscard]] virtual QString statusStr() = 0;
     [[nodiscard]] virtual QString sizeStr() const = 0;
     [[nodiscard]] virtual bool optional() = 0; // Mutex reading

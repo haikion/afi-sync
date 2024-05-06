@@ -65,13 +65,15 @@ QSet<QString> SyncItem::createActiveStatuses()
     return retVal;
 }
 
-QString SyncItem::name() const
+QString SyncItem::name()
 {
+    QMutexLocker l(&nameMutex_);
     return name_;
 }
 
 void SyncItem::setName(const QString& name)
 {
+    QMutexLocker l(&nameMutex_);
     name_ = name;
 }
 

@@ -40,6 +40,7 @@ Mod::Mod(const QString& name, const QString& key, ISync* sync):
 
 Mod::~Mod()
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
     LOG << "name = " << name() << " Thread: " << QThread::currentThread()->objectName();
 }
 
@@ -54,7 +55,7 @@ void Mod::threadConstructor()
     connect(dynamic_cast<QObject*>(sync_), SIGNAL(folderAdded(QString)), this, SLOT(onFolderAdded(QString)));
 }
 
-QString Mod::path() const
+QString Mod::path()
 {
     return SettingsModel::modDownloadPath() + "/" + name();
 }
@@ -72,7 +73,7 @@ void Mod::update()
 }
 
 //Removes mod which has same name but different key.
-void Mod::removeConflicting() const
+void Mod::removeConflicting()
 {
     for (const QString& syncKey : sync_->folderKeys())
     {
@@ -155,7 +156,7 @@ void Mod::setProcessCompletion(const bool value)
     SettingsModel::setProcessed(name(), !value ? key_ : ""_L1);
 }
 
-bool Mod::getProcessCompletion() const
+bool Mod::getProcessCompletion()
 {
     return SettingsModel::processed(name()) != key_;
 }
@@ -293,25 +294,10 @@ void Mod::removeModAdapter(ModAdapter* modAdapter)
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
 
-    adapters_.removeAll(modAdapter);
-    if (adapters_.isEmpty())
-    {
-        deleteLater();
-        return;
-    }
-    QMetaObject::invokeMethod(this, &Mod::repositoryChanged, Qt::QueuedConnection);
-}
+    adapters_.removeOne(modAdapter);
+    Q_ASSERT(!adapters_.contains(modAdapter));
 
-void Mod::removeModAdapter(Repository* repository)
-{
-    QList<ModAdapter*> modAdapters = adapters_;
-    for (ModAdapter* modAdapter : modAdapters)
-    {
-        if (modAdapter->repo() == repository)
-        {
-            delete modAdapter;
-        }
-    }
+    repositoryChanged();
 }
 
 const QSet<Repository*> Mod::repositories() const
@@ -361,6 +347,8 @@ void Mod::stopUpdatesSlot()
 
 bool Mod::selected()
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+
     for (ModAdapter* adp : modAdapters())
     {
         if (adp->selected())
@@ -374,6 +362,8 @@ bool Mod::selected()
 //Returns true only if at least one adapter is optional
 bool Mod::optional()
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+
     for (ModAdapter* adp : modAdapters())
     {
         if (adp->optional()) {
@@ -393,6 +383,8 @@ QList<ModAdapter*> Mod::modAdapters()
 
 void Mod::appendModAdapter(ModAdapter* adapter)
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+
     adaptersMutex_.lock();
     adapters_.append(adapter);
     int size = adapters_.size();
@@ -416,6 +408,8 @@ void Mod::appendModAdapter(ModAdapter* adapter)
 
 void Mod::updateStatus()
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+
     if (!ticked() || reposInactive())
     {
         setStatus(SyncStatus::INACTIVE);
@@ -521,6 +515,7 @@ void Mod::forceCheck()
     check();
 }
 
+// Thread safe
 QString Mod::progressStr()
 {
     if (!ticked() || statusStr() == SyncStatus::STARTING)
@@ -553,6 +548,8 @@ QString Mod::toProgressStr(const qint64 totalWanted, qint64 totalWantedDone)
 
 void Mod::processCompletion()
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+
     deleteExtraFiles();
     Installer::install(this);
     LOG <<  name() << " synced";

@@ -7,7 +7,7 @@
 
 using namespace Qt::StringLiterals;
 
-ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index):
+ModAdapter::ModAdapter(QSharedPointer<Mod> mod, Repository* repo, bool isOptional, int index):
     SyncItem(mod->name()),
     mod_(mod),
     repo_(repo),
@@ -16,14 +16,13 @@ ModAdapter::ModAdapter(Mod* mod, Repository* repo, bool isOptional, int index):
 {
     //Connect everything
     setFileSize(mod->fileSize());
-    repo->appendModAdapter(this, index);
-    mod->appendModAdapter(this);
+    repo->appendModAdapter(QSharedPointer<ModAdapter>(this), index);
+    QMetaObject::invokeMethod(mod.get(), "appendModAdapter", Qt::QueuedConnection, Q_ARG(ModAdapter*, this));
 }
 
 ModAdapter::~ModAdapter()
 {
-    repo_->removeModAdapter(this);
-    QMetaObject::invokeMethod(mod_, "removeModAdapter", Qt::BlockingQueuedConnection, Q_ARG(ModAdapter*, this));
+    QMetaObject::invokeMethod(mod_.get(), "removeModAdapter", Qt::BlockingQueuedConnection, Q_ARG(ModAdapter*, this));
 }
 
 void ModAdapter::check()
@@ -77,7 +76,7 @@ QString ModAdapter::progressStr()
     return mod_->progressStr();
 }
 
-Mod* ModAdapter::mod() const
+QSharedPointer<Mod> ModAdapter::mod() const
 {
     return mod_;
 }
@@ -89,7 +88,7 @@ Repository* ModAdapter::repo() const
 
 void ModAdapter::forceCheck() const
 {
-    QMetaObject::invokeMethod(mod_, &Mod::forceCheck);
+    QMetaObject::invokeMethod(mod_.get(), &Mod::forceCheck);
 }
 
 bool ModAdapter::selected()

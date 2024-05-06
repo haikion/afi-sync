@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QNetworkReply>
+#include <QSharedDataPointer>
 #include <QStringLiteral>
 #include <QVariantMap>
 
@@ -83,10 +84,10 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
 {
     const QList<QVariant> jsonRepositories = jsonMap_.value(u"repositories"_s).toList();
     QSet<QString> previousModKeys;
-    QMap<QString, Mod*> modMap; // Add same key mods only once
+    QMap<QString, QSharedPointer<Mod>> modMap; // Add same key mods only once
     for (Repository* repository : repositories)
     {
-        for (Mod* mod : repository->mods())
+        for (const auto& mod : repository->mods())
         {
             modMap.insert(mod->key(), mod);
             previousModKeys.insert(mod->key());
@@ -127,7 +128,8 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
                 continue; // Mod is already included in the repository.
 
             const auto modName = mod.value(u"name"_s).toString().toLower();
-            Mod* newMod = modMap.contains(key) ? modMap.value(key) : new Mod(modName, key, sync);
+            auto newMod = modMap.contains(key) ? modMap.value(key) :
+                              QSharedPointer<Mod>(new Mod(modName, key, sync), &QObject::deleteLater);
             modMap.insert(key, newMod); //add if doesn't already exist
             newMod->setFileSize(qvariant_cast<quint64>(mod.value(u"fileSize"_s, "0")));
             new ModAdapter(newMod, repo, mod.value(u"optional"_s, false).toBool(), i);
@@ -160,7 +162,7 @@ QSet<QString> JsonReader::getRemovablesOffline(const QList<Repository*>& reposit
     QSet<QString> previousModKeys;
     for (Repository* repository : repositories)
     {
-        for (Mod* mod : repository->mods())
+        for (const auto& mod : repository->mods())
         {
             previousModKeys.insert(mod->key());
         }

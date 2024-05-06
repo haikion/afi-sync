@@ -31,7 +31,7 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
 
 void Repository::stopUpdates()
 {
-    for (ModAdapter* modAdapter : modAdapters_)
+    for (const auto& modAdapter : modAdapters_)
     {
         modAdapter->stopUpdates();
     }
@@ -43,7 +43,7 @@ void Repository::setBattlEyeEnabled(bool battleEyeEnabled)
 }
 
 bool Repository::isReady() const {
-    for (ModAdapter* modAdapter : modAdapters_)
+    for (const auto& modAdapter : modAdapters_)
     {
         if (modAdapter->statusStr() != SyncStatus::READY)
         {
@@ -74,7 +74,7 @@ QString Repository::progressStr()
     // Mods share the same delta patches torrent
     qint64 totalWantedDelta = 0;
     qint64 totalWantedDoneDelta = 0;
-    for (Mod* mod : mods())
+    for (const auto& mod : mods())
     {
         if (!mod->ticked())
             continue;
@@ -126,7 +126,7 @@ Repository* Repository::findRepoByName(const QString& name, const QList<Reposito
 
 void Repository::startUpdates()
 {
-    for (Mod* mod : mods())
+    for (const auto& mod : mods())
     {
         mod->startUpdates();
     }
@@ -139,7 +139,7 @@ Repository::~Repository()
 
 void Repository::check()
 {
-    for (SyncItem* mod : mods())
+    for (const auto& mod : mods())
     {
         mod->check();
     }
@@ -147,7 +147,7 @@ void Repository::check()
 
 void Repository::processCompletion()
 {
-    for (Mod* mod : mods())
+    for (const auto& mod : mods())
     {
         if (mod->ticked())
             mod->processCompletion();
@@ -157,20 +157,15 @@ void Repository::processCompletion()
 
 void Repository::changed()
 {
-    for (Mod* mod : mods())
+    for (const auto& mod: mods())
     {
-        QMetaObject::invokeMethod(mod, &Mod::repositoryChanged, Qt::QueuedConnection);
+        QMetaObject::invokeMethod(mod.get(), &Mod::repositoryChanged, Qt::QueuedConnection);
     }
 }
 
 void Repository::clearModAdapters()
 {
-    QList<ModAdapter*> modAdapters = modAdapters_;
-    for (ModAdapter* modAdapter : modAdapters)
-    {
-        delete modAdapter;
-        // Destructor removes from modAdapters_
-    }
+    modAdapters_.clear();
 }
 
 void Repository::checkboxClicked()
@@ -269,22 +264,14 @@ QSet<QString> Repository::createReadyStatuses()
 
 void Repository::removeAdapter(const QString& key)
 {
-    QList<ModAdapter*> modAdapters = modAdapters_;
-    for (ModAdapter* modAdapter : modAdapters)
+    auto modAdapters = modAdapters_;
+    for (const auto& modAdapter : modAdapters)
     {
         if (modAdapter->key() == key)
         {
-            delete modAdapter;
+            modAdapters_.removeOne(modAdapter);
+            Q_ASSERT(!modAdapters_.contains(modAdapter));
         }
-    }
-}
-
-void Repository::removeModAdapter(ModAdapter* modAdapter)
-{
-    modAdapters_.removeAll(modAdapter);
-    if (modAdapters_.isEmpty())
-    {
-        delete this;
     }
 }
 
@@ -300,7 +287,7 @@ void Repository::update()
     }
 
     QSet<QString> modStatuses;
-    for (Mod* item : mods())
+    for (const auto& item : mods())
     {
         modStatuses.insert(item->statusStr());
     }
@@ -344,7 +331,7 @@ QString Repository::modsParameter()
     }
     QString rVal = u"-mod="_s;
     auto charCounter = rVal.size();
-    for (ModAdapter* modAdapter : modAdapters())
+    for (const auto& modAdapter : modAdapters_)
     {
         if (modAdapter->ticked())
         {
@@ -366,7 +353,7 @@ QString Repository::modsParameter()
 const QSet<QString> Repository::modKeys() const
 {
     QSet<QString> rVal;
-    for (Mod* mod : mods())
+    for (const auto& mod : mods())
     {
         rVal.insert(mod->key());
     }
@@ -385,7 +372,7 @@ QStringList Repository::joinParameters() const
     return rVal;
 }
 
-void Repository::appendModAdapter(ModAdapter* adp, int index)
+void Repository::appendModAdapter(QSharedPointer<ModAdapter> adp, int index)
 {
     setFileSize(fileSize() + adp->mod()->fileSize());
     modAdapters_.insert(index, adp);
@@ -394,7 +381,7 @@ void Repository::appendModAdapter(ModAdapter* adp, int index)
 void Repository::enableMods()
 {
     LOG << "name = " << name();
-    for (ModAdapter* adp : modAdapters())
+    for (const auto& adp : modAdapters_)
     {
         if (adp->optional() && !adp->ticked())
         {
@@ -405,7 +392,7 @@ void Repository::enableMods()
 
 bool Repository::contains(const QString& key) const
 {
-    for (const Mod* mod : mods())
+    for (const auto& mod : mods())
     {
         if (mod->key() == key)
             return true;
@@ -413,10 +400,10 @@ bool Repository::contains(const QString& key) const
     return false;
 }
 
-QList<Mod*> Repository::mods() const
+QList<QSharedPointer<Mod>> Repository::mods() const
 {
-    QList<Mod*> rVal;
-    for (ModAdapter* item : modAdapters_)
+    QList<QSharedPointer<Mod>> rVal;
+    for (const auto& item : modAdapters_)
     {
         rVal.append(item->mod());
     }
@@ -436,14 +423,9 @@ QList<IMod*> Repository::uiMods() const
 {
     QList<IMod*> retVal;
     retVal.reserve(modAdapters_.size());
-    for (ModAdapter* item : modAdapters_)
+    for (const auto& item : modAdapters_)
     {
-        retVal.append(item);
+        retVal.append(item.get());
     }
     return retVal;
-}
-
-QList<ModAdapter*> Repository::modAdapters() const
-{
-    return modAdapters_;
 }

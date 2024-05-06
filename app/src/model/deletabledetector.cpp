@@ -1,7 +1,5 @@
 #include "deletabledetector.h"
 #include "fileutils.h"
-#include "afisynclogger.h"
-#include "interfaces/isyncitem.h"
 #include "afisync.h"
 #include <QDirIterator>
 #include <QFileInfo>

@@ -35,7 +35,6 @@ public:
     bool ticked() override;
     void processCompletion() override;
     QList<ModAdapter*> modAdapters();
-    void appendModAdapter(ModAdapter* adapter);
     [[nodiscard]] bool optional() override;
     void stopUpdates();
     void startUpdates();
@@ -48,10 +47,10 @@ public:
     [[nodiscard]] bool selected() override;
 
 public slots:
+    void appendModAdapter(ModAdapter* adapter);
     void forceCheck();
     void repositoryChanged();
     void removeModAdapter(ModAdapter* modAdapter);
-    void removeModAdapter(Repository* repository);
 
 private:
     static const unsigned COMPLETION_WAIT_DURATION;
@@ -72,10 +71,10 @@ private:
     [[nodiscard]] bool reposInactive();
     void start();
     bool stop();
-    void removeConflicting() const;
-    [[nodiscard]] QString path() const;
+    void removeConflicting();
+    [[nodiscard]] QString path();
     void setProcessCompletion(const bool value);
-    [[nodiscard]] bool getProcessCompletion() const;
+    [[nodiscard]] bool getProcessCompletion();
     void updateProgress();
     void updateTicked();
     void moveFilesNow();

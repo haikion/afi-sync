@@ -88,9 +88,9 @@ TreeModel::~TreeModel()
     QSet<QObject*> mods;
     for (Repository* repo : repositories_)
     {
-        for (Mod* mod : repo->mods())
+        for (const auto& mod : repo->mods())
         {
-            mods.insert(mod);
+            mods.insert(mod.get());
         }
     }
     DestructionWaiter waiter(mods);
@@ -98,6 +98,7 @@ TreeModel::~TreeModel()
     for (Repository* repo : repositories_)
     {
         repo->clearModAdapters();
+        delete repo;
         // Repos and mods are destroyed once their adapters are cleared
     }
     waiter.wait();
@@ -149,9 +150,9 @@ const QSet<Mod*> TreeModel::mods() const
     QSet<Mod*> mods;
     for (Repository* repo : repositories_)
     {
-        for (Mod* mod : repo->mods())
+        for (const auto& mod : repo->mods())
         {
-            mods.insert(mod);
+            mods.insert(mod.get());
         }
     }
     return mods;
@@ -209,21 +210,14 @@ void TreeModel::updateRepositories()
     }
     QList<Repository*> updatedList = repositories_;
     jsonReader_.updateRepositories(sync_, updatedList);
-    QList<Repository*> deletables;
     for (Repository* repo : repositories_)
     {
         if (!updatedList.contains(repo))
         {
-            deletables.append(repo);
+            delete repo;
         }
     }
     repositories_ = updatedList;
-    for (Repository* repo : deletables)
-    {
-        repo->clearModAdapters();
-        // Mods and repos delete themselves if ModAdapters are
-        // all removed.
-    }
     emit repositoriesChanged(toIrepositories(repositories_));
 }
 

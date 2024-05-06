@@ -1,7 +1,6 @@
 #include <QRegularExpression>
 
 #include "deletabledetector.h"
-#include "interfaces/isyncitem.h"
 #include "interfaces/imod.h"
 #include "afisync.h"
 #include "afisynclogger.h"

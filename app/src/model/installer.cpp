@@ -52,7 +52,7 @@ QStringList listFilesInRelativeForm(const QDir &directory) {
 }
 }
 
-void Installer::install(const Mod* mod)
+void Installer::install(Mod* mod)
 {
     QString modPath = SettingsModel::modDownloadPath() + "/" + mod->name();
     //TeamSpeak 3 plugins. Install to all possible plugin locations.

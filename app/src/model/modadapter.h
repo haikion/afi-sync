@@ -14,7 +14,7 @@
 class ModAdapter : public SyncItem, virtual public IMod
 {
 public:
-    ModAdapter(Mod* mod, Repository* repo, bool optional, int index);
+    ModAdapter(QSharedPointer<Mod> mod, Repository* repo, bool optional, int index);
     ~ModAdapter() override;
 
     void check() override;
@@ -24,7 +24,7 @@ public:
     void processCompletion() override;
     [[nodiscard]] bool optional() override;
     [[nodiscard]] QString progressStr() override;
-    Mod* mod() const;
+    QSharedPointer<Mod> mod() const;
     Repository* repo() const;
     void forceCheck() const;
     bool selected() override;
@@ -35,9 +35,9 @@ protected:
     virtual void setTicked(bool ticked);
 
 private:
-    Mod* mod_{nullptr};
+    QSharedPointer<Mod> mod_{nullptr};
     Repository* repo_{nullptr};
-    bool isOptional_;
+    std::atomic<bool> isOptional_;
     QString key_;
 };
 

@@ -11,7 +11,7 @@
 class Installer
 {
 public:
-    static void install(const Mod* mod);
+    static void install(Mod* mod);
 
 private:
     static const QString TS_DIR;

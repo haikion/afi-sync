@@ -22,13 +22,13 @@ public:
 
     [[nodiscard]] static Repository* findRepoByName(const QString& name, const QList<Repository*>& repositories);
     void check() override;
-    void appendModAdapter(ModAdapter* adp, int index);
+    void appendModAdapter(QSharedPointer<ModAdapter> adp, int index);
     void checkboxClicked() override;
     [[nodiscard]] ISync* sync() const;
     void join() override;
     void start() override;
     bool optional() override;
-    [[nodiscard]] QList<Mod*> mods() const;
+    [[nodiscard]] QList<QSharedPointer<Mod> > mods() const;
     [[nodiscard]] QList<IMod*> uiMods() const override;
     void processCompletion() override;
     void enableMods();
@@ -49,7 +49,6 @@ public:
     [[nodiscard]] const QSet<QString> modKeys() const;
     void removeDeprecatedMods(const QSet<QString>& jsonMods);
     void clearModAdapters();
-    void removeModAdapter(ModAdapter* modAdapter);
 
 private:
     //Server details
@@ -59,7 +58,7 @@ private:
     bool battlEyeEnabled_;
     // TODO: Create IModAdapter and use that instead so Repository
     // can be unit tested
-    QList<ModAdapter*> modAdapters_;
+    QList<QSharedPointer<ModAdapter>> modAdapters_;
     QElapsedTimer activeTimer_;
 
     [[nodiscard]] QString modsParameter();
@@ -67,7 +66,7 @@ private:
     void generalLaunch(const QStringList& extraParams = QStringList());
     [[nodiscard]] QString createParFile(const QString& parameters);
     void changed();
-    [[nodiscard]] QList<ModAdapter*> modAdapters() const;
+    [[nodiscard]] QList<QSharedPointer<ModAdapter>> modAdapters() const;
     [[nodiscard]] static QSet<QString> createReadyStatuses();
     void removeAdapter(const QString& key);
 };
