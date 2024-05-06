@@ -111,9 +111,9 @@ void Repository::setPassword(const QString& password)
     password_ = password;
 }
 
-Repository* Repository::findRepoByName(const QString& name, const QList<Repository*>& repositories)
+QSharedPointer<Repository> Repository::findRepoByName(const QString& name, const QList<QSharedPointer<Repository>>& repositories)
 {
-    for (Repository* repository : repositories)
+    for (const auto& repository : repositories)
     {
         if (repository->name() == name)
         {

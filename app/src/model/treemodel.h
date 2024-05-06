@@ -1,15 +1,15 @@
 #ifndef TREEMODEL_H
 #define TREEMODEL_H
 
-#include <QVariant>
-#include <QVariant>
-#include <QObject>
 #include <QList>
+#include <QObject>
 #include <QSet>
-#include "repository.h"
+#include <QSharedPointer>
+
 #include "apis/isync.h"
 #include "interfaces/ibandwidthmeter.h"
 #include "jsonreader.h"
+#include "repository.h"
 
 class TreeModel : public QObject, virtual public IBandwidthMeter
 {
@@ -41,7 +41,7 @@ private slots:
 private:
     unsigned download_;
     unsigned upload_;
-    QList<Repository*> repositories_;
+    QList<QSharedPointer<Repository>> repositories_;
     QTimer updateTimer_;
     ISync* sync_;
     QTimer repoUpdateTimer_;
@@ -53,7 +53,7 @@ private:
     const QSet<Mod*> mods() const;
     void createSync(const QStringList& deltaUrls);
     void updateRepositories();
-    static QList<IRepository*> toIrepositories(const QList<Repository*>& repositories);
+    static QList<IRepository*> toIrepositories(const QList<QSharedPointer<Repository>>& repositories);
 };
 
 #endif // TREEMODEL_H

@@ -56,13 +56,6 @@ bool JsonReader::updateAvailable()
     return JsonUtils::bytesToJsonMap(bytes) != jsonMap_;
 }
 
-QList<Repository*> JsonReader::repositories(ISync* sync)
-{
-    QList<Repository*> retVal;
-    updateRepositoriesOffline(sync, retVal);
-    return retVal;
-}
-
 bool JsonReader::readJsonFile()
 {
     const QByteArray jsonBytes = readJsonBytes();
@@ -80,12 +73,12 @@ QByteArray JsonReader::readJsonBytes() const
     return FileUtils::readFile(QCoreApplication::applicationDirPath() + JSON_RELATIVE_PATH);
 }
 
-void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repositories)
+void JsonReader::updateRepositoriesOffline(ISync* sync, QList<QSharedPointer<Repository>>& repositories)
 {
     const QList<QVariant> jsonRepositories = jsonMap_.value(u"repositories"_s).toList();
     QSet<QString> previousModKeys;
     QMap<QString, QSharedPointer<Mod>> modMap; // Add same key mods only once
-    for (Repository* repository : repositories)
+    for (auto repository : repositories)
     {
         for (const auto& mod : repository->mods())
         {
@@ -95,18 +88,18 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
     }
     sync->setDeltaUrls(jsonMap_.value(u"deltaUpdates2"_s).toStringList());
     QHash<Repository*, QSet<QString>> repositoryJsonModKeys;
-    QList<Repository*> orderedRepositoryList;
+    QList<QSharedPointer<Repository>> orderedRepositoryList;
     for (const QVariant& repoVar : jsonRepositories)
     {
         auto repository = repoVar.toMap();
         auto repoName = repository.value(u"name"_s).toString();
-        Repository* repo = Repository::findRepoByName(repoName, repositories);
+        auto repo = Repository::findRepoByName(repoName, repositories);
         const auto serverAddress = repository.value(u"serverAddress"_s).toString();
         const auto serverPort = qvariant_cast<unsigned>(repository.value(u"serverPort"_s));
         const auto password = repository.value(u"password"_s, "").toString();
         if (repo == nullptr)
         {
-            repo = new Repository(repoName, serverAddress, serverPort, password);
+            repo = QSharedPointer<Repository>(new Repository(repoName, serverAddress, serverPort, password));
         }
         else
         {
@@ -132,9 +125,9 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
                               QSharedPointer<Mod>(new Mod(modName, key, sync), &QObject::deleteLater);
             modMap.insert(key, newMod); //add if doesn't already exist
             newMod->setFileSize(qvariant_cast<quint64>(mod.value(u"fileSize"_s, "0")));
-            new ModAdapter(newMod, repo, mod.value(u"optional"_s, false).toBool(), i);
+            new ModAdapter(newMod, repo.get(), mod.value(u"optional"_s, false).toBool(), i);
         }
-        repositoryJsonModKeys.insert(repo, jsonModKeys);
+        repositoryJsonModKeys.insert(repo.get(), jsonModKeys);
         orderedRepositoryList.append(repo);
     }
 
@@ -150,17 +143,17 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<Repository*>& repo
     repositories.append(orderedRepositoryList);
 }
 
-QSet<QString> JsonReader::getRemovables(const QList<Repository*>& repositories)
+QSet<QString> JsonReader::getRemovables(const QList<QSharedPointer<Repository>>& repositories)
 {
     updateJsonMap();
     return getRemovablesOffline(repositories);
 }
 
-QSet<QString> JsonReader::getRemovablesOffline(const QList<Repository*>& repositories) const
+QSet<QString> JsonReader::getRemovablesOffline(const QList<QSharedPointer<Repository>>& repositories) const
 {
     const auto jsonRepositories = jsonMap_.value(u"repositories"_s).toList();
     QSet<QString> previousModKeys;
-    for (Repository* repository : repositories)
+    for (const auto& repository : repositories)
     {
         for (const auto& mod : repository->mods())
         {
@@ -183,7 +176,7 @@ QSet<QString> JsonReader::getRemovablesOffline(const QList<Repository*>& reposit
 }
 
 // Updates repository list and returns set of deleted mod keys
-void JsonReader::updateRepositories(ISync* sync, QList<Repository*>& repositories)
+void JsonReader::updateRepositories(ISync* sync, QList<QSharedPointer<Repository>>& repositories)
 {
     updateJsonMap();
     updateRepositoriesOffline(sync, repositories);

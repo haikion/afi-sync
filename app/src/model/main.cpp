@@ -38,13 +38,6 @@ struct CleanExit
     }
 };
 
-AfiSyncLogger* initStandalone()
-{
-    AfiSyncLogger* logger = new AfiSyncLogger();
-    logger->initFileLogging();
-    return logger;
-}
-
 TreeModel* generalInit(QObject* parent = nullptr)
 {
     //Linux ctrl+c and kill compatability
@@ -78,7 +71,8 @@ int gui(int argc, char* argv[])
         msgBox.exec();
         exit(2);
     }
-    AfiSyncLogger* logger = initStandalone();
+    AfiSyncLogger logger;
+    logger.initFileLogging();
 
     MainWindow* mainWindow = new MainWindow();
     TreeModel* treeModel = generalInit(mainWindow);
@@ -92,7 +86,6 @@ int gui(int argc, char* argv[])
     // Needs to be done before shutting down workerThread
     treeModel->stopUpdates();
     delete mainWindow;
-    delete logger;
     Global::workerThread->quit();
     Global::workerThread->wait(20000);
     Global::workerThread->terminate();

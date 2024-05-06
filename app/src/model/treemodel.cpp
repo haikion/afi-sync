@@ -39,10 +39,10 @@ TreeModel::TreeModel(QObject* parent):
     LOG;
     jsonReader_.readJson();
     createSync(jsonReader_.deltaUrls());
-    repositories_ = jsonReader_.repositories(sync_);
+    jsonReader_.updateRepositoriesOffline(sync_, repositories_);
 
     QSet<QString> usedKeys;
-    for (Repository* repo : repositories_)
+    for (const auto& repo : repositories_)
     {
         for (const QString& key : repo->modKeys())
         {
@@ -83,10 +83,9 @@ TreeModel::~TreeModel()
 
     updateTimer_.stop();
     repoUpdateTimer_.stop();
-    stopUpdates();
 
     QSet<QObject*> mods;
-    for (Repository* repo : repositories_)
+    for (const auto& repo : repositories_)
     {
         for (const auto& mod : repo->mods())
         {
@@ -95,12 +94,11 @@ TreeModel::~TreeModel()
     }
     DestructionWaiter waiter(mods);
 
-    for (Repository* repo : repositories_)
+    for (const auto& repo : repositories_)
     {
         repo->clearModAdapters();
-        delete repo;
-        // Repos and mods are destroyed once their adapters are cleared
     }
+    repositories_.clear();
     waiter.wait();
 
     QObject* syncObject = dynamic_cast<QObject*>(sync_);
@@ -111,7 +109,7 @@ TreeModel::~TreeModel()
 
 void TreeModel::stopUpdates()
 {
-    for (Repository* repo : repositories_)
+    for (const auto& repo : repositories_)
     {
         repo->stopUpdates();
     }
@@ -127,7 +125,7 @@ void TreeModel::moveFiles()
 
 void TreeModel::enableRepositories()
 {
-    for (Repository* repo : repositories_)
+    for (const auto& repo : repositories_)
     {
         repo->startUpdates();
         repo->setTicked(true);
@@ -148,7 +146,7 @@ const QSet<Mod*> TreeModel::mods() const
 {
     // Filter duplicates
     QSet<Mod*> mods;
-    for (Repository* repo : repositories_)
+    for (const auto& repo : repositories_)
     {
         for (const auto& mod : repo->mods())
         {
@@ -176,7 +174,7 @@ void TreeModel::updateSpeed()
 
 void TreeModel::periodicRepoUpdate()
 {
-    for (Repository* repo : repositories_)
+    for (const auto& repo : repositories_)
     {
         const QString status = repo->statusStr();
         if (status != SyncStatus::READY &&
@@ -208,25 +206,16 @@ void TreeModel::updateRepositories()
     {
         sync_->removeFolder(key);
     }
-    QList<Repository*> updatedList = repositories_;
-    jsonReader_.updateRepositories(sync_, updatedList);
-    for (Repository* repo : repositories_)
-    {
-        if (!updatedList.contains(repo))
-        {
-            delete repo;
-        }
-    }
-    repositories_ = updatedList;
+    jsonReader_.updateRepositories(sync_, repositories_);
     emit repositoriesChanged(toIrepositories(repositories_));
 }
 
-QList<IRepository*> TreeModel::toIrepositories(const QList<Repository*>& repositories)
+QList<IRepository*> TreeModel::toIrepositories(const QList<QSharedPointer<Repository>>& repositories)
 {
     QList<IRepository*> irepositories;
-    for (Repository* repository : repositories)
+    for (const auto& repository : repositories)
     {
-        irepositories.append(repository);
+        irepositories.append(repository.get());
     }
     return irepositories;
 }
@@ -234,7 +223,7 @@ QList<IRepository*> TreeModel::toIrepositories(const QList<Repository*>& reposit
 void TreeModel::update()
 {
     bool allDone = true;
-    for (Repository* repository : repositories_)
+    for (const auto& repository : repositories_)
     {
         repository->update();
         if (!repository->isReady())
@@ -255,9 +244,9 @@ QList<IRepository*> TreeModel::repositories() const
 {
     QList<IRepository*> retVal;
     retVal.reserve(repositories_.size());
-    for (Repository* repo : repositories_)
+    for (const auto& repo : repositories_)
     {
-        retVal.append(repo);
+        retVal.append(repo.get());
     }
     return retVal;
 }

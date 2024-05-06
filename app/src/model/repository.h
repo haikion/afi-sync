@@ -10,9 +10,11 @@
 #include <QHash>
 #include <QObject>
 #include <QPair>
+#include <QSharedPointer>
+
 #include "interfaces/irepository.h"
-#include "syncitem.h"
 #include "mod.h"
+#include "syncitem.h"
 
 class Repository : public SyncItem, virtual public IRepository
 {
@@ -20,7 +22,7 @@ public:
     Repository(const QString& name, const QString& serverAddress, unsigned port, const QString& password);
     ~Repository() override;
 
-    [[nodiscard]] static Repository* findRepoByName(const QString& name, const QList<Repository*>& repositories);
+    [[nodiscard]] static QSharedPointer<Repository> findRepoByName(const QString& name, const QList<QSharedPointer<Repository>>& repositories);
     void check() override;
     void appendModAdapter(QSharedPointer<ModAdapter> adp, int index);
     void checkboxClicked() override;

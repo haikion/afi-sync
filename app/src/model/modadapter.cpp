@@ -14,7 +14,6 @@ ModAdapter::ModAdapter(QSharedPointer<Mod> mod, Repository* repo, bool isOptiona
     isOptional_(isOptional),
     key_(mod->key())
 {
-    //Connect everything
     setFileSize(mod->fileSize());
     repo->appendModAdapter(QSharedPointer<ModAdapter>(this), index);
     QMetaObject::invokeMethod(mod.get(), "appendModAdapter", Qt::QueuedConnection, Q_ARG(ModAdapter*, this));
