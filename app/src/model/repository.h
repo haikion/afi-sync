@@ -66,7 +66,6 @@ private:
     void generalLaunch(const QStringList& extraParams = QStringList());
     [[nodiscard]] QString createParFile(const QString& parameters);
     void changed();
-    [[nodiscard]] QList<QSharedPointer<ModAdapter>> modAdapters() const;
     [[nodiscard]] static QSet<QString> createReadyStatuses();
     void removeAdapter(const QString& key);
 };
