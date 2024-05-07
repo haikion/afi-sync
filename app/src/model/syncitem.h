@@ -23,7 +23,7 @@ public:
     bool optional() override = 0;
     bool ticked() override = 0;
     void checkboxClicked() override = 0;
-    QString name() const override;
+    [[nodiscard]] QString name() const override;
 
     void setStatus(const QString& statusStr);
     [[nodiscard]] quint64 fileSize() const;

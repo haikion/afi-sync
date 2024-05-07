@@ -1,6 +1,11 @@
 #include "mainwindow.h"
+
+#include <chrono>
+
 #include "../model/version.h"
 #include "ui_mainwindow.h"
+
+using namespace std::chrono_literals;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -26,7 +31,7 @@ void MainWindow::init(IBandwidthMeter* bwMeter, ISettings* settingsModel)
     this->bwMeter = bwMeter;
     ui->settingsView->init(settingsModel);
 
-    updateTimer.setInterval(1000);
+    updateTimer.setInterval(1s);
     connect(&updateTimer, &QTimer::timeout, this, &MainWindow::update);
     updateTimer.start();
 }
