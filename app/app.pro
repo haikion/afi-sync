@@ -3,6 +3,7 @@ TEMPLATE = app
 QT += core gui network widgets
 CONFIG += c++17
 TARGET = AFISync
+INCLUDEPATH += src
 
 win32 {
     DEFINES += _WIN32_WINNT=0x0501
@@ -41,18 +42,16 @@ SOURCES += \
     src/model/destructionwaiter.cpp \
     src/model/afisync.cpp \
     src/model/deletable.cpp \
-    src/model/treeitem.cpp \
     src/model/treemodel.cpp \
     src/model/syncitem.cpp \
     src/model/mod.cpp \
     src/model/repository.cpp \
     src/model/jsonreader.cpp \
     src/model/installer.cpp \
-    src/model/pathfinder.cpp \
+    src/model/paths.cpp \
     src/model/settingsmodel.cpp \
     src/model/global.cpp \
     src/model/modadapter.cpp \
-    src/model/runningtime.cpp \
     src/model/processmonitor.cpp \
     src/model/apis/libtorrent/libtorrentapi.cpp \
     src/model/apis/libtorrent/speedcalculator.cpp \
@@ -65,7 +64,6 @@ SOURCES += \
     src/model/afisynclogger.cpp \
     src/model/console.cpp \
     src/model/szip.cpp \
-    src/model/constantsmodel.cpp \
     src/model/qstreams.cpp \
     src/model/settingsuimodel.cpp \
     src/model/deletabledetector.cpp \
@@ -87,18 +85,16 @@ HEADERS += \
     src/model/destructionwaiter.h \
     src/model/afisync.h \
     src/model/deletable.h \
-    src/model/treeitem.h \
     src/model/treemodel.h \
     src/model/syncitem.h \
     src/model/repository.h \
     src/model/mod.h \
     src/model/jsonreader.h \
     src/model/installer.h \
-    src/model/pathfinder.h \
+    src/model/paths.h \
     src/model/settingsmodel.h \
     src/model/global.h \
     src/model/modadapter.h \
-    src/model/runningtime.h \
     src/model/apis/isync.h \
     src/model/processmonitor.h \
     src/model/apis/libtorrent/libtorrentapi.h \
@@ -114,7 +110,6 @@ HEADERS += \
     src/model/afisynclogger.h \
     src/model/console.h \
     src/model/szip.h \
-    src/model/constantsmodel.h \
     src/model/qstreams.h \
     src/model/interfaces/ibandwidthmeter.h \
     src/model/interfaces/irepository.h \
@@ -135,6 +130,7 @@ HEADERS += \
     src/model/apis/libtorrent/storagemovemanager.h \
     src/model/interfaces/imod.h \
     src/model/interfaces/imod.h
+
 DISTFILES += \
     AFISync.rc \
     manifest.xml

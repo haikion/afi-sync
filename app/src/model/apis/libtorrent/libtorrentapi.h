@@ -75,12 +75,12 @@ public:
     //Returns file system path of the folder with specific key.
     QString folderPath(const QString& key) override;
     //Total bandwiths
-    int64_t download() const override;
+    [[nodiscard]] int64_t download() const override;
     int64_t upload() override;
     //Sets global max upload
-    void setMaxUpload(const int limit) override;
+    void setMaxUpload(int limit) override;
     //Sets global max download
-    void setMaxDownload(const int limit) override;
+    void setMaxDownload(int limit) override;
     //Returns true if the sync has loaded and is ready to take commands.
     bool ready() override;
     //Sets outgoing port.
@@ -101,8 +101,8 @@ private slots:
     void init();
     bool removeFolderSlot(const QString& key);
     void setDeltaUrlsSlot(const QStringList &key);
-    void setMaxUploadSlot(const int limit);
-    void setMaxDownloadSlot(const int limit);
+    void setMaxUploadSlot(int limit);
+    void setMaxDownloadSlot(int limit);
     void setPortSlot(int port);
     void enableDeltaUpdatesSlot();
     void initDelta();
@@ -139,13 +139,13 @@ private:
     int64_t uploadSpeed_{0};
     std::atomic<bool> ready_;
 
-    std::shared_ptr<libtorrent::torrent_info> loadFromFile(const QString& path) const;
+    [[nodiscard]] static std::shared_ptr<libtorrent::torrent_info> loadFromFile(const QString& path);
     void loadTorrentFiles(const QDir& dir);
-    bool saveTorrentFile(const libtorrent::torrent_handle& getHandle) const;
+    void saveTorrentFile(const libtorrent::torrent_handle& getHandle) const;
     void generateResumeData() const;
-    std::shared_ptr<const libtorrent::torrent_info> getTorrentFile(const libtorrent::torrent_handle& getHandle) const;
-    QString getHashString(const libtorrent::torrent_handle& getHandle) const;
-    int64_t bytesToCheck(const libtorrent::torrent_status& status) const;
+    [[nodiscard]] static std::shared_ptr<const libtorrent::torrent_info> getTorrentFile(const libtorrent::torrent_handle& getHandle);
+    [[nodiscard]] static QString getHashString(const libtorrent::torrent_handle& getHandle);
+    [[nodiscard]] int64_t bytesToCheck(const libtorrent::torrent_status& status) const;
     void createSession();
     void addFolderGeneric(const QString& key);
     bool addFolderGenericAsync(const QString& key);
@@ -153,11 +153,11 @@ private:
     bool addFolder(const QString& key, const QString& name, bool patchingEnabled);
     void createDeltaManager(const QStringList& deltaUrls);
     libtorrent::torrent_handle getHandleSilent(const QString& key);
-    bool folderChecking(const libtorrent::torrent_status& status) const;
-    bool folderQueued(const libtorrent::torrent_status& status) const;
-    int downloadEta(const libtorrent::torrent_status& status) const;
+    [[nodiscard]] static bool folderChecking(const libtorrent::torrent_status& status);
+    [[nodiscard]] static bool folderQueued(const libtorrent::torrent_status& status);
+    [[nodiscard]] int downloadEta(const libtorrent::torrent_status& status) const;
     libtorrent::torrent_handle addFolderFromParams(const QString& key);
-    void removeFiles(const QString& hashString);
+    static void removeFiles(const QString& hashString);
     void generalThreadInit();
     void generalInit();
     qint64 folderTotalWantedMoving(const QString& key);

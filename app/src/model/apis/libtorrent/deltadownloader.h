@@ -36,12 +36,11 @@ public:
     [[nodiscard]] libtorrent::torrent_handle getHandle(const QString& key) const;
     boost::int64_t totalWanted(const QString& modName);
     int64_t totalWantedDone(const QString& modName);
-    [[nodiscard]] bool patchDownloading(const QString& modName) const;
     [[nodiscard]] bool patchesDownloaded(const QString& key) const;
     void setDeltaUrls(const QStringList& deltaUrls);
-    QStringList deltaUrls() const;
+    [[nodiscard]] QStringList deltaUrls() const;
     [[nodiscard]] const QList<libtorrent::torrent_handle> handles() const;
-    QString getUrl(const libtorrent::torrent_handle&) const;
+    [[nodiscard]] QString getUrl(const libtorrent::torrent_handle&) const;
     void setSession(libtorrent::session* newSession);
 
 signals:
@@ -58,6 +57,6 @@ private:
     libtorrent::session* session_{nullptr};
 
     void addToHandleMap(const QString& key, const libtorrent::torrent_handle& torrentHandle);
-    QStringList getDeltaUrls(const QString& modName) const;
+    [[nodiscard]] QStringList getDeltaUrls(const QString& modName) const;
     [[nodiscard]] static QString hash(const QString& modName);
 };

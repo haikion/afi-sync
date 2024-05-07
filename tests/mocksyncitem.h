@@ -3,12 +3,12 @@
 
 #include <gmock/gmock.h>
 
-#include "../app/src/model/interfaces/isyncitem.h"
+#include "model/interfaces/isyncitem.h"
 
 class MockSyncItem : virtual public ISyncItem
 {
 public:
-    MOCK_METHOD(QString, name, (), (override));
+    MOCK_METHOD(QString, name, (), (const, override));
     MOCK_METHOD(QString, statusStr, (), (override));
     MOCK_METHOD(QString, sizeStr, (), (const, override));
     MOCK_METHOD(bool, optional, (), (override));

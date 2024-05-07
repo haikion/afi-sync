@@ -1,14 +1,12 @@
 #include <QDir>
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <gmock/gmock-matchers.h>
-
-#include "../app/src/model/deletabledetector.h"
-#include "../app/src/model/afisync.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include "mockmod.h"
 #include "mockrepository.h"
+#include "model/deletabledetector.h"
 #include "testconstants.h"
 
 using namespace testing;

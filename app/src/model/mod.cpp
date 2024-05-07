@@ -23,18 +23,13 @@ const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 
 Mod::Mod(const QString& name, const QString& key, ISync* sync):
     SyncItem(name),
-    key_(key),
     sync_(sync),
-    updateTimer_(nullptr),
-    waitTime_(0),
-    totalWanted_(-1),
-    totalWantedDone_(-1)
+    key_(key)
 {
     LOG << "key = " << key;
     setStatus(SyncStatus::STARTING);
     //Enables non lagging UI
     moveToThread(Global::workerThread);
-    qRegisterMetaType<QVector<int>>("QVector<int>"); //TODO: Remove, QML ?
     QMetaObject::invokeMethod(this, &Mod::threadConstructor, Qt::QueuedConnection);
 }
 
@@ -106,7 +101,8 @@ void Mod::start()
 
 void Mod::onFolderAdded(const QString &key)
 {
-    if (key != key_) {
+    if (key != key_)
+    {
         return; // Not for me
     }
     if (moveFilesPostponed_)
@@ -519,7 +515,9 @@ void Mod::forceCheck()
 QString Mod::progressStr()
 {
     if (!ticked() || statusStr() == SyncStatus::STARTING)
+    {
         return u"???"_s;
+    }
 
     return toProgressStr(totalWanted_, totalWantedDone_);
 }
@@ -527,7 +525,9 @@ QString Mod::progressStr()
 QString Mod::bytesToMegasCeilStr(const qint64 bytes)
 {
     if (bytes == 0)
+    {
         return QString::number(0);
+    }
 
     return QString::number(1 + ((bytes - 1) / Constants::MEGA_DIVIDER));  // Ceil division
 }
@@ -535,7 +535,9 @@ QString Mod::bytesToMegasCeilStr(const qint64 bytes)
 QString Mod::toProgressStr(const qint64 totalWanted, qint64 totalWantedDone)
 {
     if (totalWanted < 0 || totalWantedDone < 0)
+    {
         return u"???"_s;
+    }
 
     // Do not ceil to 100 %
     if (totalWantedDone < totalWanted)

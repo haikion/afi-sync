@@ -7,7 +7,7 @@
 class IRepository : virtual public ISyncItem
 {
 public:
-    virtual ~IRepository() = default;
+    ~IRepository() override = default;
     [[nodiscard]] virtual QList<IMod*> uiMods() const = 0; // TODO: Rename
     virtual void start() = 0;
     virtual void join() = 0;

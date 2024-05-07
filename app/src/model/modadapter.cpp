@@ -43,7 +43,9 @@ void ModAdapter::checkboxClicked()
 bool ModAdapter::ticked()
 {
     if (!isOptional_)
+    {
         return true;
+    }
 
     return SettingsModel::ticked(name(), repo()->name());
 }

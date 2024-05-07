@@ -67,9 +67,9 @@ public:
     [[nodiscard]] virtual int64_t download() const = 0;
     [[nodiscard]] virtual int64_t upload() = 0;
     //Sets global max upload
-    virtual void setMaxUpload(const int limit) = 0;
+    virtual void setMaxUpload(int limit) = 0;
     //Sets global max download
-    virtual void setMaxDownload(const int limit) = 0;
+    virtual void setMaxDownload(int limit) = 0;
     //Returns true if the sync has loaded and is ready to take commands.
     [[nodiscard]] virtual bool ready() = 0;
     //Sets outgoing port.

@@ -14,7 +14,6 @@ namespace AfiSync
     QStringList activeModNames(const QList<IRepository*>& repositories);
     [[nodiscard]] const QSet<QString> activeModNames(const IRepository* repository);
     void printDeletables(const DeletableDetector& deletableDetector);
-    [[nodiscard]] QSet<QString> combine(const QList<QSet<QString>>& list);
     [[nodiscard]] QStringList filterDeprecatedPatches(const QStringList& allFiles, const QStringList& urls);
     [[nodiscard]] QStringList getDeltaUrlsForMod(const QString& modName, const QString& hash, const QStringList& deltaUrls);
 }

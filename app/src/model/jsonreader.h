@@ -29,7 +29,7 @@ public:
 
 protected:
     virtual bool writeJsonBytes(const QByteArray& bytes);
-    virtual QByteArray readJsonBytes() const;
+    [[nodiscard]] virtual QByteArray readJsonBytes() const;
 
 private:
     static const QString JSON_RELATIVE_PATH;
@@ -38,11 +38,11 @@ private:
     SyncNetworkAccessManager nam_;
 
     bool updateJsonMap();
-    QString updateUrl(const QVariantMap& jsonMap) const;
-    QString updateUrl() const;
+    [[nodiscard]] QString updateUrl(const QVariantMap& jsonMap) const;
+    [[nodiscard]] QString updateUrl() const;
     QByteArray fetchJsonBytes(QString url);
     bool readJsonFile();
-    QSet<QString> getRemovablesOffline(const QList<QSharedPointer<Repository> > &updatedRepositories) const;
+    [[nodiscard]] QSet<QString> getRemovablesOffline(const QList<QSharedPointer<Repository>>& updatedRepositories) const;
 };
 
 #endif // JSONREADER_H

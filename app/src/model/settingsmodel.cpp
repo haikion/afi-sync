@@ -5,7 +5,7 @@
 
 #include "afisynclogger.h"
 #include "global.h"
-#include "pathfinder.h"
+#include "paths.h"
 #include "settingsmodel.h"
 
 using namespace Qt::StringLiterals;
@@ -68,7 +68,7 @@ QString SettingsModel::setting(const QString& key, const QString& defaultValue)
 
 QString SettingsModel::arma3Path()
 {
-    return QDir::toNativeSeparators(setting(u"arma3Dir"_s, PathFinder::arma3Path()));
+    return QDir::toNativeSeparators(setting(u"arma3Dir"_s, Paths::arma3Path()));
 }
 
 void SettingsModel::setArma3Path(const QString& path)
@@ -78,13 +78,13 @@ void SettingsModel::setArma3Path(const QString& path)
 
 void SettingsModel::resetArma3Path()
 {
-    settings()->setValue("arma3Dir", PathFinder::arma3Path());
+    settings()->setValue("arma3Dir", Paths::arma3Path());
 }
 
 QString SettingsModel::teamSpeak3Path()
 {
     return QDir::toNativeSeparators(
-        setting(u"teamSpeak3Path"_s, PathFinder::teamspeak3Path()));
+        setting(u"teamSpeak3Path"_s, Paths::teamspeak3Path()));
 }
 
 void SettingsModel::setTeamSpeak3Path(const QString& path)
@@ -94,12 +94,12 @@ void SettingsModel::setTeamSpeak3Path(const QString& path)
 
 void SettingsModel::resetTeamSpeak3Path()
 {
-    settings()->setValue("teamSpeak3Path", PathFinder::teamspeak3Path());
+    settings()->setValue("teamSpeak3Path", Paths::teamspeak3Path());
 }
 
 QString SettingsModel::steamPath()
 {
-    return QDir::toNativeSeparators(settings()->value("steamPath", PathFinder::steamPath()).toString());
+    return QDir::toNativeSeparators(settings()->value("steamPath", Paths::steamPath()).toString());
 }
 
 void SettingsModel::setSteamPath(const QString& path)
@@ -110,7 +110,7 @@ void SettingsModel::setSteamPath(const QString& path)
 void SettingsModel::resetSteamPath()
 {
     LOG;
-    settings()->setValue("steamPath", PathFinder::steamPath());
+    settings()->setValue("steamPath", Paths::steamPath());
 }
 
 
@@ -250,7 +250,7 @@ bool SettingsModel::deltaPatchingEnabled()
 
 QString SettingsModel::modDownloadPath()
 {
-    return QDir::toNativeSeparators(settings()->value("modDownloadPath", PathFinder::arma3Path()).toString());
+    return QDir::toNativeSeparators(settings()->value("modDownloadPath", Paths::arma3Path()).toString());
 }
 
 void SettingsModel::setModDownloadPath(QString path)
@@ -271,7 +271,7 @@ void SettingsModel::setModDownloadPath(QString path)
 
 void SettingsModel::resetModDownloadPath()
 {
-    setModDownloadPath(PathFinder::arma3Path());
+    setModDownloadPath(Paths::arma3Path());
 }
 
 QString SettingsModel::patchesDownloadPath()

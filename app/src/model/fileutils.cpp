@@ -10,7 +10,7 @@
 
 #include "afisynclogger.h"
 #include "fileutils.h"
-#include "pathfinder.h"
+#include "paths.h"
 #include "settingsmodel.h"
 
 using namespace Qt::StringLiterals;
@@ -38,7 +38,9 @@ bool FileUtils::copy(const QString& srcPath, const QString& dstPath)
             const QString newSrcPath = srcPath + '/' + fileName;
             const QString newDstPath = dstPath + '/' + fileName;
             if (!copy(newSrcPath, newDstPath))
+            {
                 return false;
+            }
         }
     }
     //File
@@ -87,7 +89,9 @@ bool FileUtils::move(const QString& srcPath, const QString& dstPath)
             const QString newDstPath
                     = dstPath + QLatin1Char('/') + fileName;
             if (!move(newSrcPath, newDstPath))
+            {
                 return false;
+            }
         }
     }
     //File
@@ -131,8 +135,10 @@ qint64 FileUtils::dirSize(const QString& path)
 bool FileUtils::rmCi(const QString& path)
 {
     QString cPath = casedPath(path);
-    if (cPath.length() <= 3) //D:/
+    if (cPath.length() <= 3)
+    { //D:/
         return false;
+    }
 
     return safeRemove(cPath);
 }
@@ -227,7 +233,9 @@ bool FileUtils::filesIdentical(const QString& path1, const QString& path2)
 bool FileUtils::safeRename(const QString& srcPath, const QString& dstPath)
 {
     if (!pathIsSafe(srcPath))
+    {
         return false;
+    }
 
     return QFile::rename(srcPath, dstPath);
 }
@@ -291,7 +299,7 @@ bool FileUtils::pathIsSafe(const QString& path)
     safeSubpaths.append(SettingsModel::modDownloadPath());
     safeSubpaths.append(SettingsModel::arma3Path());
     safeSubpaths.append(SettingsModel::teamSpeak3Path());
-    safeSubpaths.append(PathFinder::teamspeak3AppDataPath());
+    safeSubpaths.append(Paths::teamspeak3AppDataPath());
     safeSubpaths.append(QCoreApplication::applicationDirPath());
     safeSubpaths.append(u"."_s);
     safeSubpaths.append(safeSubpaths_);
@@ -301,7 +309,9 @@ bool FileUtils::pathIsSafe(const QString& path)
         QString safeUpper = QFileInfo(safeSubpath).absoluteFilePath().toUpper();
         //Shortest possible save path: C:/d (4 characters)
         if (safeUpper.length() >= 4 && pathUpper.startsWith(safeUpper))
+        {
             return true;
+        }
     }
     LOG_ERROR << pathFull << " not in safe subpaths " << safeSubpaths << ". Operation aborted!";
     return false;

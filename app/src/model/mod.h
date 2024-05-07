@@ -1,21 +1,22 @@
 #ifndef MODITEM_H
 #define MODITEM_H
 
-#include <QObject>
-#include <QTimer>
-#include <QSet>
 #include <QList>
+#include <QObject>
+#include <QSet>
+#include <QTimer>
+
 #include "apis/isync.h"
-#include "syncitem.h"
 #include "interfaces/imod.h"
+#include "syncitem.h"
 
 #ifdef Q_OS_WIN
 #pragma warning(push)
 #pragma warning(disable: 4250)
 #endif
 
-class Repository;
 class ModAdapter;
+class Repository;
 
 class Mod : public QObject, public SyncItem, virtual public IMod
 {
@@ -23,7 +24,7 @@ class Mod : public QObject, public SyncItem, virtual public IMod
 
 public:
     Mod(const QString& name, const QString& key, ISync* sync);
-    ~Mod();
+    ~Mod() override;
 
     // Moves files after mods download path has been changed
     void moveFiles();
@@ -55,17 +56,17 @@ public slots:
 private:
     static const unsigned COMPLETION_WAIT_DURATION;
 
-    bool moveFilesPostponed_{false};
-    QString key_;
     ISync* sync_;
-    QTimer* updateTimer_;
-    unsigned waitTime_;
+    QAtomicInteger<qint64> totalWantedDone_{-1};
+    QAtomicInteger<qint64> totalWanted_{-1};
     QList<ModAdapter*> adapters_;
-    QAtomicInteger<qint64> totalWanted_;
-    QAtomicInteger<qint64> totalWantedDone_;
-    QMutex repositoriesMutex_;
-    std::atomic<bool> ticked_;
     QMutex adaptersMutex_;
+    QMutex repositoriesMutex_;
+    QString key_;
+    QTimer* updateTimer_{nullptr};
+    bool moveFilesPostponed_{false};
+    std::atomic<bool> ticked_{false};
+    unsigned waitTime_{0};
 
     void buildPathHash();
     [[nodiscard]] bool reposInactive();
@@ -73,7 +74,7 @@ private:
     bool stop();
     void removeConflicting();
     [[nodiscard]] QString path();
-    void setProcessCompletion(const bool value);
+    void setProcessCompletion(bool value);
     [[nodiscard]] bool getProcessCompletion();
     void updateProgress();
     void updateTicked();

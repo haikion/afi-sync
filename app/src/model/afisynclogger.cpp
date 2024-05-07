@@ -57,7 +57,9 @@ bool AfiSyncLogger::rotateLogs()
 {
     const QFile logFile(Constants::LOG_FILE);
     if (!logFile.exists())
+    {
         return false;
+    }
 
     static const QRegularExpression regExp{Constants::LOG_FILE + ".*7z"};
     QStringList patchArchives = QDir(u"."_s).entryList(QDir::Files).filter(regExp);

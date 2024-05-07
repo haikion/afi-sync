@@ -22,7 +22,7 @@ class DeltaPatcher: public QObject
 public:
     DeltaPatcher(const QString& patchesPath);
     DeltaPatcher();
-    ~DeltaPatcher();
+    ~DeltaPatcher() override;
 
     //Patches dir to latest version.
     void patch(const QString& modPath);
@@ -62,14 +62,14 @@ private:
     QMutex mutex_;
 
     bool extract(const QString& zipPath);
-    bool createEmptyDir(QDir dir) const;
+    [[nodiscard]] static bool createEmptyDir(QDir dir);
     bool patchExtracted(const QString& extractedPath, const QString& targetPath);
-    void cleanUp(QDir& deltaDir, QDir& tmpDir);
-    int latestVersion(const QString& modName) const;
+    static void cleanUp(QDir& deltaDir, QDir& tmpDir);
+    [[nodiscard]] int latestVersion(const QString& modName) const;
     static int latestVersion(const QString& modName, const QStringList& fileNames);
     //Applies single patch to mod dir
     bool patch(const QString& patch, const QString& modPath);
-    QStringList removePatchesFromLatest(const QString& latestPath, const QString& deltaPath) const;
+    [[nodiscard]] static QStringList removePatchesFromLatest(const QString& latestPath, const QString& deltaPath);
     void applyPatches(const QString& modPath, QStringList patches);
 
 private slots:

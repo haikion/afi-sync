@@ -60,7 +60,9 @@ namespace {
         qint64 modulated = size % MAX_VALUE; //Ensures the value is within 4 chars.
         QString rVal = baseEncode(modulated);
         for (int padding = 4 - rVal.size(); padding > 0; --padding)
+        {
             rVal.prepend('0');
+        }
 
         return rVal;
     }

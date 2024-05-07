@@ -9,11 +9,11 @@
 #include <QNetworkRequest>
 #include <QUrl>
 
-#include "../../settingsmodel.h"
-#include "src/model/afisync.h"
 #include "ahasher.h"
 #include "deltadownloader.h"
-#include "src/model/afisynclogger.h"
+#include "model/afisync.h"
+#include "model/afisynclogger.h"
+#include "model/settingsmodel.h"
 
 using namespace Qt::StringLiterals;
 
@@ -133,23 +133,6 @@ bool DeltaDownloader::downloadPatches(const QString& modName, const QString& key
         });
     }
     return true;
-}
-
-bool DeltaDownloader::patchDownloading(const QString& modName) const
-{
-    auto it = handleMap_.constFind(modName);
-    if (it == handleMap_.end())
-    {
-        return false;
-    }
-
-    const auto handles = *it;
-    for (const auto& handle : handles) {
-        if (!handle.status().is_finished) {
-            return true;
-        }
-    }
-    return false;
 }
 
 bool DeltaDownloader::patchesDownloaded(const QString& key) const

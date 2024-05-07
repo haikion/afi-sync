@@ -13,9 +13,7 @@ public:
     virtual ~Deletable() = default;
 
     [[nodiscard]] QString name() const;
-    void setName(const QString& name);
     [[nodiscard]] qint64 size() const;
-    void setSize(const qint64& size);
 
 private:
     QString name_;

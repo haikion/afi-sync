@@ -118,7 +118,9 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<QSharedPointer<Rep
             const auto key = mod.value(u"key"_s).toString().toLower();
             jsonModKeys.insert(key);
             if (repo->contains(key))
+            {
                 continue; // Mod is already included in the repository.
+            }
 
             const auto modName = mod.value(u"name"_s).toString().toLower();
             auto newMod = modMap.contains(key) ? modMap.value(key) :

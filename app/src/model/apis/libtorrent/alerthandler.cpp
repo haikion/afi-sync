@@ -1,6 +1,8 @@
-#include <libtorrent/session_stats.hpp>
-#include "../../afisynclogger.h"
 #include "alerthandler.h"
+
+#include <libtorrent/session_stats.hpp>
+
+#include "../../afisynclogger.h"
 
 using namespace libtorrent;
 

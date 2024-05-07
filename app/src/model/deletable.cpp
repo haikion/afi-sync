@@ -23,17 +23,7 @@ QString Deletable::name() const
     return name_;
 }
 
-void Deletable::setName(const QString& name)
-{
-    name_ = name;
-}
-
 qint64 Deletable::size() const
 {
     return size_;
-}
-
-void Deletable::setSize(const qint64& size)
-{
-    size_ = size;
 }

@@ -67,7 +67,6 @@ private:
     QTimer updateTimer_;
     QThread patcherThread_;
 
-    QSet<QString> torrentFilesUpper(const QString &url);
     [[nodiscard]] QString findDownloadedMod() const;
     static void removeDeprecatedPatches(const QStringList& urls);
 };

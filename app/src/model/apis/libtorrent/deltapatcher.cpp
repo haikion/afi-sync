@@ -147,7 +147,9 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
 qint64 DeltaPatcher::bytesPatched(const QString& modName)
 {
     if (patching(modName))
+    {
         return bytesPatched_;
+    }
 
     return 0;
 }
@@ -155,7 +157,9 @@ qint64 DeltaPatcher::bytesPatched(const QString& modName)
 qint64 DeltaPatcher::totalBytes(const QString& modName)
 {
     if (patching(modName))
+    {
         return totalBytes_;
+    }
 
     return -1;
 }
@@ -178,7 +182,9 @@ bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
 {
     LOG << "Patching " << modPath << " with " << patch;
     if (!extract(patchesFi_->absoluteFilePath() + "/" + patch))
+    {
         return false;
+    }
 
     return patchExtracted(patchesFi_->absoluteFilePath() + "/" + PATCH_DIR, modPath);
 }
@@ -188,7 +194,9 @@ bool DeltaPatcher::patchAbsolutePath(const QString& patch, const QString& modPat
     LOG << "Patching " << modPath << " with " << patch;
     QFileInfo(patch).absoluteFilePath();
     if (!extract(patch))
+    {
         return false;
+    }
 
     return patchExtracted(QFileInfo(patch).dir().absolutePath() + "/" + PATCH_DIR, modPath);
 }
@@ -362,7 +370,7 @@ bool DeltaPatcher::delta(const QString& oldModPath, QString newModPath)
     return rVal && !deletedFiles.contains(patchName);
 }
 
-QStringList DeltaPatcher::removePatchesFromLatest(const QString& latestPath, const QString& patchesPath) const
+QStringList DeltaPatcher::removePatchesFromLatest(const QString& latestPath, const QString& patchesPath)
 {
     QString hash = AHasher::hash(latestPath);
     QString modName = QFileInfo(latestPath).fileName();
@@ -414,7 +422,7 @@ void DeltaPatcher::compress(const QString& dir, const QString& archivePath)
 }
 
 //Creates clean empty directory
-bool DeltaPatcher::createEmptyDir(QDir dir) const
+bool DeltaPatcher::createEmptyDir(QDir dir)
 {
     if (dir.exists())
     {
@@ -447,7 +455,9 @@ int DeltaPatcher::latestVersion(const QString& modName, const QStringList& fileN
     {
         static const QRegularExpression exp{modName + u".*7z"_s};
         if (!fileName.contains(exp))
+        {
             continue;
+        }
 
         //@mod.1.2133.7z
         int version = fileName.split(SEPARATOR).at(1).toInt();

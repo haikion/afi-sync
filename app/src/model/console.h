@@ -17,7 +17,7 @@ class Console: public QObject
 
 public:
     Console(QObject* parent = nullptr);
-    ~Console();
+    ~Console() override;
 
     QProcess* runCmdAsync(const QString& cmd);
 

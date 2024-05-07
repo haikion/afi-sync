@@ -6,7 +6,7 @@
 class IMod : virtual public ISyncItem
 {
 public:
-    virtual ~IMod() = default;
+    ~IMod() override = default;
     [[nodiscard]] virtual bool selected() = 0;
 };
 

@@ -24,8 +24,8 @@ public:
     void processCompletion() override;
     [[nodiscard]] bool optional() override;
     [[nodiscard]] QString progressStr() override;
-    QSharedPointer<Mod> mod() const;
-    Repository* repo() const;
+    [[nodiscard]] QSharedPointer<Mod> mod() const;
+    [[nodiscard]] Repository* repo() const;
     void forceCheck() const;
     bool selected() override;
     [[nodiscard]] QString key() const;

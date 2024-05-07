@@ -6,14 +6,14 @@
 class DirectoryWatcher
 {
 public:
-    DirectoryWatcher(const QString &fromPath = {},
-                     const QString &toPath_ = {},
-                     const QString &key = {},
-                     const qint64 totalWantedForce = -1);
+    DirectoryWatcher(const QString& fromPath = {},
+                     const QString& toPath_ = {},
+                     const QString& key = {},
+                     qint64 totalWantedForce = -1);
     bool done();
-    QString key() const;
-    qint64 totalWanted() const;
-    qint64 totalWantedDone() const;
+    [[nodiscard]] QString key() const;
+    [[nodiscard]] qint64 totalWanted() const;
+    [[nodiscard]] qint64 totalWantedDone() const;
 
 private:
     QString fromPath_;

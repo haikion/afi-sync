@@ -4,7 +4,7 @@
 #include <QStandardPaths>
 #include <QStringLiteral>
 
-#include "pathfinder.h"
+#include "paths.h"
 #ifdef Q_OS_WIN
 #include "afisynclogger.h"
 #include "global.h"
@@ -12,7 +12,31 @@
 
 using namespace Qt::StringLiterals;
 
-QString PathFinder::arma3Path()
+namespace {
+    QString readRegPath(const QString& path, const QString& key)
+    {
+        QSettings settings(path, QSettings::NativeFormat);
+        QString rPath = settings.value(key, QCoreApplication::applicationDirPath()).toString();
+        return QDir::toNativeSeparators(rPath);
+    }
+
+    //Prints error if path is default which means it wasn't found from regs.
+    #ifdef Q_OS_WIN
+    void checkPath(const QString& path, const QString& name)
+    {
+        if (path == QCoreApplication::applicationDirPath()
+                && !Global::guiless)
+        {
+            LOG_ERROR << "Unable to find path for " << name
+                << " Using default: " << path;
+        }
+    }
+    #else
+    void checkPath(const QString&, const QString&) {}
+    #endif
+}
+
+QString Paths::arma3Path()
 {
     //Windows 7
     //HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Bohemia Interactive\arma 3
@@ -32,7 +56,7 @@ QString PathFinder::arma3Path()
     return QDir::toNativeSeparators(path);
 }
 
-QString PathFinder::teamspeak3Path()
+QString Paths::teamspeak3Path()
 {
     //Windows 8.1
     QSettings settings2(u"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\TeamSpeak 3 Client"_s, QSettings::NativeFormat);
@@ -51,7 +75,7 @@ QString PathFinder::teamspeak3Path()
     return QDir::toNativeSeparators(path);
 }
 
-QString PathFinder::teamspeak3AppDataPath()
+QString Paths::teamspeak3AppDataPath()
 {
     QDir dir =  QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     dir.cd(u"../../TS3Client"_s);
@@ -59,8 +83,7 @@ QString PathFinder::teamspeak3AppDataPath()
     return QDir::toNativeSeparators(dir.absolutePath()); //TODO: Consider discarding this as toNative conversion should be done only on UI-layer.
 }
 
-
-QString PathFinder::steamPath()
+QString Paths::steamPath()
 {
     QString path = readRegPath(u"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Valve\\Steam"_s,
                                u"InstallPath"_s);
@@ -73,25 +96,3 @@ QString PathFinder::steamPath()
     checkPath(path, u"Steam"_s);
     return path;
 }
-
-QString PathFinder::readRegPath(const QString& path, const QString& key)
-{
-    QSettings settings(path, QSettings::NativeFormat);
-    QString rPath = settings.value(key, QCoreApplication::applicationDirPath()).toString();
-    return QDir::toNativeSeparators(rPath);
-}
-
-//Prints error if path is default which means it wasn't found from regs.
-#ifdef Q_OS_WIN
-void PathFinder::checkPath(const QString& path, const QString& name)
-{
-    if (path == QCoreApplication::applicationDirPath()
-            && !Global::guiless)
-    {
-        LOG_ERROR << "Unable to find path for " << name
-            << " Using default: " << path;
-    }
-}
-#else
-void PathFinder::checkPath(const QString&, const QString&) {}
-#endif

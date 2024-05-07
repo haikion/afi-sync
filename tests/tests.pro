@@ -46,7 +46,6 @@ HEADERS += \
     ../app/src/model/afisynclogger.h \
     ../app/src/model/cihash.h \
     ../app/src/model/console.h \
-    ../app/src/model/constantsmodel.h \
     ../app/src/model/customdebug.h \
     ../app/src/model/deletabledetector.h \
     ../app/src/model/fileutils.h \
@@ -56,7 +55,7 @@ HEADERS += \
     ../app/src/model/jsonutils.h \
     ../app/src/model/mod.h \
     ../app/src/model/modadapter.h \
-    ../app/src/model/pathfinder.h \
+    ../app/src/model/paths.h \
     ../app/src/model/processmonitor.h \
     ../app/src/model/qstreams.h \
     ../app/src/model/repository.h \
@@ -76,6 +75,7 @@ HEADERS += \
     testconstants.h
 
 SOURCES += \
+    ../app/src/model/paths.cpp \
         main.cpp \
     ../app/src/model/apis/libtorrent/ahasher.cpp \
     ../app/src/model/apis/libtorrent/alerthandler.cpp \
@@ -88,7 +88,6 @@ SOURCES += \
     ../app/src/model/apis/libtorrent/storagemovemanager.cpp \
     ../app/src/model/afisynclogger.cpp \
     ../app/src/model/console.cpp \
-    ../app/src/model/constantsmodel.cpp \
     ../app/src/model/deletabledetector.cpp \
     ../app/src/model/fileutils.cpp \
     ../app/src/model/global.cpp \
@@ -97,7 +96,6 @@ SOURCES += \
     ../app/src/model/jsonutils.cpp \
     ../app/src/model/mod.cpp \
     ../app/src/model/modadapter.cpp \
-    ../app/src/model/pathfinder.cpp \
     ../app/src/model/processmonitor.cpp \
     ../app/src/model/qstreams.cpp \
     ../app/src/model/repository.cpp \

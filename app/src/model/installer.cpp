@@ -6,7 +6,7 @@
 #include "afisynclogger.h"
 #include "fileutils.h"
 #include "installer.h"
-#include "pathfinder.h"
+#include "paths.h"
 #include "settingsmodel.h"
 
 using namespace Qt::StringLiterals;
@@ -15,9 +15,13 @@ namespace {
 bool sortFiles(const QString &file1, const QString &file2) {
     // Move files with ".dll" postfix to the end
     if (file1.endsWith(".dll"_L1) && !file2.endsWith(".dll"_L1))
+    {
         return false;
+    }
     if (!file1.endsWith(".dll"_L1) && file2.endsWith(".dll"_L1))
+    {
         return true;
+    }
     // Sort other files alphabetically
     return file1 < file2;
 }
@@ -70,7 +74,7 @@ void Installer::install(Mod* mod)
             settings.beginGroup("plugin");
             settings.setValue("Task Force Arrowhead Radio v1/files", list);
         }
-        install(tsDir, PathFinder::teamspeak3AppDataPath()); //AppData plugins
+        install(tsDir, Paths::teamspeak3AppDataPath()); //AppData plugins
     }
 
     QDir(SettingsModel::arma3Path()).mkdir(u"userconfig"_s);

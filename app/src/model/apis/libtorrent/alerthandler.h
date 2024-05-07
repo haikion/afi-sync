@@ -2,10 +2,13 @@
 #define ALERTHANDLER_H
 
 #include <vector>
+
 #include <libtorrent/alert_types.hpp>
-#include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/performance_counters.hpp>
+#include <libtorrent/torrent_handle.hpp>
+
 #include <QObject>
+
 #include "speedcalculator.h"
 
 class AlertHandler : public QObject
@@ -34,7 +37,7 @@ private:
     static void handleListenSucceededAlert(const libtorrent::listen_succeeded_alert* alert);
     static void handleMetadataFailedAlert(const libtorrent::metadata_failed_alert* alert);
     static void handleMetadataReceivedAlert(const libtorrent::metadata_received_alert* alert);
-    void handlePortmapAlert(const libtorrent::portmap_alert* alert);
+    static void handlePortmapAlert(const libtorrent::portmap_alert* alert);
     static void handlePortmapErrorAlert(const libtorrent::portmap_error_alert* alert);
     void handleSessionStatsAlert(const libtorrent::session_stats_alert* alert);
     void handleStorageMoveFailedAlert(const libtorrent::storage_moved_failed_alert* alert);

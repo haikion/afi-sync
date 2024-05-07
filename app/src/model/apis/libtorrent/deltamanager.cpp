@@ -1,20 +1,21 @@
+#include "deltamanager.h"
+
 #include <chrono>
 
 #include <QDirIterator>
 #include <QFileInfo>
 #include <QThread>
 
-#include "deltamanager.h"
-#include "src/model/afisync.h"
-#include "src/model/afisynclogger.h"
-#include "src/model/fileutils.h"
-#include "src/model/global.h"
-#include "src/model/settingsmodel.h"
+#include "model/afisync.h"
+#include "model/afisynclogger.h"
+#include "model/fileutils.h"
+#include "model/global.h"
+#include "model/settingsmodel.h"
 
+using namespace Qt::StringLiterals;
 using namespace std::chrono_literals;
 
 namespace lt = libtorrent;
-using namespace Qt::StringLiterals;
 
 DeltaManager::DeltaManager(const QStringList& deltaUrls, lt::session* session, QObject* parent):
     QObject(parent)
@@ -231,28 +232,4 @@ bool DeltaManager::patching(const QString& key)
     }
 
     return patcher_->patching(modName);
-}
-
-QSet<QString> DeltaManager::torrentFilesUpper(const QString& url)
-{
-    QSet<QString> rVal;
-    lt::torrent_handle handle = downloader_.getHandle(url);
-    if (!handle.is_valid())
-        return rVal;
-
-    auto torrentFile = handle.torrent_file();
-    if (!torrentFile)
-    {
-        LOG_ERROR << "torrent_file is null";
-        return rVal;
-    }
-    lt::file_storage files = torrentFile->files();
-    for (int i = 0; i < files.num_files(); ++i)
-    {
-        lt::torrent_status status = handle.status(lt::torrent_handle::query_save_path);
-        QString value = QString::fromStdString(status.save_path + "/" + files.file_path(i));
-        value = QFileInfo(value).absoluteFilePath().toUpper();
-        rVal.insert(value);
-    }
-    return rVal;
 }

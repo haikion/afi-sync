@@ -17,7 +17,7 @@ public:
     StorageMoveManager();
     bool inactive();
     bool contains(const QString& key);
-    void insert(const QString& key, const QString& fromPath, const QString& toPath, const qint64 totalDownloaded);
+    void insert(const QString& key, const QString& fromPath, const QString& toPath, qint64 totalDownloaded);
     qint64 totalWanted(const QString& key);
     qint64 totalWantedDone(const QString& key);
 
