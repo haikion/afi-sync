@@ -15,7 +15,7 @@ class AsSettingsView : public QWidget
 
 public:
     explicit AsSettingsView(QWidget* parent = nullptr);
-    ~AsSettingsView();
+    ~AsSettingsView() override;
 
     void init(ISettings* settingsModel);
 

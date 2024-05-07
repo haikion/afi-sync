@@ -29,7 +29,9 @@ QString SyncItem::statusStr()
 QString SyncItem::sizeStr() const
 {
     if (fileSize_ == 0)
+    {
         return u"??.?? MB"_s;
+    }
 
     double size = fileSize_;
     int i = 0;
@@ -38,7 +40,9 @@ QString SyncItem::sizeStr() const
          << u"GB"_s;
 
     for (i = 0; i < list.size() && size > 1024; ++i)
+    {
         size = size / 1024;
+    }
 
     return QString::number(size, 'f', 2) + " " + list.at(i);
 }
@@ -91,6 +95,8 @@ void SyncItem::setStatus(const QString& status)
 {
     statusMutex_.lock();
     if (status_ != status)
+    {
         status_ = status;
+    }
     statusMutex_.unlock();
 }

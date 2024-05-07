@@ -1,11 +1,11 @@
 include(gtest_dependency.pri)
 
 TEMPLATE = app
-QT += core gui network widgets
+QT += core network
 CONFIG += c++17
 CONFIG -= app_bundle
 CONFIG += thread
-INCLUDEPATH += ../app
+INCLUDEPATH += ../app/src
 
 win32 {
     DEFINES += _WIN32_WINNT=0x0501
@@ -60,7 +60,6 @@ HEADERS += \
     ../app/src/model/processmonitor.h \
     ../app/src/model/qstreams.h \
     ../app/src/model/repository.h \
-    ../app/src/model/runningtime.h \
     ../app/src/model/settingsmodel.h \
     ../app/src/model/settingsuimodel.h \
     ../app/src/model/syncitem.h \
@@ -103,7 +102,6 @@ SOURCES += \
     ../app/src/model/processmonitor.cpp \
     ../app/src/model/qstreams.cpp \
     ../app/src/model/repository.cpp \
-    ../app/src/model/runningtime.cpp \
     ../app/src/model/settingsmodel.cpp \
     ../app/src/model/settingsuimodel.cpp \
     ../app/src/model/syncitem.cpp \

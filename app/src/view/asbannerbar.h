@@ -14,7 +14,7 @@ class AsBannerBar : public QWidget
 
 public:
     explicit AsBannerBar(QWidget *parent = 0);
-    ~AsBannerBar();
+    ~AsBannerBar() override;
 
     void setSettingsView(AsSettingsView* settingsView);
 

@@ -16,12 +16,12 @@ public:
     virtual void appendChild(TreeItem* child, int index = std::numeric_limits<int>::max());
     bool removeChild(TreeItem* child);
     TreeItem* child(int row);
-    int childCount() const;
-    int row() const;
-    QVariant data(int column) const;
+    [[nodiscard]] int childCount() const;
+    [[nodiscard]] int row() const;
+    [[nodiscard]] QVariant data(int column) const;
     TreeItem* parentItem();
     void setParentItem(TreeItem* parentItem);
-    QList<TreeItem*> childItems() const;
+    [[nodiscard]] QList<TreeItem*> childItems() const;
 
 private:
     TreeItem* m_parentItem;

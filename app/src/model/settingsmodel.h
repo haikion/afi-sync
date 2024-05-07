@@ -5,19 +5,16 @@
 #include <QSettings>
 #include <QObject>
 
-// TODO: Make this a namespace
 class SettingsModel: public QObject
 {
     Q_OBJECT
 
 public:
-    SettingsModel(QObject* parent = nullptr); //Should only be used when constructing for QQmlEngine
+    SettingsModel(QObject* parent = nullptr);
 
 public slots:
     [[nodiscard]] static QString launchParameters();
     static void setLaunchParameters(const QString& parameters);
-    [[nodiscard]] static bool battlEyeEnabled(); //TODO: Remove?
-    void setBattlEyeEnabled(bool enabled); //TODO: Remove?
     [[nodiscard]] static bool deltaPatchingEnabled();
     static void setDeltaPatchingEnabled(bool enabled);
     [[nodiscard]] static QString modDownloadPath();
@@ -52,8 +49,8 @@ public slots:
     static void setProcessed(const QString& name, const QString& value);
     [[nodiscard]] static QString processed(const QString& name);
     [[nodiscard]] static bool portEnabled();
-    static void setMaxUploadEnabled(const bool maxUploadEnabled);
-    static void setMaxDownloadEnabled(const bool maxDownloadEnabled);
+    static void setMaxUploadEnabled(bool maxUploadEnabled);
+    static void setMaxDownloadEnabled(bool maxDownloadEnabled);
     static void initBwLimits();
 
 private:

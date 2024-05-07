@@ -14,14 +14,10 @@ AsTreeItem::AsTreeItem(QTreeWidget* parent, ISyncItem* syncItem, QCheckBox* chec
     init();
 }
 
-
-AsTreeItem::AsTreeItem(QTreeWidgetItem* parent, ISyncItem* syncItem,  QCheckBox* checkBox):
+AsTreeItem::AsTreeItem(QTreeWidgetItem* parent, ISyncItem* syncItem, QCheckBox* checkBox):
     QTreeWidgetItem(parent),
     syncItem_(syncItem),
-    checkBox_(checkBox),
-    startButton_(nullptr),
-    joinButton_(nullptr)
-
+    checkBox_(checkBox)
 {
     init();
 }

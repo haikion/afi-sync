@@ -22,17 +22,17 @@ public:
     void reset();
     void enableRepositories();
     void setHaltGui(bool halt);
-    QList<IRepository*> repositories() const;
+    [[nodiscard]] QList<IRepository*> repositories() const;
     void moveFiles();
     void stopUpdates();
-    QString downloadStr() const override;
-    QString uploadStr() const override;
+    [[nodiscard]] QString downloadStr() const override;
+    [[nodiscard]] QString uploadStr() const override;
 
 public slots:
     void updateSpeed();
 
 signals:
-    void repositoriesChanged(QList<IRepository*> repositories);
+    void repositoriesChanged(const QList<IRepository*>& repositories);
 
 private slots:
     void update();
@@ -49,8 +49,8 @@ private:
     bool mirroringDeltaPatches_{false};
 
     void postInit();
-    QString bandwithString(int amount) const;
-    const QSet<Mod*> mods() const;
+    [[nodiscard]] static QString bandwithString(int amount);
+    [[nodiscard]] const QSet<Mod*> mods() const;
     void createSync(const QStringList& deltaUrls);
     void updateRepositories();
     static QList<IRepository*> toIrepositories(const QList<QSharedPointer<Repository>>& repositories);

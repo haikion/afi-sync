@@ -20,7 +20,7 @@ class SyncNetworkAccessManager : public QNetworkAccessManager
 
 public:
     explicit SyncNetworkAccessManager(QObject* parent = nullptr);
-    ~SyncNetworkAccessManager();
+    ~SyncNetworkAccessManager() override;
 
     QNetworkReply* syncGet(QNetworkRequest req, int timeout = DEFAULT_TIMEOUT);
     QByteArray fetchBytes(const QString& url);

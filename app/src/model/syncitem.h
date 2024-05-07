@@ -18,19 +18,19 @@ public:
     virtual QString nameText();
     QString statusStr() override;
     virtual void processCompletion() = 0;
-    virtual void check() = 0;
-    virtual bool optional() = 0;
-    virtual bool ticked() = 0;
-    virtual void checkboxClicked() = 0;
+    void check() override = 0;
+    bool optional() override = 0;
+    bool ticked() override = 0;
+    void checkboxClicked() override = 0;
     QString name() override;
 
     void setStatus(const QString& statusStr);
     void setName(const QString& name);
-    quint64 fileSize() const;
-    void setFileSize(const quint64 size);
-    QString sizeStr() const override;
-    bool active() const override;
-    virtual QString progressStr() = 0;
+    [[nodiscard]] quint64 fileSize() const;
+    void setFileSize(quint64 size);
+    [[nodiscard]] QString sizeStr() const override;
+    [[nodiscard]] bool active() const override;
+    QString progressStr() override = 0;
 
 private:
     QString name_;

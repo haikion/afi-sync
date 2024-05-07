@@ -64,13 +64,13 @@ TreeModel::TreeModel(QObject* parent):
 
 void TreeModel::createSync(const QStringList& deltaUrls)
 {
-    if (!deltaUrls.isEmpty())
+    if (deltaUrls.isEmpty())
     {
-        sync_ = new LibTorrentApi(deltaUrls);
+        sync_ = new LibTorrentApi();
     }
     else
     {
-        sync_ = new LibTorrentApi();
+        sync_ = new LibTorrentApi(deltaUrls);
     }
     Global::sync = sync_;
 }
@@ -132,7 +132,7 @@ void TreeModel::enableRepositories()
     }
 }
 
-QString TreeModel::bandwithString(int amount) const
+QString TreeModel::bandwithString(int amount)
 {
     if (amount > 1000000)
     {

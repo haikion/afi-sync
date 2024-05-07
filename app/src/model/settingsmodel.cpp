@@ -33,7 +33,9 @@ void SettingsModel::createSettings()
 QSettings* SettingsModel::settings()
 {
     if (!settings_)
+    {
         createSettings();
+    }
 
     return settings_;
 }
@@ -234,11 +236,6 @@ void SettingsModel::setMaxDownloadSync()
     Global::sync->setMaxDownload(maxDownloadEnabled() ? maxDownload().toInt() : 0);
 }
 
-bool SettingsModel::battlEyeEnabled()
-{
-    return settings()->value("battlEyeEnabled", true).toBool();
-}
-
 void SettingsModel::setDeltaPatchingEnabled(bool enabled)
 {
     settings()->setValue("deltaPatchingEnabled", enabled);
@@ -259,11 +256,6 @@ void SettingsModel::setDeltaPatchingEnabled(bool enabled)
 bool SettingsModel::deltaPatchingEnabled()
 {
     return settings()->value("deltaPatchingEnabled", false).toBool();
-}
-
-void SettingsModel::setBattlEyeEnabled(bool enabled)
-{
-    settings()->setValue("battlEyeEnabled", enabled);
 }
 
 QString SettingsModel::modDownloadPath()

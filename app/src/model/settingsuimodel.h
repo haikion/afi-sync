@@ -34,8 +34,8 @@ public:
     [[nodiscard]] QString port() override;
     void setPort(const QString &port) override;
 
-    [[nodiscard]] virtual QString maxDownload();
-    [[nodiscard]] virtual bool maxDownloadEnabled();
+    [[nodiscard]] QString maxDownload() override;
+    [[nodiscard]] bool maxDownloadEnabled() override;
     void setMaxDownloadEnabled(bool maxDownloadEnabled) override;
     void setMaxDownload(const QString& maxDownload) override;
 

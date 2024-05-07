@@ -13,9 +13,9 @@ class OptionalSetting : public QWidget
 
 public:
     explicit OptionalSetting(QWidget* parent = 0);
-    ~OptionalSetting();
+    ~OptionalSetting() override;
 
-    void init(const QString& labelText, const QString& value, const bool enabled);
+    void init(const QString& labelText, const QString& value, bool enabled);
 
 signals:
     void checked(bool value);
