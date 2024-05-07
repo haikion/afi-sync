@@ -37,8 +37,10 @@ bool ProcessMonitor::isRunning(const QString& process, const qint64 pidFilter)
     params << u"/NH"_s << u"/FO"_s << u"CSV"_s
            << u"/FI"_s << u"IMAGENAME eq %1"_s.arg(process);
     if (pidFilter != 0)
+    {
         params << u"/FI"_s
                << u"PID ne %1"_s.arg(QString::number(pidFilter));
+    }
 
     tasklist.start(u"tasklist"_s, params);
     tasklist.waitForFinished();

@@ -4,10 +4,12 @@
 #define ABSTRACTITEM_H
 
 #include <atomic>
-#include <QObject>
-#include <QSet>
+
 #include <QAtomicPointer>
 #include <QMutex>
+#include <QObject>
+#include <QSet>
+
 #include "interfaces/isyncitem.h"
 
 class SyncItem : virtual public ISyncItem
@@ -15,17 +17,15 @@ class SyncItem : virtual public ISyncItem
 public:
     explicit SyncItem(const QString& name);
 
-    virtual QString nameText();
     QString statusStr() override;
     virtual void processCompletion() = 0;
     void check() override = 0;
     bool optional() override = 0;
     bool ticked() override = 0;
     void checkboxClicked() override = 0;
-    QString name() override;
+    QString name() const override;
 
     void setStatus(const QString& statusStr);
-    void setName(const QString& name);
     [[nodiscard]] quint64 fileSize() const;
     void setFileSize(quint64 size);
     [[nodiscard]] QString sizeStr() const override;
@@ -37,7 +37,6 @@ private:
     QString status_;
     std::atomic<quint64> fileSize_;
     QMutex statusMutex_;
-    QMutex nameMutex_;
 
     static QSet<QString> createActiveStatuses();
 };

@@ -36,8 +36,6 @@ public slots:
     static void setMaxDownload(const QString& maxDownload);
     [[nodiscard]] static QString maxDownload();
     static bool maxDownloadEnabled();
-    static void setInstallDate(const QString& repoName, qint64 value);
-    [[nodiscard]] static unsigned installDate(const QString& repoName);
     static void setPort(const QString& port, bool enabled);
     [[nodiscard]] static QString port();
     [[nodiscard]] static QString syncSettingsPath();

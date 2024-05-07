@@ -65,7 +65,6 @@ HEADERS += \
     ../app/src/model/syncitem.h \
     ../app/src/model/syncnetworkaccessmanager.h \
     ../app/src/model/szip.h \
-    ../app/src/model/treeitem.h \
     ../app/src/model/treemodel.h \
     ../app/src/model/version.h \
     ../app/src/model/deletable.h \
@@ -107,7 +106,6 @@ SOURCES += \
     ../app/src/model/syncitem.cpp \
     ../app/src/model/syncnetworkaccessmanager.cpp \
     ../app/src/model/szip.cpp \
-    ../app/src/model/treeitem.cpp \
     ../app/src/model/treemodel.cpp \
     deletabledetectortest.cpp \
     ../app/src/model/deletable.cpp \

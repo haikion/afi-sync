@@ -22,7 +22,6 @@ public:
     explicit SyncNetworkAccessManager(QObject* parent = nullptr);
     ~SyncNetworkAccessManager() override;
 
-    QNetworkReply* syncGet(QNetworkRequest req, int timeout = DEFAULT_TIMEOUT);
     QByteArray fetchBytes(const QString& url);
 
 private slots:

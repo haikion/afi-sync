@@ -81,13 +81,6 @@ QString PathFinder::readRegPath(const QString& path, const QString& key)
     return QDir::toNativeSeparators(rPath);
 }
 
-QString PathFinder::arma3MyDocuments()
-{
-    QString path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/Arma 3";
-    checkPath(path, u"My Documents\\Arma3"_s);
-    return QDir::toNativeSeparators(path);
-}
-
 //Prints error if path is default which means it wasn't found from regs.
 #ifdef Q_OS_WIN
 void PathFinder::checkPath(const QString& path, const QString& name)

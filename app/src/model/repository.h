@@ -33,7 +33,6 @@ public:
     [[nodiscard]] QList<QSharedPointer<Mod> > mods() const;
     [[nodiscard]] QList<IMod*> uiMods() const override;
     void processCompletion() override;
-    void enableMods();
     bool removeMod(const QString& key);
     bool removeMod(Mod* mod, bool removeFromSync = true);
     [[nodiscard]] bool contains(const QString& key) const;
@@ -66,7 +65,7 @@ private:
     [[nodiscard]] QString modsParameter();
     [[nodiscard]] QStringList joinParameters() const;
     void generalLaunch(const QStringList& extraParams = QStringList());
-    [[nodiscard]] QString createParFile(const QString& parameters);
+    [[nodiscard]] static QString createParFile(const QString& parameters);
     void changed();
     [[nodiscard]] static QSet<QString> createReadyStatuses();
     void removeAdapter(const QString& key);

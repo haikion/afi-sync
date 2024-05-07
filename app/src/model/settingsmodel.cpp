@@ -141,16 +141,6 @@ bool SettingsModel::maxUploadEnabled()
     return settings()->value("maxUploadEnabled", false).toBool();
 }
 
-void SettingsModel::setInstallDate(const QString& repoName, qint64 value)
-{
-    settings()->setValue("installDate" + repoName, value);
-}
-
-unsigned SettingsModel::installDate(const QString& repoName)
-{
-    return settings()->value("installDate" + repoName).toInt();
-}
-
 void SettingsModel::setPort(const QString& port, bool enabled)
 {
     settings()->setValue("port", port);

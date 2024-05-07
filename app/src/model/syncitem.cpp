@@ -11,11 +11,6 @@ SyncItem::SyncItem(const QString& name):
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
 }
 
-QString SyncItem::nameText()
-{
-    return name_;
-}
-
 // Creates a copy of status due to concurrency
 QString SyncItem::statusStr()
 {
@@ -69,16 +64,9 @@ QSet<QString> SyncItem::createActiveStatuses()
     return retVal;
 }
 
-QString SyncItem::name()
+QString SyncItem::name() const
 {
-    QMutexLocker l(&nameMutex_);
     return name_;
-}
-
-void SyncItem::setName(const QString& name)
-{
-    QMutexLocker l(&nameMutex_);
-    name_ = name;
 }
 
 quint64 SyncItem::fileSize() const

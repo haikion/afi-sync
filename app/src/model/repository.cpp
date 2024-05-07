@@ -67,7 +67,9 @@ void Repository::setTicked(bool ticked)
 QString Repository::progressStr()
 {
     if (!ticked())
+    {
         return u"???"_s;
+    }
 
     qint64 totalWanted = 0;
     qint64 totalWantedDone = 0;
@@ -77,7 +79,9 @@ QString Repository::progressStr()
     for (const auto& mod : mods())
     {
         if (!mod->ticked())
+        {
             continue;
+        }
 
         if (mod->statusStr() == SyncStatus::CHECKING_PATCHES)
         {
@@ -150,9 +154,10 @@ void Repository::processCompletion()
     for (const auto& mod : mods())
     {
         if (mod->ticked())
+        {
             mod->processCompletion();
+        }
     }
-    SettingsModel::setInstallDate(name(), QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
 }
 
 void Repository::changed()
@@ -221,10 +226,14 @@ void Repository::generalLaunch(const QStringList& extraParams)
     }
     arguments << u"-noLauncher"_s;
     if (battlEyeEnabled_)
+    {
         arguments << u"-useBe"_s;
+    }
 
     if (!extraParams.isEmpty())
+    {
         arguments << extraParams;
+    }
 
     QString paramsString = SettingsModel::launchParameters();
     if (paramsString.size() > 0)
@@ -378,24 +387,14 @@ void Repository::appendModAdapter(QSharedPointer<ModAdapter> adp, int index)
     modAdapters_.insert(index, adp);
 }
 
-void Repository::enableMods()
-{
-    LOG << "name = " << name();
-    for (const auto& adp : modAdapters_)
-    {
-        if (adp->optional() && !adp->ticked())
-        {
-            adp->checkboxClicked();
-        }
-    }
-}
-
 bool Repository::contains(const QString& key) const
 {
     for (const auto& mod : mods())
     {
         if (mod->key() == key)
+        {
             return true;
+        }
     }
     return false;
 }

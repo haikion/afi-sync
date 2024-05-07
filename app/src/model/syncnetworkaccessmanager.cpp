@@ -23,14 +23,6 @@ SyncNetworkAccessManager::~SyncNetworkAccessManager()
     thread_.wait(1000);
 }
 
-QNetworkReply* SyncNetworkAccessManager::syncGet(QNetworkRequest req, int timeout)
-{
-    QNetworkReply* rVal = nullptr;
-    QMetaObject::invokeMethod(this, "syncGetSlot", Qt::BlockingQueuedConnection,
-                              Q_ARG(QNetworkRequest, req), Q_ARG(QNetworkReply*&, rVal), Q_ARG(int, timeout));
-    return rVal;
-}
-
 QByteArray SyncNetworkAccessManager::fetchBytes(const QString& url)
 {
     QByteArray retVal;
