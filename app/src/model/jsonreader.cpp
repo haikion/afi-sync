@@ -78,7 +78,7 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<QSharedPointer<Rep
     const QList<QVariant> jsonRepositories = jsonMap_.value(u"repositories"_s).toList();
     QSet<QString> previousModKeys;
     QMap<QString, QSharedPointer<Mod>> modMap; // Add same key mods only once
-    for (auto repository : repositories)
+    for (const auto& repository : repositories)
     {
         for (const auto& mod : repository->mods())
         {

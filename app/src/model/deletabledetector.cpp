@@ -30,6 +30,7 @@ qint64 DeletableDetector::totalSize() const
 QStringList DeletableDetector::deletableNames() const
 {
     QStringList deletableNames;
+    deletableNames.reserve(deletables_.size());
     for (const Deletable& deletable : deletables_)
     {
         deletableNames.append(deletable.name());

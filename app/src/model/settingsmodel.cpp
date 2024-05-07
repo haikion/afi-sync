@@ -244,10 +244,15 @@ void SettingsModel::setDeltaPatchingEnabled(bool enabled)
     settings()->setValue("deltaPatchingEnabled", enabled);
     if (Global::sync) //TODO: Remove might be too defensive
     {
+        LOG_ERROR << "Sync is null!";
         if (enabled)
+        {
             Global::sync->enableDeltaUpdates();
+        }
         else
+        {
             Global::sync->disableDeltaUpdates();
+        }
     }
 }
 

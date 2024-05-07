@@ -213,6 +213,7 @@ void TreeModel::updateRepositories()
 QList<IRepository*> TreeModel::toIrepositories(const QList<QSharedPointer<Repository>>& repositories)
 {
     QList<IRepository*> irepositories;
+    irepositories.reserve(repositories.size());
     for (const auto& repository : repositories)
     {
         irepositories.append(repository.get());

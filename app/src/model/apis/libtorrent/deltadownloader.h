@@ -28,19 +28,19 @@ class DeltaDownloader: public QObject
     Q_OBJECT
 public:
     DeltaDownloader();
-    ~DeltaDownloader() = default;
+    ~DeltaDownloader() override = default;
 
     void mirrorDeltaPatches();
     bool patchAvailable(const QString& modName);
     bool downloadPatches(const QString& modName, const QString& key);
-    libtorrent::torrent_handle getHandle(const QString& key) const;
+    [[nodiscard]] libtorrent::torrent_handle getHandle(const QString& key) const;
     boost::int64_t totalWanted(const QString& modName);
     int64_t totalWantedDone(const QString& modName);
-    bool patchDownloading(const QString& modName) const;
-    bool patchesDownloaded(const QString& key) const;
+    [[nodiscard]] bool patchDownloading(const QString& modName) const;
+    [[nodiscard]] bool patchesDownloaded(const QString& key) const;
     void setDeltaUrls(const QStringList& deltaUrls);
     QStringList deltaUrls() const;
-    const QList<libtorrent::torrent_handle> handles() const;
+    [[nodiscard]] const QList<libtorrent::torrent_handle> handles() const;
     QString getUrl(const libtorrent::torrent_handle&) const;
     void setSession(libtorrent::session* newSession);
 
@@ -59,5 +59,5 @@ private:
 
     void addToHandleMap(const QString& key, const libtorrent::torrent_handle& torrentHandle);
     QStringList getDeltaUrls(const QString& modName) const;
-    QString hash(const QString& modName) const;
+    [[nodiscard]] static QString hash(const QString& modName);
 };

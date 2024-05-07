@@ -28,26 +28,26 @@ class DeltaManager: public QObject
 public:
     DeltaManager(const QStringList& deltaUrls, libtorrent::session* session,
                  QObject* parent = nullptr);
-    ~DeltaManager();
+    ~DeltaManager() override;
 
     bool patchAvailable(const QString& modName);
     void patch(const QString& modName, const QString& key);
     void setDeltaUrls(const QStringList& deltaUrls);
-    QStringList deltaUrls() const;
+    [[nodiscard]] QStringList deltaUrls() const;
     bool contains(const QString& key);
-    libtorrent::torrent_handle getHandle(const QString& url) const;
+    [[nodiscard]] libtorrent::torrent_handle getHandle(const QString& url) const;
     boost::int64_t totalWanted(const QString& key);
     boost::int64_t totalWantedDone(const QString& key);
     QStringList folderKeys();
-    CiHash<QString> keyHash() const;
+    [[nodiscard]] CiHash<QString> keyHash() const;
     //Helper function to get a mod name.
     QString name(const QString& key);
-    bool patchDownloading(const QString& key) const;
+    [[nodiscard]] bool patchDownloading(const QString& key) const;
     bool patchExtracting(const QString& key);
     bool patching(const QString& key);
     bool queued(const QString& key);
-    const QList<libtorrent::torrent_handle> handles() const;
-    QString getUrl(const libtorrent::torrent_handle& handle) const;
+    [[nodiscard]] const QList<libtorrent::torrent_handle> handles() const;
+    [[nodiscard]] QString getUrl(const libtorrent::torrent_handle& handle) const;
 
 public slots:
     void mirrorDeltaPatches();
@@ -68,7 +68,7 @@ private:
     QThread patcherThread_;
 
     QSet<QString> torrentFilesUpper(const QString &url);
-    QString findDownloadedMod() const;
+    [[nodiscard]] QString findDownloadedMod() const;
     static void removeDeprecatedPatches(const QStringList& urls);
 };
 #endif // DELTAMANAGER_H

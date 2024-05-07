@@ -116,6 +116,7 @@ int cli(int argc, char* argv[])
                      });
 
     QStringList args;
+    args.reserve(argc);
     for (int i = 0; i < argc; ++i)
     {
         args.append(argv[i]);

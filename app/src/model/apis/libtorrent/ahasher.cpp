@@ -24,7 +24,9 @@ namespace {
         char re = base36[input % BASE]; //Compiler will optimize.
 
         if (div != 0)
+        {
             output += baseEncode(div);
+        }
 
         return output.append(re);
     }
@@ -51,7 +53,9 @@ namespace {
     {
         qint64 size = 0;
         for (const QFileInfo& fi : files)
+        {
             size += fi.size();
+        }
 
         qint64 modulated = size % MAX_VALUE; //Ensures the value is within 4 chars.
         QString rVal = baseEncode(modulated);

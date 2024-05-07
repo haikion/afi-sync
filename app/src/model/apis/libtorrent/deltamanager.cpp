@@ -193,7 +193,9 @@ bool DeltaManager::queued(const QString& key)
     Q_ASSERT(!key.isEmpty());
     auto it = keyHash_.find(key);
     if (it == keyHash_.end())
+    {
         return false;
+    }
 
     const QString modName = it.value();
     return downloader_.patchesDownloaded(modName) && !patcher_->patching(modName);
@@ -213,7 +215,9 @@ bool DeltaManager::patchExtracting(const QString& key)
 {
     const QString modName = keyHash_.value(key, {});
     if (modName.isEmpty())
+    {
         return false;
+    }
 
     return patcher_->patching(modName) && patcher_->patchExtracting();
 }
@@ -222,7 +226,9 @@ bool DeltaManager::patching(const QString& key)
 {
     const QString modName = keyHash_.value(key, {});
     if (modName.isEmpty())
+    {
         return false;
+    }
 
     return patcher_->patching(modName);
 }

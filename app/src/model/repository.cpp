@@ -403,6 +403,7 @@ bool Repository::contains(const QString& key) const
 QList<QSharedPointer<Mod>> Repository::mods() const
 {
     QList<QSharedPointer<Mod>> rVal;
+    rVal.reserve(modAdapters_.size());
     for (const auto& item : modAdapters_)
     {
         rVal.append(item->mod());

@@ -105,7 +105,7 @@ void AlertHandler::handleAlert(alert* alert)
     }
 }
 
-void AlertHandler::handleFastresumeRejectedAlert(const fastresume_rejected_alert* alert) const
+void AlertHandler::handleFastresumeRejectedAlert(const fastresume_rejected_alert* alert)
 {
     torrent_handle h = alert->handle;
     torrent_status s = h.status(torrent_handle::query_name);
@@ -113,17 +113,17 @@ void AlertHandler::handleFastresumeRejectedAlert(const fastresume_rejected_alert
     LOG_WARNING << "Fast resume rejected for torrent: " << name;
 }
 
-void AlertHandler::handleListenFailedAlert(const listen_failed_alert* alert) const
+void AlertHandler::handleListenFailedAlert(const listen_failed_alert* alert)
 {
     LOG_WARNING << "Received listen failed alert: " << alert->what();
 }
 
-void AlertHandler::handleListenSucceededAlert(const listen_succeeded_alert* alert) const
+void AlertHandler::handleListenSucceededAlert(const listen_succeeded_alert* alert)
 {
     LOG << "Received listen succeeded alert: " << alert->what();
 }
 
-void AlertHandler::handleMetadataFailedAlert(const libtorrent::metadata_failed_alert* alert) const
+void AlertHandler::handleMetadataFailedAlert(const libtorrent::metadata_failed_alert* alert)
 {
     torrent_handle h = alert->handle;
     torrent_status s = h.status(torrent_handle::query_name);
@@ -131,7 +131,7 @@ void AlertHandler::handleMetadataFailedAlert(const libtorrent::metadata_failed_a
     LOG << "Metadata failed for torrent: " << name;
 }
 
-void AlertHandler::handleMetadataReceivedAlert(const metadata_received_alert* alert) const
+void AlertHandler::handleMetadataReceivedAlert(const metadata_received_alert* alert)
 {
     torrent_handle h = alert->handle;
     torrent_status s = h.status(torrent_handle::query_name);
@@ -139,17 +139,18 @@ void AlertHandler::handleMetadataReceivedAlert(const metadata_received_alert* al
     LOG << "Metadata received for torrent: " << name;
 }
 
-void AlertHandler::handlePortmapAlert(const portmap_alert* alert) const
+void AlertHandler::handlePortmapAlert(const portmap_alert* alert)
 {
     LOG << "Port map alert received. Port: " << alert->external_port;
 }
 
-void AlertHandler::handlePortmapErrorAlert(const portmap_error_alert* alert) const
+void AlertHandler::handlePortmapErrorAlert(const portmap_error_alert* alert)
 {
     LOG << "Port map error alert received: " << alert->message().c_str();
 }
 
-void AlertHandler::handleSessionStatsAlert(const libtorrent::session_stats_alert* alert) {
+void AlertHandler::handleSessionStatsAlert(const libtorrent::session_stats_alert* alert)
+{
     const auto stats = alert->counters();
     const int64_t dl = stats[downloadIdx_];
     const int64_t ul = stats[uploadIdx_];

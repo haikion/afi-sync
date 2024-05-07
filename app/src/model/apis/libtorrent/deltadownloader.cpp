@@ -242,7 +242,7 @@ boost::int64_t DeltaDownloader::totalWanted(const QString& modName)
     return totalWanted;
 }
 
-QString DeltaDownloader::hash(const QString& modName) const
+QString DeltaDownloader::hash(const QString& modName)
 {
     QString hash = AHasher::hash(
                 SettingsModel::modDownloadPath() + "/" + modName);

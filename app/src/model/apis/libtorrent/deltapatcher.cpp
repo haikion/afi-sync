@@ -112,7 +112,7 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
     if (ltstVersion == -1)
     {
         //Function used for patchAvailable() so no error is printed here.
-        return QStringList();
+        return {};
     }
     QStringList patches;
     const QString hash = AHasher::hash(modPath);
@@ -120,7 +120,9 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
     const QRegularExpression regEx(modName + ".*" + hash + "\\" + SEPARATOR + "7z");
     const QStringList matches = allPatches.filter(regEx);
     if (matches.isEmpty())
-        return QStringList();
+    {
+        return {};
+    }
 
     const QString& patchName = matches.at(0);
     // First version
@@ -135,7 +137,7 @@ QStringList DeltaPatcher::filterPatches(const QString& modPath, const QStringLis
         {
             LOG_ERROR << "Incorrect number (" << matches.size()
                      << ") of suitable patches. Aborting...2";
-            return QStringList();
+            return {};
         }
         patches.append(matches.at(0));
     }

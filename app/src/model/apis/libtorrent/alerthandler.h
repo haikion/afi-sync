@@ -29,13 +29,13 @@ private:
     SpeedCalculator speedCalculator_;
 
     void handleAlert(libtorrent::alert* alert);
-    void handleFastresumeRejectedAlert(const libtorrent::fastresume_rejected_alert* alert) const;
-    void handleListenFailedAlert(const libtorrent::listen_failed_alert* alert) const;
-    void handleListenSucceededAlert(const libtorrent::listen_succeeded_alert* alert) const;
-    void handleMetadataFailedAlert(const libtorrent::metadata_failed_alert* alert) const;
-    void handleMetadataReceivedAlert(const libtorrent::metadata_received_alert* alert) const;
-    void handlePortmapAlert(const libtorrent::portmap_alert* alert) const;
-    void handlePortmapErrorAlert(const libtorrent::portmap_error_alert* alert) const;
+    static void handleFastresumeRejectedAlert(const libtorrent::fastresume_rejected_alert* alert);
+    static void handleListenFailedAlert(const libtorrent::listen_failed_alert* alert);
+    static void handleListenSucceededAlert(const libtorrent::listen_succeeded_alert* alert);
+    static void handleMetadataFailedAlert(const libtorrent::metadata_failed_alert* alert);
+    static void handleMetadataReceivedAlert(const libtorrent::metadata_received_alert* alert);
+    void handlePortmapAlert(const libtorrent::portmap_alert* alert);
+    static void handlePortmapErrorAlert(const libtorrent::portmap_error_alert* alert);
     void handleSessionStatsAlert(const libtorrent::session_stats_alert* alert);
     void handleStorageMoveFailedAlert(const libtorrent::storage_moved_failed_alert* alert);
     void handleStorageMovedAlert(const libtorrent::storage_moved_alert* alert);
