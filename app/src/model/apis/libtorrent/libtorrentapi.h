@@ -160,7 +160,6 @@ private:
     static void removeFiles(const QString& hashString);
     void generalThreadInit();
     void generalInit();
-    qint64 folderTotalWantedMoving(const QString& key);
     void onFolderAdded(const QString& key, const libtorrent::torrent_handle& handle);
 };
 

@@ -64,7 +64,6 @@ SOURCES += \
     src/model/afisynclogger.cpp \
     src/model/console.cpp \
     src/model/szip.cpp \
-    src/model/qstreams.cpp \
     src/model/settingsuimodel.cpp \
     src/model/deletabledetector.cpp \
     src/view/asbannerbar.cpp \
@@ -110,7 +109,6 @@ HEADERS += \
     src/model/afisynclogger.h \
     src/model/console.h \
     src/model/szip.h \
-    src/model/qstreams.h \
     src/model/interfaces/ibandwidthmeter.h \
     src/model/interfaces/irepository.h \
     src/model/interfaces/isettings.h \

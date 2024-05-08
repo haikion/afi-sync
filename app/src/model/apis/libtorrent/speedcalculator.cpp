@@ -14,12 +14,12 @@ bool SpeedCalculator::update(int64_t downloaded, int64_t uploaded, libtorrent::t
     return retVal;
 }
 
-int64_t SpeedCalculator::getDownloadSpeed()
+int64_t SpeedCalculator::getDownloadSpeed() const
 {
     return downloadSpeed_;
 }
 
-int64_t SpeedCalculator::getUploadSpeed()
+int64_t SpeedCalculator::getUploadSpeed() const
 {
     return uploadSpeed_;
 }

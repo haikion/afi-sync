@@ -14,7 +14,7 @@ class PathSetting : public QWidget
     Q_OBJECT
 
 public:
-    explicit PathSetting(QWidget* parent = 0);
+    explicit PathSetting(QWidget* parent = nullptr);
     ~PathSetting() override;
 
     void init(const QString& labelText, const QString& value);

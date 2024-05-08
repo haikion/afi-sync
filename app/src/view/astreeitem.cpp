@@ -47,7 +47,7 @@ void AsTreeItem::updateCheckBox()
     {
         return;
     }
-    IRepository* repository = dynamic_cast<IRepository*>(syncItem_);
+    auto repository = dynamic_cast<IRepository*>(syncItem_);
     if (repository == nullptr)
     {
         //Mods don't wait for state transition because it depends on repository state

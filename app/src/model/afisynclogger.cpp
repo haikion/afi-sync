@@ -10,7 +10,6 @@
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/file.hpp>
 
 #include <QDateTime>
 #include <QDirIterator>
@@ -24,13 +23,50 @@
 using namespace Qt::StringLiterals;
 using namespace boost::log;
 
+std::ostream& operator<<(std::ostream& outStream, const QString& qString)
+{
+    outStream << qString.toStdString();
+    return outStream;
+}
+
+std::ostream& operator<<(std::ostream& outStream, const QList<int>& qVector)
+{
+    outStream << " QVector[" << qVector.at(0);
+    for (int i = 1; i < qVector.size(); ++i)
+    {
+        outStream << ", " << qVector.at(i);
+    }
+    outStream << "]";
+    return outStream;
+}
+
+std::ostream& operator<<(std::ostream& outStream, const QStringList& qList)
+{
+    outStream << " [" << qList.at(0);
+    for (int i = 1; i < qList.size(); ++i)
+    {
+        outStream << ", " << qList.at(i);
+    }
+    outStream << "]";
+    return outStream;
+}
+
+std::ostream& operator<<(std::ostream& outStream, const QSet<QString>& qSet)
+{
+    outStream << qSet.values();
+    return outStream;
+}
+
 #ifdef Q_OS_LINUX
 const QString AfiSyncLogger::SZIP_EXECUTABLE = u"7za"_s;
 #else
     const QString AfiSyncLogger::SZIP_EXECUTABLE = "bin\\7za.exe";
 #endif
 
-const int MAX_LOG_FILES = 3;
+namespace
+{
+    const int MAX_LOG_FILES = 3;
+}
 
 void AfiSyncLogger::initFileLogging()
 {
@@ -53,12 +89,13 @@ void AfiSyncLogger::initFileLogging()
     );
 }
 
-bool AfiSyncLogger::rotateLogs()
+void AfiSyncLogger::rotateLogs()
 {
     const QFile logFile(Constants::LOG_FILE);
     if (!logFile.exists())
     {
-        return false;
+        LOG_WARNING << "No such file: " << Constants::LOG_FILE;
+        return;
     }
 
     static const QRegularExpression regExp{Constants::LOG_FILE + ".*7z"};
@@ -75,5 +112,5 @@ bool AfiSyncLogger::rotateLogs()
                                    u"yyyy.MM.dd.hh.mm.ss"_s);
     const QString logName =  filePrefix + ".log";
     FileUtils::move(Constants::LOG_FILE, logName);
-    return szip_.compressAsync(logName, filePrefix + ".7z");
+    szip_.compressAsync(logName, filePrefix + ".7z");
 }

@@ -9,7 +9,6 @@
 #include "modadapter.h"
 #include "repository.h"
 #include "settingsmodel.h"
-#include "settingsmodel.h"
 
 using namespace Qt::StringLiterals;
 
@@ -127,8 +126,7 @@ QSharedPointer<Repository> Repository::findRepoByName(const QString& name, const
     return nullptr;
 }
 
-
-void Repository::startUpdates()
+void Repository::startUpdates() const
 {
     for (const auto& mod : mods())
     {
@@ -160,7 +158,7 @@ void Repository::processCompletion()
     }
 }
 
-void Repository::changed()
+void Repository::changed() const
 {
     for (const auto& mod: mods())
     {
@@ -381,7 +379,7 @@ QStringList Repository::joinParameters() const
     return rVal;
 }
 
-void Repository::appendModAdapter(QSharedPointer<ModAdapter> adp, int index)
+void Repository::appendModAdapter(const QSharedPointer<ModAdapter>& adp, int index)
 {
     setFileSize(fileSize() + adp->mod()->fileSize());
     modAdapters_.insert(index, adp);

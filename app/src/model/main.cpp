@@ -75,7 +75,7 @@ int gui(int argc, char* argv[])
     AfiSyncLogger logger;
     logger.initFileLogging();
 
-    MainWindow* mainWindow = new MainWindow();
+    auto mainWindow = new MainWindow();
     TreeModel* treeModel = generalInit(mainWindow);
     mainWindow->show();
     mainWindow->init(treeModel, new SettingsUiModel());

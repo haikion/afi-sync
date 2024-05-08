@@ -24,7 +24,7 @@ public:
 
     [[nodiscard]] static QSharedPointer<Repository> findRepoByName(const QString& name, const QList<QSharedPointer<Repository>>& repositories);
     void check() override;
-    void appendModAdapter(QSharedPointer<ModAdapter> adp, int index);
+    void appendModAdapter(const QSharedPointer<ModAdapter>& adp, int index);
     void checkboxClicked() override;
     [[nodiscard]] ISync* sync() const;
     void join() override;
@@ -37,7 +37,7 @@ public:
     bool removeMod(Mod* mod, bool removeFromSync = true);
     [[nodiscard]] bool contains(const QString& key) const;
     void update();
-    void startUpdates();
+    void startUpdates() const;
     void stopUpdates();
     void setBattlEyeEnabled(bool battlEyeEnabled);
     [[nodiscard]] bool isReady() const;
@@ -66,7 +66,7 @@ private:
     [[nodiscard]] QStringList joinParameters() const;
     void generalLaunch(const QStringList& extraParams = QStringList());
     [[nodiscard]] static QString createParFile(const QString& parameters);
-    void changed();
+    void changed() const;
     [[nodiscard]] static QSet<QString> createReadyStatuses();
     void removeAdapter(const QString& key);
 };

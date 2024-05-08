@@ -77,11 +77,11 @@ void AsTreeWidget::addRepositories(const QList<IRepository*>& repositories)
 {
     for (IRepository* repo : repositories)
     {
-        QCheckBox* repoCheckBox = new QCheckBox(this);
+        auto repoCheckBox = new QCheckBox(this);
 
-        QPushButton* startButton = new QPushButton(u"Start Game"_s, this);
-        QPushButton* joinButton = new QPushButton(u"Join Server"_s, this);
-        AsTreeItem* repoItem = new AsTreeItem(this, repo, repoCheckBox, startButton, joinButton);
+        auto startButton = new QPushButton(u"Start Game"_s, this);
+        auto joinButton = new QPushButton(u"Join Server"_s, this);
+        auto repoItem = new AsTreeItem(this, repo, repoCheckBox, startButton, joinButton);
         addTopLevelItem(repoItem);
 
         connect(startButton, &QPushButton::pressed, [=] ()
@@ -99,8 +99,8 @@ void AsTreeWidget::addRepositories(const QList<IRepository*>& repositories)
         items_.append(repoItem);
         for (ISyncItem* mod : repo->uiMods())
         {
-            QCheckBox* modCheckBox = new QCheckBox(this);
-            AsTreeItem* modItem = new AsTreeItem(repoItem, mod, modCheckBox);
+            auto modCheckBox = new QCheckBox(this);
+            auto modItem = new AsTreeItem(repoItem, mod, modCheckBox);
             setItemWidget(modItem, 0, modCheckBox);
             repoItem->addChild(modItem);
             items_.append(modItem);

@@ -14,7 +14,7 @@
 class ModAdapter : public SyncItem, virtual public IMod
 {
 public:
-    ModAdapter(QSharedPointer<Mod> mod, Repository* repo, bool optional, int index);
+    ModAdapter(const QSharedPointer<Mod>& mod, Repository* repo, bool optional, int index);
     ~ModAdapter() override;
 
     void check() override;

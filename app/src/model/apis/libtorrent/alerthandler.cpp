@@ -5,11 +5,26 @@
 #include "../../afisynclogger.h"
 
 using namespace libtorrent;
+namespace {
+    std::string getName(alert* alert)
+    {
+        auto torrentAlert = dynamic_cast<torrent_alert*>(alert);
+        if (!torrentAlert)
+        {
+            return {};
+        }
+        torrent_handle h = torrentAlert->handle;
+        torrent_status s = h.status(torrent_handle::query_name);
+        return s.name;
+    }
+}
 
-AlertHandler::AlertHandler(QObject *parent) : QObject(parent)
+
+AlertHandler::AlertHandler(QObject* parent)
+    : QObject(parent),
+    downloadIdx_(find_metric_idx("net.recv_payload_bytes")),
+    uploadIdx_(find_metric_idx("net.sent_payload_bytes"))
 {
-    downloadIdx_ = lt::find_metric_idx("net.recv_payload_bytes");
-    uploadIdx_ = lt::find_metric_idx("net.sent_payload_bytes");
 }
 
 void AlertHandler::handleAlerts(const std::vector<alert*>* alerts)
@@ -31,7 +46,7 @@ void AlertHandler::handleAlert(alert* alert)
             case file_completed_alert::alert_type:
                 break;
             case torrent_finished_alert::alert_type:
-                handleTorrentFinishedAlert(static_cast<torrent_finished_alert*>(alert));
+                LOG << "Torrent " << getName(alert) << " has finished.";
                 break;
             case save_resume_data_alert::alert_type:
                 break;
@@ -55,16 +70,16 @@ void AlertHandler::handleAlert(alert* alert)
             case tracker_warning_alert::alert_type:
                 break;
             case fastresume_rejected_alert::alert_type:
-                handleFastresumeRejectedAlert(static_cast<fastresume_rejected_alert*>(alert));
+                LOG_WARNING << "Fast resume rejected for torrent: " << getName(alert);
                 break;
             case torrent_checked_alert::alert_type:
-                handleTorrentCheckAlert(static_cast<torrent_checked_alert*>(alert));
+                LOG << "Torrent " << getName(alert) << " checked";
                 break;
             case metadata_received_alert::alert_type:
-                handleMetadataReceivedAlert(static_cast<metadata_received_alert*>(alert));
+                LOG << "Metadata received for torrent: " << getName(alert);
                 break;
             case metadata_failed_alert::alert_type:
-                handleMetadataFailedAlert(static_cast<metadata_failed_alert*>(alert));
+                LOG << "Metadata failed for torrent: " << getName(alert);
                 break;
             case state_update_alert::alert_type:
                 break;
@@ -79,7 +94,7 @@ void AlertHandler::handleAlert(alert* alert)
             case torrent_delete_failed_alert::alert_type:
                 break;
             case portmap_error_alert::alert_type:
-                handlePortmapErrorAlert(static_cast<portmap_error_alert*>(alert));
+                LOG << "Port map error alert received: " << alert->message().c_str();
                 break;
             case portmap_alert::alert_type:
                 handlePortmapAlert(static_cast<portmap_alert*>(alert));
@@ -92,10 +107,10 @@ void AlertHandler::handleAlert(alert* alert)
                 break;
             case url_seed_alert::alert_type:
             case listen_succeeded_alert::alert_type:
-                handleListenSucceededAlert(static_cast<listen_succeeded_alert*>(alert));
+                LOG << "Received listen succeeded alert: " << alert->what();
                 break;
             case listen_failed_alert::alert_type:
-                handleListenFailedAlert(static_cast<listen_failed_alert*>(alert));
+                LOG_WARNING << "Received listen failed alert: " << alert->what();
                 break;
             case external_ip_alert::alert_type:
                 break;
@@ -107,48 +122,9 @@ void AlertHandler::handleAlert(alert* alert)
     }
 }
 
-void AlertHandler::handleFastresumeRejectedAlert(const fastresume_rejected_alert* alert)
-{
-    torrent_handle h = alert->handle;
-    torrent_status s = h.status(torrent_handle::query_name);
-    QString name = QString::fromStdString(s.name);
-    LOG_WARNING << "Fast resume rejected for torrent: " << name;
-}
-
-void AlertHandler::handleListenFailedAlert(const listen_failed_alert* alert)
-{
-    LOG_WARNING << "Received listen failed alert: " << alert->what();
-}
-
-void AlertHandler::handleListenSucceededAlert(const listen_succeeded_alert* alert)
-{
-    LOG << "Received listen succeeded alert: " << alert->what();
-}
-
-void AlertHandler::handleMetadataFailedAlert(const libtorrent::metadata_failed_alert* alert)
-{
-    torrent_handle h = alert->handle;
-    torrent_status s = h.status(torrent_handle::query_name);
-    QString name = QString::fromStdString(s.name);
-    LOG << "Metadata failed for torrent: " << name;
-}
-
-void AlertHandler::handleMetadataReceivedAlert(const metadata_received_alert* alert)
-{
-    torrent_handle h = alert->handle;
-    torrent_status s = h.status(torrent_handle::query_name);
-    QString name = QString::fromStdString(s.name);
-    LOG << "Metadata received for torrent: " << name;
-}
-
 void AlertHandler::handlePortmapAlert(const portmap_alert* alert)
 {
     LOG << "Port map alert received. Port: " << alert->external_port;
-}
-
-void AlertHandler::handlePortmapErrorAlert(const portmap_error_alert* alert)
-{
-    LOG << "Port map error alert received: " << alert->message().c_str();
 }
 
 void AlertHandler::handleSessionStatsAlert(const libtorrent::session_stats_alert* alert)
@@ -173,20 +149,4 @@ void AlertHandler::handleStorageMovedAlert(const storage_moved_alert* alert)
 {
     LOG << "Received storage moved alert: " << alert->what();
     emit storageMoved(alert->handle);
-}
-
-void AlertHandler::handleTorrentCheckAlert(const torrent_checked_alert* alert)
-{
-    torrent_handle h = alert->handle;
-    torrent_status s = h.status(torrent_handle::query_name);
-    QString name = QString::fromStdString(s.name);
-    LOG << "Torrent " << name << " checked";
-}
-
-void AlertHandler::handleTorrentFinishedAlert(const torrent_finished_alert* alert)
-{
-    torrent_handle h = alert->handle;
-    torrent_status s = h.status(torrent_handle::query_name);
-    QString name = QString::fromStdString(s.name);
-    LOG << "Torrent " << name << " has finished.";
 }

@@ -101,7 +101,7 @@ TreeModel::~TreeModel()
     repositories_.clear();
     waiter.wait();
 
-    QObject* syncObject = dynamic_cast<QObject*>(sync_);
+    auto syncObject = dynamic_cast<QObject*>(sync_);
     DestructionWaiter syncWaiter(syncObject);
     syncObject->deleteLater();
     syncWaiter.wait(15); // libTorrent session delete might hang

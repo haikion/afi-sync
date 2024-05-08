@@ -7,7 +7,7 @@
 
 using namespace Qt::StringLiterals;
 
-ModAdapter::ModAdapter(QSharedPointer<Mod> mod, Repository* repo, bool isOptional, int index):
+ModAdapter::ModAdapter(const QSharedPointer<Mod>& mod, Repository* repo, bool isOptional, int index):
     SyncItem(mod->name()),
     mod_(mod),
     repo_(repo),

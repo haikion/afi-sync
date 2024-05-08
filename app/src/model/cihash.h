@@ -13,7 +13,7 @@
 template<class T> class CiHash : public QHash<QString, T>
 {
 public:
-    typedef typename QHash<QString, T>::iterator CiHashIt;
+    using CiHashIt = typename QHash<QString, T>::iterator;
 
     void insert(const QString& key, const T& value)
     {

@@ -12,7 +12,7 @@ class OptionalSetting : public QWidget
     Q_OBJECT
 
 public:
-    explicit OptionalSetting(QWidget* parent = 0);
+    explicit OptionalSetting(QWidget* parent = nullptr);
     ~OptionalSetting() override;
 
     void init(const QString& labelText, const QString& value, bool enabled);

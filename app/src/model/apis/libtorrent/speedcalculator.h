@@ -8,8 +8,8 @@ class SpeedCalculator
 public:
     SpeedCalculator() = default;
     bool update(int64_t downloaded, int64_t uploaded, libtorrent::time_point timepoint);
-    int64_t getDownloadSpeed();
-    int64_t getUploadSpeed();
+    [[nodiscard]] int64_t getDownloadSpeed() const;
+    [[nodiscard]] int64_t getUploadSpeed() const;
 
 private:
     int64_t totalDownloaded_{0};

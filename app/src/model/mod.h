@@ -69,7 +69,7 @@ private:
     unsigned waitTime_{0};
 
     void buildPathHash();
-    [[nodiscard]] bool reposInactive();
+    [[nodiscard]] bool reposInactive() const;
     void start();
     bool stop();
     void removeConflicting();

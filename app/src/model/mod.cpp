@@ -578,7 +578,7 @@ void Mod::checkboxClickedSlot()
     repositoryChanged();
 }
 
-bool Mod::reposInactive()
+bool Mod::reposInactive() const
 {
     for (Repository* repo : repositories())
     {

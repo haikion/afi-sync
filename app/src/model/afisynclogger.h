@@ -5,11 +5,17 @@
 #define AFISYNCLOGGER_H
 
 #include <boost/log/trivial.hpp>
+
 #include <QSet>
 #include <QString>
 #include <QVector>
+
 #include "szip.h"
-#include "qstreams.h"
+
+std::ostream& operator<<(std::ostream& outStream, const QString& qString);
+std::ostream& operator<<(std::ostream& outStream, const QList<int>& qVector);
+std::ostream& operator<<(std::ostream& outStream, const QStringList& qList);
+std::ostream& operator<<(std::ostream& outStream, const QSet<QString>& qSet);
 
 #ifdef Q_OS_WIN
 #pragma warning(push, 0)
@@ -29,11 +35,10 @@ public:
     void initFileLogging();
 
 private:
-    static const int MAX_LOGS_SIZE;
     static const QString SZIP_EXECUTABLE;
-    Szip szip_; //Do not kill process when block ends
+    Szip szip_;
 
-    bool rotateLogs();
+    void rotateLogs();
 };
 
 #endif // AFISYNCLOGGER_H

@@ -9,7 +9,7 @@ class ProcessMonitor: public QObject
     Q_OBJECT
 
 public:
-    explicit ProcessMonitor(QObject* parent = 0);
+    explicit ProcessMonitor(QObject* parent = nullptr);
 
 public:
     [[nodiscard]] static bool arma3Running();

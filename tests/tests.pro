@@ -57,7 +57,6 @@ HEADERS += \
     ../app/src/model/modadapter.h \
     ../app/src/model/paths.h \
     ../app/src/model/processmonitor.h \
-    ../app/src/model/qstreams.h \
     ../app/src/model/repository.h \
     ../app/src/model/settingsmodel.h \
     ../app/src/model/settingsuimodel.h \
@@ -97,7 +96,6 @@ SOURCES += \
     ../app/src/model/mod.cpp \
     ../app/src/model/modadapter.cpp \
     ../app/src/model/processmonitor.cpp \
-    ../app/src/model/qstreams.cpp \
     ../app/src/model/repository.cpp \
     ../app/src/model/settingsmodel.cpp \
     ../app/src/model/settingsuimodel.cpp \
