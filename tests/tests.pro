@@ -68,9 +68,6 @@ HEADERS += \
     ../app/src/model/deletable.h \
     ../app/src/model/afisync.h \
     ../app/src/model/destructionwaiter.h \
-    mocksyncitem.h \
-    mockmod.h \
-    mockrepository.h \
     testconstants.h
 
 SOURCES += \

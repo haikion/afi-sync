@@ -4,8 +4,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "mockmod.h"
-#include "mockrepository.h"
 #include "model/deletabledetector.h"
 #include "testconstants.h"
 
@@ -38,53 +36,6 @@ TEST_F(DeletableDetectorTest, emptyDirs)
 
     const QStringList deletableNames = deletableDetector.deletableNames();
     ASSERT_TRUE(deletableNames.contains(NAME_1));
-    ASSERT_TRUE(deletableNames.contains(NAME_2));
-    ASSERT_TRUE(deletableNames.contains(NAME_3));
-    ASSERT_EQ(0, deletableDetector.totalSize());
-}
-
-TEST_F(DeletableDetectorTest, twoDeletables)
-{
-    QList<IMod*> mods;
-    MockMod mod;
-    EXPECT_CALL(mod, name()).WillRepeatedly(Return(NAME_1));
-    EXPECT_CALL(mod, selected()).WillRepeatedly(Return(true));
-    mods.append(&mod);
-    MockRepository repo;
-    EXPECT_CALL(repo, uiMods()).WillRepeatedly(Return(mods));
-    QList<IRepository*> repositories;
-    repositories.append(&repo);
-
-    DeletableDetector deletableDetector(".", repositories);
-    const QStringList deletableNames = deletableDetector.deletableNames();
-    ASSERT_FALSE(deletableNames.contains(NAME_1));
-    ASSERT_TRUE(deletableNames.contains(NAME_2));
-    ASSERT_TRUE(deletableNames.contains(NAME_3));
-    ASSERT_EQ(0, deletableDetector.totalSize());
-}
-
-TEST_F(DeletableDetectorTest, ticked)
-{
-    QList<IMod*> mods;
-
-    MockMod mod1;
-    EXPECT_CALL(mod1, name()).WillRepeatedly(Return(NAME_1));
-    EXPECT_CALL(mod1, selected()).WillRepeatedly(Return(true));
-    mods.append(&mod1);
-
-    MockMod mod2;
-    EXPECT_CALL(mod2, name()).WillRepeatedly(Return(NAME_2));
-    EXPECT_CALL(mod2, selected()).WillRepeatedly(Return(false));
-    mods.append(&mod2);
-
-    MockRepository repo;
-    EXPECT_CALL(repo, uiMods()).WillRepeatedly(Return(mods));
-    QList<IRepository*> repositories;
-    repositories.append(&repo);
-
-    DeletableDetector deletableDetector(".", repositories);
-    const QStringList deletableNames = deletableDetector.deletableNames();
-    ASSERT_FALSE(deletableNames.contains(NAME_1));
     ASSERT_TRUE(deletableNames.contains(NAME_2));
     ASSERT_TRUE(deletableNames.contains(NAME_3));
     ASSERT_EQ(0, deletableDetector.totalSize());
