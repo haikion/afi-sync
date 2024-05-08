@@ -1,9 +1,10 @@
+#include "afisync.h"
+
 #include <QRegularExpression>
 
-#include "deletabledetector.h"
-#include "interfaces/imod.h"
-#include "afisync.h"
 #include "afisynclogger.h"
+#include "deletabledetector.h"
+#include "modadapter.h"
 
 QStringList AfiSync::activeModNames(const QList<IRepository*>& repositories)
 {
@@ -24,7 +25,7 @@ QStringList AfiSync::activeModNames(const QList<IRepository*>& repositories)
 const QSet<QString> AfiSync::activeModNames(const IRepository* repository)
 {
     QSet<QString> retVal;
-    for (IMod* mod : repository->uiMods())
+    for (const auto& mod : repository->modAdapters())
     {
         if (mod->selected())
         {

@@ -126,7 +126,7 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<QSharedPointer<Rep
             auto newMod = modMap.contains(key) ? modMap.value(key) :
                               QSharedPointer<Mod>(new Mod(modName, key, sync), &QObject::deleteLater);
             modMap.insert(key, newMod); //add if doesn't already exist
-            newMod->setFileSize(qvariant_cast<quint64>(mod.value(u"fileSize"_s, "0")));
+            newMod->setFileSize(qvariant_cast<int64_t>(mod.value(u"fileSize"_s, "0")));
             new ModAdapter(newMod, repo.get(), mod.value(u"optional"_s, false).toBool(), i);
         }
         repositoryJsonModKeys.insert(repo.get(), jsonModKeys);

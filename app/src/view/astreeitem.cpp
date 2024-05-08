@@ -1,5 +1,7 @@
 #include "astreeitem.h"
-#include "../model/interfaces/irepository.h"
+
+#include "model/interfaces/irepository.h"
+#include "model/modadapter.h"
 
 AsTreeItem::AsTreeItem(QTreeWidget* parent, ISyncItem* syncItem, QCheckBox* checkBox,
                         QPushButton* startButton, QPushButton* joinButton):
@@ -14,11 +16,20 @@ AsTreeItem::AsTreeItem(QTreeWidget* parent, ISyncItem* syncItem, QCheckBox* chec
     init();
 }
 
-AsTreeItem::AsTreeItem(QTreeWidgetItem* parent, ISyncItem* syncItem, QCheckBox* checkBox):
+AsTreeItem::AsTreeItem(QTreeWidgetItem* parent, ModAdapter* syncItem, QCheckBox* checkBox):
     QTreeWidgetItem(parent),
     syncItem_(syncItem),
     checkBox_(checkBox)
 {
+    QObject::connect(syncItem, &ModAdapter::fileSizeInitialized, &context_, [=] ()
+    {
+        setText(4, syncItem->sizeStr());
+        auto par = dynamic_cast<AsTreeItem*>(parent);
+        if (par)
+        {
+            par->updateRepoSize();
+        }
+    });
     init();
 }
 
@@ -37,6 +48,11 @@ void AsTreeItem::update()
     setText(3, syncItem_->progressStr());
     updateCheckBox();
     updateButtons();
+}
+
+void AsTreeItem::updateRepoSize()
+{
+    setText(4, syncItem_->sizeStr());
 }
 
 // Updates checkbox state when syncitem

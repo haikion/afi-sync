@@ -7,16 +7,19 @@
 #include <QPushButton>
 #include <QObject>
 
-#include "../model/interfaces/isyncitem.h"
+#include "model/interfaces/isyncitem.h"
+
+class ModAdapter;
 
 class AsTreeItem : public QTreeWidgetItem
 {
 public:
-    explicit AsTreeItem(QTreeWidgetItem* parent, ISyncItem* syncItem, QCheckBox* checkBox);
+    explicit AsTreeItem(QTreeWidgetItem* parent, ModAdapter* syncItem, QCheckBox* checkBox);
     explicit AsTreeItem(QTreeWidget* parent, ISyncItem* syncItem, QCheckBox* checkBox,
                             QPushButton* startButton, QPushButton* joinButton);
 
     void update();
+    void updateRepoSize();
     ISyncItem* syncItem();
 
 private:

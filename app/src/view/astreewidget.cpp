@@ -1,4 +1,4 @@
-#include <utility>
+#include "astreewidget.h"
 
 #include <QHeaderView>
 #include <QMenu>
@@ -6,7 +6,6 @@
 
 #include "../model/modadapter.h"
 #include "astreeitem.h"
-#include "astreewidget.h"
 
 using namespace Qt::StringLiterals;
 
@@ -97,10 +96,10 @@ void AsTreeWidget::addRepositories(const QList<IRepository*>& repositories)
         setItemWidget(repoItem, 5, startButton);
         setItemWidget(repoItem, 6, joinButton);
         items_.append(repoItem);
-        for (ISyncItem* mod : repo->uiMods())
+        for (const auto& mod : repo->modAdapters())
         {
             auto modCheckBox = new QCheckBox(this);
-            auto modItem = new AsTreeItem(repoItem, mod, modCheckBox);
+            auto modItem = new AsTreeItem(repoItem, mod.get(), modCheckBox);
             setItemWidget(modItem, 0, modCheckBox);
             repoItem->addChild(modItem);
             items_.append(modItem);

@@ -395,7 +395,12 @@ void LibTorrentApi::disableQueue(const QString& key)
     handle.resume();
 }
 
-qint64 LibTorrentApi::folderTotalWanted(const QString& key)
+int64_t LibTorrentApi::folderFileSize(const QString& key)
+{
+    return getHandle(key).torrent_file()->total_size();
+}
+
+int64_t LibTorrentApi::folderTotalWanted(const QString& key)
 {
     if (torrentDownloading_.contains(key))
     {
@@ -415,7 +420,7 @@ qint64 LibTorrentApi::folderTotalWanted(const QString& key)
     return status.state == torrent_status::downloading_metadata ? -1 : status.total_wanted;
 }
 
-qint64 LibTorrentApi::folderTotalWantedDone(const QString& key)
+int64_t LibTorrentApi::folderTotalWantedDone(const QString& key)
 {
     if (torrentDownloading_.contains(key))
     {
@@ -985,8 +990,7 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& name)
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
     if (!deltaManager_ && !deltaUrls_.isEmpty() && SettingsModel::deltaPatchingEnabled())
     {
-        // Wait for the delta torrent to be processed before adding
-        // mod torrents.
+        // TODO: Unreachable code block?
         pendingFolder_.enqueue({key, name});
         LOG << "Folder add postponed " << key << " " << name;
         return false;

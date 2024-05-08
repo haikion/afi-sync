@@ -2,13 +2,17 @@
 #define IREPOSITORY_H
 
 #include <QList>
-#include "imod.h"
+#include <QSharedPointer>
+
+#include "isyncitem.h"
+
+class ModAdapter;
 
 class IRepository : virtual public ISyncItem
 {
 public:
     ~IRepository() override = default;
-    [[nodiscard]] virtual QList<IMod*> uiMods() const = 0; // TODO: Rename
+    [[nodiscard]] virtual const QList<QSharedPointer<ModAdapter>>& modAdapters() const = 0;
     virtual void start() = 0;
     virtual void join() = 0;
 };

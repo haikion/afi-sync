@@ -76,8 +76,9 @@ public:
     //Adds folder, key is source.
     [[nodiscard]] virtual bool addFolder(const QString& key, const QString& name) = 0;
     virtual void disableQueue(const QString& key) = 0;
-    [[nodiscard]] virtual qint64 folderTotalWanted(const QString& key) = 0;
-    [[nodiscard]] virtual qint64 folderTotalWantedDone(const QString& key) = 0;
+    [[nodiscard]] virtual int64_t folderFileSize(const QString& key) = 0;
+    [[nodiscard]] virtual int64_t folderTotalWanted(const QString& key) = 0;
+    [[nodiscard]] virtual int64_t folderTotalWantedDone(const QString& key) = 0;
     virtual void cleanUnusedFiles(const QSet<QString>& usedKeys) = 0;
     [[nodiscard]] virtual bool folderCheckingPatches(const QString& key) = 0;
 

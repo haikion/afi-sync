@@ -18,7 +18,7 @@
 class ModAdapter;
 class Repository;
 
-class Mod : public QObject, public SyncItem, virtual public IMod
+class Mod: public SyncItem, virtual public IMod
 {
     Q_OBJECT
 
@@ -46,6 +46,9 @@ public:
     [[nodiscard]] static QString bytesToMegasCeilStr(qint64 bytes);
     [[nodiscard]] static QString toProgressStr(qint64 totalWanted, qint64 totalWantedDone);
     [[nodiscard]] bool selected() override;
+
+signals:
+    void fileSizeInitialized(int64_t newSize);
 
 public slots:
     void appendModAdapter(ModAdapter* adapter);

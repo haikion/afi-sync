@@ -12,8 +12,10 @@
 
 #include "interfaces/isyncitem.h"
 
-class SyncItem : virtual public ISyncItem
+class SyncItem: public QObject, virtual public ISyncItem
 {
+    Q_OBJECT
+
 public:
     explicit SyncItem(const QString& name);
 
@@ -26,8 +28,8 @@ public:
     [[nodiscard]] QString name() const override;
 
     void setStatus(const QString& statusStr);
-    [[nodiscard]] quint64 fileSize() const;
-    void setFileSize(quint64 size);
+    [[nodiscard]] int64_t fileSize() const;
+    void setFileSize(int64_t size);
     [[nodiscard]] QString sizeStr() const override;
     [[nodiscard]] bool active() const override;
     QString progressStr() override = 0;
@@ -35,7 +37,7 @@ public:
 private:
     QString name_;
     QString status_;
-    std::atomic<quint64> fileSize_;
+    std::atomic<int64_t> fileSize_{0};
     QMutex statusMutex_;
 
     static QSet<QString> createActiveStatuses();

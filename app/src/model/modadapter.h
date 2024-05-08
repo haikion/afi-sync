@@ -13,6 +13,8 @@
  */
 class ModAdapter : public SyncItem, virtual public IMod
 {
+    Q_OBJECT
+
 public:
     ModAdapter(const QSharedPointer<Mod>& mod, Repository* repo, bool optional, int index);
     ~ModAdapter() override;
@@ -30,6 +32,9 @@ public:
     bool selected() override;
     [[nodiscard]] QString key() const;
     void stopUpdates();
+
+signals:
+    void fileSizeInitialized();
 
 protected:
     virtual void setTicked(bool ticked);

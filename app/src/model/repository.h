@@ -31,7 +31,7 @@ public:
     void start() override;
     bool optional() override;
     [[nodiscard]] QList<QSharedPointer<Mod> > mods() const;
-    [[nodiscard]] QList<IMod*> uiMods() const override;
+    [[nodiscard]] const QList<QSharedPointer<ModAdapter>>& modAdapters() const override;
     void processCompletion() override;
     bool removeMod(const QString& key);
     bool removeMod(Mod* mod, bool removeFromSync = true);

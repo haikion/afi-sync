@@ -16,12 +16,24 @@ ModAdapter::ModAdapter(const QSharedPointer<Mod>& mod, Repository* repo, bool is
 {
     setFileSize(mod->fileSize());
     repo->appendModAdapter(QSharedPointer<ModAdapter>(this), index);
-    QMetaObject::invokeMethod(mod.get(), "appendModAdapter", Qt::QueuedConnection, Q_ARG(ModAdapter*, this));
+    QObject::connect(mod.get(), &Mod::fileSizeInitialized, repo, [=] (auto fileSize)
+    {
+        setFileSize(fileSize);
+        repo->setFileSize(repo->fileSize() + fileSize);
+        emit fileSizeInitialized();
+    });
+    QMetaObject::invokeMethod(mod.get(), [=] ()
+    {
+        mod.get()->appendModAdapter(this);
+    }, Qt::QueuedConnection);
 }
 
 ModAdapter::~ModAdapter()
 {
-    QMetaObject::invokeMethod(mod_.get(), "removeModAdapter", Qt::BlockingQueuedConnection, Q_ARG(ModAdapter*, this));
+    QMetaObject::invokeMethod(mod_.get(), [=] ()
+    {
+        mod_.get()->removeModAdapter(this);
+    }, Qt::BlockingQueuedConnection);
 }
 
 void ModAdapter::check()

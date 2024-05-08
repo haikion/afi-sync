@@ -5,8 +5,7 @@
 using namespace Qt::StringLiterals;
 
 SyncItem::SyncItem(const QString& name):
-    name_(name),
-    fileSize_(0)
+    name_(name)
 {
     setStatus(SyncStatus::NO_SYNC_CONNECTION);
 }
@@ -69,12 +68,12 @@ QString SyncItem::name() const
     return name_;
 }
 
-quint64 SyncItem::fileSize() const
+int64_t SyncItem::fileSize() const
 {
     return fileSize_;
 }
 
-void SyncItem::setFileSize(const quint64 size)
+void SyncItem::setFileSize(int64_t size)
 {
     fileSize_ = size;
 }

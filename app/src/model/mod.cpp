@@ -46,6 +46,7 @@ void Mod::threadConstructor()
     updateTimer_->setTimerType(Qt::VeryCoarseTimer);
     updateTimer_->setInterval(1s);
     connect(updateTimer_, &QTimer::timeout, this, &Mod::update);
+    // TODO: Remove ISync and use LibTorrentApi directly
     connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(repositoryChanged()));
     connect(dynamic_cast<QObject*>(sync_), SIGNAL(folderAdded(QString)), this, SLOT(onFolderAdded(QString)));
 }
@@ -110,6 +111,13 @@ void Mod::onFolderAdded(const QString &key)
         moveFilesPostponed_ = false;
         moveFilesNow();
         LOG << "Files moved to " << SettingsModel::modDownloadPath();
+    }
+    if (fileSize() == 0)
+    {
+        auto size = sync_->folderFileSize(key_);
+        setFileSize(size);
+        emit fileSizeInitialized(size);
+        LOG << name() << " size set to " << size;
     }
 
     //Do the actual starting
