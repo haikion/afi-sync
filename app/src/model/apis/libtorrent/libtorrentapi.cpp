@@ -36,6 +36,7 @@
 #include "model/fileutils.h"
 #include "model/global.h"
 #include "model/settingsmodel.h"
+#include "model/version.h"
 
 using namespace Qt::StringLiterals;
 using namespace libtorrent;
@@ -132,15 +133,16 @@ void LibTorrentApi::createSession()
     settings.set_int(settings_pack::unchoke_slots_limit, 100);
 
     //Change user agent
-    std::string userAgent = "AFISync";
+    std::string userAgentPrefix = "AFISync/";
     if (Global::guiless)
     {
-        userAgent = "AFISync_Mirror";
+        userAgentPrefix = "AFISync_Mirror/";
         //Try to maximize upload speed
         settings.set_int(settings_pack::connections_limit, 1000);
         settings.set_int(settings_pack::seed_choking_algorithm, settings_pack::fastest_upload);
     }
-    settings.set_str(settings_pack::user_agent, userAgent + "/" + Constants::VERSION_STRING.toStdString());
+    static const std::string versionStr = VERSION_CHARS;
+    settings.set_str(settings_pack::user_agent, userAgentPrefix + versionStr);
     //Load port setting
     QString port = SettingsModel::portEnabled() ? SettingsModel::port() : Constants::DEFAULT_PORT;
     settings.set_str(settings_pack::listen_interfaces, "0.0.0.0:" + port.toStdString());
@@ -296,8 +298,10 @@ bool LibTorrentApi::folderQueued(const QString& key)
 
 void LibTorrentApi::setDeltaUrls(const QStringList& urls)
 {
-    QMetaObject::invokeMethod(this, "setDeltaUrlsSlot",
-                              Qt::QueuedConnection, Q_ARG(QStringList, urls));
+    QMetaObject::invokeMethod(this, [=]
+    {
+        setDeltaUrlsPriv(urls);
+    }, Qt::QueuedConnection);
 }
 
 void LibTorrentApi::setFolderPath(const QString& key, const QString& path)
@@ -651,13 +655,15 @@ int64_t LibTorrentApi::download() const
     return downloadSpeed_;
 }
 
-void LibTorrentApi::setMaxUpload(const int limit)
+void LibTorrentApi::setMaxUpload(int limit)
 {
-    QMetaObject::invokeMethod(this, "setMaxUploadSlot", Qt::QueuedConnection, Q_ARG(int, limit));
+    QMetaObject::invokeMethod(this, [=]
+    {
+        setMaxDownloadPriv(limit);
+    }, Qt::QueuedConnection);
 }
 
-
-void LibTorrentApi::setMaxUploadSlot(const int limit)
+void LibTorrentApi::setMaxUploadPriv(const int limit)
 {
     settings_pack pack;
     pack.set_int(settings_pack::upload_rate_limit, limit * 1024);
@@ -666,10 +672,13 @@ void LibTorrentApi::setMaxUploadSlot(const int limit)
 
 void LibTorrentApi::setMaxDownload(int limit)
 {
-    QMetaObject::invokeMethod(this, "setMaxDownloadSlot", Qt::QueuedConnection, Q_ARG(int, limit));
+    QMetaObject::invokeMethod(this, [=]
+    {
+        setMaxUploadPriv(limit);
+    }, Qt::QueuedConnection);
 }
 
-void LibTorrentApi::setMaxDownloadSlot(const int limit)
+void LibTorrentApi::setMaxDownloadPriv(const int limit)
 {
     settings_pack pack;
     pack.set_int(settings_pack::download_rate_limit, limit * 1024);
@@ -683,10 +692,13 @@ bool LibTorrentApi::ready()
 
 void LibTorrentApi::setPort(int port)
 {
-    QMetaObject::invokeMethod(this, "setPortSlot", Qt::QueuedConnection, Q_ARG(int, port));
+    QMetaObject::invokeMethod(this, [=]
+    {
+        setPortPriv(port);
+    }, Qt::QueuedConnection);
 }
 
-void LibTorrentApi::setPortSlot(int port)
+void LibTorrentApi::setPortPriv(int port)
 {
     if (!session_)
     {
@@ -738,10 +750,13 @@ void LibTorrentApi::removeFiles(const QString& hashString)
 
 void LibTorrentApi::removeFolder(const QString& key)
 {
-    QMetaObject::invokeMethod(this, "removeFolderSlot", Qt::QueuedConnection, Q_ARG(QString, key));
+    QMetaObject::invokeMethod(this, [=]
+    {
+        removeFolderPriv(key);
+    }, Qt::QueuedConnection);
 }
 
-bool LibTorrentApi::removeFolderSlot(const QString& key)
+bool LibTorrentApi::removeFolderPriv(const QString& key)
 {
     LOG << "key = " << key;
     if (!session_)
@@ -786,15 +801,7 @@ void LibTorrentApi::mirrorDeltaPatches()
     QMetaObject::invokeMethod(deltaManager_, &DeltaManager::mirrorDeltaPatches, Qt::QueuedConnection);
 }
 
-void LibTorrentApi::setDeltaUpdatesFolder(const QString& key)
-{
-    // FIXME: QMetaObject::invokeMethod: No such method
-    // LibTorrentApi::setDeltaUpdatesFolderSlot(QString)
-    Q_ASSERT(false);
-    QMetaObject::invokeMethod(this, "setDeltaUpdatesFolderSlot", Qt::QueuedConnection, Q_ARG(QString, key));
-}
-
-void LibTorrentApi::setDeltaUrlsSlot(const QStringList& deltaUrls)
+void LibTorrentApi::setDeltaUrlsPriv(const QStringList& deltaUrls)
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
     if (deltaUrls == deltaUrls_)
@@ -802,7 +809,7 @@ void LibTorrentApi::setDeltaUrlsSlot(const QStringList& deltaUrls)
         return;
     }
     deltaUrls_ = deltaUrls;
-    enableDeltaUpdatesSlot();
+    enableDeltaUpdatesPriv();
     deltaManager_->setDeltaUrls(deltaUrls);
 }
 
@@ -834,10 +841,10 @@ void LibTorrentApi::disableDeltaUpdatesNoTorrents()
 
 void LibTorrentApi::enableDeltaUpdates()
 {
-    QMetaObject::invokeMethod(this, &LibTorrentApi::enableDeltaUpdatesSlot, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, &LibTorrentApi::enableDeltaUpdatesPriv, Qt::QueuedConnection);
 }
 
-void LibTorrentApi::enableDeltaUpdatesSlot()
+void LibTorrentApi::enableDeltaUpdatesPriv()
 {
     LOG;
     if (deltaManager_ || creatingDeltaManager_)

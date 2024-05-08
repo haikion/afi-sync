@@ -20,7 +20,8 @@ void OptionalSetting::init(const QString& labelText, const QString& value, const
     ui->checkBox->setText(labelText);
     ui->lineEdit->setText(value);
     connect(ui->checkBox, &QCheckBox::clicked, this, &OptionalSetting::checked);
-    connect(ui->lineEdit, &QLineEdit::editingFinished, this, [=] () {
+    connect(ui->lineEdit, &QLineEdit::editingFinished, this, [=]
+    {
         emit valueChanged(ui->lineEdit->text());
     });
     ui->checkBox->setChecked(enabled);

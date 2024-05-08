@@ -61,7 +61,10 @@ void DeltaPatcher::stop()
 
 void DeltaPatcher::patch(const QString& modPath)
 {
-    QMetaObject::invokeMethod(this, "patchDirSync", Qt::QueuedConnection, Q_ARG(QString, modPath));
+    QMetaObject::invokeMethod(this, [=]
+    {
+        patchDirSync(modPath);
+    }, Qt::QueuedConnection);
 }
 
 void DeltaPatcher::patchDirSync(const QString& modPath)
@@ -358,8 +361,10 @@ bool DeltaPatcher::delta(const QString& oldModPath, QString newModPath)
         return false;
     }
 
-    QMetaObject::invokeMethod(this, "compress", Qt::BlockingQueuedConnection,
-                              Q_ARG(QString, patchPath), Q_ARG(QString, deltaPath));
+    QMetaObject::invokeMethod(this, [=]
+    {
+        compress(patchPath, deltaPath);
+    }, Qt::BlockingQueuedConnection);
 
     FileUtils::safeRemoveRecursively(deltaDir);
 

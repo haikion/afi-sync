@@ -276,7 +276,7 @@ void SettingsModel::resetModDownloadPath()
 
 QString SettingsModel::patchesDownloadPath()
 {
-    return modDownloadPath() + "/afisync_patches";
+    return modDownloadPath() + u"/afisync_patches"_s;
 }
 
 QString SettingsModel::launchParameters()

@@ -38,7 +38,6 @@ public:
     ~LibTorrentApi() override;
 
     void mirrorDeltaPatches() override;
-    void setDeltaUpdatesFolder(const QString& key) override;
     QStringList deltaUrls() override;
     bool disableDeltaUpdates() override;
     void disableDeltaUpdatesNoTorrents();
@@ -99,14 +98,7 @@ private slots:
     void handleAlerts();
     void handlePatched(const QString& key, const QString& modName, bool success);
     void init();
-    bool removeFolderSlot(const QString& key);
-    void setDeltaUrlsSlot(const QStringList &key);
-    void setMaxUploadSlot(int limit);
-    void setMaxDownloadSlot(int limit);
-    void setPortSlot(int port);
-    void enableDeltaUpdatesSlot();
     void initDelta();
-    void shutdown();    
 
 signals:
     void initCompleted();
@@ -158,9 +150,16 @@ private:
     [[nodiscard]] int downloadEta(const libtorrent::torrent_status& status) const;
     libtorrent::torrent_handle addFolderFromParams(const QString& key);
     static void removeFiles(const QString& hashString);
-    void generalThreadInit();
     void generalInit();
+    void generalThreadInit();
+    bool removeFolderPriv(const QString& key);
+    void setDeltaUrlsPriv(const QStringList &key);
+    void setMaxUploadPriv(int limit);
+    void setMaxDownloadPriv(int limit);
+    void setPortPriv(int port);
+    void enableDeltaUpdatesPriv();
     void onFolderAdded(const QString& key, const libtorrent::torrent_handle& handle);
+    void shutdown();
 };
 
 #endif // LIBTORRENTAPI_H

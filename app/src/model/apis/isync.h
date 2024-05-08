@@ -12,7 +12,6 @@ public:
     virtual ~ISync() = default;
 
     virtual void mirrorDeltaPatches() = 0;
-    virtual void setDeltaUpdatesFolder(const QString& key) = 0;
     virtual QStringList deltaUrls() = 0;
     virtual bool disableDeltaUpdates() = 0;
     virtual void enableDeltaUpdates() = 0;

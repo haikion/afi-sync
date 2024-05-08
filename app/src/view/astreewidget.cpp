@@ -46,9 +46,9 @@ void AsTreeWidget::showContextMenu(QPoint point)
         auto repository = dynamic_cast<IRepository*>(syncItem);
         if(repository != nullptr)
         {
-            menu.addAction(u"Force join"_s, [=] () { repository->join(); });
-            menu.addAction(u"Force start"_s, [=] () { repository->start(); });
-            menu.addAction(u"Recheck"_s, [=] () { syncItem->check(); });
+            menu.addAction(u"Force join"_s, [=] { repository->join(); });
+            menu.addAction(u"Force start"_s, [=] { repository->start(); });
+            menu.addAction(u"Recheck"_s, [=] { syncItem->check(); });
         }
         else
         {

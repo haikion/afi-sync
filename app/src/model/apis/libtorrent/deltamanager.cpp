@@ -21,7 +21,7 @@ DeltaManager::DeltaManager(const QStringList& deltaUrls, lt::session* session, Q
     QObject(parent)
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
-    patcher_ = new DeltaPatcher(SettingsModel::modDownloadPath() + u"/afisync_patches"_s);
+    patcher_ = new DeltaPatcher(SettingsModel::patchesDownloadPath());
     patcher_->moveToThread(&patcherThread_);
     connect(patcher_, &DeltaPatcher::patched, this, &DeltaManager::handlePatched);
     patcherThread_.setObjectName("Patcher Thread");
@@ -81,7 +81,7 @@ QString DeltaManager::findDownloadedMod() const
 
 void DeltaManager::removeDeprecatedPatches(const QStringList& urls)
 {
-    const QString patchesPath = SettingsModel::modDownloadPath()  + u"/afisync_patches"_s;
+    const QString patchesPath = SettingsModel::patchesDownloadPath();
     QDir dir(patchesPath);
     QStringList files = dir.entryList(QDir::Files);
     QStringList deprecatedPatches = AfiSync::filterDeprecatedPatches(files, urls);
