@@ -50,7 +50,7 @@ void DeltaDownloader::mirrorDeltaPatches()
                 return;
             }
             lt::add_torrent_params atp = pair.second;
-            atp.save_path = SettingsModel::patchesDownloadPath().toStdString();
+            atp.save_path = SettingsModel::instance().patchesDownloadPath().toStdString();
             lt::error_code ec;
             auto handle = session_->add_torrent(atp, ec);
             if (ec.failed())
@@ -118,7 +118,7 @@ bool DeltaDownloader::downloadPatches(const QString& modName, const QString& key
                 return;
             }
             auto atp = pair.second;
-            atp.save_path = SettingsModel::patchesDownloadPath().toStdString();
+            atp.save_path = SettingsModel::instance().patchesDownloadPath().toStdString();
             lt::error_code ec;
             auto handle = session_->add_torrent(atp, ec);
             if (ec.failed())
@@ -147,8 +147,7 @@ bool DeltaDownloader::patchesDownloaded(const QString& key) const
         return false;
     }
 
-    const auto handles = *it;
-    for (const auto& handle : handles) {
+    for (const auto& handle : *it) {
         if (!handle.status().is_finished) {
             LOG << "Still downloading ...";
             return false;
@@ -186,9 +185,12 @@ void DeltaDownloader::setSession(lt::session* newSession)
 void DeltaDownloader::addToHandleMap(const QString& key, const libtorrent::torrent_handle& torrentHandle)
 {
     auto it = handleMap_.find(key);
-    if (it != handleMap_.end()) {
+    if (it != handleMap_.end())
+    {
         it->append(torrentHandle);
-    } else {
+    }
+    else
+    {
         handleMap_.insert(key, {torrentHandle});
     }
 }
@@ -228,6 +230,6 @@ boost::int64_t DeltaDownloader::totalWanted(const QString& modName)
 QString DeltaDownloader::hash(const QString& modName)
 {
     QString hash = AHasher::hash(
-                SettingsModel::modDownloadPath() + "/" + modName);
+        SettingsModel::instance().modDownloadPath() + "/" + modName);
     return hash;
 }

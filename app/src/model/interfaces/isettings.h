@@ -1,12 +1,17 @@
 #ifndef ISETTINGS_H
 #define ISETTINGS_H
 
+#include <QObject>
 #include <QString>
 
-class ISettings
+class ISettings: public QObject
 {
+    Q_OBJECT
+
 public:
+	ISettings() = default;
     virtual ~ISettings() = default;
+
     [[nodiscard]] virtual QString arma3Path() = 0;
     virtual void resetArma3Path() = 0;
     virtual void setArma3Path(const QString& path) = 0;
@@ -40,7 +45,12 @@ public:
     virtual void setMaxUpload(const QString& maxUpload) = 0;
 
     [[nodiscard]] virtual bool deltaPatchingEnabled() const = 0;
+
+public slots:
     virtual void setDeltaPatchingEnabled(bool enabled) = 0;
+
+private:
+    Q_DISABLE_COPY(ISettings)
 };
 
 #endif // ISETTINGS_H

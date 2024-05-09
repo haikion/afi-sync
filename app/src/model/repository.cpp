@@ -20,7 +20,7 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
     battlEyeEnabled_(true)
 {
     LOG << "Created repo with name " << name;
-    if (SettingsModel::ticked({}, name)) {
+    if (settings_.ticked({}, name)) {
         setStatus(SyncStatus::WAITING);
         activeTimer_.start();
         startUpdates();
@@ -54,12 +54,12 @@ bool Repository::isReady() const {
 
 bool Repository::ticked()
 {
-    return SettingsModel::ticked({}, name());
+    return settings_.ticked({}, name());
 }
 
 void Repository::setTicked(bool ticked)
 {
-    SettingsModel::setTicked({}, name(), ticked);
+    settings_.setTicked({}, name(), ticked);
     update();
 }
 
@@ -173,7 +173,7 @@ void Repository::clearModAdapters()
 
 void Repository::checkboxClicked()
 {
-    SettingsModel::setTicked({}, name(), !ticked());
+    settings_.setTicked({}, name(), !ticked());
     if (ticked()) {
         setStatus(SyncStatus::WAITING);
         activeTimer_.start();
@@ -201,8 +201,8 @@ bool Repository::optional()
 
 void Repository::generalLaunch(const QStringList& extraParams)
 {
-    QString executable = SettingsModel::arma3Path() + "\\arma3launcher.exe";
-    QString steamExecutable = SettingsModel::steamPath() + "\\Steam.exe";
+    QString executable = settings_.arma3Path() + "\\arma3launcher.exe";
+    QString steamExecutable = settings_.steamPath() + "\\Steam.exe";
     QStringList arguments;
 
     //arma3launcher wont start the game with correct parameters
@@ -233,7 +233,7 @@ void Repository::generalLaunch(const QStringList& extraParams)
         arguments << extraParams;
     }
 
-    QString paramsString = SettingsModel::launchParameters();
+    QString paramsString = settings_.launchParameters();
     if (paramsString.size() > 0)
     {
         QStringList userParams = paramsString.split(u" "_s);
@@ -248,7 +248,9 @@ void Repository::generalLaunch(const QStringList& extraParams)
 QString Repository::createParFile(const QString& parameters)
 {
     static const QString FILE_NAME = u"afiSyncParameters.txt"_s;
-    const QString path = SettingsModel::arma3Path() + "/" + FILE_NAME;
+    static SettingsModel& settings = SettingsModel::instance();
+
+    const QString path = settings.arma3Path() + "/" + FILE_NAME;
     LOG << path;
     QFile file(path);
     FileUtils::safeRemove(file);
@@ -342,7 +344,7 @@ QString Repository::modsParameter()
     {
         if (modAdapter->ticked())
         {
-            QDir modDir(SettingsModel::modDownloadPath() + "/" + modAdapter->name());
+            QDir modDir(settings_.modDownloadPath() + "/" + modAdapter->name());
             if ((charCounter + modDir.absolutePath().size()) >= 4096) {
                 rVal.remove(rVal.length() - 1, 1);
                 rVal += "\n-mod="_L1;

@@ -53,7 +53,7 @@ void Mod::threadConstructor()
 
 QString Mod::path()
 {
-    return SettingsModel::modDownloadPath() + "/" + name();
+    return settings_.modDownloadPath() + "/" + name();
 }
 
 void Mod::init()
@@ -110,7 +110,7 @@ void Mod::onFolderAdded(const QString &key)
     {
         moveFilesPostponed_ = false;
         moveFilesNow();
-        LOG << "Files moved to " << SettingsModel::modDownloadPath();
+        LOG << "Files moved to " << settings_.modDownloadPath();
     }
     if (fileSize() == 0)
     {
@@ -143,7 +143,7 @@ void Mod::moveFilesSlot()
         return;
     }
     moveFilesNow();
-    LOG << "Files moved to " << SettingsModel::modDownloadPath();
+    LOG << "Files moved to " << settings_.modDownloadPath();
 }
 
 void Mod::moveFilesNow()
@@ -151,18 +151,18 @@ void Mod::moveFilesNow()
     deleteExtraFiles();
     if (sync_->folderExists(key_))
     {
-        sync_->setFolderPath(key_, SettingsModel::modDownloadPath());
+        sync_->setFolderPath(key_, settings_.modDownloadPath());
     }
 }
 
 void Mod::setProcessCompletion(const bool value)
 {
-    SettingsModel::setProcessed(name(), !value ? key_ : ""_L1);
+    settings_.setProcessed(name(), !value ? key_ : ""_L1);
 }
 
 bool Mod::getProcessCompletion()
 {
-    return SettingsModel::processed(name()) != key_;
+    return settings_.processed(name()) != key_;
 }
 
 qint64 Mod::totalWanted() const
@@ -217,7 +217,7 @@ void Mod::deleteExtraFiles()
     QSet<QString> localFiles;
     QSet<QString> remoteFiles = sync_->folderFilesUpper(key_);
 
-    QDir dir(SettingsModel::modDownloadPath() + "/" + name());
+    QDir dir(settings_.modDownloadPath() + "/" + name());
     QDirIterator it(dir.absolutePath(), QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext())
     {

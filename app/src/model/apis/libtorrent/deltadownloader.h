@@ -20,9 +20,8 @@
 #pragma warning(pop)
 #endif
 
-#include "../../cihash.h"
+#include "model/cihash.h"
 
-// TODO: Implement mirror
 class DeltaDownloader: public QObject
 {
     Q_OBJECT

@@ -16,7 +16,6 @@
 #include "global.h"
 #include "processmonitor.h"
 #include "settingsmodel.h"
-#include "settingsuimodel.h"
 #include "treemodel.h"
 #include "version.h"
 
@@ -51,7 +50,7 @@ TreeModel* generalInit(QObject* parent = nullptr)
     Global::workerThread->start();
     LOG << "Worker thread started";
     Global::model = new TreeModel(parent);
-    SettingsModel::initBwLimits();
+    SettingsModel::instance().initBwLimits();
     return Global::model;
 }
 
@@ -78,7 +77,7 @@ int gui(int argc, char* argv[])
     auto mainWindow = new MainWindow();
     TreeModel* treeModel = generalInit(mainWindow);
     mainWindow->show();
-    mainWindow->init(treeModel, new SettingsUiModel());
+    mainWindow->init(treeModel);
     mainWindow->treeWidget()->setRepositories(treeModel->repositories());
     QObject::connect(treeModel, &TreeModel::repositoriesChanged,
                      mainWindow->treeWidget(), &AsTreeWidget::setRepositories);
@@ -99,14 +98,15 @@ int cli(int argc, char* argv[])
     static const QString PATCH = u"patch"_s;
 
     QCoreApplication app(argc, argv);
+    static SettingsModel& settings = settings.instance();
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addOptions({
-                          {"mirror", "Mirror all files into <directory>. Current value: " + SettingsModel::modDownloadPath()
-                           , "directory", SettingsModel::modDownloadPath()},
-                          {"port", "External Port. Current value: " + SettingsModel::port()
-                           , "port", SettingsModel::port()},
+                          {"mirror", "Mirror all files into <directory>. Current value: " + settings.modDownloadPath()
+                           , "directory", settings.modDownloadPath()},
+                          {"port", "External Port. Current value: " + settings.port()
+                           , "port", settings.port()},
                           {"delta-hash", "Prints delta hash for the mod. Used for debugging", "mod directory", "."},
                           {"delta-hash-legacy", "Prints delta hash for the mod. Used for debugging", "mod directory", "."},
                           {DELTA_ARGS.at(0), "Delta patch generation:  Defines path to old version", DELTA_ARGS.at(0)},
@@ -192,13 +192,13 @@ int cli(int argc, char* argv[])
             QCoreApplication::exit(2);
         }
         LOG << "Setting mod download path: " << modDownloadPath;
-        SettingsModel::setModDownloadPath(modDownloadPath);
+        settings.setModDownloadPath(modDownloadPath);
 
         TreeModel* model = generalInit();
 
-        SettingsModel::setDeltaPatchingEnabled(true);
+        settings.setDeltaPatchingEnabled(true);
         LOG << "Delta updates enabled due to the mirror mode.";
-        SettingsModel::setPort(parser.value(u"port"_s), true);
+        settings.setPort(parser.value(u"port"_s), true);
         model->enableRepositories();
         return QCoreApplication::exec();
     }

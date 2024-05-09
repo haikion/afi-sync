@@ -27,7 +27,7 @@ namespace {
         if (path == QCoreApplication::applicationDirPath()
                 && !Global::guiless)
         {
-            LOG_ERROR << "Unable to find path for " << name
+            LOG_WARNING << "Unable to find path for " << name
                 << " Using default: " << path;
         }
     }
@@ -58,6 +58,19 @@ QString Paths::arma3Path()
 
 QString Paths::teamspeak3Path()
 {
+    // Windows 10
+    QSettings settingsCommand("HKEY_CURRENT_USER\\SOFTWARE\\Classes\\ts3addon\\shell\\open\\command", QSettings::NativeFormat);
+    QString cmdPath = settingsCommand.value("Default"_L1, {}).toString();
+    if (cmdPath.endsWith(R"(\package_inst.exe" "%1")"_L1))
+    {
+        cmdPath.remove(R"(\package_inst.exe" "%1")"_L1);
+        if (cmdPath.startsWith('\"'))
+        {
+            cmdPath.remove('\"');
+            return QDir::toNativeSeparators(cmdPath);
+        }
+    }
+
     //Windows 8.1
     QSettings settings2(u"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\TeamSpeak 3 Client"_s, QSettings::NativeFormat);
     QString path = settings2.value( "InstallLocation", QCoreApplication::applicationDirPath()).toString();

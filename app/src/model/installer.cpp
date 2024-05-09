@@ -58,14 +58,15 @@ QStringList listFilesInRelativeForm(const QDir &directory) {
 
 void Installer::install(Mod* mod)
 {
-    QString modPath = SettingsModel::modDownloadPath() + "/" + mod->name();
+    SettingsModel& settings = settings.instance();
+    QString modPath = settings.modDownloadPath() + "/" + mod->name();
     //TeamSpeak 3 plugins. Install to all possible plugin locations.
     auto path = FileUtils::casedPath(modPath + "/teamspeak 3 client");
     if (!path.isEmpty())
     {
         QDir tsDir(path);
-        auto addonsPath = SettingsModel::teamSpeak3Path() + "/config/addons.ini";
-        if (install(tsDir, SettingsModel::teamSpeak3Path() + "/config")
+        auto addonsPath = settings.teamSpeak3Path() + "/config/addons.ini";
+        if (install(tsDir, settings.teamSpeak3Path() + "/config")
             && QFile::exists(addonsPath)) {
             QDir pluginsDir(path + "/plugins");
             QStringList list = listFilesInRelativeForm(pluginsDir);
@@ -77,14 +78,14 @@ void Installer::install(Mod* mod)
         install(tsDir, Paths::teamspeak3AppDataPath()); //AppData plugins
     }
 
-    QDir(SettingsModel::arma3Path()).mkdir(u"userconfig"_s);
+    QDir(settings.arma3Path()).mkdir(u"userconfig"_s);
     //User config
     QDir modUserConfig(modPath + "/userconfig");
-    install(modUserConfig, SettingsModel::arma3Path() + "/userconfig");
+    install(modUserConfig, settings.arma3Path() + "/userconfig");
 
     //User config 2
     QDir modUserConfig2(modPath + "/store/userconfig");
-    install(modUserConfig2, SettingsModel::arma3Path() + "/userconfig");
+    install(modUserConfig2, settings.arma3Path() + "/userconfig");
 }
 
 bool Installer::install(const QDir& src, const QDir& dst)

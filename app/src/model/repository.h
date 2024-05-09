@@ -18,6 +18,8 @@
 
 class Repository : public SyncItem, virtual public IRepository
 {
+    Q_OBJECT
+
 public:
     Repository(const QString& name, const QString& serverAddress, unsigned port, const QString& password);
     ~Repository() override;
@@ -57,10 +59,9 @@ private:
     unsigned port_;
     QString password_;
     bool battlEyeEnabled_;
-    // TODO: Create IModAdapter and use that instead so Repository
-    // can be unit tested
     QList<QSharedPointer<ModAdapter>> modAdapters_;
     QElapsedTimer activeTimer_;
+    SettingsModel& settings_{SettingsModel::instance()};
 
     [[nodiscard]] QString modsParameter();
     [[nodiscard]] QStringList joinParameters() const;

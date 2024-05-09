@@ -26,10 +26,10 @@ AsTreeWidget* MainWindow::treeWidget()
     return ui->treeWidget;
 }
 
-void MainWindow::init(IBandwidthMeter* bwMeter, ISettings* settingsModel)
+void MainWindow::init(IBandwidthMeter* bwMeter)
 {
     this->bwMeter = bwMeter;
-    ui->settingsView->init(settingsModel);
+    ui->settingsView->init();
 
     updateTimer.setInterval(1s);
     connect(&updateTimer, &QTimer::timeout, this, &MainWindow::update);

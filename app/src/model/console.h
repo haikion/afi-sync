@@ -1,7 +1,5 @@
 /*
  * Simulates command line.
- *
- * TODO: Move to hoxlib
  */
 
 #ifndef CONSOLE_H

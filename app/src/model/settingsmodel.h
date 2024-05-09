@@ -10,57 +10,63 @@ class SettingsModel: public QObject
     Q_OBJECT
 
 public:
-    SettingsModel(QObject* parent = nullptr);
+    static SettingsModel& instance();
+
+    [[nodiscard]] QString launchParameters() const;
+    void setLaunchParameters(const QString& parameters);
+    [[nodiscard]] bool deltaPatchingEnabled() const;
+    [[nodiscard]] QString modDownloadPath() const;
+    void setModDownloadPath(QString path);
+    void resetModDownloadPath();
+    [[nodiscard]] QString patchesDownloadPath() const;
+    [[nodiscard]] QString arma3Path();
+    void setArma3Path(const QString& path);
+    void resetArma3Path();
+    [[nodiscard]] QString teamSpeak3Path();
+    void setTeamSpeak3Path(const QString& path);
+    void resetTeamSpeak3Path();
+    [[nodiscard]] QString steamPath() const;
+    void setSteamPath(const QString& path);
+    void resetSteamPath();
+    void setMaxUpload(const QString& maxUpload);
+    [[nodiscard]] QString maxUpload() const;
+    [[nodiscard]] bool maxUploadEnabled() const;
+    void setMaxDownload(const QString& maxDownload);
+    [[nodiscard]] QString maxDownload() const;
+    bool maxDownloadEnabled();
+    void setPort(const QString& port, bool enabled);
+    [[nodiscard]] QString port() const;
+    [[nodiscard]] QString syncSettingsPath();
+    [[nodiscard]] QString settingsPath() const;
+    //Tells if syncitem is ticked (!= files checked)
+    void setTicked(const QString& modName, QString repoName, bool value);
+    [[nodiscard]] bool ticked(const QString& modName, QString repoName) const;
+    //Tells if process completion (file checking, installation) is needed
+    void setProcessed(const QString& name, const QString& value);
+    [[nodiscard]] QString processed(const QString& name) const;
+    [[nodiscard]] bool portEnabled() const;
+    void setMaxUploadEnabled(bool maxUploadEnabled);
+    void setMaxDownloadEnabled(bool maxDownloadEnabled);
+    void initBwLimits();
 
 public slots:
-    [[nodiscard]] static QString launchParameters();
-    static void setLaunchParameters(const QString& parameters);
-    [[nodiscard]] static bool deltaPatchingEnabled();
-    static void setDeltaPatchingEnabled(bool enabled);
-    [[nodiscard]] static QString modDownloadPath();
-    static void setModDownloadPath(QString path);
-    static void resetModDownloadPath(); 
-    [[nodiscard]] static QString patchesDownloadPath();
-    [[nodiscard]] static QString arma3Path();
-    static void setArma3Path(const QString& path);
-    static void resetArma3Path();
-    [[nodiscard]] static QString teamSpeak3Path();
-    static void setTeamSpeak3Path(const QString& path);
-    static void resetTeamSpeak3Path();
-    [[nodiscard]] static QString steamPath();
-    static void setSteamPath(const QString& path);
-    static void resetSteamPath();
-    static void setMaxUpload(const QString& maxUpload);
-    [[nodiscard]] static QString maxUpload();
-    [[nodiscard]] static bool maxUploadEnabled();
-    static void setMaxDownload(const QString& maxDownload);
-    [[nodiscard]] static QString maxDownload();
-    static bool maxDownloadEnabled();
-    static void setPort(const QString& port, bool enabled);
-    [[nodiscard]] static QString port();
-    [[nodiscard]] static QString syncSettingsPath();
-    [[nodiscard]] static QString settingsPath();
-    //Tells if syncitem is ticked (!= files checked)
-    static void setTicked(const QString& modName, QString repoName, bool value);
-    [[nodiscard]] static bool ticked(const QString& modName, QString repoName);
-    //Tells if process completion (file checking, installation) is needed
-    static void setProcessed(const QString& name, const QString& value);
-    [[nodiscard]] static QString processed(const QString& name);
-    [[nodiscard]] static bool portEnabled();
-    static void setMaxUploadEnabled(bool maxUploadEnabled);
-    static void setMaxDownloadEnabled(bool maxDownloadEnabled);
-    static void initBwLimits();
+    void setDeltaPatchingEnabled(bool enabled);
 
 private:
-    static QSettings* settings_;
-    static bool saveDir(const QString& key, const QString& path);
-    static QString setting(const QString& key, const QString& defaultValue);
-    static QString syncSettingsPath_;
-    static QString settingsPath_;
-    static QSettings* settings();
-    static void createSettings();
-    static void setMaxUploadSync();
-    static void setMaxDownloadSync();
+    QSettings* settings_{nullptr};
+    QString setting(const QString& key, const QString& defaultValue);
+    QString settingsPath_;
+    QString syncSettingsPath_;
+    bool saveDir(const QString& key, const QString& path);
+
+    SettingsModel();
+    ~SettingsModel() = default;
+    SettingsModel(const SettingsModel&) = delete;
+    SettingsModel operator=(const SettingsModel&) = delete;
+
+    void createSettings();
+    void setMaxUploadSync();
+    void setMaxDownloadSync();
 };
 
 #endif // SETTINGSMODEL_H

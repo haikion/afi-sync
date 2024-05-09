@@ -5,34 +5,28 @@
 #include <QString>
 #include <QStringList>
 
-class FileUtils
+namespace FileUtils
 {
-public:
-    static bool copy(const QString& srcPath, const QString& dstPath);
-    static bool move(const QString& srcPath, const QString& dstPath);
-    [[nodiscard]] static qint64 dirSize(const QString& path);
-    [[nodiscard]] static QByteArray readFile(const QString& path);
-    static bool writeFile(const QByteArray& data, const QString& path);
+    bool copy(const QString& srcPath, const QString& dstPath);
+    bool move(const QString& srcPath, const QString& dstPath);
+    [[nodiscard]] qint64 dirSize(const QString& path);
+    [[nodiscard]] QByteArray readFile(const QString& path);
+    bool writeFile(const QByteArray& data, const QString& path);
     //Case insensitive removal
-    static bool rmCi(const QString& path);
+    bool rmCi(const QString& path);
     //Safety functions. These assure that the file being handeled is in safe subpath.
     //Prevents nasty programming errors from deleting important files.
-    static bool safeRemove(QFile& file);
-    static bool safeRemove(const QString& filePath);
-    static bool safeRemoveRecursively(QDir& dir);
-    static bool safeRemoveRecursively(const QString& path);
-    static bool safeRename(const QString& srcPath, const QString& dstPath);
+    bool safeRemove(QFile& file);
+    bool safeRemove(const QString& filePath);
+    bool safeRemoveRecursively(QDir& dir);
+    bool safeRemoveRecursively(const QString& path);
+    bool safeRename(const QString& srcPath, const QString& dstPath);
     // Removes all empty directories from path
-    static void safeRemoveEmptyDirs(const QString& path);
+    void safeRemoveEmptyDirs(const QString& path);
     //For testability
-    static void appendSafePath(const QString& path);
-    [[nodiscard]] static QString casedPath(const QString& path);
-    [[nodiscard]] static bool filesIdentical(const QString& path1, const QString& path2);
-
-private:
-    static QStringList safeSubpaths_;
-
-    static bool pathIsSafe(const QString& path);
+    void appendSafePath(const QString& path);
+    [[nodiscard]] QString casedPath(const QString& path);
+    [[nodiscard]] bool filesIdentical(const QString& path1, const QString& path2);
 };
 
 #endif // FILEUTILS_H

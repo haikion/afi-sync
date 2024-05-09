@@ -58,7 +58,7 @@ LibTorrentApi::LibTorrentApi(const QStringList& deltaUrls):
     deltaUrls_(deltaUrls)
 {
     generalInit();
-    if (SettingsModel::deltaPatchingEnabled())
+    if (settings_.deltaPatchingEnabled())
     {
         QMetaObject::invokeMethod(this, &LibTorrentApi::initDelta, Qt::QueuedConnection);
         return;
@@ -88,7 +88,7 @@ void LibTorrentApi::generalInit()
     session_ = nullptr;
     deltaManager_ = nullptr;
     numResumeData_ = 0;
-    settingsPath_ = SettingsModel::syncSettingsPath() + "/libtorrent.dat";
+    settingsPath_ = settings_.syncSettingsPath() + "/libtorrent.dat";
     moveToThread(Global::workerThread);
 }
 
@@ -144,11 +144,11 @@ void LibTorrentApi::createSession()
     static const std::string versionStr = VERSION_CHARS;
     settings.set_str(settings_pack::user_agent, userAgentPrefix + versionStr);
     //Load port setting
-    QString port = SettingsModel::portEnabled() ? SettingsModel::port() : Constants::DEFAULT_PORT;
+    QString port = settings_.portEnabled() ? settings_.port() : Constants::DEFAULT_PORT;
     settings.set_str(settings_pack::listen_interfaces, "0.0.0.0:" + port.toStdString());
     //Load bandwidth limits
-    const QString uLimit = SettingsModel::maxUpload();
-    const QString dLimit = SettingsModel::maxDownload();
+    const QString uLimit = settings_.maxUpload();
+    const QString dLimit = settings_.maxDownload();
     if (!uLimit.isEmpty())
     {
         settings.set_int(settings_pack::upload_rate_limit, uLimit.toInt() * 1024);
@@ -165,7 +165,7 @@ void LibTorrentApi::createSession()
         delete session_;
     }
     session_ = new session(settings);
-    loadTorrentFiles(SettingsModel::syncSettingsPath());
+    loadTorrentFiles(settings_.syncSettingsPath());
 }
 
 void LibTorrentApi::checkFolder(const QString& key)
@@ -360,7 +360,7 @@ QPair<error_code, add_torrent_params> LibTorrentApi::toAddTorrentParams(const QB
     }
     atp.ti = std::shared_ptr<torrent_info>(ptr);
 
-    QFileInfo fi(SettingsModel::modDownloadPath());
+    QFileInfo fi(SettingsModel::instance().modDownloadPath());
     atp.save_path = QDir::toNativeSeparators(fi.absoluteFilePath()).toStdString();
     atp.flags |= libtorrent::torrent_flags::paused;
     return {ec, atp};
@@ -743,7 +743,7 @@ QStringList LibTorrentApi::deltaUrls()
 
 void LibTorrentApi::removeFiles(const QString& hashString)
 {
-    QString filePrefix = SettingsModel::syncSettingsPath() + "/" + hashString;
+    QString filePrefix = SettingsModel::instance().syncSettingsPath() + '/' + hashString;
     //Delete saved data
     QString urlPath = filePrefix + ".link";
     FileUtils::safeRemove(urlPath);
@@ -908,7 +908,7 @@ bool LibTorrentApi::addFolderGenericAsync(const QString& key)
         return false;
     }
 
-    QFileInfo fi(SettingsModel::modDownloadPath());
+    QFileInfo fi(settings_.modDownloadPath());
     QDir().mkpath(fi.absoluteFilePath());
     if (!fi.isReadable())
     {
@@ -988,7 +988,7 @@ torrent_handle LibTorrentApi::getHandle(const QString& key)
 bool LibTorrentApi::addFolder(const QString& key, const QString& name)
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
-    if (!deltaManager_ && !deltaUrls_.isEmpty() && SettingsModel::deltaPatchingEnabled())
+    if (!deltaManager_ && !deltaUrls_.isEmpty() && settings_.deltaPatchingEnabled())
     {
         // TODO: Unreachable code block?
         pendingFolder_.enqueue({key, name});
@@ -1003,7 +1003,7 @@ bool LibTorrentApi::addFolder(const QString& key, const QString& name)
 
 bool LibTorrentApi::addFolder(const QString& key, const QString& name, bool patchingEnabled)
 {
-    if (SettingsModel::deltaPatchingEnabled() &&
+    if (settings_.deltaPatchingEnabled() &&
             patchingEnabled && deltaManager_ && deltaManager_->patchAvailable(name))
     {
         deltaManager_->patch(name, key);
@@ -1040,7 +1040,7 @@ QString LibTorrentApi::getHashString(const torrent_handle& handle)
 
 void LibTorrentApi::saveTorrentFile(const torrent_handle& handle) const
 {
-    QString filePrefix = SettingsModel::syncSettingsPath() + "/" + getHashString(handle);
+    QString filePrefix = settings_.syncSettingsPath() + "/" + getHashString(handle);
     //Torrent file
     auto ti = getTorrentFile(handle);
     LOG << "name = " << QString::fromStdString(handle.status(torrent_handle::query_name).name);
@@ -1125,7 +1125,7 @@ void LibTorrentApi::generateResumeData() const
 
             torrent_handle h = rd->handle;
             auto resumeData = write_resume_data(rd->params);
-            std::ofstream out((SettingsModel::syncSettingsPath().toStdString()
+            std::ofstream out((settings_.syncSettingsPath().toStdString()
                                + "/" + getHashString(h).toStdString() + ".fastresume").c_str(),
                               std::ios_base::binary);
             out.unsetf(std::ios_base::skipws);
@@ -1187,7 +1187,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
 
         params.flags |= torrent_flags::auto_managed;
         params.ti = loadFromFile(pathPrefix + ".torrent");
-        params.save_path = SettingsModel::modDownloadPath().toStdString();
+        params.save_path = settings_.modDownloadPath().toStdString();
         //FIXME: Sometimes this becomes off as empty.
         QString url = QString::fromLocal8Bit(FileUtils::readFile(pathPrefix + ".link")).toLower();
         prefixMap_.insert(url, it.fileName().remove(u".torrent"_s));

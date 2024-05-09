@@ -94,7 +94,6 @@ void AfiSyncLogger::rotateLogs()
     const QFile logFile(Constants::LOG_FILE);
     if (!logFile.exists())
     {
-        LOG_WARNING << "No such file: " << Constants::LOG_FILE;
         return;
     }
 

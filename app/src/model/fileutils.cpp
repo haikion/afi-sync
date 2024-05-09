@@ -15,7 +15,38 @@
 
 using namespace Qt::StringLiterals;
 
-QStringList FileUtils::safeSubpaths_;
+
+namespace {
+    QStringList safeSubpaths_;
+
+    bool pathIsSafe(const QString& path)
+    {
+        static SettingsModel& settings = settings.instance();
+
+        QString pathFull = QFileInfo(path).absoluteFilePath();
+        QString pathUpper = pathFull.toUpper();
+        QStringList safeSubpaths;
+        safeSubpaths.append(settings.modDownloadPath());
+        safeSubpaths.append(settings.arma3Path());
+        safeSubpaths.append(settings.teamSpeak3Path());
+        safeSubpaths.append(Paths::teamspeak3AppDataPath());
+        safeSubpaths.append(QCoreApplication::applicationDirPath());
+        safeSubpaths.append(u"."_s);
+        safeSubpaths.append(safeSubpaths_);
+
+        for (const QString& safeSubpath : safeSubpaths)
+        {
+            QString safeUpper = QFileInfo(safeSubpath).absoluteFilePath().toUpper();
+            //Shortest possible save path: C:/d (4 characters)
+            if (safeUpper.length() >= 4 && pathUpper.startsWith(safeUpper))
+            {
+                return true;
+            }
+        }
+        LOG_ERROR << pathFull << " not in safe subpaths " << safeSubpaths << ". Operation aborted!";
+        return false;
+    }
+}
 
 //https://qt.gitorious.org/qt-creator/qt-creator/source/1a37da73abb60ad06b7e33983ca51b266be5910e:src/app/main.cpp#L13-189
 // taken from utils/fileutils.cpp. We can not use utils here since that depends app_version.h.
@@ -289,32 +320,6 @@ bool FileUtils::safeRemoveRecursively(const QString& path)
 {
     QDir dir = QDir(path);
     return safeRemoveRecursively(dir);
-}
-
-bool FileUtils::pathIsSafe(const QString& path)
-{
-    QString pathFull = QFileInfo(path).absoluteFilePath();
-    QString pathUpper = pathFull.toUpper();
-    QStringList safeSubpaths;
-    safeSubpaths.append(SettingsModel::modDownloadPath());
-    safeSubpaths.append(SettingsModel::arma3Path());
-    safeSubpaths.append(SettingsModel::teamSpeak3Path());
-    safeSubpaths.append(Paths::teamspeak3AppDataPath());
-    safeSubpaths.append(QCoreApplication::applicationDirPath());
-    safeSubpaths.append(u"."_s);
-    safeSubpaths.append(safeSubpaths_);
-
-    for (const QString& safeSubpath : safeSubpaths)
-    {
-        QString safeUpper = QFileInfo(safeSubpath).absoluteFilePath().toUpper();
-        //Shortest possible save path: C:/d (4 characters)
-        if (safeUpper.length() >= 4 && pathUpper.startsWith(safeUpper))
-        {
-            return true;
-        }
-    }
-    LOG_ERROR << pathFull << " not in safe subpaths " << safeSubpaths << ". Operation aborted!";
-    return false;
 }
 
 void FileUtils::appendSafePath(const QString& path)

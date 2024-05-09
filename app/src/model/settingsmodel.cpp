@@ -1,3 +1,5 @@
+#include "settingsmodel.h"
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
@@ -6,61 +8,36 @@
 #include "afisynclogger.h"
 #include "global.h"
 #include "paths.h"
-#include "settingsmodel.h"
 
 using namespace Qt::StringLiterals;
 
-QSettings* SettingsModel::settings_ = nullptr;
-
-SettingsModel::SettingsModel(QObject* parent):
-    QObject(parent)
+SettingsModel& SettingsModel::instance()
 {
-    createSettings();
-}
-
-void SettingsModel::createSettings()
-{
-    QCoreApplication::setOrganizationName(u"AFISync"_s);
-    QCoreApplication::setOrganizationDomain(u"armafinland.fi"_s);
-    QCoreApplication::setApplicationName(u"AFISync"_s);
-
-    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, SettingsModel::settingsPath());
-    QSettings::setDefaultFormat(QSettings::IniFormat);
-
-    settings_ = new QSettings();
-}
-
-QSettings* SettingsModel::settings()
-{
-    if (!settings_)
-    {
-        createSettings();
-    }
-
-    return settings_;
+    static SettingsModel ins;
+    return ins;
 }
 
 //Saves only valid dirs
 bool SettingsModel::saveDir(const QString& key, const QString& path)
 {
     QFileInfo dir(path);
-    QString originalPath = settings()->value(key).toString();
+    QString originalPath = settings_->value(key).toString();
     if (originalPath == path || !dir.isDir() || !dir.isWritable())
     {
         return false;
     }
-    settings()->setValue(key, path);
+    settings_->setValue(key, path);
     return true;
 }
 
 //Sets default value for performance reasons.
 QString SettingsModel::setting(const QString& key, const QString& defaultValue)
 {
-    QString set = settings()->value(key).toString();
-    if (set == QString())
+    QString set = settings_->value(key).toString();
+    if (set.isEmpty())
     {
         LOG << "Setting default value " << defaultValue << " for " << key;
-        settings()->setValue(key, defaultValue);
+        settings_->setValue(key, defaultValue);
         set = defaultValue;
     }
     return set;
@@ -68,7 +45,8 @@ QString SettingsModel::setting(const QString& key, const QString& defaultValue)
 
 QString SettingsModel::arma3Path()
 {
-    return QDir::toNativeSeparators(setting(u"arma3Dir"_s, Paths::arma3Path()));
+    auto val = setting(u"arma3Dir"_s, Paths::arma3Path());
+    return QDir::toNativeSeparators(val);
 }
 
 void SettingsModel::setArma3Path(const QString& path)
@@ -78,13 +56,13 @@ void SettingsModel::setArma3Path(const QString& path)
 
 void SettingsModel::resetArma3Path()
 {
-    settings()->setValue("arma3Dir", Paths::arma3Path());
+    settings_->setValue("arma3Dir", Paths::arma3Path());
 }
 
 QString SettingsModel::teamSpeak3Path()
 {
-    return QDir::toNativeSeparators(
-        setting(u"teamSpeak3Path"_s, Paths::teamspeak3Path()));
+    auto val = setting(u"teamSpeak3Path"_s, Paths::teamspeak3Path());
+    return QDir::toNativeSeparators(val);
 }
 
 void SettingsModel::setTeamSpeak3Path(const QString& path)
@@ -94,68 +72,67 @@ void SettingsModel::setTeamSpeak3Path(const QString& path)
 
 void SettingsModel::resetTeamSpeak3Path()
 {
-    settings()->setValue("teamSpeak3Path", Paths::teamspeak3Path());
+    settings_->setValue("teamSpeak3Path", Paths::teamspeak3Path());
 }
 
-QString SettingsModel::steamPath()
+QString SettingsModel::steamPath() const
 {
-    return QDir::toNativeSeparators(settings()->value("steamPath", Paths::steamPath()).toString());
+    return QDir::toNativeSeparators(settings_->value("steamPath", Paths::steamPath()).toString());
 }
 
 void SettingsModel::setSteamPath(const QString& path)
 {
-    settings()->setValue("steamPath", path);
+    settings_->setValue("steamPath", path);
 }
 
 void SettingsModel::resetSteamPath()
 {
     LOG;
-    settings()->setValue("steamPath", Paths::steamPath());
+    settings_->setValue("steamPath", Paths::steamPath());
 }
 
-
-QString SettingsModel::maxUpload()
+QString SettingsModel::maxUpload() const
 {
-    QString rVal = settings()->value("maxUpload", "").toString();
+    QString rVal = settings_->value("maxUpload", "").toString();
     return rVal;
 }
 
 void SettingsModel::setMaxDownload(const QString& maxDownload)
 {
-    settings()->setValue("maxDownload", maxDownload);
+    settings_->setValue("maxDownload", maxDownload);
     setMaxDownloadSync();
 }
 
-QString SettingsModel::maxDownload()
+QString SettingsModel::maxDownload() const
 {
-    return settings()->value("maxDownload", "").toString();
+    return settings_->value("maxDownload", "").toString();
 }
 
 bool SettingsModel::maxDownloadEnabled()
 {
-    return settings()->value("maxDownloadEnabled", false).toBool();
+    return settings_->value("maxDownloadEnabled", false).toBool();
 }
 
-bool SettingsModel::maxUploadEnabled()
+bool SettingsModel::maxUploadEnabled() const
 {
-    return settings()->value("maxUploadEnabled", false).toBool();
+    return settings_->value("maxUploadEnabled", false).toBool();
 }
 
 void SettingsModel::setPort(const QString& port, bool enabled)
 {
-    settings()->setValue("port", port);
-    settings()->setValue("portEnabled", enabled);
+    settings_->setValue("port", port);
+    settings_->setValue("portEnabled", enabled);
     Global::sync->setPort(enabled ? port.toInt() : Constants::DEFAULT_PORT.toInt());
 }
 
-bool SettingsModel::portEnabled()
+bool SettingsModel::portEnabled() const
 {
-    return settings()->value("portEnabled", false).toBool();
+    return settings_->value("portEnabled", false).toBool();
 }
 
 void SettingsModel::setMaxDownloadEnabled(const bool maxDownloadEnabled)
 {
-    settings()->setValue("maxDownloadEnabled", maxDownloadEnabled);
+    settings_->setValue("maxDownloadEnabled", maxDownloadEnabled);
     setMaxDownloadSync();
 }
 
@@ -167,16 +144,16 @@ void SettingsModel::initBwLimits()
 
 void SettingsModel::setMaxUploadEnabled(const bool maxUploadEnabled)
 {
-    settings()->setValue("maxUploadEnabled", maxUploadEnabled);
+    settings_->setValue("maxUploadEnabled", maxUploadEnabled);
     setMaxUploadSync();
 }
 
-QString SettingsModel::port()
+QString SettingsModel::port() const
 {
-    return settings()->value("port", Constants::DEFAULT_PORT).toString();
+    return settings_->value("port", Constants::DEFAULT_PORT).toString();
 }
 
-QString SettingsModel::settingsPath()
+QString SettingsModel::settingsPath() const
 {
     return QCoreApplication::applicationDirPath() + "/settings";
 }
@@ -185,24 +162,24 @@ void SettingsModel::setTicked(const QString& modName, QString repoName, bool val
 {
     QString repoStr = repoName.replace("/| "_L1, "_"_L1);
     QString key = modName.isEmpty() ? repoName + "/checked" : modName + "/" + repoStr + "ticked";
-    settings()->setValue(key, value);
+    settings_->setValue(key, value);
 }
 
-bool SettingsModel::ticked(const QString& modName, QString repoName)
+bool SettingsModel::ticked(const QString& modName, QString repoName) const
 {
     QString repoStr = repoName.replace("/| "_L1, "_"_L1);
     QString key = modName.isEmpty() ? repoName + "/checked" : modName + "/" + repoStr + "ticked";
-    return settings()->value(key, false).toBool();
+    return settings_->value(key, false).toBool();
 }
 
 void SettingsModel::setProcessed(const QString& name, const QString& value)
 {
-    settings()->setValue(name + "/processed", value);
+    settings_->setValue(name + "/processed", value);
 }
 
-QString SettingsModel::processed(const QString& name)
+QString SettingsModel::processed(const QString& name) const
 {
-    return settings()->value(name + "/processed").toString();
+    return settings_->value(name + "/processed").toString();
 }
 
 QString SettingsModel::syncSettingsPath()
@@ -212,7 +189,7 @@ QString SettingsModel::syncSettingsPath()
 
 void SettingsModel::setMaxUpload(const QString& maxUpload)
 {
-    settings()->setValue("maxUpload", maxUpload);
+    settings_->setValue("maxUpload", maxUpload);
     setMaxUploadSync();
 }
 
@@ -228,10 +205,9 @@ void SettingsModel::setMaxDownloadSync()
 
 void SettingsModel::setDeltaPatchingEnabled(bool enabled)
 {
-    settings()->setValue("deltaPatchingEnabled", enabled);
+    settings_->setValue("deltaPatchingEnabled", enabled);
     if (Global::sync) //TODO: Remove might be too defensive
     {
-        LOG_ERROR << "Sync is null!";
         if (enabled)
         {
             Global::sync->enableDeltaUpdates();
@@ -241,16 +217,21 @@ void SettingsModel::setDeltaPatchingEnabled(bool enabled)
             Global::sync->disableDeltaUpdates();
         }
     }
+    else
+    {
+        LOG_ERROR << "Sync is null!";
+        Q_ASSERT(false);
+    }
 }
 
-bool SettingsModel::deltaPatchingEnabled()
+bool SettingsModel::deltaPatchingEnabled() const
 {
-    return settings()->value("deltaPatchingEnabled", false).toBool();
+    return settings_->value("deltaPatchingEnabled"_L1, false).toBool();
 }
 
-QString SettingsModel::modDownloadPath()
+QString SettingsModel::modDownloadPath() const
 {
-    return QDir::toNativeSeparators(settings()->value("modDownloadPath", Paths::arma3Path()).toString());
+    return QDir::toNativeSeparators(settings_->value("modDownloadPath", Paths::arma3Path()).toString());
 }
 
 void SettingsModel::setModDownloadPath(QString path)
@@ -262,7 +243,7 @@ void SettingsModel::setModDownloadPath(QString path)
             << modDownloadPath() << " path = " << path;
         return;
     }
-    settings()->setValue("modDownloadPath", path);
+    settings_->setValue("modDownloadPath", path);
     if (Global::model)
     {
         Global::model->moveFiles();
@@ -274,17 +255,28 @@ void SettingsModel::resetModDownloadPath()
     setModDownloadPath(Paths::arma3Path());
 }
 
-QString SettingsModel::patchesDownloadPath()
+QString SettingsModel::patchesDownloadPath() const
 {
     return modDownloadPath() + u"/afisync_patches"_s;
 }
 
-QString SettingsModel::launchParameters()
+QString SettingsModel::launchParameters() const
 {
-    return settings()->value("launchParameters", "-noSplash -world=empty -skipIntro").toString();
+    return settings_->value("launchParameters", "-noSplash -world=empty -skipIntro").toString();
 }
 
 void SettingsModel::setLaunchParameters(const QString& parameters)
 {
-    settings()->setValue("launchParameters", parameters);
+    settings_->setValue("launchParameters", parameters);
+}
+
+SettingsModel::SettingsModel()
+{
+    QCoreApplication::setOrganizationName(u"AFISync"_s);
+    QCoreApplication::setOrganizationDomain(u"armafinland.fi"_s);
+    QCoreApplication::setApplicationName(u"AFISync"_s);
+
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, SettingsModel::settingsPath());
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+    settings_ = new QSettings(this);
 }

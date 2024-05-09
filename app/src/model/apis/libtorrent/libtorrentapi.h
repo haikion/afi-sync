@@ -26,6 +26,7 @@
 #include "alerthandler.h"
 #include "deltamanager.h"
 #include "storagemovemanager.h"
+#include "model/settingsmodel.h"
 
 class LibTorrentApi : public QObject, virtual public ISync
 {
@@ -121,6 +122,7 @@ private:
 
     AlertHandler* alertHandler_{nullptr};
     DeltaManager* deltaManager_{nullptr};
+    SettingsModel& settings_{SettingsModel::instance()};
     bool creatingDeltaManager_{false};
     QQueue<QPair<QString, QString>> pendingFolder_;
     QStringList deltaUrls_;

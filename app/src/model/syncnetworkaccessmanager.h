@@ -1,8 +1,5 @@
 /*
  * Implements syncronous QNetworkAccessManager.
- * Has its own thread which prevents QNetworkLoop jumping to arbitary locations.
- *
- * TODO: Move to hoxlib
  */
 
 #ifndef SYNCNETWORKACCESSMANAGER_H

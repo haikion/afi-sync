@@ -10,9 +10,9 @@ using namespace Qt::StringLiterals;
 ModAdapter::ModAdapter(const QSharedPointer<Mod>& mod, Repository* repo, bool isOptional, int index):
     SyncItem(mod->name()),
     mod_(mod),
+    key_(mod->key()),
     repo_(repo),
-    isOptional_(isOptional),
-    key_(mod->key())
+    isOptional_(isOptional)
 {
     setFileSize(mod->fileSize());
     repo->appendModAdapter(QSharedPointer<ModAdapter>(this), index);
@@ -59,7 +59,7 @@ bool ModAdapter::ticked()
         return true;
     }
 
-    return SettingsModel::ticked(name(), repo()->name());
+    return settings_.ticked(name(), repo()->name());
 }
 
 void ModAdapter::processCompletion()
@@ -75,7 +75,7 @@ void ModAdapter::setTicked(bool checked)
         return;
     }
 
-    SettingsModel::setTicked(name(), repo()->name(), checked);
+    settings_.setTicked(name(), repo()->name(), checked);
     mod_->checkboxClicked();
 }
 

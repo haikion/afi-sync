@@ -31,7 +31,9 @@ static const QString WAITING = QStringLiteral("Waiting...");
 class ISyncItem
 {
 public:
+	ISyncItem() = default;
     virtual ~ISyncItem() = default;
+
     [[nodiscard]] virtual QString name() const = 0;
     [[nodiscard]] virtual QString statusStr() = 0;
     [[nodiscard]] virtual QString sizeStr() const = 0;
@@ -40,8 +42,10 @@ public:
     virtual void checkboxClicked() = 0;
     virtual void check() = 0;
     // Item is being synchronized
-    [[nodiscard]] virtual bool active() const = 0; // TODO: Rename to notReady ?
+    [[nodiscard]] virtual bool active() const = 0;
     [[nodiscard]] virtual QString progressStr() = 0;
+
+    Q_DISABLE_COPY(ISyncItem)
 };
 
 #endif // ISYNCITEM_H

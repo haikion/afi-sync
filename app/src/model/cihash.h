@@ -1,6 +1,5 @@
 /*
  * Case insensite hash table. Matches regardless of the case.
- * TODO: Move to  hoxlib
  */
 #ifndef CIHASH_H
 #define CIHASH_H

@@ -8,6 +8,7 @@
 
 #include "apis/isync.h"
 #include "interfaces/imod.h"
+#include "settingsmodel.h"
 #include "syncitem.h"
 
 #ifdef Q_OS_WIN
@@ -70,6 +71,7 @@ private:
     bool moveFilesPostponed_{false};
     std::atomic<bool> ticked_{false};
     unsigned waitTime_{0};
+    SettingsModel& settings_{SettingsModel::instance()};
 
     void buildPathHash();
     [[nodiscard]] bool reposInactive() const;

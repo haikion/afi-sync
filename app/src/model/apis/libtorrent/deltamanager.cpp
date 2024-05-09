@@ -10,7 +10,6 @@
 #include "model/afisynclogger.h"
 #include "model/fileutils.h"
 #include "model/global.h"
-#include "model/settingsmodel.h"
 
 using namespace Qt::StringLiterals;
 using namespace std::chrono_literals;
@@ -21,7 +20,7 @@ DeltaManager::DeltaManager(const QStringList& deltaUrls, lt::session* session, Q
     QObject(parent)
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
-    patcher_ = new DeltaPatcher(SettingsModel::patchesDownloadPath());
+    patcher_ = new DeltaPatcher(settings_.patchesDownloadPath());
     patcher_->moveToThread(&patcherThread_);
     connect(patcher_, &DeltaPatcher::patched, this, &DeltaManager::handlePatched);
     patcherThread_.setObjectName("Patcher Thread");
@@ -62,7 +61,7 @@ void DeltaManager::update()
     QString downloadedPatchMod = findDownloadedMod();
     if (!downloadedPatchMod.isEmpty())
     {
-        patcher_->patch(SettingsModel::modDownloadPath() + "/" + downloadedPatchMod);
+        patcher_->patch(settings_.modDownloadPath() + "/" + downloadedPatchMod);
         inDownload_.remove(keyHash_.key(downloadedPatchMod));
     }
 }
@@ -81,7 +80,7 @@ QString DeltaManager::findDownloadedMod() const
 
 void DeltaManager::removeDeprecatedPatches(const QStringList& urls)
 {
-    const QString patchesPath = SettingsModel::patchesDownloadPath();
+    const QString patchesPath = SettingsModel::instance().patchesDownloadPath();
     QDir dir(patchesPath);
     QStringList files = dir.entryList(QDir::Files);
     QStringList deprecatedPatches = AfiSync::filterDeprecatedPatches(files, urls);

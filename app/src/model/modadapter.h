@@ -1,9 +1,10 @@
 #ifndef MODVIEWADAPTER_H
 #define MODVIEWADAPTER_H
 
-#include "syncitem.h"
-#include "repository.h"
 #include "mod.h"
+#include "repository.h"
+#include "settingsmodel.h"
+#include "syncitem.h"
 
 /*
  * Solves the compatibility issue between tree structure and mod repo structure.
@@ -41,9 +42,10 @@ protected:
 
 private:
     QSharedPointer<Mod> mod_{nullptr};
-    Repository* repo_{nullptr};
-    std::atomic<bool> isOptional_;
     QString key_;
+    Repository* repo_{nullptr};
+    SettingsModel& settings_{SettingsModel::instance()};
+    std::atomic<bool> isOptional_;
 };
 
 #endif // MODVIEWADAPTER_H

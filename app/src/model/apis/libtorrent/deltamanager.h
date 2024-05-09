@@ -17,9 +17,10 @@
 #pragma warning(pop)
 #endif
 
-#include "../../cihash.h"
-#include "deltapatcher.h"
 #include "deltadownloader.h"
+#include "deltapatcher.h"
+#include "model/cihash.h"
+#include "model/settingsmodel.h"
 
 class DeltaManager: public QObject
 {
@@ -60,12 +61,13 @@ private slots:
     void update();
 
 private:
+    CiHash<QString> keyHash_;
     DeltaDownloader downloader_;
     DeltaPatcher* patcher_{nullptr};
-    CiHash<QString> keyHash_;
     QSet<QString> inDownload_;
-    QTimer updateTimer_;
     QThread patcherThread_;
+    QTimer updateTimer_;
+    SettingsModel& settings_{SettingsModel::instance()};
 
     [[nodiscard]] QString findDownloadedMod() const;
     static void removeDeprecatedPatches(const QStringList& urls);

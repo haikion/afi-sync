@@ -9,6 +9,7 @@
 class ISync
 {
 public:
+	ISync() = default;
     virtual ~ISync() = default;
 
     virtual void mirrorDeltaPatches() = 0;
@@ -85,6 +86,8 @@ public:
 signals: // <- ignored by moc and only serves as documentation aid
     // The code will work exactly the same if signals: is absent.
     void initCompleted();
+
+    Q_DISABLE_COPY(ISync)
 };
 
 Q_DECLARE_INTERFACE(ISync, "ISync") // define this out of namespace scope

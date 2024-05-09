@@ -17,6 +17,7 @@ cp -R ${MODS_DIR}/* .
 
 xvfb-run --auto-servernum --server-num=1 ./AFISync &
 
+echo "Waiting for first version of cba_a3 to be synced ..."
 while ! grep "cba_a3 synced" afisync.log; do
     sleep 1
 done

@@ -78,7 +78,7 @@ void TreeModel::createSync(const QStringList& deltaUrls)
 TreeModel::~TreeModel()
 {
     LOG;
-    const DeletableDetector deletableDetector(SettingsModel::modDownloadPath(), toIrepositories(repositories_));
+    const DeletableDetector deletableDetector(SettingsModel::instance().modDownloadPath(), toIrepositories(repositories_));
     AfiSync::printDeletables(deletableDetector);
 
     updateTimer_.stop();

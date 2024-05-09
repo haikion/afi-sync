@@ -3,9 +3,9 @@
 
 #include <QMainWindow>
 #include <QTimer>
+
+#include "model/interfaces/ibandwidthmeter.h"
 #include "astreewidget.h"
-#include "../model/interfaces/ibandwidthmeter.h"
-#include "../model/interfaces/isettings.h"
 
 namespace Ui {
     class MainWindow;
@@ -20,7 +20,7 @@ public:
     ~MainWindow() override;
 
     AsTreeWidget* treeWidget();
-    void init(IBandwidthMeter* bwMeter, ISettings* settingsModel);
+    void init(IBandwidthMeter* bwMeter);
 
 private slots:
     void update();

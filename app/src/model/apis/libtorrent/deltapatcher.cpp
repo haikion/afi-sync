@@ -38,9 +38,6 @@ DeltaPatcher::DeltaPatcher(const QString& patchesPath):
 {
 }
 
-// Used for command line interface. Does not use worker thread
-// TODO: Separate synchronous operations into different class and use that class instead
-// with command line
 DeltaPatcher::DeltaPatcher():
     QObject(nullptr),
     bytesPatched_(0),

@@ -64,7 +64,6 @@ SOURCES += \
     src/model/afisynclogger.cpp \
     src/model/console.cpp \
     src/model/szip.cpp \
-    src/model/settingsuimodel.cpp \
     src/model/deletabledetector.cpp \
     src/view/asbannerbar.cpp \
     src/view/assettingsview.cpp \
@@ -113,7 +112,6 @@ HEADERS += \
     src/model/interfaces/irepository.h \
     src/model/interfaces/isettings.h \
     src/model/interfaces/isyncitem.h \
-    src/model/settingsuimodel.h \
     src/model/deletabledetector.h \
     src/view/asbannerbar.h \
     src/view/assettingsview.h \
