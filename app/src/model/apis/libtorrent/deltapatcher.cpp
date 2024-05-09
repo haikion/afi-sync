@@ -346,10 +346,8 @@ bool DeltaPatcher::delta(const QString& oldModPath, QString newModPath)
             continue;
         }
         QDir().mkpath(parentPath);
-        //Creates uncompressed delta patch file
-        QMetaObject::invokeMethod(console_, "runCmd", Qt::BlockingQueuedConnection,
-                                  Q_ARG(QString, XDELTA_EXECUTABLE + " -e -S none -s \""
-                                        + oldPath + "\" \"" + laterPath + "\" \"" + outputPath + "\""));
+        console_->runCmd(XDELTA_EXECUTABLE + " -e -S none -s \"" + oldPath + "\" \"" + laterPath + "\" \"" + outputPath + "\"");
+
         LOG << "New delta patch file generated " << outputPath;
         rVal = true;
     }
@@ -361,11 +359,7 @@ bool DeltaPatcher::delta(const QString& oldModPath, QString newModPath)
         return false;
     }
 
-    QMetaObject::invokeMethod(this, [=]
-    {
-        compress(patchPath, deltaPath);
-    }, Qt::BlockingQueuedConnection);
-
+    compress(patchPath, deltaPath);
     FileUtils::safeRemoveRecursively(deltaDir);
 
     //Verify that the latest version doesn't get delta patched

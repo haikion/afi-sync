@@ -98,6 +98,7 @@ compileWithMessages
 cd ${WORKING_DIR}
 
 run_test log-rotate.sh
+run_test patch-generation.sh
 run_test patch.sh
 run_test ts-plugin-install.sh
 run_test repositories-update.sh
