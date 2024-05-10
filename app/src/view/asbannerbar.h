@@ -18,12 +18,9 @@ public:
 
     void setSettingsView(AsSettingsView* settingsView);
 
-private slots:
-    void on_settingsButton_clicked();
-
 private:
-    Ui::AsBannerBar *ui;
-    AsSettingsView* settingsView;
+    Ui::AsBannerBar* ui;
+    AsSettingsView* settingsView{nullptr};
 };
 
 #endif // ASBANNERBAR_H

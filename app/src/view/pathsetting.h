@@ -25,7 +25,6 @@ signals:
     void resetPressed();
 
 private slots:
-    void on_browseButton_pressed();
     //Value set by a user
     void setValueUser(const QString& value);
 

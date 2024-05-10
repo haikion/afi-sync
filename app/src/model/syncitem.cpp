@@ -27,7 +27,7 @@ QString SyncItem::sizeStr() const
         return u"??.?? MB"_s;
     }
 
-    double size = fileSize_;
+    int64_t size = fileSize_;
     int i = 0;
     QStringList list;
     list << u"B"_s << u"kB"_s << u"MB"_s

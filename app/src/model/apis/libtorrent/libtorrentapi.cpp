@@ -887,7 +887,7 @@ torrent_handle LibTorrentApi::addFolderFromParams(const QString& key)
         return handle;
     }
 
-    return torrent_handle();
+    return {};
 }
 
 //Does not wait for torrent-file download to finish.
@@ -971,7 +971,7 @@ torrent_handle LibTorrentApi::getHandleSilent(const QString& key)
         return deltaManager_->getHandle(key);
     }
 
-    return torrent_handle();
+    return {};
 }
 
 torrent_handle LibTorrentApi::getHandle(const QString& key)

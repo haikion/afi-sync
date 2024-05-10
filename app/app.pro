@@ -29,10 +29,10 @@ win32 {
 }
 
 unix {
-   QMAKE_CXX = ccache $$QMAKE_CXX
-   DEFINES += BOOST_LOG_DYN_LINK
-   QMAKE_CXXFLAGS += -Wno-unknown-pragmas
-   LIBS += -lboost_system -lboost_atomic -lboost_random -lboost_date_time -lboost_log_setup -lboost_filesystem -lboost_log -lboost_thread -ltorrent-rasterbar
+    QMAKE_CXX = ccache $$QMAKE_CXX
+    DEFINES += BOOST_LOG_DYN_LINK
+    QMAKE_CXXFLAGS += -Wno-unknown-pragmas
+    LIBS += -lboost_system -lboost_atomic -lboost_random -lboost_date_time -lboost_log_setup -lboost_filesystem -lboost_log -lboost_thread -ltorrent-rasterbar
 }
 
 SOURCES += \

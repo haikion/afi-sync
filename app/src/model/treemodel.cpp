@@ -132,11 +132,11 @@ void TreeModel::enableRepositories()
     }
 }
 
-QString TreeModel::bandwithString(int amount)
+QString TreeModel::bandwithString(int64_t amount)
 {
     if (amount > 1000000)
     {
-        double  downloadDouble = double(amount)/1000000;
+        double downloadDouble = static_cast<double>(amount)/1000000;
         return QString::number(downloadDouble, 'g', 2) + " MB/s";
     }
     return QString::number(amount/1000) + " kB/s";

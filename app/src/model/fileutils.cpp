@@ -115,10 +115,8 @@ bool FileUtils::move(const QString& srcPath, const QString& dstPath)
         QStringList fileNames = srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
         for (const QString& fileName : fileNames)
         {
-            const QString newSrcPath
-                    = srcPath + QLatin1Char('/') + fileName;
-            const QString newDstPath
-                    = dstPath + QLatin1Char('/') + fileName;
+            const QString newSrcPath = srcPath + '/' + fileName;
+            const QString newDstPath = dstPath + '/' + fileName;
             if (!move(newSrcPath, newDstPath))
             {
                 return false;
@@ -227,7 +225,7 @@ QString FileUtils::casedPath(const QString& path)
         {
             if (!it.hasNext())
             {
-                return QString();
+                return {};
             }
             QFileInfo fi = it.nextFileInfo();
             if (fi.fileName().toUpper() == ciName.toUpper())

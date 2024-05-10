@@ -33,7 +33,7 @@ DeltaPatcher::DeltaPatcher(const QString& patchesPath):
     bytesPatched_(0),
     extractingPatches_(false),
     totalBytes_(-1),
-    patchesFi_(new QFileInfo(patchesPath)),
+    patchesFi_(patchesPath),
     console_(new Console(this))
 {
 }
@@ -44,11 +44,6 @@ DeltaPatcher::DeltaPatcher():
     extractingPatches_(false),
     totalBytes_(-1)
 {
-}
-
-DeltaPatcher::~DeltaPatcher()
-{
-    delete patchesFi_;
 }
 
 void DeltaPatcher::stop()
@@ -66,7 +61,7 @@ void DeltaPatcher::patch(const QString& modPath)
 
 void DeltaPatcher::patchDirSync(const QString& modPath)
 {
-    QDir patchesDir = QDir(patchesFi_->absoluteFilePath());
+    QDir patchesDir = QDir(patchesFi_.absoluteFilePath());
     const QStringList allPatches = patchesDir.entryList(QDir::Files);
     Q_ASSERT(!allPatches.isEmpty());
     QString modName = QFileInfo(modPath).fileName();
@@ -181,12 +176,12 @@ bool DeltaPatcher::isPatching()
 bool DeltaPatcher::patch(const QString& patch, const QString& modPath)
 {
     LOG << "Patching " << modPath << " with " << patch;
-    if (!extract(patchesFi_->absoluteFilePath() + "/" + patch))
+    if (!extract(patchesFi_.absoluteFilePath() + "/" + patch))
     {
         return false;
     }
 
-    return patchExtracted(patchesFi_->absoluteFilePath() + "/" + PATCH_DIR, modPath);
+    return patchExtracted(patchesFi_.absoluteFilePath() + "/" + PATCH_DIR, modPath);
 }
 
 bool DeltaPatcher::patchAbsolutePath(const QString& patch, const QString& modPath)
@@ -268,7 +263,7 @@ bool DeltaPatcher::patchExtracted(const QString& extractedPath, const QString& t
 
 bool DeltaPatcher::delta(const QString& oldModPath, QString newModPath)
 {
-    QString patchesPath = patchesFi_->absoluteFilePath();
+    QString patchesPath = patchesFi_.absoluteFilePath();
     QDir patchesDir(patchesPath);
     QString deltaPath = patchesPath + "/" + PATCH_DIR;
     QDir deltaDir(deltaPath);
@@ -294,7 +289,7 @@ bool DeltaPatcher::delta(const QString& oldModPath, QString newModPath)
         return false;
     }
 
-    if (!patchesFi_->isWritable())
+    if (!patchesFi_.isWritable())
     {
         LOG_ERROR << "Directory " << patchesPath << " is not writable.";
         return false;
@@ -439,7 +434,7 @@ bool DeltaPatcher::createEmptyDir(QDir dir)
 
 int DeltaPatcher::latestVersion(const QString& modName) const
 {
-    QDir patchesDir = QDir(patchesFi_->absoluteFilePath());
+    QDir patchesDir = QDir(patchesFi_.absoluteFilePath());
     QStringList fileNames = patchesDir.entryList(QDir::Files);
     return latestVersion(modName, fileNames);
 }

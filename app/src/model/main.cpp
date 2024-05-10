@@ -142,7 +142,7 @@ int cli(int argc, char* argv[])
         LOG << "Hash for " << deltaPath << " is " << AHasher::legacyHash(deltaPath);
         return 0;
     }
-    if (parser.isSet(PATCH) || parser.isSet("mod")) {
+    if (parser.isSet(PATCH) || parser.isSet(u"mod"_s)) {
         if (!parser.isSet(PATCH)) {
             LOG << "Missing patch";
             return 1;

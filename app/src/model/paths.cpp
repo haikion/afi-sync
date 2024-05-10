@@ -59,7 +59,7 @@ QString Paths::arma3Path()
 QString Paths::teamspeak3Path()
 {
     // Windows 10
-    QSettings settingsCommand("HKEY_CURRENT_USER\\SOFTWARE\\Classes\\ts3addon\\shell\\open\\command", QSettings::NativeFormat);
+    QSettings settingsCommand(u"HKEY_CURRENT_USER\\SOFTWARE\\Classes\\ts3addon\\shell\\open\\command"_s, QSettings::NativeFormat);
     QString cmdPath = settingsCommand.value("Default"_L1, {}).toString();
     if (cmdPath.endsWith(R"(\package_inst.exe" "%1")"_L1))
     {

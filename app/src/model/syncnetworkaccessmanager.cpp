@@ -38,7 +38,7 @@ QByteArray SyncNetworkAccessManager::fetchBytesSlot(const QString& url)
     if (reply->bytesAvailable() == 0)
     {
         LOG_WARNING << "Failed. url = " << url;
-        return QByteArray();
+        return {};
     }
     QByteArray retVal = reply->readAll();
     reply->deleteLater();

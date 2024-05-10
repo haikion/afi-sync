@@ -21,8 +21,8 @@ public:
     void init();
 
 private:
-    Ui::AsSettingsView *ui;
-    ISettings* settingsModel;
+    Ui::AsSettingsView* ui;
+    ISettings* settingsModel{nullptr};
 };
 
 #endif // ASSETTINGSVIEW_H

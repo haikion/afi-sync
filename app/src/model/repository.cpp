@@ -336,7 +336,7 @@ QString Repository::modsParameter()
 {
     if (modAdapters_.isEmpty())
     {
-        return QString();
+        return {};
     }
     QString rVal = u"-mod="_s;
     auto charCounter = rVal.size();

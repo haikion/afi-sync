@@ -11,7 +11,7 @@ QVariantMap JsonUtils::bytesToJsonMap(const QByteArray& bytes)
     if (docElement == QJsonDocument())
     {
         //Incorrect reply from network server
-        return QVariantMap();
+        return {};
     }
     return qvariant_cast<QVariantMap>(docElement.toVariant());
 }

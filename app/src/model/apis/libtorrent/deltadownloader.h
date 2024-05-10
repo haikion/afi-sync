@@ -25,6 +25,7 @@
 class DeltaDownloader: public QObject
 {
     Q_OBJECT
+
 public:
     DeltaDownloader();
     ~DeltaDownloader() override = default;

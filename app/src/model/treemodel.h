@@ -39,8 +39,8 @@ private slots:
     void periodicRepoUpdate();
 
 private:
-    unsigned download_;
-    unsigned upload_;
+    int64_t download_;
+    int64_t upload_;
     QList<QSharedPointer<Repository>> repositories_;
     QTimer updateTimer_;
     ISync* sync_;
@@ -49,7 +49,7 @@ private:
     bool mirroringDeltaPatches_{false};
 
     void postInit();
-    [[nodiscard]] static QString bandwithString(int amount);
+    [[nodiscard]] static QString bandwithString(int64_t amount);
     [[nodiscard]] const QSet<Mod*> mods() const;
     void createSync(const QStringList& deltaUrls);
     void updateRepositories();

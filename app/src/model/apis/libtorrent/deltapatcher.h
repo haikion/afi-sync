@@ -22,7 +22,7 @@ class DeltaPatcher: public QObject
 public:
     DeltaPatcher(const QString& patchesPath);
     DeltaPatcher();
-    ~DeltaPatcher() override;
+    ~DeltaPatcher() override = default;
 
     //Patches dir to latest version.
     void patch(const QString& modPath);
@@ -55,7 +55,7 @@ private:
     QAtomicInteger<qint64> bytesPatched_;
     std::atomic<bool> extractingPatches_;
     QAtomicInteger<qint64> totalBytes_;
-    QFileInfo* patchesFi_;
+    QFileInfo patchesFi_;
     //Contains the name of the mod being patched.
     QString patchingMod_;
     Console* console_{nullptr};

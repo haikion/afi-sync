@@ -1,7 +1,8 @@
 #include "pathsetting.h"
+
 #include "ui_pathsetting.h"
 
-PathSetting::PathSetting(QWidget *parent) :
+PathSetting::PathSetting(QWidget *parent):
     QWidget(parent),
     ui(new Ui::PathSetting)
 {
@@ -9,6 +10,13 @@ PathSetting::PathSetting(QWidget *parent) :
     ui->lineEdit->setEnabled(false);
 
     connect(ui->resetButton, &QPushButton::pressed, this, &PathSetting::resetPressed);
+    connect(ui->browseButton, &QPushButton::pressed, this, [=]
+    {
+        fileDialog.setDirectory(ui->lineEdit->text());
+        fileDialog.setFileMode(QFileDialog::Directory);
+        // "QObject::connect: invalid null" parameter is normal here
+        fileDialog.show();
+    });
     connect(&fileDialog, &QFileDialog::fileSelected, this, &PathSetting::setValueUser);
 }
 
@@ -33,12 +41,4 @@ void PathSetting::setValueUser(const QString& value)
 {
     setValue(value);
     emit textEdited(ui->lineEdit->text());
-}
-
-void PathSetting::on_browseButton_pressed()
-{
-    fileDialog.setDirectory(ui->lineEdit->text());
-    fileDialog.setFileMode(QFileDialog::Directory);
-    // "QObject::connect: invalid null" parameter is normal here
-    fileDialog.show();
 }
