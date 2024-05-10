@@ -38,7 +38,8 @@ QString SyncItem::sizeStr() const
         size = size / 1024;
     }
 
-    return QString::number(size, 'f', 2) + " " + list.at(i);
+    auto sizeDouble = static_cast<double>(size);
+    return QString::number(sizeDouble, 'f', 2) + " " + list.at(i);
 }
 
 bool SyncItem::active() const

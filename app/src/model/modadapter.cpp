@@ -24,7 +24,7 @@ ModAdapter::ModAdapter(const QSharedPointer<Mod>& mod, Repository* repo, bool is
     });
     QMetaObject::invokeMethod(mod.get(), [=] ()
     {
-        mod.get()->appendModAdapter(this);
+        mod->appendModAdapter(this);
     }, Qt::QueuedConnection);
 }
 
@@ -32,7 +32,7 @@ ModAdapter::~ModAdapter()
 {
     QMetaObject::invokeMethod(mod_.get(), [=] ()
     {
-        mod_.get()->removeModAdapter(this);
+        mod_->removeModAdapter(this);
     }, Qt::BlockingQueuedConnection);
 }
 

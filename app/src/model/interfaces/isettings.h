@@ -10,7 +10,7 @@ class ISettings: public QObject
 
 public:
 	ISettings() = default;
-    virtual ~ISettings() = default;
+    ~ISettings() override = default;
 
     [[nodiscard]] virtual QString arma3Path() = 0;
     virtual void resetArma3Path() = 0;

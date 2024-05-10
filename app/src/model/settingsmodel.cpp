@@ -153,7 +153,7 @@ QString SettingsModel::port() const
     return settings_->value("port", Constants::DEFAULT_PORT).toString();
 }
 
-QString SettingsModel::settingsPath() const
+QString SettingsModel::settingsPath()
 {
     return QCoreApplication::applicationDirPath() + "/settings";
 }
@@ -193,7 +193,7 @@ void SettingsModel::setMaxUpload(const QString& maxUpload)
     setMaxUploadSync();
 }
 
-void SettingsModel::setMaxUploadSync()
+void SettingsModel::setMaxUploadSync() const
 {
     Global::sync->setMaxUpload(maxUploadEnabled() ? maxUpload().toInt() : 0);
 }

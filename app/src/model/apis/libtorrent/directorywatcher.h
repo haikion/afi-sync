@@ -18,7 +18,7 @@ public:
 private:
     QString fromPath_;
     QString toPath_;
-    qint64 totalWantedDone_;
+    qint64 totalWantedDone_{0};
     qint64 totalWanted_;
     QString key_;
 };

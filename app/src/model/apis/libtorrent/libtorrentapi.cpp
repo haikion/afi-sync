@@ -84,10 +84,6 @@ void LibTorrentApi::init()
 
 void LibTorrentApi::generalInit()
 {
-    ready_ = false;
-    session_ = nullptr;
-    deltaManager_ = nullptr;
-    numResumeData_ = 0;
     settingsPath_ = settings_.syncSettingsPath() + "/libtorrent.dat";
     moveToThread(Global::workerThread);
 }
@@ -352,7 +348,8 @@ QPair<error_code, add_torrent_params> LibTorrentApi::toAddTorrentParams(const QB
     Q_ASSERT(!torrentData.isEmpty());
     add_torrent_params atp;
     error_code ec;
-    auto ptr = new torrent_info(torrentData.constData(), torrentData.size(), ec);
+    auto dataSize = static_cast<int>(torrentData.size());
+    auto ptr = new torrent_info(torrentData.constData(), dataSize, ec);
     if (ec.failed())
     {
         delete ptr;
@@ -442,7 +439,8 @@ int64_t LibTorrentApi::folderTotalWantedDone(const QString& key)
     }
     // Circumvent bug within libTorrent.
     if (status.total_wanted_done == 0 && folderChecking(status)) {
-        return status.progress * status.total_wanted;
+        auto totalWantedDone = static_cast<float>(status.total_wanted_done);
+        return static_cast<int64_t>(status.progress * totalWantedDone);
     }
     return status.total_wanted_done;
 }

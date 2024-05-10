@@ -28,7 +28,7 @@ private slots:
 private:
     Ui::MainWindow* ui;
     QTimer updateTimer;
-    IBandwidthMeter* bwMeter;
+    IBandwidthMeter* bwMeter{nullptr};
 };
 
 #endif // MAINWINDOW_H

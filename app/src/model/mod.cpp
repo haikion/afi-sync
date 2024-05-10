@@ -9,6 +9,7 @@
 #include <QtMath>
 
 #include "afisynclogger.h"
+#include "apis/libtorrent/libtorrentapi.h"
 #include "fileutils.h"
 #include "global.h"
 #include "installer.h"
@@ -21,9 +22,9 @@ using namespace Qt::StringLiterals;
 
 const unsigned Mod::COMPLETION_WAIT_DURATION = 0;
 
-Mod::Mod(const QString& name, const QString& key, ISync* sync):
+Mod::Mod(const QString& name, const QString& key, LibTorrentApi* libTorrentApi):
     SyncItem(name),
-    sync_(sync),
+    libTorrentApi_(libTorrentApi),
     key_(key)
 {
     LOG << "key = " << key;
@@ -45,10 +46,11 @@ void Mod::threadConstructor()
     updateTimer_ = new QTimer(this);
     updateTimer_->setTimerType(Qt::VeryCoarseTimer);
     updateTimer_->setInterval(1s);
+
     connect(updateTimer_, &QTimer::timeout, this, &Mod::update);
-    // TODO: Remove ISync and use LibTorrentApi directly
-    connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(repositoryChanged()));
-    connect(dynamic_cast<QObject*>(sync_), SIGNAL(folderAdded(QString)), this, SLOT(onFolderAdded(QString)));
+
+    connect(libTorrentApi_, &LibTorrentApi::initCompleted, this, &Mod::repositoryChanged);
+    connect(libTorrentApi_, &LibTorrentApi::folderAdded, this, &Mod::onFolderAdded);
 }
 
 QString Mod::path()
@@ -71,15 +73,15 @@ void Mod::update()
 //Removes mod which has same name but different key.
 void Mod::removeConflicting()
 {
-    for (const QString& syncKey : sync_->folderKeys())
+    for (const QString& syncKey : libTorrentApi_->folderKeys())
     {
-        QString syncPath = sync_->folderPath(syncKey);
+        QString syncPath = libTorrentApi_->folderPath(syncKey);
 
         if (path().toLower() == syncPath.toLower() && syncKey != key_)
         {
             //Downloading into same folder but the key is different!
             LOG << "Removing conflicting (" << syncKey << ", " << syncPath << ") for (" << key_ << ", " << path() << ").";
-            sync_->removeFolder(syncKey);
+            libTorrentApi_->removeFolder(syncKey);
             return;
         }
     }
@@ -91,11 +93,11 @@ void Mod::removeConflicting()
 //If mod is not in sync it will be added to it.
 void Mod::start()
 {
-    if (!sync_->folderExists(key_))
+    if (!libTorrentApi_->folderExists(key_))
     {
         removeConflicting();
         //Add folder
-        bool resumeDataFound = sync_->addFolder(key_, name());
+        bool resumeDataFound = libTorrentApi_->addFolder(key_, name());
         setProcessCompletion(!resumeDataFound);
     }
 }
@@ -114,14 +116,14 @@ void Mod::onFolderAdded(const QString &key)
     }
     if (fileSize() == 0)
     {
-        auto size = sync_->folderFileSize(key_);
+        auto size = libTorrentApi_->folderFileSize(key_);
         setFileSize(size);
         emit fileSizeInitialized(size);
         LOG << name() << " size set to " << size;
     }
 
     //Do the actual starting
-    sync_->setFolderPaused(key_, false);
+    libTorrentApi_->setFolderPaused(key_, false);
     update();
     startUpdates();
 }
@@ -149,9 +151,9 @@ void Mod::moveFilesSlot()
 void Mod::moveFilesNow()
 {
     deleteExtraFiles();
-    if (sync_->folderExists(key_))
+    if (libTorrentApi_->folderExists(key_))
     {
-        sync_->setFolderPath(key_, settings_.modDownloadPath());
+        libTorrentApi_->setFolderPath(key_, settings_.modDownloadPath());
     }
 }
 
@@ -177,29 +179,29 @@ qint64 Mod::totalWantedDone() const
 
 void Mod::updateProgress()
 {
-    if (!active() || !sync_->folderExists(key_))
+    if (!active() || !libTorrentApi_->folderExists(key_))
     {
         totalWanted_ =  -1;
         totalWantedDone_ = -1;
         return;
     }
 
-    totalWanted_ = sync_->folderTotalWanted(key_);
-    totalWantedDone_ = sync_->folderTotalWantedDone(key_);
+    totalWanted_ = libTorrentApi_->folderTotalWanted(key_);
+    totalWantedDone_ = libTorrentApi_->folderTotalWantedDone(key_);
 }
 
 bool Mod::stop()
 {
     LOG << name();
     //TODO: Remove? Might be too defensive
-    if (!sync_->folderExists(key_))
+    if (!libTorrentApi_->folderExists(key_))
     {
         LOG_ERROR << "Folder" << name() << "does not exist.";
         return false;
     }
 
     LOG << "Stopping mod transfer. name = " << name();
-    sync_->setFolderPaused(key_, true);
+    libTorrentApi_->setFolderPaused(key_, true);
     stopUpdatesSlot();
     update();
 
@@ -215,7 +217,7 @@ void Mod::deleteExtraFiles()
     }
 
     QSet<QString> localFiles;
-    QSet<QString> remoteFiles = sync_->folderFilesUpper(key_);
+    QSet<QString> remoteFiles = libTorrentApi_->folderFilesUpper(key_);
 
     QDir dir(settings_.modDownloadPath() + "/" + name());
     QDirIterator it(dir.absolutePath(), QDir::Files, QDirIterator::Subdirectories);
@@ -224,7 +226,7 @@ void Mod::deleteExtraFiles()
         localFiles.insert(it.next().toUpper());
     }
     //Fail safe if there is torrent without files.
-    if (remoteFiles.size() == 0)
+    if (remoteFiles.isEmpty())
     {
         LOG_WARNING << "Not deleting extra files because torrent contains 0 files.";
         return; //Would delete everything otherwise
@@ -269,7 +271,7 @@ void Mod::repositoryChanged()
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
 
-    if (!sync_->ready())
+    if (!libTorrentApi_->ready())
     {
         return;
     }
@@ -278,7 +280,7 @@ void Mod::repositoryChanged()
     {
         // No checking for paused state because torrent might have been
         // paused by auto management (queued for example).
-        if (sync_->folderExists(key_))
+        if (libTorrentApi_->folderExists(key_))
         {
             LOG << "All repositories inactive or mod unchecked. Stopping " << name();
             stop();
@@ -286,7 +288,7 @@ void Mod::repositoryChanged()
         return;
     }
     //At least one repo active and mod checked
-    if (!sync_->folderExists(key_) || sync_->folderPaused(key_))
+    if (!libTorrentApi_->folderExists(key_) || libTorrentApi_->folderPaused(key_))
     {
         LOG << "Starting sync for " << name();
         start();
@@ -326,13 +328,13 @@ void Mod::startUpdates()
 
 void Mod::startUpdatesSlot()
 {
-    if (sync_->ready())
+    if (libTorrentApi_->ready())
     {
         updateTimer_->start();
     }
     else
     {
-        connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), updateTimer_, SLOT(start()));
+        connect(libTorrentApi_, &LibTorrentApi::initCompleted, updateTimer_, QOverload<>::of(&QTimer::start));
     }
 }
 
@@ -391,19 +393,19 @@ void Mod::appendModAdapter(ModAdapter* adapter)
 
     adaptersMutex_.lock();
     adapters_.append(adapter);
-    int size = adapters_.size();
+    auto size = adapters_.size();
     adaptersMutex_.unlock();
 
     if (size == 1)
     {
         //First repository added -> initialize mod.
-        if (sync_->ready())
+        if (libTorrentApi_->ready())
         {
             QMetaObject::invokeMethod(this, &Mod::init, Qt::QueuedConnection);
         }
         else
         {
-            connect(dynamic_cast<QObject*>(sync_), SIGNAL(initCompleted()), this, SLOT(init()));
+            connect(libTorrentApi_, &LibTorrentApi::initCompleted, this, &Mod::init);
         }
         return;
     }
@@ -418,31 +420,31 @@ void Mod::updateStatus()
     {
         setStatus(SyncStatus::INACTIVE);
     }
-    else if (!sync_->folderExists(key_))
+    else if (!libTorrentApi_->folderExists(key_))
     {
         setStatus(SyncStatus::ERRORED);
     }
-    else if (sync_->folderMovingFiles(key_))
+    else if (libTorrentApi_->folderMovingFiles(key_))
     {
         setStatus(SyncStatus::MOVING_FILES);
     }
-    else if (sync_->folderQueued(key_))
+    else if (libTorrentApi_->folderQueued(key_))
     {
         setStatus(SyncStatus::QUEUED);
     }
-    else if (sync_->folderCheckingPatches(key_))
+    else if (libTorrentApi_->folderCheckingPatches(key_))
     {
         setStatus(SyncStatus::CHECKING_PATCHES);
     }
-    else if (sync_->folderChecking(key_))
+    else if (libTorrentApi_->folderChecking(key_))
     {
         setStatus(SyncStatus::CHECKING);
     }
-    else if (sync_->folderDownloadingPatches(key_))
+    else if (libTorrentApi_->folderDownloadingPatches(key_))
     {
         setStatus(SyncStatus::DOWNLOADING_PATCHES);
     }
-    else if (sync_->folderDownloading(key_))
+    else if (libTorrentApi_->folderDownloading(key_))
     {
         if (statusStr() != SyncStatus::DOWNLOADING)
         {
@@ -467,19 +469,19 @@ void Mod::updateStatus()
         }
     }
     else if (statusStr() == SyncStatus::READY || statusStr() == SyncStatus::READY_PAUSED) {}
-    else if (sync_->folderReady(key_))
+    else if (libTorrentApi_->folderReady(key_))
     {
         setStatus(SyncStatus::WAITING);
     }
     else
     {
         //New block for error initialization
-        const QString error = sync_->folderError(key_);
+        const QString error = libTorrentApi_->folderError(key_);
         if (!error.isEmpty())
         {
             setStatus(SyncStatus::ERRORED + error);
         }
-        else if (sync_->folderPaused(key_))
+        else if (libTorrentApi_->folderPaused(key_))
         {
             if (statusStr() == SyncStatus::READY)
             {
@@ -490,15 +492,15 @@ void Mod::updateStatus()
                 setStatus(SyncStatus::PAUSED);
             }
         }
-        else if (sync_->folderExtractingPatch(key_))
+        else if (libTorrentApi_->folderExtractingPatch(key_))
         {
             setStatus(SyncStatus::EXTRACTING_PATCH);
         }
-        else if (sync_->folderPatching(key_))
+        else if (libTorrentApi_->folderPatching(key_))
         {
             setStatus(SyncStatus::PATCHING);
         }
-        else if (sync_->folderNoPeers(key_))
+        else if (libTorrentApi_->folderNoPeers(key_))
         {
             setStatus(SyncStatus::NO_PEERS);
         }
@@ -515,7 +517,7 @@ void Mod::forceCheck()
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
 
-    sync_->disableQueue(key_);
+    libTorrentApi_->disableQueue(key_);
     check();
 }
 
@@ -569,7 +571,7 @@ void Mod::check()
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
 
-    sync_->checkFolder(key_);
+    libTorrentApi_->checkFolder(key_);
     // Process completion when checking is done
     setProcessCompletion(true);
 }

@@ -6,7 +6,6 @@
 #include <QSet>
 #include <QTimer>
 
-#include "apis/isync.h"
 #include "interfaces/imod.h"
 #include "settingsmodel.h"
 #include "syncitem.h"
@@ -16,6 +15,7 @@
 #pragma warning(disable: 4250)
 #endif
 
+class LibTorrentApi;
 class ModAdapter;
 class Repository;
 
@@ -24,7 +24,7 @@ class Mod: public SyncItem, virtual public IMod
     Q_OBJECT
 
 public:
-    Mod(const QString& name, const QString& key, ISync* sync);
+    Mod(const QString& name, const QString& key, LibTorrentApi* libTorrentApi);
     ~Mod() override;
 
     // Moves files after mods download path has been changed
@@ -60,7 +60,7 @@ public slots:
 private:
     static const unsigned COMPLETION_WAIT_DURATION;
 
-    ISync* sync_;
+    LibTorrentApi* libTorrentApi_;
     QAtomicInteger<qint64> totalWantedDone_{-1};
     QAtomicInteger<qint64> totalWanted_{-1};
     QList<ModAdapter*> adapters_;

@@ -18,14 +18,15 @@ class JsonReader
 {
 public:
     JsonReader() = default;
+    virtual ~JsonReader() = default;
 
     void readJson();
     bool updateAvailable();
     [[nodiscard]] QList<Repository*> repositories(ISync* sync);
     [[nodiscard]] QStringList deltaUrls();
     [[nodiscard]] QSet<QString> getRemovables(const QList<QSharedPointer<Repository>>& updateRepositories);
-    void updateRepositories(ISync* sync, QList<QSharedPointer<Repository>>& updateRepositories);
-    void updateRepositoriesOffline(ISync* sync, QList<QSharedPointer<Repository>>& repositories);
+    void updateRepositories(LibTorrentApi* libTorrentApi, QList<QSharedPointer<Repository>>& updateRepositories);
+    void updateRepositoriesOffline(LibTorrentApi* libTorrentApi, QList<QSharedPointer<Repository>>& repositories);
 
 protected:
     virtual bool writeJsonBytes(const QByteArray& bytes);

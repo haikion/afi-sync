@@ -28,7 +28,6 @@ public:
     void check() override;
     void appendModAdapter(const QSharedPointer<ModAdapter>& adp, int index);
     void checkboxClicked() override;
-    [[nodiscard]] ISync* sync() const;
     void join() override;
     void start() override;
     bool optional() override;

@@ -127,12 +127,11 @@ private:
     QQueue<QPair<QString, QString>> pendingFolder_;
     QStringList deltaUrls_;
     QString settingsPath_;
-    StorageMoveManager* storageMoveManager_;
-    int numResumeData_;
+    StorageMoveManager* storageMoveManager_{nullptr};
     libtorrent::time_point statsLastTimestamp_;
     int64_t downloadSpeed_{0};
     int64_t uploadSpeed_{0};
-    std::atomic<bool> ready_;
+    std::atomic<bool> ready_{false};
 
     [[nodiscard]] static std::shared_ptr<libtorrent::torrent_info> loadFromFile(const QString& path);
     void loadTorrentFiles(const QDir& dir);

@@ -39,11 +39,11 @@ private slots:
     void periodicRepoUpdate();
 
 private:
-    int64_t download_;
-    int64_t upload_;
+    int64_t download_{0};
+    int64_t upload_{0};
     QList<QSharedPointer<Repository>> repositories_;
     QTimer updateTimer_;
-    ISync* sync_;
+    LibTorrentApi* libTorrentApi_{nullptr};
     QTimer repoUpdateTimer_;
     JsonReader jsonReader_;
     bool mirroringDeltaPatches_{false};

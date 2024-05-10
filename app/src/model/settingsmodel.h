@@ -10,6 +10,10 @@ class SettingsModel: public QObject
     Q_OBJECT
 
 public:
+    SettingsModel(const SettingsModel&) = delete;
+    SettingsModel operator=(const SettingsModel&) = delete;
+    ~SettingsModel() override = default;
+
     static SettingsModel& instance();
 
     [[nodiscard]] QString launchParameters() const;
@@ -36,8 +40,8 @@ public:
     bool maxDownloadEnabled();
     void setPort(const QString& port, bool enabled);
     [[nodiscard]] QString port() const;
-    [[nodiscard]] QString syncSettingsPath();
-    [[nodiscard]] QString settingsPath() const;
+    [[nodiscard]] static QString syncSettingsPath();
+    [[nodiscard]] static QString settingsPath();
     //Tells if syncitem is ticked (!= files checked)
     void setTicked(const QString& modName, QString repoName, bool value);
     [[nodiscard]] bool ticked(const QString& modName, QString repoName) const;
@@ -60,12 +64,9 @@ private:
     bool saveDir(const QString& key, const QString& path);
 
     SettingsModel();
-    ~SettingsModel() = default;
-    SettingsModel(const SettingsModel&) = delete;
-    SettingsModel operator=(const SettingsModel&) = delete;
 
     void createSettings();
-    void setMaxUploadSync();
+    void setMaxUploadSync() const;
     void setMaxDownloadSync();
 };
 

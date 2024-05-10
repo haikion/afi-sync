@@ -12,6 +12,7 @@
 #include <QVariantMap>
 
 #include "afisynclogger.h"
+#include "apis/libtorrent/libtorrentapi.h"
 #include "fileutils.h"
 #include "jsonutils.h"
 #include "mod.h"
@@ -73,7 +74,7 @@ QByteArray JsonReader::readJsonBytes() const
     return FileUtils::readFile(QCoreApplication::applicationDirPath() + JSON_RELATIVE_PATH);
 }
 
-void JsonReader::updateRepositoriesOffline(ISync* sync, QList<QSharedPointer<Repository>>& repositories)
+void JsonReader::updateRepositoriesOffline(LibTorrentApi* libTorrentApi, QList<QSharedPointer<Repository>>& repositories)
 {
     const QList<QVariant> jsonRepositories = jsonMap_.value(u"repositories"_s).toList();
     QSet<QString> previousModKeys;
@@ -86,7 +87,7 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<QSharedPointer<Rep
             previousModKeys.insert(mod->key());
         }
     }
-    sync->setDeltaUrls(jsonMap_.value(u"deltaUpdates2"_s).toStringList());
+    libTorrentApi->setDeltaUrls(jsonMap_.value(u"deltaUpdates2"_s).toStringList());
     QHash<Repository*, QSet<QString>> repositoryJsonModKeys;
     QList<QSharedPointer<Repository>> orderedRepositoryList;
     for (const QVariant& repoVar : jsonRepositories)
@@ -124,7 +125,7 @@ void JsonReader::updateRepositoriesOffline(ISync* sync, QList<QSharedPointer<Rep
 
             const auto modName = mod.value(u"name"_s).toString().toLower();
             auto newMod = modMap.contains(key) ? modMap.value(key) :
-                              QSharedPointer<Mod>(new Mod(modName, key, sync), &QObject::deleteLater);
+                              QSharedPointer<Mod>(new Mod(modName, key, libTorrentApi), &QObject::deleteLater);
             modMap.insert(key, newMod); //add if doesn't already exist
             newMod->setFileSize(qvariant_cast<int64_t>(mod.value(u"fileSize"_s, "0")));
             new ModAdapter(newMod, repo.get(), mod.value(u"optional"_s, false).toBool(), i);
@@ -178,10 +179,10 @@ QSet<QString> JsonReader::getRemovablesOffline(const QList<QSharedPointer<Reposi
 }
 
 // Updates repository list and returns set of deleted mod keys
-void JsonReader::updateRepositories(ISync* sync, QList<QSharedPointer<Repository>>& repositories)
+void JsonReader::updateRepositories(LibTorrentApi* libTorrentApi, QList<QSharedPointer<Repository>>& repositories)
 {
     updateJsonMap();
-    updateRepositoriesOffline(sync, repositories);
+    updateRepositoriesOffline(libTorrentApi, repositories);
 }
 
 QStringList JsonReader::deltaUrls()

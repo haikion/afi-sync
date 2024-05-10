@@ -31,15 +31,12 @@
 using namespace std::chrono_literals;
 
 TreeModel::TreeModel(QObject* parent):
-    QObject(parent),
-    download_(0),
-    upload_(0),
-    sync_(nullptr)
+    QObject(parent)
 {
     LOG;
     jsonReader_.readJson();
     createSync(jsonReader_.deltaUrls());
-    jsonReader_.updateRepositoriesOffline(sync_, repositories_);
+    jsonReader_.updateRepositoriesOffline(libTorrentApi_, repositories_);
 
     QSet<QString> usedKeys;
     for (const auto& repo : repositories_)
@@ -49,7 +46,7 @@ TreeModel::TreeModel(QObject* parent):
             usedKeys.insert(key);
         }
     }
-    sync_->cleanUnusedFiles(usedKeys);
+    libTorrentApi_->cleanUnusedFiles(usedKeys);
 
     LOG << "repositories.json read successfully";
 
@@ -66,13 +63,13 @@ void TreeModel::createSync(const QStringList& deltaUrls)
 {
     if (deltaUrls.isEmpty())
     {
-        sync_ = new LibTorrentApi();
+        libTorrentApi_ = new LibTorrentApi();
     }
     else
     {
-        sync_ = new LibTorrentApi(deltaUrls);
+        libTorrentApi_ = new LibTorrentApi(deltaUrls);
     }
-    Global::sync = sync_;
+    Global::sync = libTorrentApi_;
 }
 
 TreeModel::~TreeModel()
@@ -101,7 +98,7 @@ TreeModel::~TreeModel()
     repositories_.clear();
     waiter.wait();
 
-    auto syncObject = dynamic_cast<QObject*>(sync_);
+    auto syncObject = dynamic_cast<QObject*>(libTorrentApi_);
     DestructionWaiter syncWaiter(syncObject);
     syncObject->deleteLater();
     syncWaiter.wait(15); // libTorrent session delete might hang
@@ -168,8 +165,8 @@ QString TreeModel::uploadStr() const
 
 void TreeModel::updateSpeed()
 {
-    download_ = sync_->download();
-    upload_ = sync_->upload();
+    download_ = libTorrentApi_->download();
+    upload_ = libTorrentApi_->upload();
 }
 
 void TreeModel::periodicRepoUpdate()
@@ -204,9 +201,9 @@ void TreeModel::updateRepositories()
     const QSet<QString> removeFromSync = jsonReader_.getRemovables(repositories_);
     for (const QString& key : removeFromSync)
     {
-        sync_->removeFolder(key);
+        libTorrentApi_->removeFolder(key);
     }
-    jsonReader_.updateRepositories(sync_, repositories_);
+    jsonReader_.updateRepositories(libTorrentApi_, repositories_);
     emit repositoriesChanged(toIrepositories(repositories_));
 }
 
@@ -236,7 +233,7 @@ void TreeModel::update()
     if (allDone && !mirroringDeltaPatches_ && Global::guiless)
     {
         LOG << "All mods downloaded. Mirroring delta patches ...";
-        sync_->mirrorDeltaPatches();
+        libTorrentApi_->mirrorDeltaPatches();
         mirroringDeltaPatches_ = true;
     }
 }

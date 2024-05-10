@@ -164,7 +164,7 @@ int cli(int argc, char* argv[])
     const QSet<QString> missingArgs = deltaArgsSet - parserOptionsSet;
     if (missingArgs.size() < DELTA_ARGS.size())
     {
-        if (missingArgs.size() != 0)
+        if (!missingArgs.isEmpty())
         {
             parser.showHelp(1);
         }

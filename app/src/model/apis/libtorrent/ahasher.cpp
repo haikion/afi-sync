@@ -1,3 +1,5 @@
+#include "ahasher.h"
+
 #include <QChar>
 #include <QCryptographicHash>
 #include <QDebug>
@@ -5,8 +7,7 @@
 #include <QDirIterator>
 #include <QStringLiteral>
 
-#include "ahasher.h"
-#include "../../afisynclogger.h"
+#include "model/afisynclogger.h"
 
 using namespace Qt::StringLiterals;
 
@@ -59,7 +60,7 @@ namespace {
 
         qint64 modulated = size % MAX_VALUE; //Ensures the value is within 4 chars.
         QString rVal = baseEncode(modulated);
-        for (int padding = 4 - rVal.size(); padding > 0; --padding)
+        for (auto padding = 4 - rVal.size(); padding > 0; --padding)
         {
             rVal.prepend('0');
         }
