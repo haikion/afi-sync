@@ -10,6 +10,7 @@
 #include <QSharedDataPointer>
 #include <QStringLiteral>
 #include <QVariantMap>
+#include <QVariant>
 
 #include "afisynclogger.h"
 #include "apis/libtorrent/libtorrentapi.h"
@@ -17,6 +18,7 @@
 #include "jsonutils.h"
 #include "mod.h"
 #include "modadapter.h"
+#include "model/afisync.h"
 #include "repository.h"
 
 using namespace Qt::StringLiterals;
@@ -74,7 +76,7 @@ QByteArray JsonReader::readJsonBytes() const
     return FileUtils::readFile(QCoreApplication::applicationDirPath() + JSON_RELATIVE_PATH);
 }
 
-void JsonReader::updateRepositoriesOffline(LibTorrentApi* libTorrentApi, QList<QSharedPointer<Repository>>& repositories)
+void JsonReader::updateRepositoriesOffline(LibTorrentApi* libTorrentApi, RepositoryList& repositories)
 {
     const QList<QVariant> jsonRepositories = jsonMap_.value(u"repositories"_s).toList();
     QSet<QString> previousModKeys;
@@ -94,7 +96,7 @@ void JsonReader::updateRepositoriesOffline(LibTorrentApi* libTorrentApi, QList<Q
     {
         auto repository = repoVar.toMap();
         auto repoName = repository.value(u"name"_s).toString();
-        auto repo = Repository::findRepoByName(repoName, repositories);
+        auto repo = AfiSync::findRepoByName(repoName, repositories);
         const auto serverAddress = repository.value(u"serverAddress"_s).toString();
         const auto serverPort = qvariant_cast<unsigned>(repository.value(u"serverPort"_s));
         const auto password = repository.value(u"password"_s, "").toString();
@@ -146,13 +148,13 @@ void JsonReader::updateRepositoriesOffline(LibTorrentApi* libTorrentApi, QList<Q
     repositories.append(orderedRepositoryList);
 }
 
-QSet<QString> JsonReader::getRemovables(const QList<QSharedPointer<Repository>>& repositories)
+QSet<QString> JsonReader::getRemovables(const RepositoryList& repositories)
 {
     updateJsonMap();
     return getRemovablesOffline(repositories);
 }
 
-QSet<QString> JsonReader::getRemovablesOffline(const QList<QSharedPointer<Repository>>& repositories) const
+QSet<QString> JsonReader::getRemovablesOffline(const RepositoryList& repositories) const
 {
     const auto jsonRepositories = jsonMap_.value(u"repositories"_s).toList();
     QSet<QString> previousModKeys;
@@ -179,7 +181,7 @@ QSet<QString> JsonReader::getRemovablesOffline(const QList<QSharedPointer<Reposi
 }
 
 // Updates repository list and returns set of deleted mod keys
-void JsonReader::updateRepositories(LibTorrentApi* libTorrentApi, QList<QSharedPointer<Repository>>& repositories)
+void JsonReader::updateRepositories(LibTorrentApi* libTorrentApi, RepositoryList& repositories)
 {
     updateJsonMap();
     updateRepositoriesOffline(libTorrentApi, repositories);

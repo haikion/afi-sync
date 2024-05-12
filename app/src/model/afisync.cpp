@@ -22,6 +22,18 @@ QStringList AfiSync::activeModNames(const QList<IRepository*>& repositories)
     return retVal;
 }
 
+QSharedPointer<Repository> AfiSync::findRepoByName(const QString& name, const QList<QSharedPointer<Repository>>& repositories)
+{
+    for (const auto& repository : repositories)
+    {
+        if (repository->name() == name)
+        {
+            return repository;
+        }
+    }
+    return nullptr;
+}
+
 const QSet<QString> AfiSync::activeModNames(const IRepository* repository)
 {
     QSet<QString> retVal;

@@ -1,8 +1,10 @@
 #include "deletabledetector.h"
-#include "fileutils.h"
-#include "afisync.h"
+
 #include <QDirIterator>
 #include <QFileInfo>
+
+#include "afisync.h"
+#include "fileutils.h"
 
 DeletableDetector::DeletableDetector(const QString& modDownloadPath, const QList<IRepository*>& repositories)
 {

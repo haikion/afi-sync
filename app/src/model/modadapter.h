@@ -1,15 +1,17 @@
 #ifndef MODVIEWADAPTER_H
 #define MODVIEWADAPTER_H
 
-#include "mod.h"
 #include "repository.h"
 #include "settingsmodel.h"
 #include "syncitem.h"
+#include "interfaces/imod.h"
+
+class Mod;
 
 /*
  * Solves the compatibility issue between tree structure and mod repo structure.
  * Mod can belong to multiple repositories, however TreeItem can only have one parent.
- * ModAdapter will belong to only one repository but mod owns one for each repo connection
+ * ModAdapter will belong to only one repository but mod can be owned by multiple ModAdapters.
  * It also solves the problem in which mod is in two repositories but optional in only one.
  */
 class ModAdapter : public SyncItem, virtual public IMod

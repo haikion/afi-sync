@@ -6,6 +6,7 @@
 
 #include "afisynclogger.h"
 #include "fileutils.h"
+#include "mod.h"
 #include "modadapter.h"
 #include "repository.h"
 #include "settingsmodel.h"
@@ -112,18 +113,6 @@ void Repository::setPort(unsigned port)
 void Repository::setPassword(const QString& password)
 {
     password_ = password;
-}
-
-QSharedPointer<Repository> Repository::findRepoByName(const QString& name, const QList<QSharedPointer<Repository>>& repositories)
-{
-    for (const auto& repository : repositories)
-    {
-        if (repository->name() == name)
-        {
-            return repository;
-        }
-    }
-    return nullptr;
 }
 
 void Repository::startUpdates() const

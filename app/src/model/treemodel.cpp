@@ -207,7 +207,7 @@ void TreeModel::updateRepositories()
     emit repositoriesChanged(toIrepositories(repositories_));
 }
 
-QList<IRepository*> TreeModel::toIrepositories(const QList<QSharedPointer<Repository>>& repositories)
+QList<IRepository*> TreeModel::toIrepositories(const RepositoryList& repositories)
 {
     QList<IRepository*> irepositories;
     irepositories.reserve(repositories.size());

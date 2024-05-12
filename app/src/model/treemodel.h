@@ -5,11 +5,14 @@
 #include <QObject>
 #include <QSet>
 #include <QSharedPointer>
+#include <QTimer>
 
-#include "apis/isync.h"
 #include "interfaces/ibandwidthmeter.h"
 #include "jsonreader.h"
-#include "repository.h"
+
+class IRepository;
+class Mod;
+class Repository;
 
 class TreeModel : public QObject, virtual public IBandwidthMeter
 {
@@ -41,7 +44,7 @@ private slots:
 private:
     int64_t download_{0};
     int64_t upload_{0};
-    QList<QSharedPointer<Repository>> repositories_;
+    RepositoryList repositories_;
     QTimer updateTimer_;
     LibTorrentApi* libTorrentApi_{nullptr};
     QTimer repoUpdateTimer_;
@@ -53,7 +56,7 @@ private:
     [[nodiscard]] const QSet<Mod*> mods() const;
     void createSync(const QStringList& deltaUrls);
     void updateRepositories();
-    static QList<IRepository*> toIrepositories(const QList<QSharedPointer<Repository>>& repositories);
+    static QList<IRepository*> toIrepositories(const RepositoryList& repositories);
 };
 
 #endif // TREEMODEL_H

@@ -1,7 +1,10 @@
+#include "modadapter.h"
+
 #include <QMetaObject>
+#include <QSharedPointer>
 
 #include "afisynclogger.h"
-#include "modadapter.h"
+#include "mod.h"
 #include "repository.h"
 #include "settingsmodel.h"
 

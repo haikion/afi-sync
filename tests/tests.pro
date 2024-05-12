@@ -59,7 +59,6 @@ HEADERS += \
     ../app/src/model/processmonitor.h \
     ../app/src/model/repository.h \
     ../app/src/model/settingsmodel.h \
-    ../app/src/model/settingsuimodel.h \
     ../app/src/model/syncitem.h \
     ../app/src/model/syncnetworkaccessmanager.h \
     ../app/src/model/szip.h \
@@ -95,7 +94,6 @@ SOURCES += \
     ../app/src/model/processmonitor.cpp \
     ../app/src/model/repository.cpp \
     ../app/src/model/settingsmodel.cpp \
-    ../app/src/model/settingsuimodel.cpp \
     ../app/src/model/syncitem.cpp \
     ../app/src/model/syncnetworkaccessmanager.cpp \
     ../app/src/model/szip.cpp \

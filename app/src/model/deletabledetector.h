@@ -1,12 +1,13 @@
 #ifndef DELETABLEDETECTOR_H
 #define DELETABLEDETECTOR_H
 
-#include <QString>
-#include <QStringList>
 #include <QFileInfo>
 #include <QList>
-#include "interfaces/irepository.h"
+#include <QString>
+#include <QStringList>
+
 #include "deletable.h"
+#include "interfaces/irepository.h"
 
 class DeletableDetector
 {
