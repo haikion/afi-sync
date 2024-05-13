@@ -26,7 +26,8 @@ bool SettingsModel::saveDir(const QString& key, const QString& path)
     {
         return false;
     }
-    settings_->setValue(key, path);
+    auto qtStylePath = QDir::fromNativeSeparators(key);
+    settings_->setValue(qtStylePath, path);
     return true;
 }
 
@@ -46,12 +47,15 @@ QString SettingsModel::setting(const QString& key, const QString& defaultValue)
 QString SettingsModel::arma3Path()
 {
     auto val = setting(u"arma3Dir"_s, Paths::arma3Path());
-    return QDir::toNativeSeparators(val);
+    return QDir::fromNativeSeparators(val);
 }
 
 void SettingsModel::setArma3Path(const QString& path)
 {
-    saveDir(u"arma3Dir"_s, path);
+    if (!saveDir(u"arma3Dir"_s, path))
+    {
+        LOG_WARNING << "Failed to save Arma 3 path: " << path;
+    }
 }
 
 void SettingsModel::resetArma3Path()
@@ -62,12 +66,15 @@ void SettingsModel::resetArma3Path()
 QString SettingsModel::teamSpeak3Path()
 {
     auto val = setting(u"teamSpeak3Path"_s, Paths::teamspeak3Path());
-    return QDir::toNativeSeparators(val);
+    return QDir::fromNativeSeparators(val);
 }
 
 void SettingsModel::setTeamSpeak3Path(const QString& path)
 {
-    saveDir(u"teamSpeak3Path"_s, path);
+    if (!saveDir(u"teamSpeak3Path"_s, path))
+    {
+        LOG_WARNING << "Failed to save TeamSpeak 3 path: " << path;
+    }
 }
 
 void SettingsModel::resetTeamSpeak3Path()
@@ -77,7 +84,7 @@ void SettingsModel::resetTeamSpeak3Path()
 
 QString SettingsModel::steamPath() const
 {
-    return QDir::toNativeSeparators(settings_->value("steamPath", Paths::steamPath()).toString());
+    return QDir::fromNativeSeparators(settings_->value("steamPath", Paths::steamPath()).toString());
 }
 
 void SettingsModel::setSteamPath(const QString& path)
@@ -231,7 +238,7 @@ bool SettingsModel::deltaPatchingEnabled() const
 
 QString SettingsModel::modDownloadPath() const
 {
-    return QDir::toNativeSeparators(settings_->value("modDownloadPath", Paths::arma3Path()).toString());
+    return QDir::fromNativeSeparators(settings_->value("modDownloadPath"_L1, Paths::arma3Path()).toString());
 }
 
 void SettingsModel::setModDownloadPath(QString path)

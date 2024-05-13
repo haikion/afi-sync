@@ -33,7 +33,7 @@ void AsSettingsView::init()
         settingsModel.setLaunchParameters(ui->parametersLineEdit->text());
     });
 
-    ui->steamPathSetting->init(u"Steam"_s, settingsModel.steamPath());
+    ui->steamPathSetting->init(u"Steam"_s, QDir::toNativeSeparators(settingsModel.steamPath()));
     connect(ui->steamPathSetting, &PathSetting::textEdited, &settingsModel, &SettingsModel::setSteamPath);
     connect(ui->steamPathSetting, &PathSetting::resetPressed, this, [&]
     {
@@ -41,7 +41,7 @@ void AsSettingsView::init()
         ui->steamPathSetting->setValue(settingsModel.steamPath());
     });
 
-    ui->modsPathSetting->init(u"Mod Download"_s, settingsModel.modDownloadPath());
+    ui->modsPathSetting->init(u"Mod Download"_s, QDir::toNativeSeparators(settingsModel.modDownloadPath()));
     connect(ui->modsPathSetting, &PathSetting::textEdited, &settingsModel, &SettingsModel::setModDownloadPath);
     connect(ui->modsPathSetting, &PathSetting::resetPressed, this, [&]
     {
@@ -49,7 +49,7 @@ void AsSettingsView::init()
         ui->modsPathSetting->setValue(settingsModel.modDownloadPath());
     });
 
-    ui->teamspeakPathSetting->init(u"TeamSpeak 3"_s, settingsModel.teamSpeak3Path());
+    ui->teamspeakPathSetting->init(u"TeamSpeak 3"_s, QDir::toNativeSeparators(settingsModel.teamSpeak3Path()));
     connect(ui->teamspeakPathSetting, &PathSetting::textEdited, &settingsModel, &SettingsModel::setTeamSpeak3Path);
     connect(ui->teamspeakPathSetting, &PathSetting::resetPressed, this, [&]
     {
@@ -57,7 +57,7 @@ void AsSettingsView::init()
         ui->teamspeakPathSetting->setValue(settingsModel.teamSpeak3Path());
     });
 
-    ui->arma3PathSetting->init(u"Arma 3"_s, settingsModel.arma3Path());
+    ui->arma3PathSetting->init(u"Arma 3"_s, QDir::toNativeSeparators(settingsModel.arma3Path()));
     connect(ui->arma3PathSetting, &PathSetting::textEdited, &settingsModel, &SettingsModel::setArma3Path);
     connect(ui->arma3PathSetting, &PathSetting::resetPressed, this, [&]
     {

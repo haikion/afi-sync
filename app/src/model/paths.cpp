@@ -17,7 +17,7 @@ namespace {
     {
         QSettings settings(path, QSettings::NativeFormat);
         QString rPath = settings.value(key, QCoreApplication::applicationDirPath()).toString();
-        return QDir::toNativeSeparators(rPath);
+        return QDir::fromNativeSeparators(rPath);
     }
 
     //Prints error if path is default which means it wasn't found from regs.
@@ -53,7 +53,7 @@ QString Paths::arma3Path()
         path = settings2.value( "InstallLocation", QCoreApplication::applicationDirPath()).toString();
     }
     checkPath(path, u"arma 3"_s);
-    return QDir::toNativeSeparators(path);
+    return QDir::fromNativeSeparators(path);
 }
 
 QString Paths::teamspeak3Path()
@@ -67,7 +67,7 @@ QString Paths::teamspeak3Path()
         if (cmdPath.startsWith('\"'))
         {
             cmdPath.remove('\"');
-            return QDir::toNativeSeparators(cmdPath);
+            return QDir::fromNativeSeparators(cmdPath);
         }
     }
 
@@ -85,15 +85,14 @@ QString Paths::teamspeak3Path()
         path.remove('\"');
     }
     checkPath(path, u"TeamSpeak 3"_s);
-    return QDir::toNativeSeparators(path);
+    return QDir::fromNativeSeparators(path);
 }
 
 QString Paths::teamspeak3AppDataPath()
 {
     QDir dir =  QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     dir.cd(u"../../TS3Client"_s);
-
-    return QDir::toNativeSeparators(dir.absolutePath()); //TODO: Consider discarding this as toNative conversion should be done only on UI-layer.
+    return QDir::fromNativeSeparators(dir.absolutePath());
 }
 
 QString Paths::steamPath()

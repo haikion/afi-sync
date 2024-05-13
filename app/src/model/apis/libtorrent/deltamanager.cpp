@@ -61,7 +61,7 @@ void DeltaManager::update()
     QString downloadedPatchMod = findDownloadedMod();
     if (!downloadedPatchMod.isEmpty())
     {
-        patcher_->patch(settings_.modDownloadPath() + "/" + downloadedPatchMod);
+        patcher_->patch(settings_.modDownloadPath() + '/' + downloadedPatchMod);
         inDownload_.remove(keyHash_.key(downloadedPatchMod));
     }
 }
