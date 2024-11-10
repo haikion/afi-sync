@@ -104,6 +104,11 @@ TreeModel::~TreeModel()
     syncWaiter.wait(15); // libTorrent session delete might hang
 }
 
+VersionCheckResult TreeModel::checkVersion() const
+{
+    return jsonReader_.checkVersion();
+}
+
 void TreeModel::stopUpdates()
 {
     for (const auto& repo : repositories_)

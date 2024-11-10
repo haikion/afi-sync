@@ -12,6 +12,7 @@
 
 #include "apis/isync.h"
 #include "syncnetworkaccessmanager.h"
+#include "versioncheckresult.h"
 
 class LibTorrentApi;
 class Repository;
@@ -23,6 +24,7 @@ public:
     JsonReader() = default;
     virtual ~JsonReader() = default;
 
+    VersionCheckResult checkVersion() const;
     void readJson();
     bool updateAvailable();
     [[nodiscard]] QList<Repository*> repositories(ISync* sync);

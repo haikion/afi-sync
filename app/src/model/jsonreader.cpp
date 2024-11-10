@@ -25,6 +25,13 @@ using namespace Qt::StringLiterals;
 
 const QString JsonReader::JSON_RELATIVE_PATH = u"/settings/repositories.json"_s;
 
+VersionCheckResult JsonReader::checkVersion() const
+{
+    VersionCheckResult result;
+    result.readJson(jsonMap_);
+    return result;
+}
+
 void JsonReader::readJson()
 {
     if (!readJsonFile())

@@ -64,6 +64,7 @@ HEADERS += \
     ../app/src/model/szip.h \
     ../app/src/model/treemodel.h \
     ../app/src/model/version.h \
+    ../app/src/model/versioncheckresult.h \
     ../app/src/model/deletable.h \
     ../app/src/model/afisync.h \
     ../app/src/model/destructionwaiter.h \
@@ -98,6 +99,7 @@ SOURCES += \
     ../app/src/model/syncnetworkaccessmanager.cpp \
     ../app/src/model/szip.cpp \
     ../app/src/model/treemodel.cpp \
+    ../app/src/model/versioncheckresult.cpp \
     deletabledetectortest.cpp \
     ../app/src/model/deletable.cpp \
     ../app/src/model/afisync.cpp \

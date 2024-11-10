@@ -210,9 +210,14 @@ void SettingsModel::setMaxDownloadSync()
     Global::sync->setMaxDownload(maxDownloadEnabled() ? maxDownload().toInt() : 0);
 }
 
+void SettingsModel::setVersionCheckEnabled(bool enabled)
+{
+    settings_->setValue("versionCheckEnabled"_L1, enabled);
+}
+
 void SettingsModel::setDeltaPatchingEnabled(bool enabled)
 {
-    settings_->setValue("deltaPatchingEnabled", enabled);
+    settings_->setValue("deltaPatchingEnabled"_L1, enabled);
     if (Global::sync) //TODO: Remove might be too defensive
     {
         if (enabled)
@@ -229,6 +234,11 @@ void SettingsModel::setDeltaPatchingEnabled(bool enabled)
         LOG_ERROR << "Sync is null!";
         Q_ASSERT(false);
     }
+}
+
+bool SettingsModel::versionCheckEnabled() const
+{
+    return settings_->value("versionCheckEnabled"_L1, true).toBool();
 }
 
 bool SettingsModel::deltaPatchingEnabled() const

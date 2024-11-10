@@ -9,6 +9,7 @@
 
 #include "interfaces/ibandwidthmeter.h"
 #include "jsonreader.h"
+#include "versioncheckresult.h"
 
 class IRepository;
 class Mod;
@@ -22,6 +23,7 @@ public:
     explicit TreeModel(QObject* parent = nullptr);
     ~TreeModel() override;
 
+    VersionCheckResult checkVersion() const;
     void reset();
     void enableRepositories();
     void setHaltGui(bool halt);

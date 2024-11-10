@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <QDesktopServices>
 #include <QMessageBox>
 #include <QStringLiteral>
 
@@ -50,6 +51,36 @@ TreeModel* generalInit(QObject* parent = nullptr)
     Global::workerThread->start();
     LOG << "Worker thread started";
     Global::model = new TreeModel(parent);
+    if (SettingsModel::instance().versionCheckEnabled())
+    {
+        const auto versionCheck = Global::model->checkVersion();
+        if (versionCheck.updateAvailable()) {
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Information);
+            msgBox.setWindowTitle(u"Version Update Available"_s);
+            msgBox.setText(u"A new version of AFISync is available."_s);
+
+            // Display the current version and the latest version
+            auto message = u"Current version: %1.%2\nLatest version: %3\n\n"
+                           "Would you like to visit the download page for the latest version?\n\n"_s
+                               .arg(MAJOR_VERSION).arg(MINOR_VERSION)
+                               .arg(versionCheck.latestVersion());
+            msgBox.setInformativeText(message);
+            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+            msgBox.setDefaultButton(QMessageBox::Yes);
+
+            int ret = msgBox.exec();
+            if (ret == QMessageBox::Yes) {
+                QUrl url{versionCheck.versionUrl()};
+                if (url.scheme() == "http"_L1 || url.scheme() == "https"_L1) {
+                    QDesktopServices::openUrl(url);
+                } else {
+                    LOG_WARNING << "Incorrect url given: " << versionCheck.versionUrl();
+                }
+            }
+        }
+    }
+
     SettingsModel::instance().initBwLimits();
     return Global::model;
 }

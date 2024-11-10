@@ -18,6 +18,7 @@ public:
 
     [[nodiscard]] QString launchParameters() const;
     void setLaunchParameters(const QString& parameters);
+    [[nodiscard]] bool versionCheckEnabled() const;
     [[nodiscard]] bool deltaPatchingEnabled() const;
     [[nodiscard]] QString modDownloadPath() const;
     void setModDownloadPath(QString path);
@@ -54,6 +55,7 @@ public:
     void initBwLimits();
 
 public slots:
+    void setVersionCheckEnabled(bool enabled);
     void setDeltaPatchingEnabled(bool enabled);
 
 private:

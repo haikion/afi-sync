@@ -65,6 +65,7 @@ SOURCES += \
     src/model/console.cpp \
     src/model/szip.cpp \
     src/model/deletabledetector.cpp \
+    src/model/versioncheckresult.cpp \
     src/view/asbannerbar.cpp \
     src/view/assettingsview.cpp \
     src/view/astreeitem.cpp \
@@ -113,6 +114,7 @@ HEADERS += \
     src/model/interfaces/isettings.h \
     src/model/interfaces/isyncitem.h \
     src/model/deletabledetector.h \
+    src/model/versioncheckresult.h \
     src/view/asbannerbar.h \
     src/view/assettingsview.h \
     src/view/astreeitem.h \

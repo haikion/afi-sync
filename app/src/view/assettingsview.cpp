@@ -33,6 +33,10 @@ void AsSettingsView::init()
         settingsModel.setLaunchParameters(ui->parametersLineEdit->text());
     });
 
+    ui->versionCheckBox->setChecked(settingsModel.versionCheckEnabled());
+    connect(ui->versionCheckBox, &QCheckBox::toggled,
+            &settingsModel, &SettingsModel::setVersionCheckEnabled);
+
     ui->steamPathSetting->init(u"Steam"_s, QDir::toNativeSeparators(settingsModel.steamPath()));
     connect(ui->steamPathSetting, &PathSetting::textEdited, &settingsModel, &SettingsModel::setSteamPath);
     connect(ui->steamPathSetting, &PathSetting::resetPressed, this, [&]
