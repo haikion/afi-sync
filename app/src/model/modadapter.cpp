@@ -1,6 +1,8 @@
 #include "modadapter.h"
 
+#include <QDir>
 #include <QMetaObject>
+#include <QRegularExpression>
 #include <QSharedPointer>
 
 #include "afisynclogger.h"
@@ -85,6 +87,20 @@ void ModAdapter::setTicked(bool checked)
 bool ModAdapter::optional()
 {
     return isOptional_;
+}
+
+QString ModAdapter::path() const
+{
+    QString baseDir = SettingsModel::instance().modDownloadPath();
+    QString nameVar = name();
+    // Check for invalid characters (e.g., path traversal sequences) in name
+    static QRegularExpression invalidChars(R"([<>:"\/|?*]|(\.\.))");
+    if (nameVar.contains(invalidChars)) {
+        LOG_WARNING << "Invalid characters in name: " << nameVar;
+        return {};
+    }
+    QDir dir(baseDir + '/' + nameVar);
+    return dir.exists() ? dir.path() : QString();
 }
 
 QString ModAdapter::progressStr()

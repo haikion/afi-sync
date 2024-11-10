@@ -1,8 +1,10 @@
 #include "astreewidget.h"
 
+#include <QDesktopServices>
 #include <QHeaderView>
 #include <QMenu>
 #include <QPushButton>
+#include <QUrl>
 
 #include "../model/modadapter.h"
 #include "astreeitem.h"
@@ -52,7 +54,14 @@ void AsTreeWidget::showContextMenu(QPoint point)
         else
         {
             const ModAdapter* modAdapter = dynamic_cast<ModAdapter*>(syncItem);
-            menu.addAction(u"Recheck"_s, [=]() { modAdapter->forceCheck(); });
+            const QString path = modAdapter->path();
+            if (!path.isEmpty())
+            {
+                menu.addAction(u"Recheck"_s, [=]() { modAdapter->forceCheck(); });
+                menu.addAction(u"Show in file explorer"_s, [=] () {
+                    QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+                });
+            }
         }
         menu.exec(QCursor::pos());
     }

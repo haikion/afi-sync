@@ -29,6 +29,11 @@ public:
     void processCompletion() override;
     [[nodiscard]] bool optional() override;
     [[nodiscard]] QString progressStr() override;
+    /**
+     * @brief path
+     * @return Sanitized directory path for the mod
+     */
+    [[nodiscard]] QString path() const;
     [[nodiscard]] QSharedPointer<Mod> mod() const;
     [[nodiscard]] Repository* repo() const;
     void forceCheck() const;
