@@ -1,11 +1,11 @@
 :Compiles static 64 bit single exe build of AFISync with MSVC
-set QT_STATIC_BINS=G:\qt6s\bin
-set VS_DIR=D:\Program Files\Microsoft Visual Studio\2022\Community
+set QT_STATIC_BINS=E:\qts\bin
+set VS_DIR=E:\Program Files\Microsoft Visual Studio\2022\Community
 
 set CURRDIR=%cd%
 cd %~dp0%..\..\..
 set ROOT_DIR=%cd%
-set RC_ZIP=D:\Dropbox\afisync2\AFISync-releases\AFISync_rc.zip
+set RC_ZIP=E:\Dropbox\afisync2\AFISync-releases\AFISync_rc.zip
 set SRC_DIR=%ROOT_DIR%\afi-sync\app
 set SRC_BIN=%SRC_DIR%\bin
 set BUILD_DIR=%ROOT_DIR%\build-AFISync-static
