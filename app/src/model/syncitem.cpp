@@ -27,19 +27,18 @@ QString SyncItem::sizeStr() const
         return u"??.?? MB"_s;
     }
 
-    int64_t size = fileSize_;
+    double size = static_cast<double>(fileSize_);
     int i = 0;
     QStringList list;
     list << u"B"_s << u"kB"_s << u"MB"_s
          << u"GB"_s;
 
-    for (i = 0; i < list.size() && size > 1024; ++i)
+    for (i = 0; i < list.size() && size > 1024.0; ++i)
     {
-        size = size / 1024;
+        size /= 1024.0;
     }
 
-    auto sizeDouble = static_cast<double>(size);
-    return QString::number(sizeDouble, 'f', 2) + " " + list.at(i);
+    return QString::number(size, 'f', 2) + " " + list.at(i);
 }
 
 bool SyncItem::active() const
