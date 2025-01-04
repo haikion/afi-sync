@@ -41,7 +41,7 @@ public:
     [[nodiscard]] virtual bool folderChecking(const QString& key) = 0;
     [[nodiscard]] virtual bool folderDownloading(const QString& key) = 0;
     virtual void setDeltaUrls(const QStringList& urls) = 0;
-    virtual void setFolderPath(const QString& key, const QString& path) = 0;
+    virtual void setFolderPath(const QString& key, const QString& path, bool overwrite) = 0;
     //Sets folder in paused mode or starts if if value is set to false.
     virtual void setFolderPaused(const QString& key, bool value) = 0;
     [[nodiscard]] virtual bool folderPatching(const QString& key) = 0;

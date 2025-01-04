@@ -63,6 +63,7 @@ private:
     QElapsedTimer activeTimer_;
     SettingsModel& settings_{SettingsModel::instance()};
 
+    [[nodiscard]] QSet<QString> getModStatuses() const;
     [[nodiscard]] QString modsParameter();
     [[nodiscard]] QStringList joinParameters() const;
     void generalLaunch(const QStringList& extraParams = QStringList());

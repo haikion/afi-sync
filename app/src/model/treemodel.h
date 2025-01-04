@@ -28,10 +28,11 @@ public:
     void enableRepositories();
     void setHaltGui(bool halt);
     [[nodiscard]] QList<IRepository*> repositories() const;
-    void moveFiles();
+    void moveFiles(bool overwrite);
     void stopUpdates();
     [[nodiscard]] QString downloadStr() const override;
     [[nodiscard]] QString uploadStr() const override;
+    [[nodiscard]] QStringList getModFileCollisions(const QString& path);
 
 public slots:
     void updateSpeed();

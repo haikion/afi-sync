@@ -117,11 +117,11 @@ void TreeModel::stopUpdates()
     }
 }
 
-void TreeModel::moveFiles()
+void TreeModel::moveFiles(bool overwrite)
 {
     for (Mod* mod : mods())
     {
-        mod->moveFiles();
+        mod->moveFiles(overwrite);
     }
 }
 
@@ -167,6 +167,28 @@ QString TreeModel::uploadStr() const
 {
     return bandwithString(upload_);
 }
+
+QStringList TreeModel::getModFileCollisions(const QString& path)
+{
+    QStringList collisions;
+    QDir directory(path);
+
+    QStringList existingDirs = directory.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+    const auto modList = mods();
+    for (const Mod* mod : modList) {
+        QString modName = mod->name();
+        auto it = std::find_if(existingDirs.begin(), existingDirs.end(),
+            [&modName](const QString& dirName) {
+                return dirName.compare(modName, Qt::CaseInsensitive) == 0;
+            });
+
+        if (it != existingDirs.end()) {
+            collisions.append(*it);
+        }
+    }
+    return collisions;
+}
+
 
 void TreeModel::updateSpeed()
 {

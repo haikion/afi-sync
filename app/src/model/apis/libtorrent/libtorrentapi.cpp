@@ -300,7 +300,7 @@ void LibTorrentApi::setDeltaUrls(const QStringList& urls)
     }, Qt::QueuedConnection);
 }
 
-void LibTorrentApi::setFolderPath(const QString& key, const QString& path)
+void LibTorrentApi::setFolderPath(const QString& key, const QString& path, bool overwrite)
 {
     torrent_handle handle = getHandle(key);
     auto status = handle.status(torrent_handle::query_save_path | torrent_handle::query_name);
@@ -309,8 +309,23 @@ void LibTorrentApi::setFolderPath(const QString& key, const QString& path)
     // Path can be drive root in which case it ends with "\" for example "C:\"
     const QString fromPath = QDir::fromNativeSeparators(savePath + (savePath.endsWith('\\') ? QString() : u"\\"_s) + name);
     const QString toPath = QDir::fromNativeSeparators(path + (path.endsWith('\\') ? QString() : u"\\"_s) + name);
+    const bool isRunning = !(handle.flags() & torrent_flags::paused);
+    const bool recheck = !overwrite && isRunning && QFile::exists(toPath);
+
+    if (recheck) {
+        handle.unset_flags(torrent_flags::auto_managed);
+        handle.pause();
+    }
+
     storageMoveManager_->insert(key, fromPath, toPath, handle.status().total_wanted_done);
-    handle.move_storage(path.toStdString());
+    auto flags = overwrite ? move_flags_t::always_replace_files : move_flags_t::dont_replace;
+    handle.move_storage(path.toStdString(), flags);
+
+    if (recheck) {
+        handle.force_recheck();
+        handle.resume();
+        handle.set_flags(torrent_flags::auto_managed);
+    }
 }
 
 void LibTorrentApi::setFolderPaused(const QString& key, bool value)
@@ -757,6 +772,11 @@ void LibTorrentApi::removeFolder(const QString& key)
     {
         removeFolderPriv(key);
     }, Qt::QueuedConnection);
+}
+
+void LibTorrentApi::removeTorrentParams(const QString& key)
+{
+    torrentParams_.remove(key);
 }
 
 bool LibTorrentApi::removeFolderPriv(const QString& key)

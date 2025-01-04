@@ -111,7 +111,8 @@ void Mod::onFolderAdded(const QString &key)
     if (moveFilesPostponed_)
     {
         moveFilesPostponed_ = false;
-        moveFilesNow();
+        moveFilesNow(moveFilesPostponedOverwrite_);
+        moveFilesPostponedOverwrite_ = true; // Set to default
         LOG << "Files moved to " << settings_.modDownloadPath();
     }
     if (fileSize() == 0)
@@ -128,32 +129,33 @@ void Mod::onFolderAdded(const QString &key)
     startUpdates();
 }
 
-void Mod::moveFiles()
+void Mod::moveFiles(bool overwrite)
 {
-    QMetaObject::invokeMethod(this, &Mod::moveFilesSlot, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, [=] () {
+        if (statusStr() == SyncStatus::PATCHING ||
+            statusStr() == SyncStatus::DOWNLOADING_PATCHES ||
+            statusStr() == SyncStatus::EXTRACTING_PATCH ||
+            statusStr() == SyncStatus::STARTING)
+        {
+            LOG << "Waiting for mod patching to finish before moving files ...";
+            moveFilesPostponed_ = true;
+            moveFilesPostponedOverwrite_ = overwrite;
+            return;
+        }
+        moveFilesNow(overwrite);
+        LOG << name() <<  " moved to " << settings_.modDownloadPath();
+    }, Qt::QueuedConnection);
 }
 
-void Mod::moveFilesSlot()
+void Mod::moveFilesNow(bool overwrite)
 {
-    if (statusStr() == SyncStatus::PATCHING ||
-        statusStr() == SyncStatus::DOWNLOADING_PATCHES ||
-        statusStr() == SyncStatus::EXTRACTING_PATCH ||
-        statusStr() == SyncStatus::STARTING)
-    {
-        LOG << "Waiting for mod patching to finish before moving files ...";
-        moveFilesPostponed_ = true;
-        return;
-    }
-    moveFilesNow();
-    LOG << "Files moved to " << settings_.modDownloadPath();
-}
-
-void Mod::moveFilesNow()
-{
-    deleteExtraFiles();
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
     if (libTorrentApi_->folderExists(key_))
     {
-        libTorrentApi_->setFolderPath(key_, settings_.modDownloadPath());
+        deleteExtraFiles();
+        libTorrentApi_->setFolderPath(key_, settings_.modDownloadPath(), overwrite);
+    } else {
+        libTorrentApi_->removeTorrentParams(key_);
     }
 }
 
@@ -422,7 +424,7 @@ void Mod::updateStatus()
     }
     else if (!libTorrentApi_->folderExists(key_))
     {
-        setStatus(SyncStatus::ERRORED);
+        setStatus(SyncStatus::ERRORED + u" Failed to load torrent"_s);
     }
     else if (libTorrentApi_->folderMovingFiles(key_))
     {

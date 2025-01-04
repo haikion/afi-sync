@@ -1,5 +1,6 @@
 #include <QDesktopServices>
 #include <QIntValidator>
+#include <QMessageBox>
 #include <QStringLiteral>
 
 #include "assettingsview.h"
@@ -46,7 +47,28 @@ void AsSettingsView::init()
     });
 
     ui->modsPathSetting->init(u"Mod Download"_s, QDir::toNativeSeparators(settingsModel.modDownloadPath()));
-    connect(ui->modsPathSetting, &PathSetting::textEdited, &settingsModel, &SettingsModel::setModDownloadPath);
+    connect(ui->modsPathSetting, &PathSetting::textEdited, &settingsModel, [=] (const auto& str) {
+        QStringList modCollisions = settingsModel.checkAndSetModDownloadPath(str);
+        if (!modCollisions.isEmpty()) {
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setWindowTitle("File Collision Detected");
+            msgBox.setText("The target destination already contains mod directories.");
+            msgBox.setInformativeText("What would you like to do?");
+            msgBox.setDetailedText(modCollisions.join("\n")); // Show the list of collisions in a collapsible section
+            const auto overwriteButton = msgBox.addButton("Overwrite", QMessageBox::AcceptRole);
+            msgBox.addButton("Cancel", QMessageBox::RejectRole);
+            const auto dstButton = msgBox.addButton("Use Destination Files", QMessageBox::ActionRole);
+
+            msgBox.exec();
+            auto clickedButton = msgBox.clickedButton();
+            if (overwriteButton == clickedButton) {
+                settingsModel.setModDownloadPath(str, true);
+            } else if (dstButton == clickedButton) {
+                settingsModel.setModDownloadPath(str, false);
+            }
+        }
+    });
     connect(ui->modsPathSetting, &PathSetting::resetPressed, this, [&]
     {
         settingsModel.resetModDownloadPath();

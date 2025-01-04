@@ -28,7 +28,7 @@ public:
     ~Mod() override;
 
     // Moves files after mods download path has been changed
-    void moveFiles();
+    void moveFiles(bool overwrite);
     void check() override;
     [[nodiscard]] QString key() const;
     void checkboxClicked() override;
@@ -69,6 +69,7 @@ private:
     QString key_;
     QTimer* updateTimer_{nullptr};
     bool moveFilesPostponed_{false};
+    bool moveFilesPostponedOverwrite_{true};
     std::atomic<bool> ticked_{false};
     unsigned waitTime_{0};
     SettingsModel& settings_{SettingsModel::instance()};
@@ -83,7 +84,7 @@ private:
     [[nodiscard]] bool getProcessCompletion();
     void updateProgress();
     void updateTicked();
-    void moveFilesNow();
+    void moveFilesNow(bool overwrite);
 
 private slots:
     void update();
@@ -92,7 +93,6 @@ private slots:
     void onFolderAdded(const QString& key);
     void stopUpdatesSlot();
     void startUpdatesSlot();
-    void moveFilesSlot();
     void checkboxClickedSlot();
 };
 

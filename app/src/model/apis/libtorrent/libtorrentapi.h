@@ -60,12 +60,13 @@ public:
     bool addFolder(const QString& key, const QString& name) override;
     //Removes folder with specific key.
     void removeFolder(const QString& key) override;
+    void removeTorrentParams(const QString& key);
     //Returns list of files in folder in upper case format.
     QSet<QString> folderFilesUpper(const QString& key) override;
     //Returns true if folder with specific key exists.
     bool folderExists(const QString& key) override;
     void setDeltaUrls(const QStringList& urls) override;
-    void setFolderPath(const QString& key, const QString& path) override;
+    void setFolderPath(const QString& key, const QString& path, bool overwrite) override;
     //Returns true if folder is paused
     bool folderPaused(const QString& key) override;
     //Sets folder in paused mode or starts if if value is set to false.

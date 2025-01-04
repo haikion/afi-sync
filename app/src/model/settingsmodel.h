@@ -21,7 +21,8 @@ public:
     [[nodiscard]] bool versionCheckEnabled() const;
     [[nodiscard]] bool deltaPatchingEnabled() const;
     [[nodiscard]] QString modDownloadPath() const;
-    void setModDownloadPath(QString path);
+    [[nodiscard]] QStringList checkAndSetModDownloadPath(const QString& path);
+    void setModDownloadPath(QString path, bool overwrite = true);
     void resetModDownloadPath();
     [[nodiscard]] QString patchesDownloadPath() const;
     [[nodiscard]] QString arma3Path();
@@ -53,6 +54,7 @@ public:
     void setMaxUploadEnabled(bool maxUploadEnabled);
     void setMaxDownloadEnabled(bool maxDownloadEnabled);
     void initBwLimits();
+    void setModDownloadPath2(QString path);
 
 public slots:
     void setVersionCheckEnabled(bool enabled);

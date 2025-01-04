@@ -251,8 +251,18 @@ QString SettingsModel::modDownloadPath() const
     return QDir::fromNativeSeparators(settings_->value("modDownloadPath"_L1, Paths::arma3Path()).toString());
 }
 
-void SettingsModel::setModDownloadPath(QString path)
+QStringList SettingsModel::checkAndSetModDownloadPath(const QString& path)
 {
+    QStringList modFileCollisions = Global::model->getModFileCollisions(path);
+    if (!modFileCollisions.isEmpty()) {
+        LOG << "Mod collisions noticed: " << modFileCollisions;
+        return modFileCollisions;
+    }
+    setModDownloadPath(path);
+    return {};
+}
+
+void SettingsModel::setModDownloadPath(QString path, bool overwrite) {
     LOG << "path = " << path;
     path = QDir::fromNativeSeparators(path);
     if (!saveDir(u"modDownloadPath"_s, path)) {
@@ -261,9 +271,8 @@ void SettingsModel::setModDownloadPath(QString path)
         return;
     }
     settings_->setValue("modDownloadPath", path);
-    if (Global::model)
-    {
-        Global::model->moveFiles();
+    if (Global::model) {
+        Global::model->moveFiles(overwrite);
     }
 }
 

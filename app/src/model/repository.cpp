@@ -132,7 +132,7 @@ void Repository::check()
 {
     for (const auto& mod : mods())
     {
-        mod->check();
+        QMetaObject::invokeMethod(mod.get(), &Mod::check, Qt::QueuedConnection);
     }
 }
 
@@ -284,11 +284,7 @@ void Repository::update()
         return;
     }
 
-    QSet<QString> modStatuses;
-    for (const auto& item : mods())
-    {
-        modStatuses.insert(item->statusStr());
-    }
+    const QSet<QString> modStatuses = getModStatuses();
 
     if (!ticked())
     {
@@ -317,8 +313,23 @@ void Repository::update()
     }
     else
     {
+        for (const auto& status : modStatuses) {
+            if (status.contains(SyncStatus::ERRORED)) {
+                setStatus(u"Error"_s);
+                return;
+            }
+        }
         setStatus(SyncStatus::WAITING);
     }
+}
+
+QSet<QString> Repository::getModStatuses() const {
+    QSet<QString> modStatuses;
+    for (const auto& item : mods())
+    {
+        modStatuses.insert(item->statusStr());
+    }
+    return modStatuses;
 }
 
 QString Repository::modsParameter()
