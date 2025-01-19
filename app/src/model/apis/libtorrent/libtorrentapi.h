@@ -40,7 +40,7 @@ public:
 
     void mirrorDeltaPatches() override;
     QStringList deltaUrls() override;
-    bool disableDeltaUpdates() override;
+    void disableDeltaUpdates() override;
     void disableDeltaUpdatesNoTorrents();
     void enableDeltaUpdates() override;
 
@@ -98,6 +98,7 @@ public:
     static QPair<libtorrent::error_code, libtorrent::add_torrent_params> toAddTorrentParams(const QByteArray& torrentData);
 
 private slots:
+    void disableDeltaUpdatesSlot();
     void handleAlerts();
     void handlePatched(const QString& key, const QString& modName, bool success);
     void init();

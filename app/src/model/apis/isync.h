@@ -14,7 +14,7 @@ public:
 
     virtual void mirrorDeltaPatches() = 0;
     virtual QStringList deltaUrls() = 0;
-    virtual bool disableDeltaUpdates() = 0;
+    virtual void disableDeltaUpdates() = 0;
     virtual void enableDeltaUpdates() = 0;
 
     /**

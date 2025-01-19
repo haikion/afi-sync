@@ -836,11 +836,16 @@ void LibTorrentApi::setDeltaUrlsPriv(const QStringList& deltaUrls)
     deltaManager_->setDeltaUrls(deltaUrls);
 }
 
-bool LibTorrentApi::disableDeltaUpdates()
+void LibTorrentApi::disableDeltaUpdates()
+{
+    QMetaObject::invokeMethod(this, &LibTorrentApi::disableDeltaUpdatesSlot, Qt::QueuedConnection);
+}
+
+void LibTorrentApi::disableDeltaUpdatesSlot()
 {
     if (!deltaManager_)
     {
-        return false;
+        return;
     }
 
     CiHash<QString> hash = deltaManager_->keyHash();
@@ -851,8 +856,6 @@ bool LibTorrentApi::disableDeltaUpdates()
     {
         addFolder(key, hash.value(key));
     }
-
-    return true;
 }
 
 void LibTorrentApi::disableDeltaUpdatesNoTorrents()
