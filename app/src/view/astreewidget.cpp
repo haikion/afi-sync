@@ -73,7 +73,7 @@ void AsTreeWidget::setRepositories(const QList<IRepository*>& repositories)
     items_.clear();
     addRepositories(repositories);
     header()->resizeSections(QHeaderView::ResizeToContents);
-    header()->resizeSection(2, header()->sectionSize(2) + 50); //Status
+    header()->resizeSection(2, header()->sectionSize(2) + 80); //Status
     header()->resizeSection(4, header()->sectionSize(4) + 25); //Size
     //Hack to make name column take remaining space
     header()->setSectionResizeMode(1, QHeaderView::Stretch);
