@@ -966,6 +966,13 @@ bool LibTorrentApi::addFolderGenericAsync(const QString& key)
             return;
         }
         auto atp = pair.second;
+        const auto modPath = SettingsModel::instance().modDownloadPath() + '/' + QString::fromStdString(atp.ti->name());
+        const auto size = FileUtils::dirSize(modPath);
+        if (size < 2097152 && size > 0) {
+            FileUtils::safeRemoveRecursively(modPath);
+            LOG << "deleted directory " << modPath
+                << " due to total size being too small for torrent based file check.";
+        }
         error_code ec;
         torrent_handle handle = session_->add_torrent(atp, ec);
         if (ec)
@@ -1189,9 +1196,9 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
     //Combine resume and torrent datas
     while (it.hasNext())
     {
+        it.next();
         QString filePath = it.filePath();
         if (!filePath.endsWith(".torrent"_L1)) {
-            it.next();
             continue;
         }
         LOG << "Processing: " << filePath;
@@ -1200,7 +1207,7 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         // Load resume data
         QByteArray bytes = FileUtils::readFile(pathPrefix + ".fastresume");
         if (bytes.isEmpty()) {
-            it.next();
+            LOG_WARNING << "Failed to read resume data for " << pathPrefix;
             continue;
         }
         auto bData = bdecode(bytes);
@@ -1215,13 +1222,11 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         if (params.ti == nullptr || url.isEmpty() || !params.ti->is_valid())
         {
             LOG_ERROR << "Loading torrent " << filePath << " url = " << url;
-            it.next();
             continue;
         }
         QString name = QString::fromStdString(params.ti->name());
         LOG << "Appending " << name;
         torrentParams_.insert(url, params); // Used in addFolder()
-        it.next();
     }
 }
 
