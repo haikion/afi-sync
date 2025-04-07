@@ -144,6 +144,10 @@ if(WIN32)
             ws2_32
         )
     endif()
+
+    add_custom_command(TARGET AFISync POST_BUILD
+        COMMAND mt.exe -manifest ${CMAKE_CURRENT_SOURCE_DIR}/manifest.xml -outputresource:${CMAKE_CURRENT_BINARY_DIR}/AFISync.exe
+    )
 endif()
 
 if(UNIX)

@@ -12,7 +12,7 @@ set BUILD_DIR=%ROOT_DIR%\build-AFISync-static
 set RELEASE_DIR=%ROOT_DIR%\AFISync
 set PERSONAL_DIR=%ROOT_DIR%\personal
 set JSON_FILE=%PERSONAL_DIR%\settings\repositories.json
-set PATH=%QT_STATIC_BINS%;%VS_DIR%\VC\Auxiliary\Build;%ROOT_DIR%;%systemroot%;%systemroot%\System32;%SRC_BIN%;E:\unison\bin;C:\Windows\System32\OpenSSH
+set PATH=%QT_STATIC_BINS%;%VS_DIR%\VC\Auxiliary\Build;%ROOT_DIR%;%systemroot%;%systemroot%\System32;%SRC_BIN%;E:\cygwin64\bin;E:\unison\bin;C:\Windows\System32\OpenSSH
 
 rmdir /S %BUILD_DIR%
 rmdir /S %RELEASE_DIR%
@@ -23,14 +23,7 @@ mkdir %BUILD_DIR%
 call vcvarsall.bat x86_amd64
 
 cd %BUILD_DIR%
-:qmake %SR_DIR% "CONFIG += console"
 cmake %SRC_DIR% -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles"
-nmake
-goto end
-move release\AFISync.exe release\afisync_cmd.exe
-nmake clean
-cmake %SRC_DIR% -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles"
-:qmake %SRC_DIR%
 nmake
 
 :init-release
@@ -38,8 +31,7 @@ mkdir %RELEASE_DIR%
 
 :copy-bins
 cd %RELEASE_DIR%
-copy %BUILD_DIR%\release\afisync_cmd.exe
-copy %BUILD_DIR%\release\AFISync.exe
+copy %BUILD_DIR%\AFISync.exe
 mkdir bin
 xcopy /E %SRC_DIR%\bin bin
 copy %SRC_DIR%\afisync_header.png
@@ -54,9 +46,7 @@ del %RC_ZIP%
 7za a %RC_ZIP% AFISync
 
 :copy-personal
-copy %BUILD_DIR%\release\AFISync.exe %PERSONAL_DIR%\
-copy %BUILD_DIR%\release\AFISync.pdb %PERSONAL_DIR%\
-copy %BUILD_DIR%\release\afisync_cmd.exe %PERSONAL_DIR%\
+copy %BUILD_DIR%\AFISync.exe %PERSONAL_DIR%\
 
 :end
 cd %CURRDIR%
