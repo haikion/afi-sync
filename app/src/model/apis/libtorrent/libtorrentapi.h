@@ -21,6 +21,8 @@
 #pragma warning(pop)
 #endif
 
+#include "pbochecker.h"
+
 #include "../../cihash.h"
 #include "../isync.h"
 #include "alerthandler.h"
@@ -44,7 +46,7 @@ public:
     void disableDeltaUpdatesNoTorrents();
     void enableDeltaUpdates() override;
 
-    void checkFolder(const QString& key) override;
+    bool checkFolder(const QString& key) override;
     //Returns true if there are no peers.
     bool folderNoPeers(const QString& key) override;
     //Returns list of keys of added folders.
@@ -121,6 +123,7 @@ private:
     CiHash<libtorrent::add_torrent_params> torrentParams_;
     CiHash<QString> prefixMap_;
     QSet<QString> torrentDownloading_;
+    std::unique_ptr<PboChecker> pboChecker_{nullptr};
 
     AlertHandler* alertHandler_{nullptr};
     DeltaManager* deltaManager_{nullptr};
@@ -133,6 +136,7 @@ private:
     libtorrent::time_point statsLastTimestamp_;
     int64_t downloadSpeed_{0};
     int64_t uploadSpeed_{0};
+    QSet<QString> checkingPbos_;
     std::atomic<bool> ready_{false};
 
     [[nodiscard]] static std::shared_ptr<libtorrent::torrent_info> loadFromFile(const QString& path);
@@ -164,6 +168,8 @@ private:
     void enableDeltaUpdatesPriv();
     void onFolderAdded(const QString& key, const libtorrent::torrent_handle& handle);
     void shutdown();
+    void setFolderPaused(const libtorrent::torrent_handle& handle, bool value);
+    void truncateOvergrownFiles(const libtorrent::torrent_handle& handle);
 };
 
 #endif // LIBTORRENTAPI_H

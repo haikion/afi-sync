@@ -324,3 +324,11 @@ void FileUtils::appendSafePath(const QString& path)
 {
     safeSubpaths_.append(path);
 }
+
+void FileUtils::safeRemoveAll(const QStringList& paths)
+{
+    for (const QString& path : paths)
+    {
+        safeRemove(path);
+    }
+}

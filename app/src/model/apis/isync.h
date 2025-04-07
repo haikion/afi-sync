@@ -22,7 +22,7 @@ public:
      * Rechecks folder
      * @param key
      */
-    virtual void checkFolder(const QString& key) = 0;
+    virtual bool checkFolder(const QString& key) = 0;
     /**
      * @brief folderKeys
      * Returns list of keys of added folders

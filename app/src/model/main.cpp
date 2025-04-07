@@ -108,7 +108,9 @@ int gui(int argc, char* argv[])
         exit(2);
     }
     AfiSyncLogger logger;
+#ifndef QT_DEBUG
     logger.initFileLogging();
+#endif
 
     auto mainWindow = new MainWindow();
     TreeModel* treeModel = generalInit(mainWindow);

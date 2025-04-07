@@ -6,7 +6,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core)
@@ -16,8 +16,12 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
     Network
     Widgets
 )
+find_package(OpenSSL REQUIRED)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../deps/pbochecker/lib ${CMAKE_CURRENT_BINARY_DIR}/pbochecker)
 add_executable(tests WIN32
+    ${PBOCHECKER_LIB_SOURCES}
+    ../app/src/model/pbocheckerprinterboost.cpp ../app/src/model/pbocheckerprinterboost.h
     ../app/src/model/afisync.cpp ../app/src/model/afisync.h
     ../app/src/model/afisynclogger.cpp ../app/src/model/afisynclogger.h
     ../app/src/model/apis/isync.h
@@ -66,6 +70,7 @@ add_executable(tests WIN32
     testconstants.h
 )
 target_include_directories(tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../deps/pbochecker/lib
     ../app/src
     ../deps/googletest/googlemock
     ../deps/googletest/googlemock/include
@@ -81,6 +86,8 @@ target_link_libraries(tests PRIVATE
     Qt::Core
     Qt::Gui
     Qt::Network
+    OpenSSL::SSL
+    OpenSSL::Crypto
 )
 
 if(WIN32)

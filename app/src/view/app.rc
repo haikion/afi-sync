@@ -1,1 +1,2 @@
-appIcon ICON "armafin-logo-64px2.ico"
+#define IDI_MAINICON 101
+IDI_ICON1 ICON "armafin-logo-64px2.ico"

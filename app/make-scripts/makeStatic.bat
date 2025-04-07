@@ -12,7 +12,8 @@ set BUILD_DIR=%ROOT_DIR%\build-AFISync-static
 set RELEASE_DIR=%ROOT_DIR%\AFISync
 set PERSONAL_DIR=%ROOT_DIR%\personal
 set JSON_FILE=%PERSONAL_DIR%\settings\repositories.json
-set PATH=%QT_STATIC_BINS%;%VS_DIR%\VC\Auxiliary\Build;%ROOT_DIR%;%systemroot%;%systemroot%\System32;%SRC_BIN%;E:\cygwin64\bin;E:\unison\bin;C:\Windows\System32\OpenSSH
+set OPENSSL_ROOT_DIR=E:\afisync2\openssl-3.4.1
+set PATH=%QT_STATIC_BINS%;%VS_DIR%\VC\Auxiliary\Build;%ROOT_DIR%;%systemroot%;%systemroot%\System32;%SRC_BIN%;C:\Windows\System32\OpenSSH;E:\cygwin64\bin;E:\unison\bin
 
 rmdir /S %BUILD_DIR%
 rmdir /S %RELEASE_DIR%
@@ -20,11 +21,11 @@ rmdir /S %RELEASE_DIR%
 mkdir %BUILD_DIR%
 
 :compile
-call vcvarsall.bat x86_amd64
+call vcvarsall.bat x86_amd64 || exit /b 1
 
 cd %BUILD_DIR%
-cmake %SRC_DIR% -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles"
-nmake
+cmake %SRC_DIR% -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" || exit /b 1
+nmake || exit /b 1
 
 :init-release
 mkdir %RELEASE_DIR%
@@ -32,6 +33,7 @@ mkdir %RELEASE_DIR%
 :copy-bins
 cd %RELEASE_DIR%
 copy %BUILD_DIR%\AFISync.exe
+copy %BUILD_DIR%\afisync_cmd.exe
 mkdir bin
 xcopy /E %SRC_DIR%\bin bin
 copy %SRC_DIR%\afisync_header.png
@@ -47,6 +49,7 @@ del %RC_ZIP%
 
 :copy-personal
 copy %BUILD_DIR%\AFISync.exe %PERSONAL_DIR%\
+copy %BUILD_DIR%\afisync_cmd.exe %PERSONAL_DIR%\
 
 :end
 cd %CURRDIR%

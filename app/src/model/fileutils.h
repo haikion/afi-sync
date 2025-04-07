@@ -21,6 +21,7 @@ namespace FileUtils
     bool safeRemoveRecursively(QDir& dir);
     bool safeRemoveRecursively(const QString& path);
     bool safeRename(const QString& srcPath, const QString& dstPath);
+    void safeRemoveAll(const QStringList& paths);
     // Removes all empty directories from path
     void safeRemoveEmptyDirs(const QString& path);
     //For testability

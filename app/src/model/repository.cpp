@@ -130,6 +130,12 @@ Repository::~Repository()
 
 void Repository::check()
 {
+    // User is able to start check while check is on going
+    if (statusStr() == SyncStatus::CHECKING)
+    {
+        LOG << "Check skipped due to repository already being checked";
+        return;
+    }
     for (const auto& mod : mods())
     {
         QMetaObject::invokeMethod(mod.get(), &Mod::check, Qt::QueuedConnection);

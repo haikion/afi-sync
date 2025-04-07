@@ -28,15 +28,24 @@
 #include <libtorrent/time.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/write_resume_data.hpp>
+#include <libtorrent/version.hpp>
+#if LIBTORRENT_VERSION_MAJOR >= 2 && LIBTORRENT_VERSION_MINOR >= 0 && LIBTORRENT_VERSION_TINY >= 11
+#define TRUNCATE_SUPPORTED
+#include <libtorrent/truncate.hpp>
+#endif
+
 #ifdef Q_OS_WINDOWS
 #pragma warning(pop)
 #endif
+
+#include "pbochecker.h"
 
 #include "model/afisynclogger.h"
 #include "model/fileutils.h"
 #include "model/global.h"
 #include "model/settingsmodel.h"
 #include "model/version.h"
+#include "model/pbocheckerprinterboost.h"
 
 using namespace Qt::StringLiterals;
 using namespace libtorrent;
@@ -90,6 +99,8 @@ void LibTorrentApi::generalInit()
 
 void LibTorrentApi::generalThreadInit()
 {
+    using std::make_unique;
+
     createSession();
     storageMoveManager_ = new StorageMoveManager();
     alertHandler_ = new AlertHandler(this);
@@ -103,6 +114,8 @@ void LibTorrentApi::generalThreadInit()
     timer_->setInterval(1s);
     timer_->start();
     networkAccessManager_ = new QNetworkAccessManager(this);
+    pboChecker_ = make_unique<PboChecker>();
+    pboChecker_->setPrinter(make_unique<PboCheckerPrinterBoost>());
 }
 
 LibTorrentApi::~LibTorrentApi()
@@ -164,21 +177,33 @@ void LibTorrentApi::createSession()
     loadTorrentFiles(settings_.syncSettingsPath());
 }
 
-void LibTorrentApi::checkFolder(const QString& key)
+bool LibTorrentApi::checkFolder(const QString& key)
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+    Q_ASSERT(pboChecker_);
+
     LOG << "Checking torrent with key " << key;
     if (deltaManager_ && deltaManager_->contains(key))
     {
         LOG_ERROR << "Torrent is being delta patched. Recheck refused.";
-        return;
+        return false;
     }
     torrent_handle h = getHandle(key);
     if (!h.is_valid())
     {
-        return;
+        return false;
     }
-
-    h.force_recheck();
+    const auto modPath = SettingsModel::instance().modDownloadPath() + '/' + QString::fromStdString(h.status().name);
+    setFolderPaused(h, true);
+    checkingPbos_.insert(key);
+    truncateOvergrownFiles(h);
+    pboChecker_->checkModAsync(modPath, [=, this] (bool success, const QStringList& corruptedPbos) {
+        FileUtils::safeRemoveAll(corruptedPbos);
+        setFolderPaused(h, false);
+        h.force_recheck();
+        checkingPbos_.remove(key);
+    });
+    return true;
 }
 
 QStringList LibTorrentApi::folderKeys()
@@ -226,6 +251,10 @@ bool LibTorrentApi::folderChecking(const torrent_status& status)
 
 bool LibTorrentApi::folderChecking(const QString& key)
 {
+    if (checkingPbos_.contains(key))
+    {
+        return true;
+    }
     torrent_handle handle = getHandleSilent(key);
     if (!handle.is_valid())
     {
@@ -270,7 +299,7 @@ bool LibTorrentApi::folderQueued(const torrent_status& status)
         return false;
     }
 
-    bool checkingQueued = folderChecking(status) && status.queue_position > 1; //Torrent is paused+checking
+    bool checkingQueued = folderChecking(status) && status.queue_position > 0; //Torrent is paused+checking
     bool downloadQueued = status.state == torrent_status::downloading && status.queue_position > 3;
     return checkingQueued || downloadQueued;
 }
@@ -294,7 +323,7 @@ bool LibTorrentApi::folderQueued(const QString& key)
 
 void LibTorrentApi::setDeltaUrls(const QStringList& urls)
 {
-    QMetaObject::invokeMethod(this, [=]
+    QMetaObject::invokeMethod(this, [=, this]
     {
         setDeltaUrlsPriv(urls);
     }, Qt::QueuedConnection);
@@ -337,6 +366,11 @@ void LibTorrentApi::setFolderPath(const QString& key, const QString& path, bool 
 void LibTorrentApi::setFolderPaused(const QString& key, bool value)
 {
     torrent_handle handle = getHandle(key);
+    setFolderPaused(handle, value);
+}
+
+void LibTorrentApi::setFolderPaused(const torrent_handle& handle, bool value)
+{
     QString name = QString::fromStdString(handle.status().name);
     if (value)
     {
@@ -444,6 +478,10 @@ int64_t LibTorrentApi::folderTotalWantedDone(const QString& key)
     {
         return -1;
     }
+    if (checkingPbos_.contains(key))
+    {
+        return 0;
+    }
     if (folderMovingFiles(key))
     {
         return storageMoveManager_->totalWantedDone(key);
@@ -544,8 +582,10 @@ QSet<QString> LibTorrentApi::folderFilesUpper(const QString& key)
 
 bool LibTorrentApi::folderExists(const QString& key)
 {
-    for (const auto& pending : pendingFolder_) {
-        if (pending.first == key) {
+    for (const auto& pending : pendingFolder_)
+    {
+        if (pending.first == key)
+        {
             return true;
         }
     }
@@ -696,7 +736,7 @@ void LibTorrentApi::setMaxUploadPriv(const int limit)
 
 void LibTorrentApi::setMaxDownload(int limit)
 {
-    QMetaObject::invokeMethod(this, [=]
+    QMetaObject::invokeMethod(this, [=, this]
     {
         setMaxUploadPriv(limit);
     }, Qt::QueuedConnection);
@@ -973,12 +1013,6 @@ bool LibTorrentApi::addFolderGenericAsync(const QString& key)
         }
         auto atp = pair.second;
         const auto modPath = SettingsModel::instance().modDownloadPath() + '/' + QString::fromStdString(atp.ti->name());
-        const auto size = FileUtils::dirSize(modPath);
-        if (size < 2097152 && size > 0) {
-            FileUtils::safeRemoveRecursively(modPath);
-            LOG << "deleted directory " << modPath
-                << " due to total size being too small for torrent based file check.";
-        }
         error_code ec;
         torrent_handle handle = session_->add_torrent(atp, ec);
         if (ec)
@@ -1249,4 +1283,34 @@ std::shared_ptr<torrent_info> LibTorrentApi::loadFromFile(const QString& path)
     }
 
     return info;
+}
+
+/**
+ * @brief LibTorrentApi::truncateOvergrownFiles
+ * @param handle
+ * This function is called when a torrent is being checked.
+ * It truncates files to their correct size which will not be
+ * done by force_recheck().
+ * See: https://github.com/qbittorrent/qBittorrent/issues/9782
+ */
+void LibTorrentApi::truncateOvergrownFiles(const torrent_handle& handle)
+{
+    std::shared_ptr<const torrent_info> torrentFile = getTorrentFile(handle);
+    if (!torrentFile)
+    {
+        LOG_ERROR << "Unable to get torrentFile";
+        return;
+    }
+    const file_storage& fs = handle.torrent_file()->files();
+    torrent_status status = handle.status(torrent_handle::query_save_path);
+    storage_error ec;
+#ifdef TRUNCATE_SUPPORTED
+    truncate_files(fs, status.save_path, ec);
+    if (ec)
+    {
+        LOG_ERROR << "Truncate failed: " << ec.ec.message() << std::endl;
+    }
+#else
+    LOG_ERROR << "Truncate not supported on this platform.";
+#endif
 }

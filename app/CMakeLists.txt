@@ -6,10 +6,11 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core)
+find_package(OpenSSL REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
     Core
     Gui
@@ -21,7 +22,11 @@ if (WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE INTERNAL "")
 endif()
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../deps/pbochecker/lib ${CMAKE_CURRENT_BINARY_DIR}/pbochecker)
+
 add_executable(AFISync WIN32
+    ${PBOCHECKER_LIB_SOURCES}
+    src/model/pbocheckerprinterboost.cpp src/model/pbocheckerprinterboost.h
     ../deps/try_signal/signal_error_code.cpp ../deps/try_signal/signal_error_code.hpp
     ../deps/try_signal/try_signal.cpp ../deps/try_signal/try_signal.hpp
     src/model/afisync.cpp src/model/afisync.h
@@ -75,6 +80,7 @@ add_executable(AFISync WIN32
 )
 
 target_include_directories(AFISync PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../deps/pbochecker/lib
     src
 )
 
@@ -83,6 +89,8 @@ target_link_libraries(AFISync PRIVATE
     Qt::Gui
     Qt::Network
     Qt::Widgets
+    OpenSSL::SSL
+    OpenSSL::Crypto
 )
 
 set(resources_resource_files
@@ -125,6 +133,10 @@ if(WIN32)
             ${LIB_PATH}/libtorrent-rasterbar.lib
             ws2_32
         )
+        add_custom_command(TARGET AFISync POST_BUILD
+            COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/AFISync.exe ${CMAKE_CURRENT_BINARY_DIR}/afisync_cmd.exe
+            COMMAND mt.exe -manifest ${CMAKE_CURRENT_SOURCE_DIR}/manifest.xml -outputresource:${CMAKE_CURRENT_BINARY_DIR}/AFISync.exe
+        )
     else()
         target_compile_definitions(AFISync PRIVATE
            BOOST_ALL_DYN_LINK
@@ -144,10 +156,6 @@ if(WIN32)
             ws2_32
         )
     endif()
-
-    add_custom_command(TARGET AFISync POST_BUILD
-        COMMAND mt.exe -manifest ${CMAKE_CURRENT_SOURCE_DIR}/manifest.xml -outputresource:${CMAKE_CURRENT_BINARY_DIR}/AFISync.exe
-    )
 endif()
 
 if(UNIX)

@@ -573,9 +573,13 @@ void Mod::check()
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
 
-    libTorrentApi_->checkFolder(key_);
-    // Process completion when checking is done
-    setProcessCompletion(true);
+    // User can start check manually twice
+    if (!libTorrentApi_->folderChecking(key_)
+        && libTorrentApi_->checkFolder(key_))
+    {
+        // Process completion when checking is done
+        setProcessCompletion(true);
+    }
 }
 
 void Mod::checkboxClicked()
