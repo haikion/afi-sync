@@ -25,6 +25,9 @@ Makefile*
 *build-*
 *.rej
 *.orig
+build
+CMakeLists.txt.user
+.qmake2cmake
 
 # QtCreator
 *.autosave

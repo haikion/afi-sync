@@ -20,6 +20,11 @@
 #include "treemodel.h"
 #include "version.h"
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#include <cstdio>
+#endif
+
 using namespace Qt::StringLiterals;
 
 static const QStringList DELTA_ARGS = {"old-path", "new-path", "output-path"};
@@ -127,6 +132,18 @@ int cli(int argc, char* argv[])
 {
     static const QString MOD = u"mod"_s;
     static const QString PATCH = u"patch"_s;
+
+// On Windows, if CLI mode is requested, ensure a console is attached.
+#ifdef Q_OS_WIN
+    if (argc > 1) {
+        // First, try to attach to the parent console. If that fails, allocate a new one.
+        if (!AttachConsole(ATTACH_PARENT_PROCESS)) {
+            AllocConsole();
+        }
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+    }
+#endif
 
     QCoreApplication app(argc, argv);
     static SettingsModel& settings = settings.instance();

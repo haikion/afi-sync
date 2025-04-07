@@ -174,13 +174,13 @@ QGroupBox::title {
   <customwidget>
    <class>OptionalSetting</class>
    <extends>QWidget</extends>
-   <header>src/view/optionalsetting.h</header>
+   <header>view/optionalsetting.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PathSetting</class>
    <extends>QWidget</extends>
-   <header>src/view/pathsetting.h</header>
+   <header>view/pathsetting.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

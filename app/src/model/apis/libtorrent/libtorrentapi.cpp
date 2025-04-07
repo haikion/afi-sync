@@ -300,6 +300,12 @@ void LibTorrentApi::setDeltaUrls(const QStringList& urls)
     }, Qt::QueuedConnection);
 }
 
+/**
+ * @brief LibTorrentApi::setFolderPath
+ * @param key
+ * @param path
+ * @param overwrite True if user chose to overwrite existing files
+ */
 void LibTorrentApi::setFolderPath(const QString& key, const QString& path, bool overwrite)
 {
     torrent_handle handle = getHandle(key);

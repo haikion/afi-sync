@@ -36,7 +36,6 @@ public:
     void deleteExtraFiles();
     bool ticked() override;
     void processCompletion() override;
-    QList<ModAdapter*> modAdapters();
     [[nodiscard]] bool optional() override;
     void stopUpdates();
     void startUpdates();
@@ -78,6 +77,7 @@ private:
     [[nodiscard]] bool reposInactive() const;
     void start();
     bool stop();
+    [[nodiscard]] QList<ModAdapter*> modAdapters();
     void removeConflicting();
     [[nodiscard]] QString path();
     void setProcessCompletion(bool value);
