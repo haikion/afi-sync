@@ -7,7 +7,7 @@ AsBannerBar::AsBannerBar(QWidget *parent) :
     ui(new Ui::AsBannerBar)
 {
     ui->setupUi(this);
-    connect(ui->settingsButton, &QPushButton::pressed, this, [=]
+    connect(ui->settingsButton, &QPushButton::pressed, this, [this]
     {
         if (settingsView->isHidden())
         {

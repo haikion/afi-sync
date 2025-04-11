@@ -35,7 +35,7 @@ void DeltaDownloader::mirrorDeltaPatches()
         mirrored_.append(url);
         auto reply = nam_.get(QNetworkRequest(QUrl(url)));
         LOG << "Downloading " << url << " ...";
-        connect(reply, &QNetworkReply::finished, this, [=]
+        connect(reply, &QNetworkReply::finished, this, [=, this]
         {
             if (reply->error() != QNetworkReply::NetworkError::NoError) {
                 LOG_WARNING << "Torrent download failed: " << reply->errorString();
@@ -100,7 +100,7 @@ bool DeltaDownloader::downloadPatches(const QString& modName, const QString& key
     for (const QString& url : urls) {
         auto reply = nam_.get(QNetworkRequest(QUrl(url)));
         LOG << "Downloading " << url << " ...";
-        connect(reply, &QNetworkReply::finished, this, [=]
+        connect(reply, &QNetworkReply::finished, this, [=, this]
         {
             inDl_.removeOne(url);
             if (reply->error() != QNetworkReply::NetworkError::NoError) {

@@ -53,7 +53,7 @@ void DeltaPatcher::stop()
 
 void DeltaPatcher::patch(const QString& modPath)
 {
-    QMetaObject::invokeMethod(this, [=]
+    QMetaObject::invokeMethod(this, [=, this]
     {
         patchDirSync(modPath);
     }, Qt::QueuedConnection);

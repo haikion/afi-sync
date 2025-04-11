@@ -21,7 +21,7 @@ AsTreeItem::AsTreeItem(QTreeWidgetItem* parent, ModAdapter* syncItem, QCheckBox*
     syncItem_(syncItem),
     checkBox_(checkBox)
 {
-    QObject::connect(syncItem, &ModAdapter::fileSizeInitialized, &context_, [=] ()
+    QObject::connect(syncItem, &ModAdapter::fileSizeInitialized, &context_, [=, this] ()
     {
         setText(4, syncItem->sizeStr());
         auto par = dynamic_cast<AsTreeItem*>(parent);
@@ -101,7 +101,7 @@ void AsTreeItem::initCheckBox()
 {
     checkBox_->setEnabled(syncItem_->optional());
     checkBox_->setChecked(syncItem_->ticked());
-    QObject::connect(checkBox_, &QCheckBox::clicked, &context_, [=] (bool value) {
+    QObject::connect(checkBox_, &QCheckBox::clicked, &context_, [this] (bool value) {
         syncItem_->checkboxClicked();
         // New state is updated when sync item state updates
         wantedCheckBoxState_ = value;

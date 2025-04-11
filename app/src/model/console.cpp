@@ -5,7 +5,7 @@ Console::Console(QObject* parent):
     QObject(parent),
     process_(new QProcess(this))
 {
-    connect(process_, &QProcess::channelReadyRead, this, [=] (int) {
+    connect(process_, &QProcess::channelReadyRead, this, [=, this] (int) {
         const QByteArray output = process_->readAllStandardOutput();
         if (!output.isEmpty()) {
             LOG << output.toStdString().c_str();

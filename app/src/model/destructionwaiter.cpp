@@ -36,7 +36,7 @@ void DestructionWaiter::init(const QSet<QObject*>& objects)
     {
         counter_++;
         // clazy:skip
-        QObject::connect(object, &QObject::destroyed, [=]
+        QObject::connect(object, &QObject::destroyed, [this]
         {
             counter_--;
         });

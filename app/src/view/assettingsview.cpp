@@ -47,7 +47,7 @@ void AsSettingsView::init()
     });
 
     ui->modsPathSetting->init(u"Mod Download"_s, QDir::toNativeSeparators(settingsModel.modDownloadPath()));
-    connect(ui->modsPathSetting, &PathSetting::textEdited, &settingsModel, [=] (const QString& str) {
+    connect(ui->modsPathSetting, &PathSetting::textEdited, &settingsModel, [this] (const QString& str) {
         if (str.endsWith("Workshop"_L1)) {
             QMessageBox::warning(nullptr, u"Invalid Path"_s, u"Mod download directory cannot be set to Steam workshop directory!"_s);
             ui->modsPathSetting->setValue(settingsModel.modDownloadPath());
@@ -106,7 +106,7 @@ void AsSettingsView::init()
     connect(ui->uploadSetting, &OptionalSetting::valueChanged, &settingsModel, &SettingsModel::setMaxUpload);
 
     ui->portLineEdit->setText(settingsModel.port());
-    connect(ui->portLineEdit, &QLineEdit::editingFinished, &settingsModel, [=]
+    connect(ui->portLineEdit, &QLineEdit::editingFinished, &settingsModel, [this]
     {
         settingsModel.setPort(ui->portLineEdit->text(), true);
     });

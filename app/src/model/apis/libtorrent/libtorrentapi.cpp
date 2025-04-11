@@ -51,6 +51,9 @@ using namespace Qt::StringLiterals;
 using namespace libtorrent;
 using namespace std::chrono_literals;
 
+using std::as_const;
+using std::ofstream;
+using std::shared_ptr;
 using std::vector;
 
 constexpr int LibTorrentApi::NOT_FOUND = -404;
@@ -104,7 +107,7 @@ void LibTorrentApi::generalThreadInit()
     createSession();
     storageMoveManager_ = new StorageMoveManager();
     alertHandler_ = new AlertHandler(this);
-    connect(alertHandler_, &AlertHandler::uploadAndDownloadChanged, this, [=] (int64_t ul, int64_t dl) {
+    connect(alertHandler_, &AlertHandler::uploadAndDownloadChanged, this, [=, this] (int64_t ul, int64_t dl) {
         uploadSpeed_ = ul;
         downloadSpeed_ = dl;
     });
@@ -410,7 +413,7 @@ QPair<error_code, add_torrent_params> LibTorrentApi::toAddTorrentParams(const QB
         delete ptr;
         return {ec, atp};
     }
-    atp.ti = std::shared_ptr<torrent_info>(ptr);
+    atp.ti = shared_ptr<torrent_info>(ptr);
 
     QFileInfo fi(SettingsModel::instance().modDownloadPath());
     atp.save_path = QDir::toNativeSeparators(fi.absoluteFilePath()).toStdString();
@@ -538,7 +541,7 @@ int64_t LibTorrentApi::bytesToCheck(const torrent_status& status) const
 //In early states torrent_file is null.
 //This function waits for 5s at most for it to get
 //initialized.
-std::shared_ptr<const torrent_info> LibTorrentApi::getTorrentFile(
+shared_ptr<const torrent_info> LibTorrentApi::getTorrentFile(
     const torrent_handle& handle)
 {
     auto torrentFile = handle.torrent_file();
@@ -721,7 +724,7 @@ int64_t LibTorrentApi::download() const
 
 void LibTorrentApi::setMaxUpload(int limit)
 {
-    QMetaObject::invokeMethod(this, [=]
+    QMetaObject::invokeMethod(this, [=, this]
     {
         setMaxDownloadPriv(limit);
     }, Qt::QueuedConnection);
@@ -756,7 +759,7 @@ bool LibTorrentApi::ready()
 
 void LibTorrentApi::setPort(int port)
 {
-    QMetaObject::invokeMethod(this, [=]
+    QMetaObject::invokeMethod(this, [=, this]
     {
         setPortPriv(port);
     }, Qt::QueuedConnection);
@@ -814,7 +817,7 @@ void LibTorrentApi::removeFiles(const QString& hashString)
 
 void LibTorrentApi::removeFolder(const QString& key)
 {
-    QMetaObject::invokeMethod(this, [=]
+    QMetaObject::invokeMethod(this, [=, this]
     {
         removeFolderPriv(key);
     }, Qt::QueuedConnection);
@@ -993,7 +996,7 @@ bool LibTorrentApi::addFolderGenericAsync(const QString& key)
     auto reply = networkAccessManager_->get(QNetworkRequest(QUrl(key)));
     torrentDownloading_.insert(key);
     LOG << "Downloading torrent " << key << " ...";
-    connect(reply, &QNetworkReply::finished, this, [=] () {
+    connect(reply, &QNetworkReply::finished, this, [=, this] () {
         torrentDownloading_.remove(key);
         if (reply->error() != QNetworkReply::NoError) {
             LOG_ERROR << "Torrent download failed: " << reply->errorString();
@@ -1108,6 +1111,8 @@ QString LibTorrentApi::getHashString(const torrent_handle& handle)
 
 void LibTorrentApi::saveTorrentFile(const torrent_handle& handle) const
 {
+    using std::back_inserter;
+
     QString filePrefix = settings_.syncSettingsPath() + "/" + getHashString(handle);
     //Torrent file
     auto ti = getTorrentFile(handle);
@@ -1124,7 +1129,7 @@ void LibTorrentApi::saveTorrentFile(const torrent_handle& handle) const
     }
     create_torrent new_torrent(*ti);
     QByteArray torrentBytes;
-    bencode(std::back_inserter(torrentBytes), new_torrent.generate());
+    bencode(back_inserter(torrentBytes), new_torrent.generate());
     QString torrentFilePath = filePrefix + ".torrent";
     QString urlFilePath = filePrefix + ".link";
     QByteArray url = keyHash_.key(handle).toUtf8();
@@ -1137,6 +1142,9 @@ void LibTorrentApi::saveTorrentFile(const torrent_handle& handle) const
 
 void LibTorrentApi::generateResumeData() const
 {
+    using std::ios_base;
+    using std::ostream_iterator;
+
     LOG;
     if (!session_)
     {
@@ -1193,11 +1201,11 @@ void LibTorrentApi::generateResumeData() const
 
             torrent_handle h = rd->handle;
             auto resumeData = write_resume_data(rd->params);
-            std::ofstream out((settings_.syncSettingsPath().toStdString()
+            ofstream out((settings_.syncSettingsPath().toStdString()
                                + "/" + getHashString(h).toStdString() + ".fastresume").c_str(),
-                              std::ios_base::binary);
-            out.unsetf(std::ios_base::skipws);
-            bencode(std::ostream_iterator<char>(out), resumeData);
+                              ios_base::binary);
+            out.unsetf(ios_base::skipws);
+            bencode(ostream_iterator<char>(out), resumeData);
             --outstanding_resume_data;
             LOG << "Resume data generated for " << h.status().name.c_str();
         }
@@ -1212,7 +1220,7 @@ void LibTorrentApi::createDeltaManager(const QStringList& deltaUrls)
         LOG << "Replacing old deltaManager " << deltaUrls_
             << " with " << deltaUrls;
 
-        for (const auto& url  : std::as_const(deltaUrls_)) {
+        for (const auto& url  : as_const(deltaUrls_)) {
             removeFolder(url);
         }
         delete deltaManager_;
@@ -1270,11 +1278,11 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
     }
 }
 
-std::shared_ptr<torrent_info> LibTorrentApi::loadFromFile(const QString& path)
+shared_ptr<torrent_info> LibTorrentApi::loadFromFile(const QString& path)
 {
     error_code ec;
     std::string np = QDir::toNativeSeparators(path).toStdString();
-    auto info = std::make_shared<torrent_info>(np, ec);
+    auto info = make_shared<torrent_info>(np, ec);
     if (ec)
     {
         QString error = QString::fromUtf8(ec.message().c_str());
@@ -1295,7 +1303,7 @@ std::shared_ptr<torrent_info> LibTorrentApi::loadFromFile(const QString& path)
  */
 void LibTorrentApi::truncateOvergrownFiles(const torrent_handle& handle)
 {
-    std::shared_ptr<const torrent_info> torrentFile = getTorrentFile(handle);
+    shared_ptr<const torrent_info> torrentFile = getTorrentFile(handle);
     if (!torrentFile)
     {
         LOG_ERROR << "Unable to get torrentFile";
@@ -1308,7 +1316,7 @@ void LibTorrentApi::truncateOvergrownFiles(const torrent_handle& handle)
     truncate_files(fs, status.save_path, ec);
     if (ec)
     {
-        LOG_ERROR << "Truncate failed: " << ec.ec.message() << std::endl;
+        LOG_ERROR << "Truncate failed: " << ec.ec.message();
     }
 #else
     LOG_ERROR << "Truncate not supported on this platform.";

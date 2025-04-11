@@ -10,7 +10,7 @@ PathSetting::PathSetting(QWidget *parent):
     ui->lineEdit->setEnabled(false);
 
     connect(ui->resetButton, &QPushButton::pressed, this, &PathSetting::resetPressed);
-    connect(ui->browseButton, &QPushButton::pressed, this, [=]
+    connect(ui->browseButton, &QPushButton::pressed, this, [=, this]
     {
         fileDialog.setDirectory(ui->lineEdit->text());
         fileDialog.setFileMode(QFileDialog::Directory);

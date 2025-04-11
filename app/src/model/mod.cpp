@@ -131,7 +131,7 @@ void Mod::onFolderAdded(const QString &key)
 
 void Mod::moveFiles(bool overwrite)
 {
-    QMetaObject::invokeMethod(this, [=] () {
+    QMetaObject::invokeMethod(this, [=, this] () {
         if (statusStr() == SyncStatus::PATCHING ||
             statusStr() == SyncStatus::DOWNLOADING_PATCHES ||
             statusStr() == SyncStatus::EXTRACTING_PATCH ||
