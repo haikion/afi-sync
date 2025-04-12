@@ -17,12 +17,22 @@ std::ostream& operator<<(std::ostream& outStream, const QList<int>& qVector);
 std::ostream& operator<<(std::ostream& outStream, const QStringList& qList);
 std::ostream& operator<<(std::ostream& outStream, const QSet<QString>& qSet);
 
+// Cleans MSVC function names
+QString cleanFunc(auto fnc)
+{
+    QString clean{fnc};
+    clean.remove(" __cdecl");
+    clean.replace("(void)", "()");
+    clean.append(' ');
+    return clean;
+}
+
 #ifdef Q_OS_WIN
 #pragma warning(push, 0)
 #endif
-#define LOG BOOST_LOG_TRIVIAL(info) << " " << Q_FUNC_INFO << " "
-#define LOG_ERROR BOOST_LOG_TRIVIAL(error) << " " << Q_FUNC_INFO << " "
-#define LOG_WARNING BOOST_LOG_TRIVIAL(warning) << " " << Q_FUNC_INFO << " "
+#define LOG BOOST_LOG_TRIVIAL(info) << cleanFunc(Q_FUNC_INFO)
+#define LOG_ERROR BOOST_LOG_TRIVIAL(error) << cleanFunc(Q_FUNC_INFO)
+#define LOG_WARNING BOOST_LOG_TRIVIAL(warning) << cleanFunc(Q_FUNC_INFO)
 #ifdef Q_OS_WIN
 #pragma warning(pop)
 #endif
