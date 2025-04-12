@@ -60,7 +60,7 @@ clean () {
 compile () {
     # clean
     cd ${WORKING_DIR}
-    CMAKE_PREFIX_PATH=~/Qt/6.8.3/gcc_64 cmake ~/code/afi-sync/app &> compile.log && make &>> compile.log && return 0
+    CMAKE_PREFIX_PATH=~/Qt/6.8.3/gcc_64 cmake ~/code/afi-sync/app -DLIBTORRENT_PATH=~/code/libtorrent &> compile.log && make &>> compile.log && return 0
     return 1
 }
 
@@ -109,6 +109,7 @@ run_test repositories-update-patch.sh
 run_test repositories-update-repo-remove.sh
 run_test mirror.sh
 run_test repositories-update-mirror.sh
+run_test overflown-data.sh
 run_negative_test repositories-update-corrupted.sh
 
 sudo service apache2 stop

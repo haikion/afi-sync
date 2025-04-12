@@ -96,8 +96,8 @@ public:
     void cleanUnusedFiles(const QSet<QString>& usedKeys) override;
     bool folderExtractingPatch(const QString& key) override;
     bool folderCheckingPatches(const QString& key) override;
-
     static QPair<libtorrent::error_code, libtorrent::add_torrent_params> toAddTorrentParams(const QByteArray& torrentData);
+    void truncateOvergrownFiles(const QString& key);
 
 private slots:
     void disableDeltaUpdatesSlot();

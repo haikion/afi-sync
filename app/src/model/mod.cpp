@@ -564,6 +564,7 @@ void Mod::processCompletion()
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
 
+    libTorrentApi_->truncateOvergrownFiles(key_);
     deleteExtraFiles();
     Installer::install(this);
     LOG <<  name() << " synced";

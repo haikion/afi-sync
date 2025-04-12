@@ -1322,3 +1322,14 @@ void LibTorrentApi::truncateOvergrownFiles(const torrent_handle& handle)
     LOG_ERROR << "Truncate not supported on this platform.";
 #endif
 }
+
+void LibTorrentApi::truncateOvergrownFiles(const QString& key)
+{
+    torrent_handle handle = getHandle(key);
+    if (!handle.is_valid())
+    {
+        LOG_ERROR << "Invalid handle";
+        return;
+    }
+    truncateOvergrownFiles(handle);
+}
