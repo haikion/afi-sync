@@ -12,7 +12,6 @@ SyncNetworkAccessManager::SyncNetworkAccessManager(QObject* parent):
     moveToThread(&thread_);
     thread_.setObjectName("SyncNetworkManager Thread");
     thread_.start();
-    LOG << "Thread = " << &thread_ << " id = " << thread_.currentThreadId();
 }
 
 SyncNetworkAccessManager::~SyncNetworkAccessManager()
@@ -37,11 +36,12 @@ QByteArray SyncNetworkAccessManager::fetchBytesSlot(const QString& url)
     syncGetSlot(QNetworkRequest(url), reply, DEFAULT_TIMEOUT);
     if (reply->bytesAvailable() == 0)
     {
-        LOG_WARNING << "Failed. url = " << url;
+        LOG_WARNING << "Unable to download " << url;
         return {};
     }
     QByteArray retVal = reply->readAll();
     reply->deleteLater();
+    LOG << "Downloaded " << url;
     return retVal;
 }
 

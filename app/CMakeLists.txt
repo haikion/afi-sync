@@ -81,7 +81,6 @@ add_executable(AFISync WIN32
 
 target_include_directories(AFISync PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../deps/pbochecker/lib
-    ${LIBTORRENT_PATH}/include
     src
 )
 
@@ -173,12 +172,15 @@ if(UNIX)
         boost_random
         boost_system
         boost_thread
-        torrent-rasterbar
     )
     if (DEFINED LIBTORRENT_PATH)
+        target_include_directories(AFISync PRIVATE
+            ${LIBTORRENT_PATH}/include
+        )
         target_link_libraries(AFISync PRIVATE
             ${LIBTORRENT_PATH}/build/libtorrent-rasterbar.so
         )
+        message("custom libTorrent in use")
     else()
         target_link_libraries(AFISync PRIVATE
             torrent-rasterbar

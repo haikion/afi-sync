@@ -7,6 +7,8 @@
 #include <QFileInfo>
 #include <QStringList>
 #include <QStringLiteral>
+#include <QMutex>
+#include <QMutexLocker>
 
 #include "afisynclogger.h"
 #include "fileutils.h"
@@ -14,10 +16,12 @@
 #include "settingsmodel.h"
 
 using namespace Qt::StringLiterals;
-
+using std::as_const;
 
 namespace {
+    QMutex mutex_;
     QStringList safeSubpaths_;
+    QStringList lastSafesubpaths_;
 
     bool pathIsSafe(const QString& path)
     {
@@ -31,10 +35,13 @@ namespace {
         safeSubpaths.append(settings.teamSpeak3Path());
         safeSubpaths.append(Paths::teamspeak3AppDataPath());
         safeSubpaths.append(QCoreApplication::applicationDirPath());
-        safeSubpaths.append(u"."_s);
+        safeSubpaths.append(QDir::currentPath());
+        mutex_.lock();
         safeSubpaths.append(safeSubpaths_);
+        lastSafesubpaths_ = safeSubpaths;
+        mutex_.unlock();
 
-        for (const QString& safeSubpath : safeSubpaths)
+        for (const QString& safeSubpath : as_const(safeSubpaths))
         {
             QString safeUpper = QFileInfo(safeSubpath).absoluteFilePath().toUpper();
             //Shortest possible save path: C:/d (4 characters)
@@ -112,7 +119,7 @@ bool FileUtils::move(const QString& srcPath, const QString& dstPath)
             return false;
         }
         QDir srcDir(srcPath);
-        QStringList fileNames = srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+        const QStringList fileNames = srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
         for (const QString& fileName : fileNames)
         {
             const QString newSrcPath = srcPath + '/' + fileName;
@@ -218,7 +225,7 @@ QString FileUtils::casedPath(const QString& path)
                                                                      : u"/"_s;
     ciNames.removeFirst(); //Drive letter on windows or "" on linux.
 
-    for (const QString& ciName : ciNames)
+    for (const QString& ciName : as_const(ciNames))
     {
         QDirIterator it(casedPath);
         while (true)
@@ -322,6 +329,7 @@ bool FileUtils::safeRemoveRecursively(const QString& path)
 
 void FileUtils::appendSafePath(const QString& path)
 {
+    QMutexLocker locker{&mutex_};
     safeSubpaths_.append(path);
 }
 
@@ -331,4 +339,10 @@ void FileUtils::safeRemoveAll(const QStringList& paths)
     {
         safeRemove(path);
     }
+}
+
+QStringList FileUtils::getSafeSubPaths()
+{
+    QMutexLocker locker{&mutex_};
+    return lastSafesubpaths_;
 }

@@ -40,13 +40,6 @@ QStringList DeletableDetector::deletableNames() const
     return deletableNames;
 }
 
-/*
-void DeletableDetector::printDeletables(const QList<IRepository*> repositories)
-{
-    printDeletables(deletables(activeMods(repositories)));
-}
-*/
-
 QList<QFileInfo> DeletableDetector::deletableFileInfos(const QStringList& activeMods, const QString& modDownloadPath)
 {
     QList<QFileInfo> retVal;
@@ -61,17 +54,3 @@ QList<QFileInfo> DeletableDetector::deletableFileInfos(const QStringList& active
     }
     return retVal;
 }
-/*
-void DeletableDetector::printDeletables(const QList<QFileInfo>& deletables)
-{
-    QString inactivesStr;
-    qint64 spaceInactive = 0;
-
-    for (const QFileInfo& fileInfo : deletables)
-    {
-        inactivesStr += " " + fileInfo.fileName();
-        spaceInactive += FileUtils::dirSize(fileInfo.filePath());
-    }
-    LOG << "Delete inactive mods (Space used: " + QString::number(spaceInactive/1000000000) + " GB ) rmdir" + inactivesStr;
-}
-*/

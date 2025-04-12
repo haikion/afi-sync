@@ -33,13 +33,14 @@ using namespace std::chrono_literals;
 TreeModel::TreeModel(QObject* parent):
     QObject(parent)
 {
-    LOG;
+    using std::as_const;
+
     jsonReader_.readJson();
     createSync(jsonReader_.deltaUrls());
     jsonReader_.updateRepositoriesOffline(libTorrentApi_, repositories_);
 
     QSet<QString> usedKeys;
-    for (const auto& repo : repositories_)
+    for (const auto& repo : as_const(repositories_))
     {
         for (const QString& key : repo->modKeys())
         {
@@ -74,7 +75,7 @@ void TreeModel::createSync(const QStringList& deltaUrls)
 
 TreeModel::~TreeModel()
 {
-    LOG;
+    LOG << "Destructing TreeModel ...";
     const DeletableDetector deletableDetector(SettingsModel::instance().modDownloadPath(), toIrepositories(repositories_));
     AfiSync::printDeletables(deletableDetector);
 
@@ -102,6 +103,7 @@ TreeModel::~TreeModel()
     DestructionWaiter syncWaiter(syncObject);
     syncObject->deleteLater();
     syncWaiter.wait(15); // libTorrent session delete might hang
+    LOG << "TreeModel destructed";
 }
 
 VersionCheckResult TreeModel::checkVersion() const

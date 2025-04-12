@@ -49,12 +49,15 @@ const QSet<QString> AfiSync::activeModNames(const IRepository* repository)
 
 void AfiSync::printDeletables(const DeletableDetector& deletableDetector)
 {
+
     QString modList;
-    for (const QString& modName : deletableDetector.deletableNames())
+    const auto deleteMods = deletableDetector.deletableNames();
+    for (const QString& modName : deleteMods)
     {
         modList += " " + modName;
     }
-    LOG << "Delete inactive mods (Space used: " + QString::number(deletableDetector.totalSize()/1000000000) + " GB) rmdir /s" + modList;
+    LOG << "Inactive mods are using: " << deletableDetector.totalSize()/1000000000 << " GB";
+    BOOST_LOG_TRIVIAL(info) << "Run this command to delete inactive mods: rmdir /s" + modList;
 }
 
 QStringList AfiSync::filterDeprecatedPatches(const QStringList& allFiles, const QStringList& urls) {

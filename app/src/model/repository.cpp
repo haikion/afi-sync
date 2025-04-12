@@ -20,7 +20,7 @@ Repository::Repository(const QString& name, const QString& serverAddress, unsign
     password_(password),
     battlEyeEnabled_(true)
 {
-    LOG << "Created repo with name " << name;
+    LOG << "New repository created: " << name;
     if (settings_.ticked({}, name)) {
         setStatus(SyncStatus::WAITING);
         activeTimer_.start();
@@ -125,7 +125,7 @@ void Repository::startUpdates() const
 
 Repository::~Repository()
 {
-    LOG << "name = " << name();
+    LOG << "Repository \"" << name() << "\" destructed";
 }
 
 void Repository::check()

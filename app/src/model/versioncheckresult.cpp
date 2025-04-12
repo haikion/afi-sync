@@ -22,12 +22,12 @@ QString VersionCheckResult::versionUrl() const
 
 bool VersionCheckResult::updateAvailable() const {
     if (versionUrl_.isEmpty()) {
-        LOG << "Version url not set";
+        LOG << "Version check disabled: version url not set";
         return false;
     }
     auto splits = latestVersion_.split('.');
     if (splits.size() != 2) {
-        LOG << "latestVersion not set";
+        LOG << "Version check disabled: latestVersion not set";
         return false;
     }
     bool majorOk = false;

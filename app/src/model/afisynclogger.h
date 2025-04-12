@@ -4,6 +4,8 @@
 #ifndef AFISYNCLOGGER_H
 #define AFISYNCLOGGER_H
 
+#include <sstream>
+
 #include <boost/log/trivial.hpp>
 
 #include <QSet>
@@ -21,7 +23,7 @@ std::ostream& operator<<(std::ostream& outStream, const QSet<QString>& qSet);
 QString cleanFunc(auto fnc)
 {
     QString clean{fnc};
-    clean.remove(" __cdecl");
+    clean.remove("__cdecl");
     clean.replace("(void)", "()");
     clean.append(' ');
     return clean;
@@ -30,9 +32,64 @@ QString cleanFunc(auto fnc)
 #ifdef Q_OS_WIN
 #pragma warning(push, 0)
 #endif
-#define LOG BOOST_LOG_TRIVIAL(info) << cleanFunc(Q_FUNC_INFO)
-#define LOG_ERROR BOOST_LOG_TRIVIAL(error) << cleanFunc(Q_FUNC_INFO)
-#define LOG_WARNING BOOST_LOG_TRIVIAL(warning) << cleanFunc(Q_FUNC_INFO)
+
+enum class LogLevel {
+    Info,
+    Warning,
+    Error
+};
+
+class LogStream {
+public:
+    LogStream(const QString& funcInfo, LogLevel level)
+        : funcInfo_{funcInfo},
+        level_{level}
+    {}
+    
+    template<typename T>
+    LogStream& operator<<(const T& value) {
+        stream_ << value;
+        return *this;
+    }
+
+    ~LogStream() {
+        using std::string;
+
+        string message = stream_.str();
+        string functionInfo = funcInfo_.toStdString();
+        if (message.length() <= 250)
+        {
+            message.append(250 - message.length(), ' ');
+            message += functionInfo;
+        }
+        else
+        {
+            message += ' ' + functionInfo;
+        }
+        switch (level_)
+        {
+            case LogLevel::Info:
+                BOOST_LOG_TRIVIAL(info) << message;
+                break;
+            case LogLevel::Warning:
+                BOOST_LOG_TRIVIAL(warning) << message;
+                break;
+            case LogLevel::Error:
+                BOOST_LOG_TRIVIAL(error) << message;
+                break;
+        }
+    }
+
+private:
+    QString funcInfo_;
+    LogLevel level_;
+    std::ostringstream stream_;
+};
+
+#define LOG LogStream{cleanFunc(Q_FUNC_INFO), LogLevel::Info}
+#define LOG_ERROR LogStream{cleanFunc(Q_FUNC_INFO), LogLevel::Error}
+#define LOG_WARNING LogStream{cleanFunc(Q_FUNC_INFO), LogLevel::Warning}
+
 #ifdef Q_OS_WIN
 #pragma warning(pop)
 #endif
@@ -41,8 +98,10 @@ class AfiSyncLogger
 {
 public:
     AfiSyncLogger() = default;
+    virtual ~AfiSyncLogger();
 
     void initFileLogging();
+    static void initConsoleLogging();
 
 private:
     static const QString SZIP_EXECUTABLE;

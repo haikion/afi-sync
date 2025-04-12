@@ -129,7 +129,6 @@ LibTorrentApi::~LibTorrentApi()
 
 void LibTorrentApi::createSession()
 {
-    LOG;
     settings_pack settings;
 
     //Disable encryption
@@ -379,7 +378,6 @@ void LibTorrentApi::setFolderPaused(const torrent_handle& handle, bool value)
     {
         handle.unset_flags(torrent_flags::auto_managed);
         handle.pause();
-        LOG << name << "paused";
     }
     else
     {
@@ -655,7 +653,6 @@ void LibTorrentApi::shutdown()
     bool deleteSession = true;
 
     timer_->stop();
-    LOG << "Alert timer stopped";
     generateResumeData();
     const auto keys = keyHash_.keys();
     for (const QString& key : keys)
@@ -698,7 +695,7 @@ void LibTorrentApi::shutdown()
         session_ = nullptr;
         LOG << "Session deleted";
     }
-    LOG << "Shutdown completed.";
+    LOG << "libtorrent shutdown";
     emit shutdownCompleted();
 }
 
@@ -1105,7 +1102,6 @@ QString LibTorrentApi::getHashString(const torrent_handle& handle)
     auto sha1Hash = status.info_hashes.v1;
     auto hex = QByteArray::fromRawData(sha1Hash.data(), sha1Hash.size()).toHex();
     auto hash = QString::fromLatin1(hex);
-    LOG << "hash = " << hash << " name = " << QString::fromStdString(status.name);
     return hash;
 }
 
@@ -1116,7 +1112,6 @@ void LibTorrentApi::saveTorrentFile(const torrent_handle& handle) const
     QString filePrefix = settings_.syncSettingsPath() + "/" + getHashString(handle);
     //Torrent file
     auto ti = getTorrentFile(handle);
-    LOG << "name = " << QString::fromStdString(handle.status(torrent_handle::query_name).name);
     if (!ti)
     {
         LOG_ERROR << "Unable to save torrent file. It is null.";
@@ -1138,6 +1133,7 @@ void LibTorrentApi::saveTorrentFile(const torrent_handle& handle) const
         url = deltaManager_->getUrl(handle).toUtf8();
     }
     FileUtils::writeFile(torrentBytes, torrentFilePath) && FileUtils::writeFile(url, urlFilePath);
+    LOG << handle.status(torrent_handle::query_name).name << " resume data saved";
 }
 
 void LibTorrentApi::generateResumeData() const
@@ -1145,7 +1141,6 @@ void LibTorrentApi::generateResumeData() const
     using std::ios_base;
     using std::ostream_iterator;
 
-    LOG;
     if (!session_)
     {
         LOG_ERROR << "session is null!";
@@ -1209,7 +1204,6 @@ void LibTorrentApi::generateResumeData() const
             --outstanding_resume_data;
             LOG << "Resume data generated for " << h.status().name.c_str();
         }
-        LOG << "Deleting alerts";
     }
 }
 
@@ -1249,7 +1243,6 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         if (!filePath.endsWith(".torrent"_L1)) {
             continue;
         }
-        LOG << "Processing: " << filePath;
 
         QString pathPrefix = filePath.remove(u".torrent"_s);
         // Load resume data
@@ -1269,12 +1262,12 @@ void LibTorrentApi::loadTorrentFiles(const QDir& dir)
         prefixMap_.insert(url, it.fileName().remove(u".torrent"_s));
         if (params.ti == nullptr || url.isEmpty() || !params.ti->is_valid())
         {
-            LOG_ERROR << "Loading torrent " << filePath << " url = " << url;
+            LOG_ERROR << "Error loading torrent " << filePath << " url = " << url;
             continue;
         }
         QString name = QString::fromStdString(params.ti->name());
-        LOG << "Appending " << name;
         torrentParams_.insert(url, params); // Used in addFolder()
+        LOG << "Loaded " << name << " from " << pathPrefix << ".torrent url: " << url;
     }
 }
 

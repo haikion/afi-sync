@@ -28,6 +28,7 @@ namespace FileUtils
     void appendSafePath(const QString& path);
     [[nodiscard]] QString casedPath(const QString& path);
     [[nodiscard]] bool filesIdentical(const QString& path1, const QString& path2);
+    [[nodiscard]] QStringList getSafeSubPaths();
 };
 
 #endif // FILEUTILS_H

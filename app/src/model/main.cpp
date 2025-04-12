@@ -110,6 +110,8 @@ int gui(int argc, char* argv[])
     AfiSyncLogger logger;
 #ifndef QT_DEBUG
     logger.initFileLogging();
+#else
+    logger.initConsoleLogging();
 #endif
 
     auto mainWindow = new MainWindow();
@@ -127,6 +129,7 @@ int gui(int argc, char* argv[])
     Global::workerThread->quit();
     Global::workerThread->wait(20000);
     Global::workerThread->terminate();
+    LOG << "Safe subpaths: " << FileUtils::getSafeSubPaths();
     return rVal;
 }
 
@@ -257,9 +260,5 @@ int cli(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    if (argc > 1)
-    {
-        return cli(argc, argv);
-    }
-    return gui(argc, argv);
+    return argc > 1 ? cli(argc, argv) : gui(argc, argv);
 }

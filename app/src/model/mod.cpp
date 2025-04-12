@@ -27,7 +27,6 @@ Mod::Mod(const QString& name, const QString& key, LibTorrentApi* libTorrentApi):
     libTorrentApi_(libTorrentApi),
     key_(key)
 {
-    LOG << "key = " << key;
     setStatus(SyncStatus::STARTING);
     //Enables non lagging UI
     moveToThread(Global::workerThread);
@@ -37,7 +36,7 @@ Mod::Mod(const QString& name, const QString& key, LibTorrentApi* libTorrentApi):
 Mod::~Mod()
 {
     Q_ASSERT(QThread::currentThread() == Global::workerThread);
-    LOG << "name = " << name() << " Thread: " << QThread::currentThread()->objectName();
+    LOG << name() << " destructed";
 }
 
 void Mod::threadConstructor()
@@ -51,6 +50,7 @@ void Mod::threadConstructor()
 
     connect(libTorrentApi_, &LibTorrentApi::initCompleted, this, &Mod::repositoryChanged);
     connect(libTorrentApi_, &LibTorrentApi::folderAdded, this, &Mod::onFolderAdded);
+    LOG << name() << " created";
 }
 
 QString Mod::path()
@@ -194,7 +194,6 @@ void Mod::updateProgress()
 
 bool Mod::stop()
 {
-    LOG << name();
     //TODO: Remove? Might be too defensive
     if (!libTorrentApi_->folderExists(key_))
     {
@@ -202,16 +201,18 @@ bool Mod::stop()
         return false;
     }
 
-    LOG << "Stopping mod transfer. name = " << name();
     libTorrentApi_->setFolderPaused(key_, true);
     stopUpdatesSlot();
     update();
 
+    LOG << "Torrent paused for " << name();
     return true;
 }
 
 void Mod::deleteExtraFiles()
 {
+    using std::as_const;
+
     if (!ticked())
     {
         LOG << name()  << " is inactive, extra file deletion skipped.";
@@ -235,9 +236,8 @@ void Mod::deleteExtraFiles()
     }
 
     QSet<QString> extraFiles = localFiles - remoteFiles;
-    for (const QString& path : extraFiles)
+    for (const QString& path : as_const(extraFiles))
     {
-        LOG << "Deleting extra file " << path << " from mod " << name();
         FileUtils::rmCi(path);
     }
     FileUtils::safeRemoveEmptyDirs(dir.absolutePath());
@@ -292,7 +292,6 @@ void Mod::repositoryChanged()
     //At least one repo active and mod checked
     if (!libTorrentApi_->folderExists(key_) || libTorrentApi_->folderPaused(key_))
     {
-        LOG << "Starting sync for " << name();
         start();
     }
     updateTicked();
@@ -343,7 +342,6 @@ void Mod::startUpdatesSlot()
 //This should always be run in UI Thread
 void Mod::stopUpdates()
 {
-    LOG << name();
     //Updates need to be stopped before object destruction, hence blocking.
     QMetaObject::invokeMethod(this, &Mod::stopUpdatesSlot, Qt::BlockingQueuedConnection);
 }

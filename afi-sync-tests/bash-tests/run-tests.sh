@@ -60,7 +60,7 @@ clean () {
 compile () {
     # clean
     cd ${WORKING_DIR}
-    CMAKE_PREFIX_PATH=~/Qt/6.8.3/gcc_64 cmake ~/code/afi-sync/app -DLIBTORRENT_PATH=~/code/libtorrent &> compile.log && make &>> compile.log && return 0
+    CMAKE_PREFIX_PATH=~/Qt/6.8.3/gcc_64 cmake ~/code/afi-sync/app -DCMAKE_C_COMPILER_LAUNCHER=ccache -DLIBTORRENT_PATH=~/code/libtorrent &> compile.log && make &>> compile.log && return 0
     return 1
 }
 
