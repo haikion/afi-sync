@@ -508,6 +508,8 @@ int64_t LibTorrentApi::folderTotalWantedDone(const QString& key)
 // Cleans unused torrent, link and resume datas
 void LibTorrentApi::cleanUnusedFiles(const QSet<QString>& usedKeys)
 {
+    Q_ASSERT(QThread::currentThread() == Global::workerThread);
+
     const auto keys = torrentParams_.keys();
     for (const QString& key : keys)
     {
@@ -1014,6 +1016,7 @@ bool LibTorrentApi::addFolderGenericAsync(const QString& key)
         auto atp = pair.second;
         const auto modPath = SettingsModel::instance().modDownloadPath() + '/' + QString::fromStdString(atp.ti->name());
         error_code ec;
+        LOG << "Adding " << key << " to sync";
         torrent_handle handle = session_->add_torrent(atp, ec);
         if (ec)
         {

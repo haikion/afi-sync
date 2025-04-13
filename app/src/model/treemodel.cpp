@@ -47,7 +47,10 @@ TreeModel::TreeModel(QObject* parent):
             usedKeys.insert(key);
         }
     }
-    libTorrentApi_->cleanUnusedFiles(usedKeys);
+    QMetaObject::invokeMethod(libTorrentApi_, [=, this] {
+        // This will execute after torrents have been loaded
+        libTorrentApi_->cleanUnusedFiles(usedKeys);
+    });
 
     LOG << "repositories.json read successfully";
 

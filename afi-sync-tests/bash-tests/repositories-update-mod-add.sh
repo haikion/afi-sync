@@ -16,8 +16,10 @@ xvfb-run --auto-servernum --server-num=1 ./AFISync &
 sleep 3
 
 cp ${UPDATED_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
-while ! grep "Adding http://localhost/afisync-tests/torrents/@afi_editor_enhancements_5.torrent to sync" afisync.log; do
+counter=0
+while ! grep "Adding http://localhost/afisync-tests/torrents/@afi_editor_enhancements_5.torrent to sync" afisync.log && [ $counter -lt 50 ]; do
     sleep 1
+    ((counter++))
 done
 
 kill_and_wait
@@ -26,4 +28,9 @@ if [ -f core* ]; then
     echo -e "\e[31m$1Core file detected\e[0m"
     exit 1
 fi
+if [ $counter -ge 50 ]; then
+    echo -e "\e[31mTimeout waiting for mod addition\e[0m"
+    exit 1
+fi
+
 exit 0
