@@ -1,5 +1,6 @@
 #include "alerthandler.h"
 
+#include <libtorrent/alert_types.hpp>
 #include <libtorrent/session_stats.hpp>
 
 #include "../../afisynclogger.h"
@@ -60,6 +61,9 @@ void AlertHandler::handleAlert(alert* alert)
                 LOG_WARNING << "Received peer ban alert for "
                             << getName(alert) << ": " << alert->what();
                 break;
+            case peer_connect_alert::alert_type:
+                LOG << "Peer connect alert received for torrent: " << getName(alert);
+                break;
             case portmap_alert::alert_type:
                 handlePortmapAlert(static_cast<portmap_alert*>(alert));
                 break;
@@ -80,6 +84,24 @@ void AlertHandler::handleAlert(alert* alert)
                 break;
             case torrent_finished_alert::alert_type:
                 LOG << "Torrent " << getName(alert) << " has finished.";
+                break;
+            case tracker_error_alert::alert_type:
+                LOG_WARNING << "Tracker error: " << alert->message();
+                break;
+            case url_seed_alert::alert_type:
+                LOG << "URL seed alert: " << alert->message();
+                break;
+            case tracker_reply_alert::alert_type:
+                LOG << "Tracker reply: " << alert->message();
+                break;
+            case tracker_announce_alert::alert_type:
+                LOG << "Tracker announce: " << alert->message();
+                break;
+            case incoming_connection_alert::alert_type:
+                LOG << "Incoming connection: " << alert->message();
+                break;
+            default:
+                // LOG << "Unhandled alert: " << alert->what() << " " << alert->message();
                 break;
         }
     }

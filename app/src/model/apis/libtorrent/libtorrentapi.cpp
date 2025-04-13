@@ -302,7 +302,7 @@ bool LibTorrentApi::folderQueued(const torrent_status& status)
     }
 
     bool checkingQueued = folderChecking(status) && status.queue_position > 0; //Torrent is paused+checking
-    bool downloadQueued = status.state == torrent_status::downloading && status.queue_position > 3;
+    bool downloadQueued = status.state == torrent_status::downloading && status.queue_position > 2;
     return checkingQueued || downloadQueued;
 }
 
