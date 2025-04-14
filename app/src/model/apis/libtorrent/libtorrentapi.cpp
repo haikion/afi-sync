@@ -140,8 +140,9 @@ void LibTorrentApi::createSession()
     settings.set_bool(settings_pack::enable_outgoing_tcp, true);
     settings.set_bool(settings_pack::enable_incoming_utp, false);
     settings.set_bool(settings_pack::enable_outgoing_utp, false);
-    //Attempt to fix the issue in which only one peer is propelly connected.
-    settings.set_int(settings_pack::unchoke_slots_limit, 100);
+    // Disable all peer sources except tracker
+    settings.set_bool(settings_pack::enable_dht, false);
+    settings.set_bool(settings_pack::enable_lsd, false);
 
     //Change user agent
     std::string userAgentPrefix = "AFISync/";
