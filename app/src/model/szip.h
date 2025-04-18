@@ -9,6 +9,7 @@ public:
     Szip() = default;
 
     bool compress(const QString& dir, const QString& archivePath);
+    bool extract(const QString& path, const QString& outputDir);
     QProcess* compressAsync(const QString& dir, const QString& archivePath);
 
 private:

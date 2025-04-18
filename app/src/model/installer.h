@@ -18,6 +18,7 @@ private:
     static const QString USER_CONFIG_DIR;
 
     static bool install(const QDir& src, const QDir& dst);
+    static bool installTeamSpeak3Plugin(const QString& modPath, const QString& ts3Path, const QString& ts3AppDataPath);
 };
 
 #endif // INSTALLER_H

@@ -27,6 +27,14 @@ bool Szip::compress(const QString& dir, const QString& archivePath)
                       + QDir::toNativeSeparators(dir));
 }
 
+bool Szip::extract(const QString& path, const QString& outputDir)
+{
+    const auto pathNative = QDir::toNativeSeparators(path);
+    const auto outputDirNative = QDir::toNativeSeparators(outputDir);
+    QString extractCommand = QString("%1 x \"%2\" -o\"%3\" -y").arg(SZIP_EXECUTABLE, pathNative, outputDirNative);
+    return console_.runCmd(extractCommand);
+}
+
 QProcess* Szip::compressAsync(const QString& dir, const QString& archivePath)
 {
     return console_.runCmdAsync(COMMAND + " " + QDir::toNativeSeparators(archivePath) + " "
