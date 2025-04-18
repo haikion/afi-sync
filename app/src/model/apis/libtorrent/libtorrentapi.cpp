@@ -108,6 +108,8 @@ void LibTorrentApi::generalThreadInit()
     storageMoveManager_ = new StorageMoveManager();
     alertHandler_ = new AlertHandler(this);
     connect(alertHandler_, &AlertHandler::uploadAndDownloadChanged, this, [=, this] (int64_t ul, int64_t dl) {
+        Q_ASSERT(QThread::currentThread() == Global::workerThread);
+
         uploadSpeed_ = ul;
         downloadSpeed_ = dl;
     });
@@ -704,21 +706,11 @@ void LibTorrentApi::shutdown()
 
 int64_t LibTorrentApi::upload()
 {
-    if (!session_)
-    {
-        return 0;
-    }
-
     return uploadSpeed_;
 }
 
 int64_t LibTorrentApi::download() const
-{
-    if (!session_)
-    {
-        return 0;
-    }
-
+{ 
     return downloadSpeed_;
 }
 

@@ -105,7 +105,7 @@ if(WIN32)
         TORRENT_LINKING_SHARED
     )
 
-    set(LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../lib")
+    set(LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../lib")
     set(POSTFIX "vc143-mt-gd-x64-1_87")
     target_link_libraries(unittests PRIVATE
         ${LIB_PATH}/boost_atomic-${POSTFIX}.lib

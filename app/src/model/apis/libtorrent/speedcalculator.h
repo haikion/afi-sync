@@ -17,8 +17,6 @@ private:
     int64_t downloadSpeed_{0};
     int64_t uploadSpeed_{0};
     libtorrent::time_point prevTimepoint_;
-
-    int64_t calculateSpeed(int64_t prev, int64_t curr, libtorrent::time_point timepoint);
 };
 
 #endif // SPEEDCALCULATOR_H

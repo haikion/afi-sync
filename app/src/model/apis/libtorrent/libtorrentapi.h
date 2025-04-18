@@ -77,9 +77,10 @@ public:
     QString folderError(const QString& key) override;
     //Returns file system path of the folder with specific key.
     QString folderPath(const QString& key) override;
-    //Total bandwiths
+    // Download and upload B/s
+    // These functions are thread safe
     [[nodiscard]] int64_t download() const override;
-    int64_t upload() override;
+    [[nodiscard]] int64_t upload() override;
     //Sets global max upload
     void setMaxUpload(int limit) override;
     //Sets global max download
@@ -134,8 +135,8 @@ private:
     QString settingsPath_;
     StorageMoveManager* storageMoveManager_{nullptr};
     libtorrent::time_point statsLastTimestamp_;
-    int64_t downloadSpeed_{0};
-    int64_t uploadSpeed_{0};
+    std::atomic<int64_t> downloadSpeed_{0};
+    std::atomic<int64_t> uploadSpeed_{0};
     QSet<QString> checkingPbos_;
     std::atomic<bool> ready_{false};
 

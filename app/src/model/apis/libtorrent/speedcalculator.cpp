@@ -1,17 +1,28 @@
 #include "speedcalculator.h"
+#include <libtorrent/time.hpp>
 
 using namespace std::chrono_literals;
 
+static int64_t calculateSpeed(int64_t prev, int64_t curr, int64_t interval)
+{
+    return ((curr - prev)*lt::milliseconds(1s).count()) / interval;
+}
+
 bool SpeedCalculator::update(int64_t downloaded, int64_t uploaded, libtorrent::time_point timepoint) {
-    auto ul = calculateSpeed(totalUploaded_, uploaded, timepoint);
-    auto dl = calculateSpeed(totalDownloaded_, downloaded, timepoint);
-    auto retVal = uploadSpeed_ != ul || downloadSpeed_ != dl;
-    totalDownloaded_ = downloaded;
-    totalUploaded_ = uploaded;
-    uploadSpeed_ = ul;
-    downloadSpeed_ = dl;
-    prevTimepoint_ = timepoint;
-    return retVal;
+    const int64_t timeDiff = lt::total_milliseconds(timepoint - prevTimepoint_);
+    // Only calculate new speeds if the minimum interval has passed
+    if (timeDiff >= lt::total_milliseconds(2s)) {
+        auto ul = calculateSpeed(totalUploaded_, uploaded, timeDiff);
+        auto dl = calculateSpeed(totalDownloaded_, downloaded, timeDiff);
+        auto retVal = uploadSpeed_ != ul || downloadSpeed_ != dl;
+        uploadSpeed_ = ul;
+        downloadSpeed_ = dl;
+        prevTimepoint_ = timepoint;
+        totalDownloaded_ = downloaded;
+        totalUploaded_ = uploaded;
+        return retVal;
+    }
+    return false;
 }
 
 int64_t SpeedCalculator::getDownloadSpeed() const
@@ -22,13 +33,4 @@ int64_t SpeedCalculator::getDownloadSpeed() const
 int64_t SpeedCalculator::getUploadSpeed() const
 {
     return uploadSpeed_;
-}
-
-int64_t SpeedCalculator::calculateSpeed(int64_t prev, int64_t curr, libtorrent::time_point timepoint)
-{
-    const auto interval = lt::total_microseconds(timepoint - prevTimepoint_);
-    if (interval <= 0) {
-        return 0;
-    }
-    return ((curr - prev)*lt::microseconds(1s).count()) / interval;
 }
