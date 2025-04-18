@@ -726,7 +726,7 @@ void LibTorrentApi::setMaxUpload(int limit)
 {
     QMetaObject::invokeMethod(this, [=, this]
     {
-        setMaxDownloadPriv(limit);
+        setMaxUploadPriv(limit);
     }, Qt::QueuedConnection);
 }
 
@@ -741,7 +741,7 @@ void LibTorrentApi::setMaxDownload(int limit)
 {
     QMetaObject::invokeMethod(this, [=, this]
     {
-        setMaxUploadPriv(limit);
+        setMaxDownloadPriv(limit);
     }, Qt::QueuedConnection);
 }
 
