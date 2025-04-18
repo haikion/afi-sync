@@ -3,7 +3,7 @@
 
 #include <QStringLiteral>
 
-#include "../app/src/model/afisync.h"
+#include "../../app/src/model/afisync.h"
 
 using namespace Qt::StringLiterals;
 using namespace testing;

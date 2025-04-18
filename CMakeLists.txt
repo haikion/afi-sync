@@ -9,4 +9,4 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui Network Widgets)
 qt_standard_project_setup()
 
 add_subdirectory(app)
-add_subdirectory(tests)
+add_subdirectory(tests/unittests)
