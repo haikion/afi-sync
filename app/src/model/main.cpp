@@ -151,7 +151,7 @@ int cli(int argc, char* argv[])
 #endif
 
     QCoreApplication app(argc, argv);
-    static SettingsModel& settings = settings.instance();
+    static SettingsModel& settings = SettingsModel::instance();
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
@@ -246,6 +246,9 @@ int cli(int argc, char* argv[])
         }
         LOG << "Setting mod download path: " << modDownloadPath;
         settings.setModDownloadPath(modDownloadPath);
+        
+        AfiSyncLogger logger;
+        logger.initConsoleLogging();
 
         TreeModel* model = generalInit();
 

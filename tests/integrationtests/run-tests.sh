@@ -33,6 +33,7 @@ run_test () {
     echo -n ${1} ...
     timeout 60 ${TESTS_DIR}/$1 &> ${1}_shell.log && echo -e "\e[32m passed\e[0m" || echo -e "\e[31m failed\e[0m"
     mv afisync.log ${1}_afisync.log 2>/dev/null
+    testClean
 }
 
 run_negative_test () {
@@ -55,6 +56,12 @@ clean () {
     trash ${WORKING_DIR}
     mkdir -p ${WORKING_DIR}
     cp -R ../../app/* ${WORKING_DIR}/
+}
+
+testClean () {
+    trash ${WORKING_DIR}/@* 2>/dev/null
+    trash ${WORKING_DIR}/settings 2>/dev/null
+    trash ${WORKING_DIR}/config 2>/dev/null
 }
 
 compile () {

@@ -9,7 +9,6 @@ mkdir -p settings/AFISync
 cp "${CURRENT_REPOSITORIES_JSON}" settings/repositories.json
 cp "${INI_FILE}" settings/AFISync.ini
 cp "${CURRENT_REPOSITORIES_JSON}" /var/www/html/afisync-tests/repositories.json
-trash @cba_a3
 cp -R ${MODS_DIR}/* .
 
 ./AFISync --mirror ${WORKING_DIR} &
