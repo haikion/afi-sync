@@ -30,6 +30,7 @@ run_test () {
     fi
 
     # ${TESTS_DIR}/$1
+    testSetup
     echo -n ${1} ...
     timeout 60 ${TESTS_DIR}/$1 &> ${1}_shell.log && echo -e "\e[32m passed\e[0m" || echo -e "\e[31m failed\e[0m"
     mv afisync.log ${1}_afisync.log 2>/dev/null
@@ -56,6 +57,11 @@ clean () {
     trash ${WORKING_DIR}
     mkdir -p ${WORKING_DIR}
     cp -R ../../app/* ${WORKING_DIR}/
+}
+
+testSetup () {
+    test -f ${WORKING_DIR}/settings && trash ${WORKING_DIR}/settings
+    mkdir -p ${WORKING_DIR}/settings/AFISync
 }
 
 testClean () {
