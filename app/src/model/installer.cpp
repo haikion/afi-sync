@@ -8,11 +8,12 @@
 #include "installer.h"
 #include "paths.h"
 #include "settingsmodel.h"
+#include "szip.h"
 
 using namespace Qt::StringLiterals;
 
 namespace {
-bool sortFiles(const QString &file1, const QString &file2) {
+bool sortFiles(const QString& file1, const QString& file2) {
     // Move files with ".dll" postfix to the end
     if (file1.endsWith(".dll"_L1) && !file2.endsWith(".dll"_L1))
     {
@@ -26,19 +27,18 @@ bool sortFiles(const QString &file1, const QString &file2) {
     return file1 < file2;
 }
 
-QStringList listFilesInRelativeForm(const QDir &directory) {
+QStringList listFilesInRelativeForm(const QDir& directory) {
     QStringList filesList;
 
     // Get the list of files in the directory
-    QStringList currentFiles = directory.entryList(QDir::Files);
+    const QStringList currentFiles = directory.entryList(QDir::Files);
     filesList.reserve(currentFiles.size());
     for (const QString &file : currentFiles) {
         filesList.append(directory.relativeFilePath(file));
     }
 
     // Get the list of directories in the directory
-    QStringList dirsList = directory.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-
+    const QStringList dirsList = directory.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
     // Iterate over each directory and recursively get the list of files
     for (const QString &dir : dirsList) {
         QDir subDir = directory;
@@ -67,7 +67,8 @@ void Installer::install(Mod* mod)
         QDir tsDir(path);
         auto addonsPath = settings.teamSpeak3Path() + "/config/addons.ini";
         if (install(tsDir, settings.teamSpeak3Path() + "/config")
-            && QFile::exists(addonsPath)) {
+            && QFile::exists(addonsPath))
+        {
             QDir pluginsDir(path + "/plugins");
             QStringList list = listFilesInRelativeForm(pluginsDir);
             std::sort(list.begin(), list.end(), sortFiles);
@@ -118,25 +119,19 @@ bool Installer::installTeamSpeak3Plugin(const QString& modPath, const QString& t
         return false;
     }
 
-    // Find TS3 plugin files
     QStringList filters;
     filters << "*.ts3_plugin";
     teamSpeakDir.setNameFilters(filters);
     QStringList pluginFiles = teamSpeakDir.entryList(QDir::Files);
-    
     if (pluginFiles.isEmpty())
     {
         LOG << "No TS3 plugin files found in " << teamSpeakDir.absolutePath();
         return false;
     }
-
-    // We'll handle only one plugin file (as per the requirement)
     QString pluginFile = pluginFiles.first();
     QString pluginFilePath = teamSpeakDir.absoluteFilePath(pluginFile);
-    
     LOG << "Found TS3 plugin file: " << pluginFilePath;
-    
-    // Create a temporary directory for extraction
+
     QDir tempDir(QDir::tempPath() + "/ts3plugin_" + QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"));
     if (!tempDir.exists())
     {
@@ -151,7 +146,6 @@ bool Installer::installTeamSpeak3Plugin(const QString& modPath, const QString& t
         LOG_WARNING << "Failed to extract TS3 plugin file: " << pluginFilePath;
         return false;
     }
-    
     LOG << "Extracted TS3 plugin to: " << tempDir.absolutePath();
     
     // Install the extracted plugin to TeamSpeak paths
@@ -184,6 +178,5 @@ bool Installer::installTeamSpeak3Plugin(const QString& modPath, const QString& t
             settings.setValue(pluginName + "/files", list);
         }
     }
-    
     return mainInstallSuccess || appDataInstallSuccess;
 }

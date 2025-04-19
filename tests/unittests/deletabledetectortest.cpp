@@ -1,4 +1,5 @@
 #include <QDir>
+#include <QStringLiteral>
 
 #include <gmock/gmock-matchers.h>
 #include <gmock/gmock.h>
@@ -7,6 +8,7 @@
 #include "model/deletabledetector.h"
 #include "testconstants.h"
 
+using namespace Qt::StringLiterals;
 using namespace testing;
 
 class DeletableDetectorTest : public Test
@@ -32,7 +34,7 @@ class DeletableDetectorTest : public Test
 TEST_F(DeletableDetectorTest, emptyDirs)
 {
     QList<IRepository*> repositories;
-    DeletableDetector deletableDetector(".", repositories);
+    DeletableDetector deletableDetector(u"."_s, repositories);
 
     const QStringList deletableNames = deletableDetector.deletableNames();
     ASSERT_TRUE(deletableNames.contains(NAME_1));
