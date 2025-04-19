@@ -10,7 +10,6 @@
             "name": "armafinland.fi Primary",
             "serverAddress": "a3.armafinland.fi",
             "serverPort": 2302,
-            "password": "kotka",
             "battlEyeEnabled": true,
             "mods": [
                 {

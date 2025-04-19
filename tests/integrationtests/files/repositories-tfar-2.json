@@ -1,0 +1,18 @@
+{
+    "repositories": [
+        {
+            "name": "armafinland.fi Primary",
+            "serverAddress": "a3.armafinland.fi",
+            "serverPort": 2302,
+            "battlEyeEnabled": true,
+            "mods": [
+                {
+                    "name": "@task_force_radio",
+                    "fileSize": 27825,
+                    "key": "http://localhost/afisync-tests/torrents/@task_force_radio_1.torrent",
+                    "optional": false
+                }
+            ]
+        }
+    ]
+}

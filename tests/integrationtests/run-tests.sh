@@ -101,6 +101,7 @@ run_test log-rotate.sh
 run_test patch-generation.sh
 run_test patch.sh
 run_test ts-plugin-install.sh
+run_test ts-plugin-install-archive.sh
 run_test repositories-update.sh
 run_test repositories-update-chain-patch.sh
 run_test repositories-update-mod-add.sh
