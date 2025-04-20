@@ -142,9 +142,6 @@ void LibTorrentApi::createSession()
     settings.set_bool(settings_pack::enable_outgoing_tcp, true);
     settings.set_bool(settings_pack::enable_incoming_utp, false);
     settings.set_bool(settings_pack::enable_outgoing_utp, false);
-    // Disable all peer sources except tracker
-    settings.set_bool(settings_pack::enable_dht, false);
-    settings.set_bool(settings_pack::enable_lsd, false);
 
     //Change user agent
     std::string userAgentPrefix = "AFISync/";

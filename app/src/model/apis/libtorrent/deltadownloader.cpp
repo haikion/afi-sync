@@ -50,9 +50,11 @@ void DeltaDownloader::mirrorDeltaPatches()
                 return;
             }
             lt::add_torrent_params atp = pair.second;
+            atp.flags &= ~lt::torrent_flags::auto_managed;
             atp.save_path = SettingsModel::instance().patchesDownloadPath().toStdString();
             lt::error_code ec;
             auto handle = session_->add_torrent(atp, ec);
+            handle.resume();
             if (ec.failed())
             {
                 LOG_WARNING << "Adding torrent failed: " << ec.message().c_str();
