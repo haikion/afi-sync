@@ -148,7 +148,7 @@ void LibTorrentApi::createSession()
 
     //Change user agent
     std::string userAgentPrefix = "AFISync/";
-    if (Global::guiless)
+    if (Global::isMirror)
     {
         userAgentPrefix = "AFISync_Mirror/";
         //Try to maximize upload speed
@@ -386,7 +386,7 @@ void LibTorrentApi::setFolderPaused(const torrent_handle& handle, bool value)
     {
         LOG << "Starting torrent " << name;
         handle.resume();
-        if (Global::guiless)
+        if (Global::isMirror)
         {
             handle.unset_flags(torrent_flags::auto_managed);
             LOG << "Auto management disabled for " << name << " in mirror mode.";

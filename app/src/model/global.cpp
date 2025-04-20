@@ -9,5 +9,5 @@ namespace Global
     QTextStream* logStream = nullptr;
     QThread* workerThread = nullptr;
     TreeModel* model = nullptr;
-    bool guiless = false;
+    bool isMirror = false;
 }

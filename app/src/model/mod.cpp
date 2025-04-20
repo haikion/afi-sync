@@ -564,7 +564,10 @@ void Mod::processCompletion()
 
     libTorrentApi_->truncateOvergrownFiles(key_);
     deleteExtraFiles();
-    Installer::install(this);
+    if (!Global::isMirror)
+    {
+        Installer::install(this);
+    }
     LOG <<  name() << " synced";
 }
 

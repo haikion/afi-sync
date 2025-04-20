@@ -25,7 +25,7 @@ namespace {
     void checkPath(const QString& path, const QString& name)
     {
         if (path == QCoreApplication::applicationDirPath()
-                && !Global::guiless)
+                && !Global::isMirror)
         {
             LOG_WARNING << "Unable to find path for " << name
                 << " Using default: " << path;

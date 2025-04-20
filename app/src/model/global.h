@@ -20,7 +20,7 @@ namespace Global
     extern QTextStream* logStream;
     extern QThread* workerThread;
     extern TreeModel* model;
-    extern bool guiless;
+    extern bool isMirror;
 }
 
 #endif // GLOBAL_H

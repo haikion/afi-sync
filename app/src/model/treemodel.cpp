@@ -262,7 +262,7 @@ void TreeModel::update()
         }
     }
     updateSpeed();
-    if (allDone && !mirroringDeltaPatches_ && Global::guiless)
+    if (allDone && !mirroringDeltaPatches_ && Global::isMirror)
     {
         LOG << "All mods downloaded. Mirroring delta patches ...";
         libTorrentApi_->mirrorDeltaPatches();

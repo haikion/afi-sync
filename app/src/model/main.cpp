@@ -236,7 +236,7 @@ int cli(int argc, char* argv[])
     LOG << "Fail " << missingArgs.size() << " " << missingArgs;
     // Mirror
     if (parser.isSet(u"mirror"_s)) {
-        Global::guiless = true;
+        Global::isMirror = true;
         QFileInfo dir(parser.value(u"mirror"_s));
         QString modDownloadPath = dir.absoluteFilePath();
         if (!dir.isDir() || !dir.isWritable())
