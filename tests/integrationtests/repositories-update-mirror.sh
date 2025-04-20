@@ -22,8 +22,14 @@ while ! grep "All mods downloaded. Mirroring delta patches" afisync.log; do
 done
 echo "All mods mirrored, updating repositories.json ..."
 cp ${UPDATED_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
+counter=0
 while [ ! -f "afisync_patches/@dummy.0.5c668c74b841d239fb6418e978a07fa5.7z" ] && ps -A | grep AFISync ; do
     sleep 1
+    ((counter++))
+    if [ $counter -ge 10 ]; then
+        echo "Timeout while waiting for the patch to mirror"
+        return 1
+    fi
 done
 echo "repositories.json updated"
 

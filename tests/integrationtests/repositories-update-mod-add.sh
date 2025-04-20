@@ -17,9 +17,13 @@ sleep 3
 
 cp ${UPDATED_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
 counter=0
-while ! grep "Adding http://localhost/afisync-tests/torrents/@afi_editor_enhancements_5.torrent to sync" afisync.log && [ $counter -lt 50 ]; do
+while ! grep "Adding http://localhost/afisync-tests/torrents/@afi_editor_enhancements_5.torrent to sync" afisync.log; do
     sleep 1
     ((counter++))
+    if [ $counter -ge 50 ]; then
+        echo "Timeout while waiting for mod addition"
+        exit 1
+    fi
 done
 
 kill_and_wait

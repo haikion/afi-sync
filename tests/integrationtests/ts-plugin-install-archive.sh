@@ -20,7 +20,7 @@ xvfb-run --auto-servernum --server-num=1 ./AFISync &
 counter=0
 while [ ! -f config/plugins/task_force_radio_win64.dll ]; do
    sleep 1
-   counter=$((counter+1))
+   ((counter++))
    if [ $counter -ge 5 ]; then
       echo "Timeout while waiting for TFAR plugin to install"
       exit 1
