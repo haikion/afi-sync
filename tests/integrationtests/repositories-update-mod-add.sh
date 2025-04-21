@@ -29,11 +29,11 @@ done
 kill_and_wait
 
 if [ -f core* ]; then
-    echo -e "\e[31m$1Core file detected\e[0m"
+    echo "Core file detected"
     exit 1
 fi
 if [ $counter -ge 50 ]; then
-    echo -e "\e[31mTimeout waiting for mod addition\e[0m"
+    echo "Timeout waiting for mod addition"
     exit 1
 fi
 

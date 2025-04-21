@@ -17,8 +17,14 @@ echo "Running mirror ptr"
 sleep 3
 
 echo "Waiting for all mods to be mirrored ..."
+counter=0
 while ! grep "All mods downloaded. Mirroring delta patches" afisync.log; do
     sleep 1
+    ((counter++))
+    if [ $counter -ge 5 ]; then
+        echo "Timeout while waiting for the log message"
+        exit 1
+    fi
 done
 echo "All mods mirrored, updating repositories.json ..."
 cp ${UPDATED_REPOSITORIES_JSON} /var/www/html/afisync-tests/repositories.json
@@ -26,9 +32,9 @@ counter=0
 while [ ! -f "afisync_patches/@dummy.0.5c668c74b841d239fb6418e978a07fa5.7z" ] && ps -A | grep AFISync ; do
     sleep 1
     ((counter++))
-    if [ $counter -ge 10 ]; then
+    if [ $counter -ge 40 ]; then
         echo "Timeout while waiting for the patch to mirror"
-        return 1
+        exit 1
     fi
 done
 echo "repositories.json updated"
@@ -36,7 +42,7 @@ echo "repositories.json updated"
 kill_and_wait
 
 if [ -f core* ]; then
-    echo -e "\e[31m$1Core file detected\e[0m"
+    echo "Core file detected"
     exit 1
 fi
 exit 0
