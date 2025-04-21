@@ -31,7 +31,7 @@ Mod will download
 7. Continue monitoring the download speed
 
 **Expected:**
-Download speed should not exceed the configured limit, changing the limit during download should take effect within reasonable time.
+Download speed should on average correspond to the set limit, changing the limit during download should take effect within reasonable time.
 
 ---
 
