@@ -10,6 +10,11 @@ command_exists() {
     fi
 }
 
+if [ -z "$DISPLAY" ] || [ "$XDG_SESSION_TYPE" != "x11" ]; then
+    echo "Error: This script must be run under Xorg."
+    exit 1
+fi
+
 command_exists apache2 || exit 1
 command_exists trash || exit 1
 command_exists xvfb-run || exit 1

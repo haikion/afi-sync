@@ -93,7 +93,14 @@ void Mod::removeConflicting()
 //If mod is not in sync it will be added to it.
 void Mod::start()
 {
-    if (!libTorrentApi_->folderExists(key_))
+    if (libTorrentApi_->folderExists(key_))
+    {
+        if (libTorrentApi_->folderPaused(key_))
+        {
+            libTorrentApi_->setFolderPaused(key_, false);
+        }
+    }
+    else
     {
         removeConflicting();
         //Add folder
